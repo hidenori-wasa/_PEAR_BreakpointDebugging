@@ -1,0 +1,4 @@
+Please, set the following files into this directory.
+    BreakpointDebugging.php
+    BreakpointDebugging_Option.php
+    ./BreakpointDebugging/Error.php
