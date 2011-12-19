@@ -46,3 +46,5 @@ The dependences
 
 Notice
     At present, I am creating the exception handling of the remainder.
+    First is the support to the case where the exception handling is continuing.
+    Second is the support to the bug which the BreakpointDebugging_RegisterLocation class object has been executed unset() when exception occurred.
