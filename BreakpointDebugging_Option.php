@@ -79,16 +79,16 @@ class BreakpointDebugging extends BreakpointDebugging_For_Debug_And_Release
      * @return array Some changed variables.
      * 
      * ### sample code
-	 * $gDebugValue = BreakpointDebugging::convertMbStringForDebug( 'SJIS', $scalar1, $array2, $scalar2);
+     * $gDebugValue = BreakpointDebugging::convertMbStringForDebug( 'SJIS', $scalar1, $array2, $scalar2);
      */
     final static function convertMbStringForDebug( $params)
     {
-		global $_BreakpointDebugging_EXE_MODE;
+        global $_BreakpointDebugging_EXE_MODE;
         
         // In case of local.
-		if ($_BreakpointDebugging_EXE_MODE & (self::LOCAL_DEBUG | self::LOCAL_DEBUG_OF_RELEASE)) {
+        if ($_BreakpointDebugging_EXE_MODE & (self::LOCAL_DEBUG | self::LOCAL_DEBUG_OF_RELEASE)) {
             $mbStringArray = \func_get_args();
-            $mbParamArray = array_slice($mbStringArray,	1);
+            $mbParamArray = array_slice($mbStringArray, 1);
             return self::_convertMbStringForDebugSubroop($mbStringArray[0], $mbParamArray);
         }
     }
@@ -103,10 +103,10 @@ class BreakpointDebugging extends BreakpointDebugging_For_Debug_And_Release
      */
     final private static function _convertMbStringForDebugSubroop($charSet, $mbParamArray)
     {
-		global $_BreakpointDebugging_EXE_MODE;
+        global $_BreakpointDebugging_EXE_MODE;
         
         // In case of local.
-		if ($_BreakpointDebugging_EXE_MODE & (self::LOCAL_DEBUG | self::LOCAL_DEBUG_OF_RELEASE)) {
+        if ($_BreakpointDebugging_EXE_MODE & (self::LOCAL_DEBUG | self::LOCAL_DEBUG_OF_RELEASE)) {
             $count = 0;
             foreach ($mbParamArray as $mbString) {
                 if (is_array($mbString)) {
@@ -168,14 +168,14 @@ class BreakpointDebugging extends BreakpointDebugging_For_Debug_And_Release
      */
     final static function iniSet($phpIniVariable, $setValue)
     {
-		global $_BreakpointDebugging_EXE_MODE;
+        global $_BreakpointDebugging_EXE_MODE;
         assert(func_num_args() == 2);
         
         $getValue = ini_get($phpIniVariable);
         assert(self::_isSameType($setValue, $getValue));
         if ($setValue === $getValue) {
             // In case of remote.
-			if ($_BreakpointDebugging_EXE_MODE & self::REMOTE_DEBUG) {
+            if ($_BreakpointDebugging_EXE_MODE & self::REMOTE_DEBUG) {
                 $backTrace = debug_backtrace(true);
                 echo <<<EOD
 <pre>
@@ -244,8 +244,8 @@ if (assert_options(ASSERT_QUIET_EVAL, 0) === false) { // As for assertion expres
     B::triggerError('');
 }
 // ### usage ###
-//		assert(<judgment expression>);
-//		It is possible to assert that <judgment expression> is "This should be". Especially, this uses to verify a function's argument.
-//		For example: assert(3 <= $value && $value <= 5); // $value should be 3-5.
+//    assert(<judgment expression>);
+//    It is possible to assert that <judgment expression> is "This should be". Especially, this uses to verify a function's argument.
+//    For example: assert(3 <= $value && $value <= 5); // $value should be 3-5.
 
 ?>

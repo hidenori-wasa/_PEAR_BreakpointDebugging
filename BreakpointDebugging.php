@@ -96,7 +96,7 @@ class BreakpointDebugging_For_Debug_And_Release
     const LOCAL_DEBUG = 1;
     
     /**
-	 * @const int Next mode is breakpoint debug to emulate release mode with your personal computer.
+     * @const int Next mode is breakpoint debug to emulate release mode with your personal computer.
      */
     const LOCAL_DEBUG_OF_RELEASE = 2;
     
@@ -117,8 +117,8 @@ class BreakpointDebugging_For_Debug_And_Release
     
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // ##### Useful function index. #####
-	// ### This changes a character sets to display a multibyte character string with local window of debugger, and this returns it. ### BreakpointDebugging::convertMbStringForDebug()
-	// ### This changes to unify multibyte character strings such as system-output in UTF8, and this returns. ### BreakpointDebugging::convertMbString()
+    // ### This changes a character sets to display a multibyte character string with local window of debugger, and this returns it. ### BreakpointDebugging::convertMbStringForDebug()
+    // ### This changes to unify multibyte character strings such as system-output in UTF8, and this returns. ### BreakpointDebugging::convertMbString()
     
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /**
@@ -132,7 +132,7 @@ class BreakpointDebugging_For_Debug_And_Release
     {
         // This changes underscore and name space separator into directory separator.
         $className = str_replace(array('_', '\\'), '/', $className) . '.php';
-		include_once $className;
+        include_once $className;
     }
     
     /**
@@ -158,7 +158,7 @@ class BreakpointDebugging_For_Debug_And_Release
      */
     final static function exceptionHandler($exception)
     {
-		$error = new BreakpointDebugging_Error();
+        $error = new BreakpointDebugging_Error();
         $error->exceptionHandler($exception);
     }
     
@@ -175,7 +175,7 @@ class BreakpointDebugging_For_Debug_And_Release
      */
     final static function errorHandler($errorNumber, $errorMessage, $errorFile, $errorLine)
     {
-		$error = new BreakpointDebugging_Error();
+        $error = new BreakpointDebugging_Error();
         return $error->errorHandler($errorNumber, $errorMessage, $errorFile, $errorLine);
     }
     
@@ -188,7 +188,7 @@ class BreakpointDebugging_For_Debug_And_Release
      */
     final static function triggerError($errorMessage)
     {
-		global $_BreakpointDebugging_EXE_MODE;
+        global $_BreakpointDebugging_EXE_MODE;
         assert(func_num_args() == 1);
         assert(mb_detect_encoding($errorMessage, 'utf8', true) != false);
         
@@ -241,7 +241,7 @@ if ($_BreakpointDebugging_EXE_MODE & BreakpointDebugging_For_Debug_And_Release::
         BreakpointDebugging::triggerError('');
     }
 } else { // In case of not release.
-	include_once __DIR__ . '/BreakpointDebugging_Option.php';
+    include_once __DIR__ . '/BreakpointDebugging_Option.php';
 }
 
 /**
@@ -273,7 +273,7 @@ final class BreakpointDebugging_RegisterLocation
      */
     function __construct()
     {
-		global $_BreakpointDebugging;
+        global $_BreakpointDebugging;
         
         $this->_number = self::$_currentNumber++;
         $backTrace = debug_backtrace(true);
@@ -281,7 +281,7 @@ final class BreakpointDebugging_RegisterLocation
         if (array_key_exists(1, $backTrace)) {
             $index = 1;
         }
-		$_BreakpointDebugging->callStack[$this->_number] = $backTrace[$index];
+        $_BreakpointDebugging->callStack[$this->_number] = $backTrace[$index];
     }
     
     /**
@@ -291,13 +291,13 @@ final class BreakpointDebugging_RegisterLocation
      */
     function __destruct()
     {
-		global $_BreakpointDebugging;
+        global $_BreakpointDebugging;
         
         // Garbage collection measure.
-		if (is_null($_BreakpointDebugging)) {
+        if (is_null($_BreakpointDebugging)) {
             return;
         }
-		unset($_BreakpointDebugging->callStack[$this->_number]);
+        unset($_BreakpointDebugging->callStack[$this->_number]);
     }
 }
 
