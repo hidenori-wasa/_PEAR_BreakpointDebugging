@@ -34,7 +34,7 @@
  *
  * @category PHP
  * @package  BreakpointDebugging
- * @author   Hidenori Wasa <username@example.com>
+ * @author   Hidenori Wasa <hidenori_wasa@yahoo.co.jp>
  * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
  * @version  SVN: $Id$
  * @link     http://pear.php.net/package/BreakpointDebugging
@@ -51,7 +51,7 @@ use \BreakpointDebugging as B;
  * 
  * @category PHP
  * @package  BreakpointDebugging
- * @author   Hidenori Wasa <username@example.com>
+ * @author   Hidenori Wasa <hidenori_wasa@yahoo.co.jp>
  * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
  * @version  Release: @package_version@
  * @link     http://pear.php.net/package/BreakpointDebugging
@@ -59,17 +59,96 @@ use \BreakpointDebugging as B;
 final class BreakpointDebugging_Error
 {
     /**
+     * This method builds array information.
+     * 
+     * @param array $array     The array to reflect.
+     * @param int   $tabNumber The tab number to indent.
+     * 
+     * @return string Array information.
+     */
+    private function _reflectArray($array, $tabNumber = 1)
+    {
+        assert(func_num_args() <= 2);
+        assert(is_array($array));
+        assert(is_int($tabNumber));
+        
+        $tab = str_repeat("\t", $tabNumber);
+        $log = $tab . 'array(' . PHP_EOL;
+        foreach ($array as $element) {
+            if (is_array($element)) {
+                $log .= $this->_reflectArray($element, $tabNumber + 1);
+            } else if (is_object($element)) {
+                $log .= $this->_reflectObject($element, $tabNumber + 1);
+            } else {
+                $element = B::convertMbString($element);
+                assert(mb_detect_encoding($element, 'utf8', true) != false);
+                $log .= $tab . "\t" . gettype($element) . ' ' . $element . PHP_EOL;
+            }
+        }
+        return $log . $tab . ')' . PHP_EOL;
+    }
+    
+    /**
+     * This method builds property and constant information inside class difinition.
+     * 
+     * @param object $object    The object to reflect.
+     * @param int    $tabNumber The tab number to indent.
+     * 
+     * @return string Object information.
+     */
+    private function _reflectObject($object, $tabNumber = 1)
+    {
+        $className = get_class($object);
+        
+        assert(func_num_args() <= 3);
+        assert(is_string($className));
+        assert(is_object($object));
+        assert(is_int($tabNumber));
+        
+        $tab = str_repeat("\t", $tabNumber);
+        $classReflection = new ReflectionClass($className);
+        $propertyReflections = $classReflection->getProperties();
+        $constants = $classReflection->getConstants();
+        
+        $log = $tab . 'class ' . $className . PHP_EOL .
+            $tab . '{' . PHP_EOL;
+        foreach ($constants as $constant) {
+            $log .= $tab . "\t" . 'Constant ' . gettype($constant) . ' ' . $constant . PHP_EOL;
+        }
+        count($constants) ? $log .= PHP_EOL : null;
+        foreach ($propertyReflections as $propertyReflection) {
+            $propertyReflection->setAccessible(true);
+            $log .= $tab . "\t" . rtrim($propertyReflection->__toString(), "\r\n") . ' ';
+            if ($propertyReflection->isStatic()) {
+                $value = $propertyReflection->getValue($propertyReflection);
+            } else {
+                $value = $propertyReflection->getValue($object);
+            }
+            if (is_array($value)) {
+                $log .= $this->_reflectArray($value, $tabNumber + 1);
+            } else if (is_object($value)) {
+                $log .=  PHP_EOL . $this->_reflectObject($value, $tabNumber + 1);
+            } else {
+                $value = B::convertMbString($value);
+                assert(mb_detect_encoding($value, 'utf8', true) != false);
+                $log .= gettype($value) . ' ' . $value . PHP_EOL;
+            }
+        }
+        return $log . $tab . '}' . PHP_EOL;
+    }
+    
+    /**
      * This is Called from user exception handler of the whole code.
      *
      * @param object $exception Exception info.
      * 
      * @return void
      */
-    static function exceptionHandler($exception)
+    function exceptionHandler($exception)
     {
         global $_BreakpointDebugging_EXE_MODE;
         
-        $log = self::_buildErrorCallStackLog($exception->getfile(), $exception->getline(), 'EXCEPTION', $exception->getmessage(), $exception->gettrace());
+        $log = $this->_buildErrorCallStackLog($exception->getfile(), $exception->getline(), 'EXCEPTION', $exception->getmessage(), $exception->gettrace());
         $diplayLog = function ($log) {
             echo '<pre>' . $log . '<pre/>';
             echo 'This ends in the global exception.';
@@ -103,7 +182,7 @@ final class BreakpointDebugging_Error
      * 
      * @return bool Did the error handling end?
      */
-    static function errorHandler($errorNumber, $errorMessage, $errorFile, $errorLine)
+    function errorHandler($errorNumber, $errorMessage, $errorFile, $errorLine)
     {
         global $_BreakpointDebugging_EXE_MODE;
         
@@ -160,7 +239,7 @@ final class BreakpointDebugging_Error
             BreakpointDebugging_breakpoint();
             break;
         }
-        $log = self::_buildErrorCallStackLog($errorFile, $errorLine, $errorKind, $errorMessage, debug_backtrace(true));
+        $log = $this->_buildErrorCallStackLog($errorFile, $errorLine, $errorKind, $errorMessage, debug_backtrace(true));
         $diplayLog = function ($log) {
             echo '<pre>' . $log . '<pre/>';
         };
@@ -197,7 +276,7 @@ final class BreakpointDebugging_Error
      * 
      * @return string Error call stack log.
      */
-    private static function _buildErrorCallStackLog($errorFile, $errorLine, $errorKind, $errorMessage, $backTrace)
+    private function _buildErrorCallStackLog($errorFile, $errorLine, $errorKind, $errorMessage, $backTrace)
     {
         global $_BreakpointDebugging;
         
@@ -228,7 +307,7 @@ final class BreakpointDebugging_Error
             $log .= PHP_EOL . '### function call ====>' . $func . '( ';
             if (array_key_exists('args', $backtraceArrays)) {
                 // Analyze parameter part of back trace array, and return string.
-                $log .= self::_searchDebugBacktraceArgsToString($backtraceArrays['args']);
+                $log .= $this->_searchDebugBacktraceArgsToString($backtraceArrays['args']);
             }
             $log .= ');' . PHP_EOL;
         }
@@ -243,7 +322,7 @@ final class BreakpointDebugging_Error
      * 
      * @return string Part of log lines.
      */
-    private static function _searchDebugBacktraceArgsToString($backtraceParams)
+    private function _searchDebugBacktraceArgsToString($backtraceParams)
     {
         global $_BreakpointDebugging_EXE_MODE;
         
@@ -252,32 +331,22 @@ final class BreakpointDebugging_Error
         foreach ($backtraceParams as $key => $param) {
             if ($isFirst) {
                 $isFirst = false;
-                $logLines .= PHP_EOL;
             } else {
-                $logLines .= ',';
+                $logLines .= PHP_EOL . "\t,";
             }
             if (is_array($param)) {
                 if ($key == 'GLOBALS') {
                     continue;
                 }
-                $logLines .= PHP_EOL . 'array(' . self::_searchDebugBacktraceArgsToString($param) . ')' . PHP_EOL;
+                $logLines .= PHP_EOL . $this->_reflectArray($param);
+            } else if (is_object($param)) {
+                $logLines .= PHP_EOL . $this->_reflectObject($param);
+            } else if (is_bool($param)) {
+                $logLines .= PHP_EOL . "\t" . gettype($param) . ' ' . ( $param ? 'true' : 'false');
             } else {
-                if ($_BreakpointDebugging_EXE_MODE & (B::RELEASE | B::LOCAL_DEBUG_OF_RELEASE)) { // In case of release.
-                    $htmlErrors = ini_get('html_errors');
-                    // Delete HTML tag of var_dump().
-                    B::iniSet('html_errors', '');
-                }
-                ob_start();
-                var_dump($param);
-                $param = ob_get_clean();
-                if ($_BreakpointDebugging_EXE_MODE & (B::RELEASE | B::LOCAL_DEBUG_OF_RELEASE)) { // In case of release.
-                    // Restore setting.
-                    B::iniSet('html_errors', $htmlErrors);
-                }
-                
-                B::convertMbString($param);
+                $param = B::convertMbString($param);
                 assert(mb_detect_encoding($param, 'utf8', true) != false);
-                $logLines .= $param;
+                $logLines .= PHP_EOL . "\t" . gettype($param) . ' ' . $param;
             }
         }
         return $logLines;

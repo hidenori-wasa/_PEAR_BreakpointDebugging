@@ -65,7 +65,7 @@
  *
  * @category PHP
  * @package  BreakpointDebugging
- * @author   Hidenori Wasa <username@example.com>
+ * @author   Hidenori Wasa <hidenori_wasa@yahoo.co.jp>
  * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
  * @version  SVN: $Id$
  * @link     http://pear.php.net/package/BreakpointDebugging
@@ -81,7 +81,7 @@ global $_BreakpointDebugging_EXE_MODE;
  * 
  * @category PHP
  * @package  BreakpointDebugging
- * @author   Hidenori Wasa <username@example.com>
+ * @author   Hidenori Wasa <hidenori_wasa@yahoo.co.jp>
  * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
  * @version  Release: @package_version@
  * @link     http://pear.php.net/package/BreakpointDebugging
@@ -133,6 +133,35 @@ class BreakpointDebugging_For_Debug_And_Release
         // This changes underscore and name space separator into directory separator.
         $className = str_replace(array('_', '\\'), '/', $className) . '.php';
         include_once $className;
+    }
+    
+    /**
+     * Please, register at top of the function or method to have been not fixed.
+     * 
+     * @param bool &$isRegister Is this registered?
+     * 
+     * @return void
+     * @example static $isRegister; B::registerNotFixedLocation( $isRegister); // Register the function to be not fixed.
+     */
+    static function registerNotFixedLocation(&$isRegister)
+    {
+        // When it has been registered.
+        if ($isRegister) {
+            return;
+        }
+        $isRegister = true;
+        
+        global $_BreakpointDebugging;
+        static $currentNumber = 0; // Location current number.
+        
+        // Location number.
+        $backTrace = debug_backtrace(true);
+        $index = 0;
+        if (array_key_exists(1, $backTrace)) {
+            $index = 1;
+        }
+        $_BreakpointDebugging->callStack[$currentNumber] = $backTrace[$index];
+        $currentNumber++;
     }
     
     /**
@@ -208,7 +237,7 @@ if ($_BreakpointDebugging_EXE_MODE & BreakpointDebugging_For_Debug_And_Release::
      * 
      * @category PHP
      * @package  BreakpointDebugging
-     * @author   Hidenori Wasa <username@example.com>
+     * @author   Hidenori Wasa <hidenori_wasa@yahoo.co.jp>
      * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
      * @version  Release: @package_version@
      * @link     http://pear.php.net/package/BreakpointDebugging
@@ -242,63 +271,6 @@ if ($_BreakpointDebugging_EXE_MODE & BreakpointDebugging_For_Debug_And_Release::
     }
 } else { // In case of not release.
     include_once __DIR__ . '/BreakpointDebugging_Option.php';
-}
-
-/**
- * This class registers location that function or method does not fix.
- * 
- * @category PHP
- * @package  BreakpointDebugging
- * @author   Hidenori Wasa <username@example.com>
- * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
- * @version  Release: @package_version@
- * @link     http://pear.php.net/package/BreakpointDebugging
- */
-final class BreakpointDebugging_RegisterLocation
-{
-    /**
-     * @var int Location number.
-     */
-    private $_number;
-    
-    /**
-     * @var int Location current number.
-     */
-    private static $_currentNumber = 0;
-    
-    /**
-     * This constructer registers location that function or method is not fixed.
-     * 
-     * @return void
-     */
-    function __construct()
-    {
-        global $_BreakpointDebugging;
-        
-        $this->_number = self::$_currentNumber++;
-        $backTrace = debug_backtrace(true);
-        $index = 0;
-        if (array_key_exists(1, $backTrace)) {
-            $index = 1;
-        }
-        $_BreakpointDebugging->callStack[$this->_number] = $backTrace[$index];
-    }
-    
-    /**
-     * This destructer deletes registered location that function or method is not fixed.
-     * 
-     * @return void
-     */
-    function __destruct()
-    {
-        global $_BreakpointDebugging;
-        
-        // Garbage collection measure.
-        if (is_null($_BreakpointDebugging)) {
-            return;
-        }
-        unset($_BreakpointDebugging->callStack[$this->_number]);
-    }
 }
 
 // This sets global exception handler.

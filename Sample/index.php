@@ -7,7 +7,7 @@ namespace Your_Name;
 // also it does not inherit scope into a file including,
 // and moreover "use" keyword alias has priority over class definition,
 // therefore "use" keyword alias does not be affected by other files.
-use \BreakpointDebugging_RegisterLocation as B;
+use \BreakpointDebugging as B;
 
 require_once './BreakpointDebugging_MySetting.php'; // You must include.
 require_once './NativeClass.php'; // Test class.
@@ -32,7 +32,8 @@ function fnTestC($object)
  */
 function fnTestB($object)
 {
-    $notFixed = new B();
+    static $isRegister; B::registerNotFixedLocation( $isRegister); // Register the function to be not fixed.
+    
     fnTestC($object);
 }
 
