@@ -11,7 +11,7 @@
  * In addition to it, condition of variable can be examined.
  * Therefore, it is possible to do debugging quickly.
  * 
- * ### How to do BreakpointDebug coding. ###
+ * ### How to do breakpoint debugging coding. ###
  * We have to do coding as follows to process in "BreakpointDebugging" class.
  * We have to verify a impossible return value of PHP function with "assert()".
  * We have to verify a impossible value of your code.
@@ -27,7 +27,8 @@
  * Then, it is possible to make specific setting about all debugging modes.
  * Procedure 3: Please, set a breakpoint into BreakpointDebugging_breakpoint() of BreakpointDebugging_MySetting.php.
  * Procedure 4: Please, set debugging mode to $_BreakpointDebugging_EXE_MODE.
- * Procedure 5: Please, define "$notFixed = new BreakpointDebugging_RegisterLocation();" at head of function or method which does not fix.
+ * Procedure 5: Please, register at top of the function or method to have been not fixed. Therefore, copy following.
+ * "static $isRegister; BreakpointDebugging::registerNotFixedLocation( $isRegister); // Register the function to be not fixed."
  * Then, it is possible to discern function or method which does not fix with browser screen or log.
  * 
  * ### The debugging mode which we can use. ###
