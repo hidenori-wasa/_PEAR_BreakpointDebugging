@@ -175,6 +175,7 @@ class BreakpointDebugging_For_Debug_And_Release
     final static function convertMbString($string)
     {
         assert(func_num_args() == 1);
+        assert(is_string($string));
         return mb_convert_encoding($string, 'utf8', 'auto');
     }
     

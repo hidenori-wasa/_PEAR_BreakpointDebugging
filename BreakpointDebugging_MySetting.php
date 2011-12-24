@@ -143,7 +143,7 @@ B::iniSet('mbstring.internal_encoding', 'utf8');
 B::iniSet('mbstring.http_input', 'auto');
 // Set "mbstring.http_output = utf8" of "php.ini" file because this is purpose to define default value of HTTP output character encoding.
 B::iniSet('mbstring.http_output', 'utf8');
-B::iniCheck('mbstring.encoding_translation', '', 'Set "mbstring.encoding_translation = Off" of "php.ini" file because this is purpose not to change a input HTTP query into inner character encoding automatically.');
+B::iniCheck('mbstring.encoding_translation', '0', 'Set "mbstring.encoding_translation = Off" of "php.ini" file because this is purpose not to change a input HTTP query into inner character encoding automatically.');
 // Set "mbstring.detect_order = auto" of "php.ini" file because this is purpose to define default value of character code detection.
 B::iniSet('mbstring.detect_order', 'auto');
 // Set "mbstring.substitute_character = none" of "php.ini" file because this is purpose to define character ( it does not display ) which substitutes an invalid character.

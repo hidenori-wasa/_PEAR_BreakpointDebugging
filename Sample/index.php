@@ -18,7 +18,7 @@ require_once './NativeClass.php'; // Test class.
  * @param object $object
  *
  */
-function fnTestC($object)
+function fnTestC()
 {
     assert(false); // This is error location.
     // throw new \Exception('test exception.'); // I am creating the exception handling of the remainder.
@@ -30,11 +30,12 @@ function fnTestC($object)
  * @param object $object
  *
  */
-function fnTestB($object)
+function fnTestB()
 {
     static $isRegister; B::registerNotFixedLocation( $isRegister); // Register the function to be not fixed.
     
-    fnTestC($object);
+    $return = call_user_func_array('\Your_Name\fnTestC', func_get_args());
+    assert($return !== false);
 }
 
 /**
@@ -43,12 +44,15 @@ function fnTestB($object)
  * @param object $object
  *
  */
-function fnTestA($object)
+function fnTestA()
 {
-    fnTestB($object);
+    $return = call_user_func_array('\Your_Name\fnTestB', func_get_args());
+    assert($return !== false);
 }
 
-fnTestA(new \NativeClass());
+fnTestA(true, false, 1, 1.1, 'ABC', $object, $array, tmpfile(), null, $varietyObject);
+// var_dump($varietyObject);
+
 echo 'END';
 
 ?>

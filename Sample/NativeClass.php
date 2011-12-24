@@ -3,49 +3,54 @@
 // Native emulating class who is out of namespace.
 class BaseNativeClass
 {
-    const BASE_NATIVE_CONST1 = 'BASE_NATIVE_CONST1';
-    const BASE_NATIVE_CONST2 = 'BASE_NATIVE_CONST2';
+    const BOOL_TRUE = true;
+    const BOOL_FALSE = false;
     
-    private $basePrivateProperty = 'basePrivateProperty';
-    protected $baseProtectedProperty = 'baseProtectedProperty';
-    public $basePublicProperty = 'basePublicProperty';
-    private static $basePrivateStaticProperty = 'basePrivateStaticProperty';
-    protected static $baseProtectedStaticProperty = 'baseProtectedStaticProperty';
-    public static $basePublicStaticProperty = 'basePublicStaticProperty';
+    private $private = 'ThisIsNotDisplayed';
+    protected $integer = 3;
+    public $float = 3.3;
+    private static $privateStatic = 'ThisIsNotDisplayed';
+    protected static $string = 'GHI';
+    public static $object;
+    protected static $array;
+    protected static $resource;
+    protected static $null = null;
     
     function __construct()
     {
-        global $otherClass;
+        global $object, $array;
 
-        self::$basePrivateStaticProperty = $otherClass;
+        self::$object = $object;
+        self::$array = $array;
+        self::$resource = tmpfile();
     }
     
-    private function basePrivateFunction()
+    private function privateFunction()
     {
         var_dump('Called basePrivateFunction.');
     }
     
-    protected function baseProtectedFunction()
+    protected function protectedFunction()
     {
         var_dump('Called baseProtectedFunction.');
     }
 
-    public function basePublicFunction()
+    public function publicFunction()
     {
         var_dump('Called basePublicFunction.');
     }
 
-    private static function basePrivateStaticFunction()
+    private static function privateStaticFunction()
     {
         var_dump('Called basePrivateStaticFunction.');
     }
     
-    protected static function baseProtectedStaticFunction()
+    protected static function protectedStaticFunction()
     {
         var_dump('Called baseProtectedStaticFunction.');
     }
 
-    public static function basePublicStaticFunction()
+    public static function publicStaticFunction()
     {
         var_dump('Called basePublicStaticFunction.');
     }
@@ -53,23 +58,6 @@ class BaseNativeClass
 
 class NativeClass extends BaseNativeClass
 {
-    const NATIVE_CONST1 = 'NATIVE_CONST1';
-    const NATIVE_CONST2 = 'NATIVE_CONST2';
-    
-    private $privateProperty = 'privateProperty';
-    protected $protectedProperty = 'protectedProperty';
-    public $publicProperty = 'publicProperty';
-    private static $privateStaticProperty = 'privateStaticProperty';
-    protected static $protectedStaticProperty = 'protectedStaticProperty';
-    public static $publicStaticProperty = 'publicStaticProperty';
-    
-    function __construct()
-    {
-        global $otherClass;
-        
-        $this->privateProperty = $otherClass;
-    }
-    
     private function privateFunction()
     {
         var_dump('Called privateFunction.');
@@ -103,18 +91,20 @@ class NativeClass extends BaseNativeClass
 
 class OtherClass
 {
-    const OTHER_CONST1 = 'OTHER_CONST1';
-    const OTHER_CONST2 = 'OTHER_CONST2';
+    const OTHER_CONST1 = 'CONST1';
+    const OTHER_CONST2 = 'CONST2';
     
-    private $otherPrivateProperty = 'otherPrivateProperty';
-    protected $otherProtectedProperty = 'otherProtectedProperty';
-    public $otherPublicProperty = 'otherPublicProperty';
-    private static $otherPrivateStaticProperty = 'otherPrivateStaticProperty';
-    protected static $otherProtectedStaticProperty = 'otherProtectedStaticProperty';
-    public static $otherPublicStaticProperty = 'otherPublicStaticProperty';
+    private $private = '<Private>';
+    protected $protected = 'Protected';
+    public $public = 'Public';
+    private static $privateStatic = 'PrivateStatic';
+    protected static $protectedStatic = 'ProtectedStatic';
+    public static $publicStatic = 'PublicStatic';
 }
 
-$otherClass = new OtherClass();
-new NativeClass();
+$baseArray = array ('baseArrayElement1', 'baseArrayElement2');
+$object = new OtherClass();
+$array = array (true, 'bool' => false, 222 => 2, 2.2, 'DEF', $object, $baseArray, tmpfile(), null);
+$varietyObject = new NativeClass();
 
 ?>
