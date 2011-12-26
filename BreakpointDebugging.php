@@ -129,7 +129,7 @@ class BreakpointDebugging_For_Debug_And_Release
      * 
      * @return void
      */
-    static function autoload($className)
+    final static function autoload($className)
     {
         // This changes underscore and name space separator into directory separator.
         $className = str_replace(array('_', '\\'), '/', $className) . '.php';
@@ -144,7 +144,7 @@ class BreakpointDebugging_For_Debug_And_Release
      * @return void
      * @example static $isRegister; B::registerNotFixedLocation( $isRegister); // Register the function to be not fixed.
      */
-    static function registerNotFixedLocation(&$isRegister)
+    final static function registerNotFixedLocation(&$isRegister)
     {
         // When it has been registered.
         if ($isRegister) {
@@ -244,7 +244,7 @@ if ($_BreakpointDebugging_EXE_MODE & BreakpointDebugging_For_Debug_And_Release::
      * @version  Release: @package_version@
      * @link     http://pear.php.net/package/BreakpointDebugging
      */
-    class BreakpointDebugging extends BreakpointDebugging_For_Debug_And_Release
+    final class BreakpointDebugging extends BreakpointDebugging_For_Debug_And_Release
     {
         /**
         * This is ini_set() without validation in case of release mode.
@@ -254,7 +254,7 @@ if ($_BreakpointDebugging_EXE_MODE & BreakpointDebugging_For_Debug_And_Release::
          * 
          * @return void
          */
-        final static function iniSet( $phpIniVariable, $setValue)
+        static function iniSet( $phpIniVariable, $setValue)
         {
             ini_set($phpIniVariable, $setValue);
         }
@@ -264,7 +264,7 @@ if ($_BreakpointDebugging_EXE_MODE & BreakpointDebugging_For_Debug_And_Release::
          * 
          * @return void
          */
-        final static function iniCheck()
+        static function iniCheck()
         {
         }
     }

@@ -58,6 +58,58 @@ use \BreakpointDebugging as B;
  */
 final class BreakpointDebugging_Error
 {
+    private $_isLogging;
+    private $_mark;
+    public $tag;
+    
+    /**
+     * This method makes HTML tags.
+     * 
+     * @return void
+     */
+    function __construct()
+    {
+        global $_BreakpointDebugging_EXE_MODE;
+
+        if ($_BreakpointDebugging_EXE_MODE & (B::RELEASE | B::LOCAL_DEBUG_OF_RELEASE)) { // In case of the logging.
+            $this->_isLogging = true;
+            $this->_mark = '#';
+            $this->tag['font']['bool'] = '';
+            $this->tag['font']['int'] = '';
+            $this->tag['font']['float'] = '';
+            $this->tag['font']['string'] = '';
+            $this->tag['font']['null'] = '';
+            $this->tag['font']['resource'] = '';
+            $this->tag['font']['=>'] = '';
+            $this->tag['/font'] = '';
+            $this->tag['small'] = '';
+            $this->tag['/small'] = '';
+            $this->tag['i'] = '';
+            $this->tag['/i'] = '';
+            $this->tag['b'] = '';
+            $this->tag['/b'] = '';
+        } else { // In case of not the logging.
+            $this->_isLogging = false;
+            $this->_mark = '&diams;';
+            $this->tag['font']['bool'] = '<font color=\'#75507b\'>';
+            $this->tag['font']['int'] = '<font color=\'#4e9a06\'>';
+            $this->tag['font']['float'] = '<font color=\'#f57900\'>';
+            $this->tag['font']['string'] = '<font color=\'#cc0000\'>';
+            $this->tag['font']['null'] = '<font color=\'#3465a4\'>';
+            $this->tag['font']['resource'] = '<font color=\'#8080ff\'>';
+            $this->tag['font']['=>'] = '<font color=\'#888a85\'>';
+            $this->tag['/font'] = '</font>';
+            $this->tag['small'] = '<small>';
+            $this->tag['/small'] = '</small>';
+            $this->tag['i'] = '<i>';
+            $this->tag['/i'] = '</i>';
+            $this->tag['b'] = '<b>';
+            $this->tag['/b'] = '</b>';
+            
+            // tags ...
+        }
+    }
+    
     /**
      * This method builds array information.
      * 
@@ -75,8 +127,11 @@ final class BreakpointDebugging_Error
         assert(is_int($tabNumber));
         
         $tabs = str_repeat("\t", $tabNumber);
-        $log = PHP_EOL . $tabs . $paramName . ' => array (';
+        $log = PHP_EOL . $tabs . $paramName . $this->tag['font']['=>'] . ' => ' . $this->tag['/font'] . $this->tag['b'] . 'array' . $this->tag['/b'] . ' (';
         foreach ($array as $paramName => $paramValue) {
+            if (is_string($paramName)) {
+                $paramName = '\'' . $paramName . '\'';
+            }
             $return = $this->_getTypeAndValue($paramName, $paramValue, $tabNumber + 1);
             if ($return === false) {
                 continue;
@@ -110,10 +165,10 @@ final class BreakpointDebugging_Error
         $propertyReflections = $classReflection->getProperties();
         $constants = $classReflection->getConstants();
         
-        $log = PHP_EOL . $tab . $paramName . ' => class ' . $className . PHP_EOL .
-            $tab . '{';
+        $log = PHP_EOL . $tab . $paramName . $this->tag['font']['=>'] . ' => ' . $this->tag['/font'] . $this->tag['b'] . 'class ' . $this->tag['/b'] . $this->tag['i'] . $className . $this->tag['/i'] .
+            PHP_EOL . $tab . '{';
         foreach ($constants as $constName => $constValue) {
-            $return = $this->_getTypeAndValue('const ' . $constName, $constValue, $tabNumber + 1);
+            $return = $this->_getTypeAndValue($this->tag['i'] . 'const ' . $this->tag['/i'] . $constName, $constValue, $tabNumber + 1);
             if ($return === false) {
                 continue;
             }
@@ -122,12 +177,11 @@ final class BreakpointDebugging_Error
         count($constants) ? $log .= PHP_EOL : null;
         foreach ($propertyReflections as $propertyReflection) {
             $propertyReflection->setAccessible(true);
-            $paramName = $propertyReflection->isPublic() ? 'public ' : '';
-            $paramName .= $propertyReflection->isPrivate() ? 'private ' : '';
-            $paramName .= $propertyReflection->isProtected() ? 'protected ' : '';
-            $paramName .= $propertyReflection->isStatic() ? 'static ' : '';
+            $paramName = $propertyReflection->isPublic() ? $this->tag['i'] . 'public ' . $this->tag['/i'] : '';
+            $paramName .= $propertyReflection->isPrivate() ? $this->tag['i'] . 'private ' . $this->tag['/i'] : '';
+            $paramName .= $propertyReflection->isProtected() ? $this->tag['i'] . 'protected ' . $this->tag['/i'] : '';
+            $paramName .= $propertyReflection->isStatic() ? $this->tag['i'] . 'static ' . $this->tag['/i'] : '';
             $paramName .= '$' . $propertyReflection->getName();
-            //$paramName .= $propertyReflection->isDefault() ? ' &lt;default>' : '';
             if ($propertyReflection->isStatic()) {
                 $paramValue = $propertyReflection->getValue($propertyReflection);
             } else {
@@ -156,15 +210,16 @@ final class BreakpointDebugging_Error
         
         $log = $this->_buildErrorCallStackLog($exception->getfile(), $exception->getline(), 'EXCEPTION', $exception->getmessage(), $exception->gettrace());
         $diplayLog = function ($log) {
-            echo '<pre>' . $log . '<pre/>';
+            //echo '<pre>' . $log . '<pre/>';
+            echo '<pre class=\'xdebug-var-dump\' dir=\'ltr\'>' . $log . '</pre>';
             echo 'This ends in the global exception.';
         };
         switch ($_BreakpointDebugging_EXE_MODE) {
         case B::LOCAL_DEBUG_OF_RELEASE:
-            $diplayLog($log);
+            //$diplayLog($log);
             BreakpointDebugging_breakpoint();
         case B::RELEASE:
-            self::_errorLog($log);
+            $this->_errorLog($log);
             break;
         case B::LOCAL_DEBUG:
             $diplayLog($log);
@@ -248,15 +303,16 @@ final class BreakpointDebugging_Error
         }
         $log = $this->_buildErrorCallStackLog($errorFile, $errorLine, $errorKind, $errorMessage, debug_backtrace(true));
         $diplayLog = function ($log) {
-            echo '<pre>' . $log . '<pre/>';
+            //echo '<pre>' . $log . '<pre/>';
+            echo '<pre class=\'xdebug-var-dump\' dir=\'ltr\'>' . $log . '</pre>';
         };
         switch ($_BreakpointDebugging_EXE_MODE)
         {
         case B::LOCAL_DEBUG_OF_RELEASE:
-            $diplayLog($log);
+            //$diplayLog($log);
             BreakpointDebugging_breakpoint();
         case B::RELEASE:
-            self::_errorLog($log);
+            $this->_errorLog($log);
             return false; // with system log.
         case B::LOCAL_DEBUG:
             $diplayLog($log);
@@ -289,11 +345,12 @@ final class BreakpointDebugging_Error
         global $_BreakpointDebugging;
         
         // Create error log from the argument.
-        $log = '/////////////////////////////// CALL STACK BEGIN ///////////////////////////////' . PHP_EOL .
-            '★Error file =======>' . $errorFile . PHP_EOL .
-            '★Error line =======>' . $errorLine . PHP_EOL .
-            '★Error kind =======>' . $errorKind . PHP_EOL .
-            '★Error message ====>' . $errorMessage . PHP_EOL;
+        $log = '/////////////////////////////// CALL STACK BEGIN ///////////////////////////////' .
+            PHP_EOL . $this->_mark . 'Error file =======>' . $errorFile .
+            PHP_EOL . $this->_mark . 'Error line =======>' . $errorLine .
+            PHP_EOL . $this->_mark . 'Error kind =======>' . $errorKind .
+            PHP_EOL . $this->_mark . 'Error message ====>' . $errorMessage .
+            PHP_EOL;
         // Search array which debug_backtrace() or Exception::gettrace() returns, and add a parametric information.
         array_reverse($backTrace, true);
         foreach ($backTrace as $backtraceArrays) {
@@ -306,20 +363,22 @@ final class BreakpointDebugging_Error
                 array_key_exists('function', $callStack) ? $noFixFunc = $callStack['function'] : $noFixFunc = '';
                 array_key_exists('class', $callStack) ? $noFixClass = $callStack['class'] : $noFixClass = '';
                 if ($file == $noFixFile && $func == $noFixFunc && $class == $noFixClass) {
-                    $log .= PHP_EOL . '★★★ This function has been not fixed. ★★★';
+                    $marks = str_repeat($this->_mark, 10);
+                    $log .= PHP_EOL . $marks . ' This function has been not fixed. ' . $marks;
                     break;
                 }
             }
-            $log .= PHP_EOL . '★Error file =======>' . $file;
-            $log .= PHP_EOL . '★Error line =======>' . $line;
-            $log .= PHP_EOL . '★Function call ====>' . $func . '( ';
+            $log .= PHP_EOL . $this->_mark . 'Error file =======>' . $file;
+            $log .= PHP_EOL . $this->_mark . 'Error line =======>' . $line;
+            $log .= PHP_EOL . $this->_mark . 'Function call ====>' . $func . '( ';
             if (array_key_exists('args', $backtraceArrays)) {
                 // Analyze parameter part of back trace array, and return string.
                 $log .= $this->_searchDebugBacktraceArgsToString($backtraceArrays['args']);
             }
-            $log .= PHP_EOL . ');';
+            $log .= PHP_EOL . ');' .
+                PHP_EOL;
         }
-        $log .= PHP_EOL . '//////////////////////////////// CALL STACK END ////////////////////////////////' . PHP_EOL;
+        $log .= '//////////////////////////////// CALL STACK END ////////////////////////////////';
         return $log;
     }
     
@@ -345,24 +404,34 @@ final class BreakpointDebugging_Error
             return $this->_reflectObject($paramName, $paramValue, $tabNumber);
         }
         
-        $tabs = str_repeat("\t", $tabNumber);
-        $prefix = PHP_EOL . $tabs;
-        $log = $prefix . $paramName . ' => ';
+        //$tabs = str_repeat("\t", $tabNumber);
+        //$prefix = PHP_EOL . $tabs;
+        $prefix = PHP_EOL . str_repeat("\t", $tabNumber);
+        $log = $prefix . $paramName . $this->tag['font']['=>'] . ' => ' . $this->tag['/font'];
+        $tag = function ($self, $type, $paramValue) {
+            return $self->tag['small'] . $type . $self->tag['/small'] . ' ' . $self->tag['font'][$type] . $paramValue . $self->tag['/font'];
+        };
         if (is_null($paramValue)) {
-            $log .= 'null null';
+            $log .= $tag($this, 'null', 'null');
         } else if (is_bool($paramValue)) {
-            $log .= 'bool ' . ( $paramValue ? 'true' : 'false');
+            $log .= $tag($this, 'bool', $paramValue ? 'true' : 'false');
         } else if (is_int($paramValue)) {
-            $log .= 'int ' . $paramValue;
+            $log .= $tag($this, 'int', $paramValue);
         } else if (is_float($paramValue)) {
-            $log .= 'float ' . $paramValue;
+            $log .= $tag($this, 'float', $paramValue);
         } else if (is_string($paramValue)) {
             $paramValue = B::convertMbString($paramValue);
             assert(mb_detect_encoding($paramValue, 'utf8', true) != false);
-            $paramValue = htmlspecialchars($paramValue, ENT_QUOTES, 'UTF-8');
-            $log .= 'string ' . $paramValue;
+            $strlen = strlen($paramValue);
+            $paramValue = '"' . $paramValue . '"';
+            if (!$this->_isLogging) {
+                $paramValue = htmlspecialchars($paramValue, ENT_QUOTES, 'UTF-8');
+            }
+            $log .= $tag($this, 'string', $paramValue) . $this->tag['i'] . ' (length=' . $strlen . ')' . $this->tag['/i'];
         } else if (is_resource($paramValue)) {
-            $log .= get_resource_type($paramValue) . ' ' . $paramValue;
+            $log .= $this->tag['b'] . 'resource' . $this->tag['/b'] . ' ' .
+                $this->tag['i'] . get_resource_type($paramValue) . $this->tag['/i'] . ' ' .
+                $this->tag['font']['resource'] . $paramValue . $this->tag['/font'];
         } else {
             assert(false);
         }
@@ -405,7 +474,7 @@ final class BreakpointDebugging_Error
      * 
      * @return void
      */
-    final private static function _errorLog($errorLog)
+    private function _errorLog($errorLog)
     {
         assert(func_num_args() == 1);
         

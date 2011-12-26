@@ -51,7 +51,7 @@ function fnTestA()
 }
 
 fnTestA(true, false, 1, 1.1, 'ABC', $object, $array, tmpfile(), null, $varietyObject);
-// var_dump($varietyObject);
+// var_dump(true, false, 1, 1.1, 'ABC', $object, $array, tmpfile(), null);
 
 echo 'END';
 

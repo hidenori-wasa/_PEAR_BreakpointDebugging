@@ -56,14 +56,14 @@ use \BreakpointDebugging as B;
  * @version  Release: @package_version@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-class BreakpointDebugging extends BreakpointDebugging_For_Debug_And_Release
+final class BreakpointDebugging extends BreakpointDebugging_For_Debug_And_Release
 {
     /**
      * This constructer create object only one time.
      * 
      * @return void
      */
-    final function __construct()
+    function __construct()
     {
         static $createOnlyOneTime = false;
         
@@ -81,7 +81,7 @@ class BreakpointDebugging extends BreakpointDebugging_For_Debug_And_Release
      * ### sample code
      * $gDebugValue = BreakpointDebugging::convertMbStringForDebug( 'SJIS', $scalar1, $array2, $scalar2);
      */
-    final static function convertMbStringForDebug( $params)
+    static function convertMbStringForDebug( $params)
     {
         global $_BreakpointDebugging_EXE_MODE;
         
@@ -101,7 +101,7 @@ class BreakpointDebugging extends BreakpointDebugging_For_Debug_And_Release
      * 
      * @return array This does return multibyte character string for display.
      */
-    final private static function _convertMbStringForDebugSubroop($charSet, $mbParamArray)
+    private static function _convertMbStringForDebugSubroop($charSet, $mbParamArray)
     {
         global $_BreakpointDebugging_EXE_MODE;
         
@@ -129,7 +129,7 @@ class BreakpointDebugging extends BreakpointDebugging_For_Debug_And_Release
      * 
      * @return bool Is this the same type?
      */
-    final private static function _isSameType($cmp1, $cmp2)
+    private static function _isSameType($cmp1, $cmp2)
     {
         if (is_string($cmp1) === true && is_string($cmp2) === true) {
             return true;
@@ -166,7 +166,7 @@ class BreakpointDebugging extends BreakpointDebugging_For_Debug_And_Release
      * 
      * @return void
      */
-    final static function iniSet($phpIniVariable, $setValue)
+    static function iniSet($phpIniVariable, $setValue)
     {
         global $_BreakpointDebugging_EXE_MODE;
         assert(func_num_args() == 2);
@@ -204,7 +204,7 @@ EOD;
      * 
      * @return void
      */
-    final static function iniCheck($phpIniVariable, $cmpValue, $errorMessage)
+    static function iniCheck($phpIniVariable, $cmpValue, $errorMessage)
     {
         assert(func_num_args() == 3);
         $value = (string)ini_get($phpIniVariable);
