@@ -20,8 +20,9 @@ require_once './NativeClass.php'; // Test class.
  */
 function fnTestC()
 {
-    assert(false); // This is error location.
+    // assert(false); // This is error location.
     // throw new \Exception('test exception.'); // I am creating the exception handling of the remainder.
+    B::throwErrorException('test exception.');
 }
 
 /**
@@ -32,7 +33,8 @@ function fnTestC()
  */
 function fnTestB()
 {
-    static $isRegister; B::registerNotFixedLocation( $isRegister); // Register the function to be not fixed.
+    // Register the function being not fixed.
+    static $isRegister; B::registerNotFixedLocation( $isRegister);
     
     $return = call_user_func_array('\Your_Name\fnTestC', func_get_args());
     assert($return !== false);

@@ -56,7 +56,7 @@ use \BreakpointDebugging as B;
  * @version  Release: @package_version@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-final class BreakpointDebugging extends BreakpointDebugging_For_Debug_And_Release
+final class BreakpointDebugging extends BreakpointDebugging_InCaseAll
 {
     /**
      * This constructer create object only one time.
@@ -73,15 +73,16 @@ final class BreakpointDebugging extends BreakpointDebugging_For_Debug_And_Releas
     
     /**
      * This changes a character sets to display a multibyte character string with local window of debugger, and this returns it.
+     * But, this doesn't exist in case of release.
      * 
      * @param array $params Character set string to want to display, and Some variables.
      * 
      * @return array Some changed variables.
      * 
      * ### sample code
-     * $gDebugValue = BreakpointDebugging::convertMbStringForDebug( 'SJIS', $scalar1, $array2, $scalar2);
+     * $gDebugValue = BreakpointDebugging::convertMbStringForDebug('SJIS', $scalar1, $array2, $scalar2);
      */
-    static function convertMbStringForDebug( $params)
+    static function convertMbStringForDebug($params)
     {
         global $_BreakpointDebugging_EXE_MODE;
         
@@ -190,7 +191,7 @@ EOD;
             return;
         }
         if (ini_set($phpIniVariable, $setValue) === false) {
-            self::triggerError('');
+            self::throwErrorException('');
         }
     }
     
@@ -232,20 +233,21 @@ EOD;
 
 // ### Assertion setting. ###
 if (assert_options(ASSERT_ACTIVE, 1) === false) { // This makes the evaluation of assert() effective.
-    B::triggerError('');
+    B::throwErrorException('');
 }
 if (assert_options(ASSERT_WARNING, 1) === false) { // In case of failing in assertion, this generates a warning.
-    B::triggerError('');
+    B::throwErrorException('');
 }
 if (assert_options(ASSERT_BAIL, 0) === false) { // In case of failing in assertion, this doesn't end execution.
-    B::triggerError('');
+    B::throwErrorException('');
 }
 if (assert_options(ASSERT_QUIET_EVAL, 0) === false) { // As for assertion expression, this doesn't make error_reporting invalid.
-    B::triggerError('');
+    B::throwErrorException('');
 }
 // ### usage ###
-//    assert(<judgment expression>);
-//    It is possible to assert that <judgment expression> is "This should be". Especially, this uses to verify a function's argument.
-//    For example: assert(3 <= $value && $value <= 5); // $value should be 3-5.
+//   assert(<judgment expression>);
+//   It is possible to assert that <judgment expression> is "This should be". Especially, this uses to verify a function's argument.
+//   For example: assert(3 <= $value && $value <= 5); // $value should be 3-5.
+//   Caution: Don't change the value of variable in "assert()" function because there isn't executed in case of release.
 
 ?>

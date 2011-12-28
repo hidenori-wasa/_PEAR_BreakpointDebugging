@@ -15,8 +15,6 @@
  * We have to do coding as follows to process in "BreakpointDebugging" class.
  * We have to verify a impossible return value of PHP function with "assert()".
  * We have to verify a impossible value of your code.
- * We have to do coding "throw new PEAR_Exception()" into error handling which possibility exists.
- * Or, we have to throw object of derived class of PEAR_Exception class.
  * We have to do coding "assert(false)" at "catch()" of a exception handling.
  * But, exception handling which did Fix had better delete "assert(false)".
  * Also, an error by PHP function and an exception which wasn't caught are processed in "BreakpointDebugging" class too.
@@ -27,8 +25,8 @@
  * Then, it is possible to make specific setting about all debugging modes.
  * Procedure 3: Please, set a breakpoint into BreakpointDebugging_breakpoint() of BreakpointDebugging_MySetting.php.
  * Procedure 4: Please, set debugging mode to $_BreakpointDebugging_EXE_MODE.
- * Procedure 5: Please, register at top of the function or method to have been not fixed. Therefore, copy following.
- * "static $isRegister; BreakpointDebugging::registerNotFixedLocation( $isRegister); // Register the function to be not fixed."
+ * Procedure 5: Please, register at top of the function or method being not fixed. Therefore, copy following.
+ * "static $isRegister; BreakpointDebugging::registerNotFixedLocation( $isRegister);"
  * Then, it is possible to discern function or method which does not fix with browser screen or log.
  * 
  * ### The debugging mode which we can use. ###
@@ -72,6 +70,42 @@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
 
+// ##### Useful function index. #####
+// ### Please, register at top of the function or method being not fixed. ### final static function registerNotFixedLocation()
+// ### This exists to build error call stack log inside of "catch()". ### final static function buildErrorCallStackLog()
+// ### This changes to unify multibyte character strings such as system-output in UTF8, and this returns. ### BreakpointDebugging::convertMbString()
+// ### This changes a character sets to display a multibyte character string with local window of debugger, and this returns it. ### BreakpointDebugging::convertMbStringForDebug()
+
+require_once 'PEAR/Exception.php';
+
+/**
+ * This class is own package exception.
+ * 
+ * @category PHP
+ * @package  BreakpointDebugging
+ * @author   Hidenori Wasa <wasa_@nifty.com>
+ * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
+ * @version  Release: @package_version@
+ * @link     http://pear.php.net/package/BreakpointDebugging
+ */
+class BreakpointDebugging_Exception extends PEAR_Exception
+{
+}
+
+/**
+ * This class is own package error exception.
+ * 
+ * @category PHP
+ * @package  BreakpointDebugging
+ * @author   Hidenori Wasa <wasa_@nifty.com>
+ * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
+ * @version  Release: @package_version@
+ * @link     http://pear.php.net/package/BreakpointDebugging
+ */
+class BreakpointDebugging_Error_Exception extends BreakpointDebugging_Exception
+{
+}
+
 /**
  * @const int $_BreakpointDebugging_EXE_MODE Debug mode constant.
  */
@@ -87,7 +121,7 @@ global $_BreakpointDebugging_EXE_MODE;
  * @version  Release: @package_version@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-class BreakpointDebugging_For_Debug_And_Release
+class BreakpointDebugging_InCaseAll
 {
     // ### Debug mode constant number ###
     
@@ -116,12 +150,6 @@ class BreakpointDebugging_For_Debug_And_Release
      */
     public $callStack; // Function call stack information.
     
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // ##### Useful function index. #####
-    // ### This changes a character sets to display a multibyte character string with local window of debugger, and this returns it. ### BreakpointDebugging::convertMbStringForDebug()
-    // ### This changes to unify multibyte character strings such as system-output in UTF8, and this returns. ### BreakpointDebugging::convertMbString()
-    
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /**
      * This does autoload with word which was divided by name space separator and underscore separator as directory.
      * 
@@ -137,12 +165,12 @@ class BreakpointDebugging_For_Debug_And_Release
     }
     
     /**
-     * Please, register at top of the function or method to have been not fixed.
+     * Please, register at top of the function or method being not fixed.
      * 
      * @param bool &$isRegister Is this registered?
      * 
      * @return void
-     * @example static $isRegister; B::registerNotFixedLocation( $isRegister); // Register the function to be not fixed.
+     * @example static $isRegister; BreakpointDebugging::registerNotFixedLocation( $isRegister);
      */
     final static function registerNotFixedLocation(&$isRegister)
     {
@@ -211,13 +239,14 @@ class BreakpointDebugging_For_Debug_And_Release
     }
     
     /**
-     * This triggers error.
+     * //This triggers error.
+     * This throws error exception.
      * 
      * @param string $errorMessage Error message.
      * 
      * @return void
      */
-    final static function triggerError($errorMessage)
+    final static function throwErrorException($errorMessage)
     {
         global $_BreakpointDebugging_EXE_MODE;
         assert(func_num_args() == 1);
@@ -225,15 +254,35 @@ class BreakpointDebugging_For_Debug_And_Release
         
         // In case of local-debug. "BreakpointDebugging_breakpoint()" is called. Therefore we do the step execution to error place, and we can see condition of variables.
         if ($_BreakpointDebugging_EXE_MODE & self::LOCAL_DEBUG) {
+            $trace = debug_backtrace(true);
+            echo '<pre class=\'xdebug-var-dump\' dir=\'ltr\'>' . self::buildErrorCallStackLog($trace[0]['file'], $trace[0]['line'], 'EXCEPTION', $errorMessage) . '</pre>';
             BreakpointDebugging_breakpoint();
         } else { // In case of not local-debug.
-            // "self::errorHandler()" is called, and program quits.
-            trigger_error($errorMessage, E_USER_ERROR);
+            // Throw error exception.
+            throw new BreakpointDebugging_Error_Exception($errorMessage);
         }
+    }
+    
+    /**
+     * This exists to build error call stack log inside of "catch()".
+     * 
+     * @param string $errorFile    Error file name.
+     * @param int    $errorLine    Error file line.
+     * @param int    $errorKind    Error kind.
+     * @param string $errorMessage Error message.
+     * 
+     * @return string Error call stack log.
+     */
+    final static function buildErrorCallStackLog($errorFile, $errorLine, $errorKind, $errorMessage)
+    {
+        $error = new BreakpointDebugging_Error();
+        $trace = debug_backtrace(true);
+        unset($trace[0]);
+        return $error->_buildErrorCallStackLog($errorFile, $errorLine, $errorKind, $errorMessage, $trace);
     }
 }
 
-if ($_BreakpointDebugging_EXE_MODE & BreakpointDebugging_For_Debug_And_Release::RELEASE) { // In case of release.
+if ($_BreakpointDebugging_EXE_MODE & BreakpointDebugging_InCaseAll::RELEASE) { // In case of release.
     /**
     * This class executes error or exception handling, and it is only in case of release mode.
      * 
@@ -244,7 +293,7 @@ if ($_BreakpointDebugging_EXE_MODE & BreakpointDebugging_For_Debug_And_Release::
      * @version  Release: @package_version@
      * @link     http://pear.php.net/package/BreakpointDebugging
      */
-    final class BreakpointDebugging extends BreakpointDebugging_For_Debug_And_Release
+    final class BreakpointDebugging extends BreakpointDebugging_InCaseAll
     {
         /**
         * This is ini_set() without validation in case of release mode.
@@ -269,7 +318,7 @@ if ($_BreakpointDebugging_EXE_MODE & BreakpointDebugging_For_Debug_And_Release::
         }
     }
     if (assert_options(ASSERT_ACTIVE, 0) === false) { // Ignore assert().
-        BreakpointDebugging::triggerError('');
+        BreakpointDebugging::throwErrorException('');
     }
 } else { // In case of not release.
     include_once __DIR__ . '/BreakpointDebugging_Option.php';

@@ -65,14 +65,13 @@ require_once 'BreakpointDebugging.php'; // 'BreakpointDebugging.php' must requir
 
 // ### Execution mode setting. ===>
 /**
- * @see '### Debug mode constant number ###' of class BreakpointDebugging_For_Debug_And_Release in BreakpointDebugging.php.
+ * @see '### Debug mode constant number ###' of class BreakpointDebugging_InCaseAll in BreakpointDebugging.php.
  *       LOCAL_DEBUG
  *       LOCAL_DEBUG_OF_RELEASE
  *       REMOTE_DEBUG
  *       RELEASE
  */
 $_BreakpointDebugging_EXE_MODE = B::LOCAL_DEBUG;
-// $_BreakpointDebugging_EXE_MODE = B::LOCAL_DEBUG_OF_RELEASE;
 // ### <=== Execution mode setting.
 
 // ### Item setting. ===>
@@ -103,7 +102,7 @@ if ($_BreakpointDebugging_EXE_MODE & (B::REMOTE_DEBUG | B::RELEASE)) { // In cas
 ////////////////////////////////////////////////////////////////////////////////
 if ($_BreakpointDebugging_EXE_MODE & B::RELEASE) { // In case of release.
     // Output it at log to except notice and deprecated.
-    error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);
+    B::iniSet('error_reporting', (string)(PHP_INT_MAX & ~(E_NOTICE | E_DEPRECATED | E_STRICT)));
     // For security, it doesn't display all errors, warnings and notices.
     B::iniSet('display_errors', '');
     // This changes "php.ini" file setting into "display_startup_errors = Off" Because this makes not display an error on start-up for security.
@@ -119,7 +118,7 @@ if ($_BreakpointDebugging_EXE_MODE & B::RELEASE) { // In case of release.
         B::iniCheck('mbstring.func_overload', '0', 'To make coding plain must be set "mbstring.func_overload = 0" of "php.ini" file.');
     }
     // This makes all errors, warnings and note a stop at breakpoint or a display.
-    error_reporting(-1);
+    B::iniSet('error_reporting', (string)PHP_INT_MAX);
     // This changes "php.ini" file setting into "display_errors = On" to display error, warning and note which isn't done handling by error handler.
     B::iniSet('display_errors', '1');
     // This changes "php.ini" file setting into "display_startup_errors = On" to display error in case of start-up.
@@ -148,7 +147,7 @@ B::iniSet('mbstring.internal_encoding', 'utf8');
 B::iniSet('mbstring.http_input', 'auto');
 // Set "mbstring.http_output = utf8" of "php.ini" file because this is purpose to define default value of HTTP output character encoding.
 B::iniSet('mbstring.http_output', 'utf8');
-B::iniCheck('mbstring.encoding_translation', '0', 'Set "mbstring.encoding_translation = Off" of "php.ini" file because this is purpose not to change a input HTTP query into inner character encoding automatically.');
+B::iniCheck('mbstring.encoding_translation', array('1'), 'Set "mbstring.encoding_translation = Off" of "php.ini" file because this is purpose not to change a input HTTP query into inner character encoding automatically.');
 // Set "mbstring.detect_order = auto" of "php.ini" file because this is purpose to define default value of character code detection.
 B::iniSet('mbstring.detect_order', 'auto');
 // Set "mbstring.substitute_character = none" of "php.ini" file because this is purpose to define character ( it does not display ) which substitutes an invalid character.

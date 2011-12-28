@@ -74,6 +74,7 @@ final class BreakpointDebugging_Error
         if ($_BreakpointDebugging_EXE_MODE & (B::RELEASE | B::LOCAL_DEBUG_OF_RELEASE)) { // In case of the logging.
             $this->_isLogging = true;
             $this->_mark = '#';
+            $this->tag['font']['caution'] = '';
             $this->tag['font']['bool'] = '';
             $this->tag['font']['int'] = '';
             $this->tag['font']['float'] = '';
@@ -91,6 +92,7 @@ final class BreakpointDebugging_Error
         } else { // In case of not the logging.
             $this->_isLogging = false;
             $this->_mark = '&diams;';
+            $this->tag['font']['caution'] = '<font color=\'#ff0000\'>';
             $this->tag['font']['bool'] = '<font color=\'#75507b\'>';
             $this->tag['font']['int'] = '<font color=\'#4e9a06\'>';
             $this->tag['font']['float'] = '<font color=\'#f57900\'>';
@@ -199,24 +201,28 @@ final class BreakpointDebugging_Error
     /**
      * This is Called from user exception handler of the whole code.
      *
-     * @param object $exception Exception info.
+     * @param object $pException Exception info.
      * 
      * @return void
      */
-    function exceptionHandler($exception)
+    function exceptionHandler($pException)
     {
         assert(func_num_args() == 1);
+        assert($pException instanceof Exception);
         global $_BreakpointDebugging_EXE_MODE;
         
-        $log = $this->_buildErrorCallStackLog($exception->getfile(), $exception->getline(), 'EXCEPTION', $exception->getmessage(), $exception->gettrace());
+        $trace = $pException->getTrace();
+        if (empty($trace)) {
+            $backtrace = debug_backtrace();
+            $trace = array ($backtrace[count($backtrace) - 1]);
+        }
+        $log = $this->_buildErrorCallStackLog($pException->getfile(), $pException->getline(), 'EXCEPTION', $pException->getmessage(), $trace);
         $diplayLog = function ($log) {
-            //echo '<pre>' . $log . '<pre/>';
             echo '<pre class=\'xdebug-var-dump\' dir=\'ltr\'>' . $log . '</pre>';
             echo 'This ends in the global exception.';
         };
         switch ($_BreakpointDebugging_EXE_MODE) {
         case B::LOCAL_DEBUG_OF_RELEASE:
-            //$diplayLog($log);
             BreakpointDebugging_breakpoint();
         case B::RELEASE:
             $this->_errorLog($log);
@@ -303,13 +309,11 @@ final class BreakpointDebugging_Error
         }
         $log = $this->_buildErrorCallStackLog($errorFile, $errorLine, $errorKind, $errorMessage, debug_backtrace(true));
         $diplayLog = function ($log) {
-            //echo '<pre>' . $log . '<pre/>';
             echo '<pre class=\'xdebug-var-dump\' dir=\'ltr\'>' . $log . '</pre>';
         };
         switch ($_BreakpointDebugging_EXE_MODE)
         {
         case B::LOCAL_DEBUG_OF_RELEASE:
-            //$diplayLog($log);
             BreakpointDebugging_breakpoint();
         case B::RELEASE:
             $this->_errorLog($log);
@@ -329,7 +333,7 @@ final class BreakpointDebugging_Error
     }
     
     /**
-     * Build error call stack log.
+     * Build error call stack log except "E_NOTICE".
      * 
      * @param string $errorFile    Error file name.
      * @param int    $errorLine    Error file line.
@@ -339,11 +343,22 @@ final class BreakpointDebugging_Error
      * 
      * @return string Error call stack log.
      */
-    private function _buildErrorCallStackLog($errorFile, $errorLine, $errorKind, $errorMessage, $backTrace)
+    function _buildErrorCallStackLog($errorFile, $errorLine, $errorKind, $errorMessage, $backTrace)
     {
         assert(func_num_args() == 5);
+        assert(is_string($errorFile));
+        assert(is_int($errorLine));
+        assert(is_string($errorKind));
+        assert(is_string($errorMessage));
+        assert(is_array($backTrace));
         global $_BreakpointDebugging;
         
+        // We had better debug by breakpoint than the display screen in case of "E_NOTICE".
+        // Also, we are possible to skip "E_NOTICE" which is generated while debugging execution is stopping.
+        // Moreover, those "E_NOTICE" doesn't stop at breakpoint.
+        if ($errorKind == 'E_NOTICE') {
+            return '';
+        }
         // Create error log from the argument.
         $log = '/////////////////////////////// CALL STACK BEGIN ///////////////////////////////' .
             PHP_EOL . $this->_mark . 'Error file =======>' . $errorFile .
@@ -351,7 +366,7 @@ final class BreakpointDebugging_Error
             PHP_EOL . $this->_mark . 'Error kind =======>' . $errorKind .
             PHP_EOL . $this->_mark . 'Error message ====>' . $errorMessage .
             PHP_EOL;
-        // Search array which debug_backtrace() or Exception::gettrace() returns, and add a parametric information.
+        // Search array which debug_backtrace() or $this->_getTraceSafe() returns, and add a parametric information.
         array_reverse($backTrace, true);
         foreach ($backTrace as $backtraceArrays) {
             array_key_exists('file', $backtraceArrays) ? $file = $backtraceArrays['file'] : $file = '';
@@ -364,7 +379,7 @@ final class BreakpointDebugging_Error
                 array_key_exists('class', $callStack) ? $noFixClass = $callStack['class'] : $noFixClass = '';
                 if ($file == $noFixFile && $func == $noFixFunc && $class == $noFixClass) {
                     $marks = str_repeat($this->_mark, 10);
-                    $log .= PHP_EOL . $marks . ' This function has been not fixed. ' . $marks;
+                    $log .= PHP_EOL . $this->tag['font']['caution'] . $marks . $this->tag['b'] . ' This function has been not fixed. ' . $this->tag['/b'] . $marks . $this->tag['/font'];
                     break;
                 }
             }
@@ -404,8 +419,6 @@ final class BreakpointDebugging_Error
             return $this->_reflectObject($paramName, $paramValue, $tabNumber);
         }
         
-        //$tabs = str_repeat("\t", $tabNumber);
-        //$prefix = PHP_EOL . $tabs;
         $prefix = PHP_EOL . str_repeat("\t", $tabNumber);
         $log = $prefix . $paramName . $this->tag['font']['=>'] . ' => ' . $this->tag['/font'];
         $tag = function ($self, $type, $paramValue) {
