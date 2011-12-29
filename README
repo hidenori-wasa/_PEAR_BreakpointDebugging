@@ -50,4 +50,5 @@ The features list
         static function BreakpointDebugging::convertMbStringForDebug($params)
 
 The dependences
-    none.
+    Windows, but I want to support "Linux" in future.
+    PHP >= 5.3.0
