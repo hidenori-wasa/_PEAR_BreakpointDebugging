@@ -233,8 +233,8 @@ final class BreakpointDebugging_Error
             BreakpointDebugging_breakpoint();
             break;
         case B::REMOTE_DEBUG:
-            $diplayLog($log);
-            exit(-1);
+            $diplayLog($log); // This displays error log because breakpoint can not be used on remote debug.
+            exit(-1); // This exits immediately to avoid not ending.
         default:
             assert(false);
         }
@@ -324,8 +324,7 @@ final class BreakpointDebugging_Error
             BreakpointDebugging_breakpoint();
             return true;
         case B::REMOTE_DEBUG:
-            // This displays error log because breakpoint can not be used on remote debug.
-            $diplayLog($log);
+            $diplayLog($log); // This displays error log because breakpoint can not be used on remote debug.
             return true;
         default:
             assert(false);
