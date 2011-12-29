@@ -9,7 +9,7 @@ namespace Your_Name;
 // therefore "use" keyword alias does not be affected by other files.
 use \BreakpointDebugging as B;
 
-require_once './BreakpointDebugging_MySetting.php'; // You must include.
+require_once './BreakpointDebugging_MySetting.php'; // We must include.
 require_once './NativeClass.php'; // Test class.
 
 /**
@@ -21,8 +21,7 @@ require_once './NativeClass.php'; // Test class.
 function fnTestC()
 {
     // assert(false); // This is error location.
-    // throw new \Exception('test exception.'); // I am creating the exception handling of the remainder.
-    B::throwErrorException('test exception.');
+    throw new \Exception('test exception 1.'); // This is exception location.
 }
 
 /**
@@ -35,9 +34,16 @@ function fnTestB()
 {
     // Register the function being not fixed.
     static $isRegister; B::registerNotFixedLocation( $isRegister);
-    
-    $return = call_user_func_array('\Your_Name\fnTestC', func_get_args());
-    assert($return !== false);
+    global $object, $array, $varietyObject;
+
+    try {
+        fnTestC(true, false, 1, 1.1, 'ABC', $object, $array, tmpfile(), null, $varietyObject);
+    } catch (\Exception $exception) {
+        // This writes inside of "catch()", then display logging or log.
+        B::exceptionHandler($exception);
+        // This doesn't specify previous exception because "B::exceptionHandler()" logged.
+        throw new \Exception('test exception 2.');
+    }
 }
 
 /**
@@ -48,12 +54,17 @@ function fnTestB()
  */
 function fnTestA()
 {
-    $return = call_user_func_array('\Your_Name\fnTestB', func_get_args());
-    assert($return !== false);
+    fnTestB();
 }
 
-fnTestA(true, false, 1, 1.1, 'ABC', $object, $array, tmpfile(), null, $varietyObject);
-// var_dump(true, false, 1, 1.1, 'ABC', $object, $array, tmpfile(), null);
+var_dump(true, false, 1, 1.1, 'ABC', $object, $array, tmpfile(), null);
+
+try {
+    fnTestA();
+} catch (\Exception $exception) {
+    // This specifies previous exception, and global exception handler will process.
+    throw new \Exception('test exception 3.', 3, $exception);
+}
 
 echo 'END';
 

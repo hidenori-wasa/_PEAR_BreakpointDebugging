@@ -89,6 +89,8 @@ final class BreakpointDebugging_Error
             $this->tag['/i'] = '';
             $this->tag['b'] = '';
             $this->tag['/b'] = '';
+            $this->tag['pre'] = '';
+            $this->tag['/pre'] = '';
         } else { // In case of not the logging.
             $this->_isLogging = false;
             $this->_mark = '&diams;';
@@ -107,8 +109,8 @@ final class BreakpointDebugging_Error
             $this->tag['/i'] = '</i>';
             $this->tag['b'] = '<b>';
             $this->tag['/b'] = '</b>';
-            
-            // tags ...
+            $this->tag['pre'] = '<pre class=\'xdebug-var-dump\' dir=\'ltr\'>';
+            $this->tag['/pre'] = '</pre>';
         }
     }
     
@@ -205,7 +207,7 @@ final class BreakpointDebugging_Error
      * 
      * @return void
      */
-    function exceptionHandler($pException)
+    function exceptionHandler2($pException)
     {
         assert(func_num_args() == 1);
         assert($pException instanceof Exception);
@@ -216,10 +218,9 @@ final class BreakpointDebugging_Error
             $backtrace = debug_backtrace();
             $trace = array ($backtrace[count($backtrace) - 1]);
         }
-        $log = $this->_buildErrorCallStackLog($pException->getfile(), $pException->getline(), 'EXCEPTION', $pException->getmessage(), $trace);
+        $log = $this->buildErrorCallStackLog2($pException->getfile(), $pException->getline(), 'EXCEPTION', $pException->getmessage(), $trace);
         $diplayLog = function ($log) {
-            echo '<pre class=\'xdebug-var-dump\' dir=\'ltr\'>' . $log . '</pre>';
-            echo 'This ends in the global exception.';
+            echo $log;
         };
         switch ($_BreakpointDebugging_EXE_MODE) {
         case B::LOCAL_DEBUG_OF_RELEASE:
@@ -307,9 +308,9 @@ final class BreakpointDebugging_Error
             BreakpointDebugging_breakpoint();
             break;
         }
-        $log = $this->_buildErrorCallStackLog($errorFile, $errorLine, $errorKind, $errorMessage, debug_backtrace(true));
+        $log = $this->buildErrorCallStackLog2($errorFile, $errorLine, $errorKind, $errorMessage, debug_backtrace(true));
         $diplayLog = function ($log) {
-            echo '<pre class=\'xdebug-var-dump\' dir=\'ltr\'>' . $log . '</pre>';
+            echo $log;
         };
         switch ($_BreakpointDebugging_EXE_MODE)
         {
@@ -343,7 +344,7 @@ final class BreakpointDebugging_Error
      * 
      * @return string Error call stack log.
      */
-    function _buildErrorCallStackLog($errorFile, $errorLine, $errorKind, $errorMessage, $backTrace)
+    function buildErrorCallStackLog2($errorFile, $errorLine, $errorKind, $errorMessage, $backTrace)
     {
         assert(func_num_args() == 5);
         assert(is_string($errorFile));
@@ -361,12 +362,12 @@ final class BreakpointDebugging_Error
         }
         // Create error log from the argument.
         $log = '/////////////////////////////// CALL STACK BEGIN ///////////////////////////////' .
-            PHP_EOL . $this->_mark . 'Error file =======>' . $errorFile .
-            PHP_EOL . $this->_mark . 'Error line =======>' . $errorLine .
-            PHP_EOL . $this->_mark . 'Error kind =======>' . $errorKind .
-            PHP_EOL . $this->_mark . 'Error message ====>' . $errorMessage .
+            PHP_EOL . $this->_mark . 'Error file =======>' . $this->tag['font']['string'] . '\'' . $errorFile . '\'' . $this->tag['/font'] .
+            PHP_EOL . $this->_mark . 'Error line =======>' . $this->tag['font']['int'] . $errorLine . $this->tag['/font'] .
+            PHP_EOL . $this->_mark . 'Error kind =======>' . $this->tag['font']['string'] . '\'' . $errorKind . '\'' . $this->tag['/font'] .
+            PHP_EOL . $this->_mark . 'Error message ====>' . $this->tag['font']['string'] . '\'' . $errorMessage . '\'' . $this->tag['/font'] .
             PHP_EOL;
-        // Search array which debug_backtrace() or $this->_getTraceSafe() returns, and add a parametric information.
+        // Search array which debug_backtrace() or getTrace() returns, and add a parametric information.
         array_reverse($backTrace, true);
         foreach ($backTrace as $backtraceArrays) {
             array_key_exists('file', $backtraceArrays) ? $file = $backtraceArrays['file'] : $file = '';
@@ -383,9 +384,9 @@ final class BreakpointDebugging_Error
                     break;
                 }
             }
-            $log .= PHP_EOL . $this->_mark . 'Error file =======>' . $file;
-            $log .= PHP_EOL . $this->_mark . 'Error line =======>' . $line;
-            $log .= PHP_EOL . $this->_mark . 'Function call ====>' . $func . '( ';
+            $log .= PHP_EOL . $this->_mark . 'Error file =======>' . $this->tag['font']['string'] . '\'' . $file . '\'' . $this->tag['/font'];
+            $log .= PHP_EOL . $this->_mark . 'Error line =======>' . $this->tag['font']['int'] . $line . $this->tag['/font'];
+            $log .= PHP_EOL . $this->_mark . 'Function call ====>' . $this->tag['i'] . $func . $this->tag['/i'] . '( ';
             if (array_key_exists('args', $backtraceArrays)) {
                 // Analyze parameter part of back trace array, and return string.
                 $log .= $this->_searchDebugBacktraceArgsToString($backtraceArrays['args']);
@@ -394,7 +395,7 @@ final class BreakpointDebugging_Error
                 PHP_EOL;
         }
         $log .= '//////////////////////////////// CALL STACK END ////////////////////////////////';
-        return $log;
+        return $this->tag['pre'] . $log . $this->tag['/pre'];
     }
     
     /**

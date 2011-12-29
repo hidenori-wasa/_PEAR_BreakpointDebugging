@@ -5,35 +5,50 @@
  * 
  * ### Environment which can do breakpoint debugging. ###
  * For example, in case of windows environment, there is "VS.Php" debugger.
- * 
+ *
  * ### The advantage of breakpoint debugging. ###
  * it is to be able to find a position of a bug immediately.
  * In addition to it, condition of variable can be examined.
  * Therefore, it is possible to do debugging quickly.
- * 
+ *
  * ### How to do breakpoint debugging coding. ###
  * We have to do coding as follows to process in "BreakpointDebugging" class.
- * We have to verify a impossible return value of PHP function with "assert()".
- * We have to verify a impossible value of your code.
- * We have to do coding "assert(false)" at "catch()" of a exception handling.
- * But, exception handling which did Fix had better delete "assert(false)".
- * Also, an error by PHP function and an exception which wasn't caught are processed in "BreakpointDebugging" class too.
- * 
+ * We have to verify a impossible return value of function or method with "assert()".
+ * We have to verify a impossible value in code.
+ * Also, an error and an exception which wasn't caught are processed in "BreakpointDebugging" class.
+ *
  * ### The execution procedure. ###
  * Procedure 1: Please, copy BreakpointDebugging_MySetting.php as your project php file.
  * Procedure 2: Please, edit BreakpointDebugging_MySetting.php for customize.
  * Then, it is possible to make specific setting about all debugging modes.
  * Procedure 3: Please, set a breakpoint into BreakpointDebugging_breakpoint() of BreakpointDebugging_MySetting.php.
  * Procedure 4: Please, set debugging mode to $_BreakpointDebugging_EXE_MODE.
- * Procedure 5: Please, register at top of the function or method being not fixed. Therefore, copy following.
+ * Procedure 5: Please, register at top of the function or method to have been not fixed. Please, copy following.
  * "static $isRegister; BreakpointDebugging::registerNotFixedLocation( $isRegister);"
  * Then, it is possible to discern function or method which does not fix with browser screen or log.
- * 
+ *
  * ### The debugging mode which we can use. ###
  * First "LOCAL_DEBUG" mode is breakpoint debugging with local personal computer.
+ *     For example, VS.Php environment.
  * Second "LOCAL_DEBUG_OF_RELEASE" mode is breakpoint debugging to emulate release with local personal computer.
+ *     For example, XAMPP environment.
  * Third "REMOTE_DEBUG" mode is browser display debugging with remote personal computer.
+ *     For example, we debug client server environment by browser.
  * Last "RELEASE" mode is log debugging with remote personal computer, and we must set on last for security.
+ *     For example, on release.
+ *
+ * ### Useful function index. ###
+ * Please, register at top of the function or method being not fixed.
+ *     final static function BreakpointDebugging::registerNotFixedLocation(&$isRegister)
+ * This writes inside of "catch()", then display logging or log.
+ *     static function exceptionHandler($exception)
+ * This return the function call stack log.
+ *     final static function BreakpointDebugging::buildErrorCallStackLog($errorFile, $errorLine, $errorKind, $errorMessage)
+ * This changes to unify multibyte character strings such as system-output in UTF8, and this returns.
+ *     final static function BreakpointDebugging::convertMbString($string)
+ * This changes a character sets to display a multibyte character string with local window of debugger, and this returns it.
+ * But, this doesn't exist in case of release.
+ *     static function BreakpointDebugging::convertMbStringForDebug($params)
  * 
  * PHP version 5.3
  * 
@@ -69,12 +84,6 @@
  * @version  SVN: $Id$
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-
-// ##### Useful function index. #####
-// ### Please, register at top of the function or method being not fixed. ### final static function registerNotFixedLocation()
-// ### This exists to build error call stack log inside of "catch()". ### final static function buildErrorCallStackLog()
-// ### This changes to unify multibyte character strings such as system-output in UTF8, and this returns. ### BreakpointDebugging::convertMbString()
-// ### This changes a character sets to display a multibyte character string with local window of debugger, and this returns it. ### BreakpointDebugging::convertMbStringForDebug()
 
 require_once 'PEAR/Exception.php';
 
@@ -121,7 +130,7 @@ global $_BreakpointDebugging_EXE_MODE;
  * @version  Release: @package_version@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-class BreakpointDebugging_InCaseAll
+class BreakpointDebugging_InAllCase
 {
     // ### Debug mode constant number ###
     
@@ -151,25 +160,12 @@ class BreakpointDebugging_InCaseAll
     public $callStack; // Function call stack information.
     
     /**
-     * This does autoload with word which was divided by name space separator and underscore separator as directory.
-     * 
-     * @param string $className This is class name to do "new" and "extends".
-     * 
-     * @return void
-     */
-    final static function autoload($className)
-    {
-        // This changes underscore and name space separator into directory separator.
-        $className = str_replace(array('_', '\\'), '/', $className) . '.php';
-        include_once $className;
-    }
-    
-    /**
      * Please, register at top of the function or method being not fixed.
      * 
      * @param bool &$isRegister Is this registered?
      * 
      * @return void
+     * 
      * @example static $isRegister; BreakpointDebugging::registerNotFixedLocation( $isRegister);
      */
     final static function registerNotFixedLocation(&$isRegister)
@@ -194,6 +190,39 @@ class BreakpointDebugging_InCaseAll
     }
     
     /**
+     * This writes inside of "catch()", then display logging or log.
+     * 
+     * @param object $exception Exception info.
+     * 
+     * @return void
+     */
+    final static function exceptionHandler($exception)
+    {
+        $error = new BreakpointDebugging_Error();
+        $error->exceptionHandler2($exception);
+    }
+    
+    /**
+     * This return the function call stack log.
+     * 
+     * @param string $errorFile    Error file name.
+     * @param int    $errorLine    Error file line.
+     * @param int    $errorKind    Error kind.
+     * @param string $errorMessage Error message.
+     * 
+     * @return string Function call stack log.
+     * 
+     * @example $log = buildErrorCallStackLog(__FILE__, __LINE__, 'EXCEPTION', 'Description of exception.');
+     */
+    final static function buildErrorCallStackLog($errorFile, $errorLine, $errorKind, $errorMessage)
+    {
+        $error = new BreakpointDebugging_Error();
+        $trace = debug_backtrace(true);
+        unset($trace[0]);
+        return $error->buildErrorCallStackLog2($errorFile, $errorLine, $errorKind, $errorMessage, $trace);
+    }
+
+    /**
      * This changes to unify multibyte character strings such as system-output in UTF8, and this returns.
      * 
      * @param string $string Character string which may be not UTF8.
@@ -209,19 +238,32 @@ class BreakpointDebugging_InCaseAll
     
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /**
-     * User exception handler of the whole code.
-     *
+     * This does autoload with word which was divided by name space separator and underscore separator as directory.
+     * 
+     * @param string $className This is class name to do "new" and "extends".
+     * 
+     * @return void
+     */
+    final static function autoload($className)
+    {
+        // This changes underscore and name space separator into directory separator.
+        $className = str_replace(array('_', '\\'), '/', $className) . '.php';
+        include_once $className;
+    }
+    
+    /**
+     * Global exception handler.
+     * 
      * @param object $exception Exception info.
      * 
      * @return void
      */
-    final static function exceptionHandler($exception)
+    final static function exceptionHandlerOfGlobal($exception)
     {
-        $error = new BreakpointDebugging_Error();
-        $error->exceptionHandler($exception);
+        self::exceptionHandler($exception);
+        echo 'Program has been ending as global exception.';
     }
     
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /**
      * Error handler.
      * 
@@ -255,34 +297,16 @@ class BreakpointDebugging_InCaseAll
         // In case of local-debug. "BreakpointDebugging_breakpoint()" is called. Therefore we do the step execution to error place, and we can see condition of variables.
         if ($_BreakpointDebugging_EXE_MODE & self::LOCAL_DEBUG) {
             $trace = debug_backtrace(true);
-            echo '<pre class=\'xdebug-var-dump\' dir=\'ltr\'>' . self::buildErrorCallStackLog($trace[0]['file'], $trace[0]['line'], 'EXCEPTION', $errorMessage) . '</pre>';
+            echo self::buildErrorCallStackLog($trace[0]['file'], $trace[0]['line'], 'EXCEPTION', $errorMessage);
             BreakpointDebugging_breakpoint();
         } else { // In case of not local-debug.
             // Throw error exception.
             throw new BreakpointDebugging_Error_Exception($errorMessage);
         }
     }
-    
-    /**
-     * This exists to build error call stack log inside of "catch()".
-     * 
-     * @param string $errorFile    Error file name.
-     * @param int    $errorLine    Error file line.
-     * @param int    $errorKind    Error kind.
-     * @param string $errorMessage Error message.
-     * 
-     * @return string Error call stack log.
-     */
-    final static function buildErrorCallStackLog($errorFile, $errorLine, $errorKind, $errorMessage)
-    {
-        $error = new BreakpointDebugging_Error();
-        $trace = debug_backtrace(true);
-        unset($trace[0]);
-        return $error->_buildErrorCallStackLog($errorFile, $errorLine, $errorKind, $errorMessage, $trace);
-    }
 }
 
-if ($_BreakpointDebugging_EXE_MODE & BreakpointDebugging_InCaseAll::RELEASE) { // In case of release.
+if ($_BreakpointDebugging_EXE_MODE & BreakpointDebugging_InAllCase::RELEASE) { // In case of release.
     /**
     * This class executes error or exception handling, and it is only in case of release mode.
      * 
@@ -293,7 +317,7 @@ if ($_BreakpointDebugging_EXE_MODE & BreakpointDebugging_InCaseAll::RELEASE) { /
      * @version  Release: @package_version@
      * @link     http://pear.php.net/package/BreakpointDebugging
      */
-    final class BreakpointDebugging extends BreakpointDebugging_InCaseAll
+    final class BreakpointDebugging extends BreakpointDebugging_InAllCase
     {
         /**
         * This is ini_set() without validation in case of release mode.
@@ -325,7 +349,7 @@ if ($_BreakpointDebugging_EXE_MODE & BreakpointDebugging_InCaseAll::RELEASE) { /
 }
 
 // This sets global exception handler.
-set_exception_handler('BreakpointDebugging::exceptionHandler');
+set_exception_handler('BreakpointDebugging::exceptionHandlerOfGlobal');
 // This sets error handler.( -1 sets all bits on 1. Therefore, this specifies error, warning and note of all kinds and so on.)
 set_error_handler('BreakpointDebugging::errorHandler', -1);
 $_BreakpointDebugging = new BreakpointDebugging();

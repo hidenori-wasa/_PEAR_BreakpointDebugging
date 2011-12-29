@@ -12,11 +12,9 @@ The features list
 
     ### How to do breakpoint debugging coding. ###
     We have to do coding as follows to process in "BreakpointDebugging" class.
-    We have to verify a impossible return value of PHP function with "assert()".
-    We have to verify a impossible value of your code.
-    We have to do coding "assert(false)" at "catch()" of a exception handling.
-    But, exception handling which did Fix had better delete "assert(false)".
-    Also, an error by PHP function and an exception which wasn't caught are processed in "BreakpointDebugging" class too.
+    We have to verify a impossible return value of function or method with "assert()".
+    We have to verify a impossible value in code.
+    Also, an error and an exception which wasn't caught are processed in "BreakpointDebugging" class.
 
     ### The execution procedure. ###
     Procedure 1: Please, copy BreakpointDebugging_MySetting.php as your project php file.
@@ -24,21 +22,27 @@ The features list
     Then, it is possible to make specific setting about all debugging modes.
     Procedure 3: Please, set a breakpoint into BreakpointDebugging_breakpoint() of BreakpointDebugging_MySetting.php.
     Procedure 4: Please, set debugging mode to $_BreakpointDebugging_EXE_MODE.
-    Procedure 5: Please, register at top of the function or method to have been not fixed. Therefore, copy following.
+    Procedure 5: Please, register at top of the function or method to have been not fixed. Please, copy following.
     "static $isRegister; BreakpointDebugging::registerNotFixedLocation( $isRegister);"
     Then, it is possible to discern function or method which does not fix with browser screen or log.
 
     ### The debugging mode which we can use. ###
     First "LOCAL_DEBUG" mode is breakpoint debugging with local personal computer.
+        For example, VS.Php environment.
     Second "LOCAL_DEBUG_OF_RELEASE" mode is breakpoint debugging to emulate release with local personal computer.
+        For example, XAMPP environment.
     Third "REMOTE_DEBUG" mode is browser display debugging with remote personal computer.
+        For example, we debug client server environment by browser.
     Last "RELEASE" mode is log debugging with remote personal computer, and we must set on last for security.
+        For example, on release.
 
     ### Useful function index. ###
     Please, register at top of the function or method being not fixed.
-        final static function registerNotFixedLocation(&$isRegister)
-    This exists to build error call stack log inside of "catch()".
-        final static function buildErrorCallStackLog($errorFile, $errorLine, $errorKind, $errorMessage)
+        final static function BreakpointDebugging::registerNotFixedLocation(&$isRegister)
+    This writes inside of "catch()", then display logging or log.
+        static function exceptionHandler($exception)
+    This return the function call stack log.
+        final static function BreakpointDebugging::buildErrorCallStackLog($errorFile, $errorLine, $errorKind, $errorMessage)
     This changes to unify multibyte character strings such as system-output in UTF8, and this returns.
         final static function BreakpointDebugging::convertMbString($string)
     This changes a character sets to display a multibyte character string with local window of debugger, and this returns it.
@@ -47,7 +51,3 @@ The features list
 
 The dependences
     none.
-
-Notice
-    At present, I am creating the exception handling of the remainder.
-    First is the support to the case where the exception handling is continuing.

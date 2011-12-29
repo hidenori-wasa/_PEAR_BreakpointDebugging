@@ -56,7 +56,7 @@ use \BreakpointDebugging as B;
  * @version  Release: @package_version@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-final class BreakpointDebugging extends BreakpointDebugging_InCaseAll
+final class BreakpointDebugging extends BreakpointDebugging_InAllCase
 {
     /**
      * This constructer create object only one time.
@@ -79,8 +79,7 @@ final class BreakpointDebugging extends BreakpointDebugging_InCaseAll
      * 
      * @return array Some changed variables.
      * 
-     * ### sample code
-     * $gDebugValue = BreakpointDebugging::convertMbStringForDebug('SJIS', $scalar1, $array2, $scalar2);
+     * @example $gDebugValue = BreakpointDebugging::convertMbStringForDebug('SJIS', $scalar1, $array2, $scalar2);
      */
     static function convertMbStringForDebug($params)
     {

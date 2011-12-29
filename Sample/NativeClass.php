@@ -91,18 +91,18 @@ class NativeClass extends BaseNativeClass
 
 class OtherClass
 {
-    const OTHER_CONST1 = 'CONST1';
-    const OTHER_CONST2 = 'CONST2';
+    const OTHER_CONST1 = ' CONST1';
+    const OTHER_CONST2 = 'CONST2 ';
     
     private $private = '<Private>';
-    protected $protected = 'Protected';
-    public $public = 'Public';
+    protected $protected = ' Protected';
+    public $public = 'Public ';
     private static $privateStatic = 'PrivateStatic';
     protected static $protectedStatic = 'ProtectedStatic';
     public static $publicStatic = 'PublicStatic';
 }
 
-$baseArray = array ('baseArrayElement1', 'baseArrayElement2');
+$baseArray = array (' baseArrayElement1', 'baseArrayElement2 ');
 $object = new OtherClass();
 $array = array (true, 'bool' => false, 222 => 2, 2.2, 'DEF', $object, $baseArray, tmpfile(), null);
 $varietyObject = new NativeClass();

@@ -65,7 +65,7 @@ require_once 'BreakpointDebugging.php'; // 'BreakpointDebugging.php' must requir
 
 // ### Execution mode setting. ===>
 /**
- * @see '### Debug mode constant number ###' of class BreakpointDebugging_InCaseAll in BreakpointDebugging.php.
+ * @see '### Debug mode constant number ###' of class BreakpointDebugging_InAllCase in BreakpointDebugging.php.
  *       LOCAL_DEBUG
  *       LOCAL_DEBUG_OF_RELEASE
  *       REMOTE_DEBUG
