@@ -181,10 +181,12 @@ final class BreakpointDebugging_Error
         count($constants) ? $log .= PHP_EOL : null;
         foreach ($propertyReflections as $propertyReflection) {
             $propertyReflection->setAccessible(true);
-            $paramName = $propertyReflection->isPublic() ? $this->tag['i'] . 'public ' . $this->tag['/i'] : '';
-            $paramName .= $propertyReflection->isPrivate() ? $this->tag['i'] . 'private ' . $this->tag['/i'] : '';
-            $paramName .= $propertyReflection->isProtected() ? $this->tag['i'] . 'protected ' . $this->tag['/i'] : '';
-            $paramName .= $propertyReflection->isStatic() ? $this->tag['i'] . 'static ' . $this->tag['/i'] : '';
+            $paramName = $this->tag['i'];
+            $paramName .= $propertyReflection->isPublic() ? 'public ' : '';
+            $paramName .= $propertyReflection->isPrivate() ? 'private ' : '';
+            $paramName .= $propertyReflection->isProtected() ? 'protected ' : '';
+            $paramName .= $propertyReflection->isStatic() ? 'static ' : '';
+            $paramName .= $this->tag['/i'];
             $paramName .= '$' . $propertyReflection->getName();
             if ($propertyReflection->isStatic()) {
                 $paramValue = $propertyReflection->getValue($propertyReflection);
@@ -201,24 +203,27 @@ final class BreakpointDebugging_Error
     }
     
     /**
-     * This is Called from user exception handler of the whole code.
+     * This is Called from exception handler.
      *
      * @param object $pException Exception info.
+     * @param string $prependLog This prepend this parameter logging.
      * 
      * @return void
      */
-    function exceptionHandler2($pException)
+    function exceptionHandler2($pException, $prependLog)
     {
-        assert(func_num_args() == 1);
+        assert(func_num_args() == 2);
         assert($pException instanceof Exception);
+        assert(is_string($prependLog));
         global $_BreakpointDebugging_EXE_MODE;
         
+        $prependLog = B::convertMbString($prependLog);
         $trace = $pException->getTrace();
         if (empty($trace)) {
             $backtrace = debug_backtrace();
             $trace = array ($backtrace[count($backtrace) - 1]);
         }
-        $log = $this->buildErrorCallStackLog2($pException->getfile(), $pException->getline(), 'EXCEPTION', $pException->getmessage(), $trace);
+        $log = $this->buildErrorCallStackLog2($pException->getfile(), $pException->getline(), 'EXCEPTION', $pException->getmessage(), $trace, $prependLog);
         $diplayLog = function ($log) {
             echo $log;
         };
@@ -247,15 +252,22 @@ final class BreakpointDebugging_Error
      * @param string $errorMessage Error message.
      * @param string $errorFile    Error file name.
      * @param int    $errorLine    Error file line.
+     * @param string $prependLog   This prepend this parameter logging.
      * 
      * @return bool Did the error handling end?
      */
-    function errorHandler($errorNumber, $errorMessage, $errorFile, $errorLine)
+    function errorHandler($errorNumber, $errorMessage, $errorFile, $errorLine, $prependLog)
     {
-        assert(func_num_args() == 4);
+        assert(func_num_args() == 5);
+        assert(is_int($errorNumber));
+        assert(is_string($errorMessage));
+        assert(is_string($errorFile));
+        assert(is_int($errorLine));
+        assert(is_string($prependLog));
         global $_BreakpointDebugging_EXE_MODE;
         
-        $errorMessage = mb_convert_encoding($errorMessage, 'utf8', 'auto');
+        $errorMessage = B::convertMbString($errorMessage);
+        $prependLog = B::convertMbString($prependLog);
         // This creates error log.
         switch ($errorNumber) {
         case E_USER_DEPRECATED:
@@ -308,7 +320,7 @@ final class BreakpointDebugging_Error
             BreakpointDebugging_breakpoint();
             break;
         }
-        $log = $this->buildErrorCallStackLog2($errorFile, $errorLine, $errorKind, $errorMessage, debug_backtrace(true));
+        $log = $this->buildErrorCallStackLog2($errorFile, $errorLine, $errorKind, $errorMessage, debug_backtrace(true), $prependLog);
         $diplayLog = function ($log) {
             echo $log;
         };
@@ -340,19 +352,23 @@ final class BreakpointDebugging_Error
      * @param int    $errorKind    Error kind.
      * @param string $errorMessage Error message.
      * @param object $backTrace    Back trace for debug.
+     * @param string $prependLog   This prepend this parameter logging.
      * 
      * @return string Error call stack log.
      */
-    function buildErrorCallStackLog2($errorFile, $errorLine, $errorKind, $errorMessage, $backTrace)
+    function buildErrorCallStackLog2($errorFile, $errorLine, $errorKind, $errorMessage, $backTrace, $prependLog)
     {
-        assert(func_num_args() == 5);
+        assert(func_num_args() == 6);
         assert(is_string($errorFile));
         assert(is_int($errorLine));
         assert(is_string($errorKind));
         assert(is_string($errorMessage));
         assert(is_array($backTrace));
+        assert(is_string($prependLog));
         global $_BreakpointDebugging;
         
+        $errorMessage = B::convertMbString($errorMessage);
+        $prependLog = B::convertMbString($prependLog);
         // We had better debug by breakpoint than the display screen in case of "E_NOTICE".
         // Also, we are possible to skip "E_NOTICE" which is generated while debugging execution is stopping.
         // Moreover, those "E_NOTICE" doesn't stop at breakpoint.
@@ -394,7 +410,7 @@ final class BreakpointDebugging_Error
                 PHP_EOL;
         }
         $log .= '//////////////////////////////// CALL STACK END ////////////////////////////////';
-        return $this->tag['pre'] . $log . $this->tag['/pre'];
+        return $this->tag['pre'] . $prependLog . $log . $this->tag['/pre'];
     }
     
     /**
@@ -434,7 +450,6 @@ final class BreakpointDebugging_Error
             $log .= $tag($this, 'float', $paramValue);
         } else if (is_string($paramValue)) {
             $paramValue = B::convertMbString($paramValue);
-            assert(mb_detect_encoding($paramValue, 'utf8', true) != false);
             $strlen = strlen($paramValue);
             $paramValue = '"' . $paramValue . '"';
             if (!$this->_isLogging) {

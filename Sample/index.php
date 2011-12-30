@@ -39,8 +39,9 @@ function fnTestB()
     try {
         fnTestC(true, false, 1, 1.1, 'ABC', $object, $array, tmpfile(), null, $varietyObject);
     } catch (\Exception $exception) {
+        $prependLog = 'This exception caused in fnTestB(). <予定終了>' . PHP_EOL;
         // This writes inside of "catch()", then display logging or log.
-        B::exceptionHandler($exception);
+        B::exceptionHandler($exception, $prependLog);
         // This doesn't specify previous exception because "B::exceptionHandler()" logged.
         throw new \Exception('test exception 2.');
     }
@@ -56,6 +57,9 @@ function fnTestA()
 {
     fnTestB();
 }
+
+B::$prependErrorLog = 'Some error happened. <予定終了>' . PHP_EOL;
+B::$prependGlobalExceptionLog = 'Some global exception happened. <予定終了>' . PHP_EOL;
 
 var_dump(true, false, 1, 1.1, 'ABC', $object, $array, tmpfile(), null);
 

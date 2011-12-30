@@ -18,12 +18,13 @@
  * Also, an error and an exception which wasn't caught are processed in "BreakpointDebugging" class.
  *
  * ### The execution procedure. ###
- * Procedure 1: Please, copy BreakpointDebugging_MySetting.php as your project php file.
- * Procedure 2: Please, edit BreakpointDebugging_MySetting.php for customize.
- * Then, it is possible to make specific setting about all debugging modes.
- * Procedure 3: Please, set a breakpoint into BreakpointDebugging_breakpoint() of BreakpointDebugging_MySetting.php.
- * Procedure 4: Please, set debugging mode to $_BreakpointDebugging_EXE_MODE.
- * Procedure 5: Please, register at top of the function or method to have been not fixed. Please, copy following.
+ * Procedure 1: Please, set php file format to utf8, but we should create backup of php files because multibyte strings may be destroyed.
+ * Procedure 2: Please, copy BreakpointDebugging_MySetting.php as your project php file.
+ * Procedure 3: Please, edit BreakpointDebugging_MySetting.php for customize.
+ *      Then, it is possible to make specific setting about all debugging modes.
+ * Procedure 4: Please, set a breakpoint into BreakpointDebugging_breakpoint() of BreakpointDebugging_MySetting.php.
+ * Procedure 5: Please, set debugging mode to $_BreakpointDebugging_EXE_MODE.
+ * Procedure 6: Please, register at top of the function or method to have been not fixed. Please, copy following.
  * "static $isRegister; BreakpointDebugging::registerNotFixedLocation( $isRegister);"
  * Then, it is possible to discern function or method which does not fix with browser screen or log.
  *
@@ -41,7 +42,7 @@
  * Please, register at top of the function or method being not fixed.
  *     final static function BreakpointDebugging::registerNotFixedLocation(&$isRegister)
  * This writes inside of "catch()", then display logging or log.
- *     static function exceptionHandler($exception)
+ *     static function exceptionHandler($exception, $prependLog = '')
  * This return the function call stack log.
  *     final static function BreakpointDebugging::buildErrorCallStackLog($errorFile, $errorLine, $errorKind, $errorMessage)
  * This changes to unify multibyte character strings such as system-output in UTF8, and this returns.
@@ -155,9 +156,19 @@ class BreakpointDebugging_InAllCase
     const RELEASE = 8;
     
     /**
+     * @var string This prepend to logging when self::exceptionHandlerOfGlobal() is called.
+     */
+    public static $prependGlobalExceptionLog = '';
+    
+    /**
+     * @var string This prepend to logging when self::errorHandler() is called.
+     */
+    public static $prependErrorLog = '';
+    
+    /**
      * @var array Function call stack information.
      */
-    public $callStack; // Function call stack information.
+    public $callStack;
     
     /**
      * Please, register at top of the function or method being not fixed.
@@ -192,14 +203,15 @@ class BreakpointDebugging_InAllCase
     /**
      * This writes inside of "catch()", then display logging or log.
      * 
-     * @param object $exception Exception info.
+     * @param object $exception  Exception info.
+     * @param string $prependLog This prepend this parameter logging.
      * 
      * @return void
      */
-    final static function exceptionHandler($exception)
+    final static function exceptionHandler($exception, $prependLog = '')
     {
         $error = new BreakpointDebugging_Error();
-        $error->exceptionHandler2($exception);
+        $error->exceptionHandler2($exception, $prependLog);
     }
     
     /**
@@ -233,7 +245,10 @@ class BreakpointDebugging_InAllCase
     {
         assert(func_num_args() == 1);
         assert(is_string($string));
-        return mb_convert_encoding($string, 'utf8', 'auto');
+        $string = mb_convert_encoding($string, 'utf8', 'auto');
+        $return = mb_detect_encoding($string);
+        assert($return == 'UTF-8' || $return == 'ASCII');
+        return $string;
     }
     
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -260,7 +275,7 @@ class BreakpointDebugging_InAllCase
      */
     final static function exceptionHandlerOfGlobal($exception)
     {
-        self::exceptionHandler($exception);
+        self::exceptionHandler($exception, self::$prependGlobalExceptionLog);
         echo 'Program has been ending as global exception.';
     }
     
@@ -277,7 +292,7 @@ class BreakpointDebugging_InAllCase
     final static function errorHandler($errorNumber, $errorMessage, $errorFile, $errorLine)
     {
         $error = new BreakpointDebugging_Error();
-        return $error->errorHandler($errorNumber, $errorMessage, $errorFile, $errorLine);
+        return $error->errorHandler($errorNumber, $errorMessage, $errorFile, $errorLine, self::$prependErrorLog);
     }
     
     /**
