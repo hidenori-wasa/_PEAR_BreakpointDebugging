@@ -367,8 +367,12 @@ final class BreakpointDebugging_Error
         assert(is_string($prependLog));
         global $_BreakpointDebugging;
         
-        $errorMessage = htmlspecialchars(B::convertMbString($errorMessage), ENT_QUOTES, 'UTF-8');
-        $prependLog = htmlspecialchars(B::convertMbString($prependLog), ENT_QUOTES, 'UTF-8');
+        $errorMessage = B::convertMbString($errorMessage);
+        $prependLog = B::convertMbString($prependLog);
+        if (!$this->_isLogging) {
+            $errorMessage = htmlspecialchars($errorMessage, ENT_QUOTES, 'UTF-8');
+            $prependLog = htmlspecialchars($prependLog, ENT_QUOTES, 'UTF-8');
+        }
         // We had better debug by breakpoint than the display screen in case of "E_NOTICE".
         // Also, we are possible to skip "E_NOTICE" which is generated while debugging execution is stopping.
         // Moreover, those "E_NOTICE" doesn't stop at breakpoint.
