@@ -233,9 +233,10 @@ class BreakpointDebugging_InAllCase
         unset($trace[0]);
         return $error->buildErrorCallStackLog2($errorFile, $errorLine, $errorKind, $errorMessage, $trace);
     }
-
+    
     /**
-     * This changes to unify multibyte character strings such as system-output in UTF8, and this returns.
+     * This method changes it to unify multibyte character strings such as system-output or user input, and this returns UTF-8 multibyte character strings.
+     * In other words, this is not mixing a character sets, therefore this is not breaking character strings.
      * 
      * @param string $string Character string which may be not UTF8.
      * 

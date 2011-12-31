@@ -39,7 +39,8 @@ function fnTestB()
     try {
         fnTestC(true, false, 1, 1.1, 'ABC', $object, $array, tmpfile(), null, $varietyObject);
     } catch (\Exception $exception) {
-        $prependLog = 'This exception caused in fnTestB(). <予定終了>' . PHP_EOL;
+        // A tag inside of the "<pre class='xdebug-var-dump' dir='ltr'>" tag isn't changed because the prepend logging is executed "htmlspecialchars()".
+        $prependLog = '<i>This exception caused in fnTestB().</i> αβ∞' . PHP_EOL;
         // This writes inside of "catch()", then display logging or log.
         B::exceptionHandler($exception, $prependLog);
         // This doesn't specify previous exception because "B::exceptionHandler()" logged.
@@ -58,8 +59,9 @@ function fnTestA()
     fnTestB();
 }
 
-B::$prependErrorLog = 'Some error happened. <予定終了>' . PHP_EOL;
-B::$prependGlobalExceptionLog = 'Some global exception happened. <予定終了>' . PHP_EOL;
+// A tag inside of the "<pre class='xdebug-var-dump' dir='ltr'>" tag isn't changed because the prepend logging is executed "htmlspecialchars()".
+B::$prependErrorLog = '<i>Some error happened.</i> αβ∞' . PHP_EOL;
+B::$prependGlobalExceptionLog = '<i>Some global exception happened.</i> αβ∞' . PHP_EOL;
 
 var_dump(true, false, 1, 1.1, 'ABC', $object, $array, tmpfile(), null);
 
