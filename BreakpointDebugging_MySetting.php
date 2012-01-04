@@ -8,7 +8,7 @@
  * PHP version 5.3
  * 
  * LICENSE:
- * Copyright (c) 2011, Hidenori Wasa
+ * Copyright (c) 2012, Hidenori Wasa
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification,

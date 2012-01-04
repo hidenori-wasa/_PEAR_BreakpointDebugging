@@ -8,7 +8,7 @@
  * PHP version 5.3
  * 
  * LICENSE:
- * Copyright (c) 2011, Hidenori Wasa
+ * Copyright (c) 2012, Hidenori Wasa
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification,
@@ -190,7 +190,8 @@ EOD;
             return;
         }
         if (ini_set($phpIniVariable, $setValue) === false) {
-            self::throwErrorException('');
+            //self::throwErrorException('');
+            throw new BreakpointDebugging_Error_Exception('');
         }
     }
     
@@ -232,16 +233,20 @@ EOD;
 
 // ### Assertion setting. ###
 if (assert_options(ASSERT_ACTIVE, 1) === false) { // This makes the evaluation of assert() effective.
-    B::throwErrorException('');
+    //B::throwErrorException('');
+    throw new BreakpointDebugging_Error_Exception('');
 }
 if (assert_options(ASSERT_WARNING, 1) === false) { // In case of failing in assertion, this generates a warning.
-    B::throwErrorException('');
+    //B::throwErrorException('');
+    throw new BreakpointDebugging_Error_Exception('');
 }
 if (assert_options(ASSERT_BAIL, 0) === false) { // In case of failing in assertion, this doesn't end execution.
-    B::throwErrorException('');
+    //B::throwErrorException('');
+    throw new BreakpointDebugging_Error_Exception('');
 }
 if (assert_options(ASSERT_QUIET_EVAL, 0) === false) { // As for assertion expression, this doesn't make error_reporting invalid.
-    B::throwErrorException('');
+    //B::throwErrorException('');
+    throw new BreakpointDebugging_Error_Exception('');
 }
 // ### usage ###
 //   assert(<judgment expression>);

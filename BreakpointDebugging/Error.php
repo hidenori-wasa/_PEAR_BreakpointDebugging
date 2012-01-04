@@ -8,7 +8,7 @@
  * PHP version 5.3
  *
  * LICENSE:
- * Copyright (c) 2011, Hidenori Wasa
+ * Copyright (c) 2012, Hidenori Wasa
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification,
@@ -133,13 +133,16 @@ final class BreakpointDebugging_Error
         $tabs = str_repeat("\t", $tabNumber);
         $log = PHP_EOL . $tabs . $paramName . $this->tag['font']['=>'] . ' => ' . $this->tag['/font'] . $this->tag['b'] . 'array' . $this->tag['/b'] . ' (';
         foreach ($array as $paramName => $paramValue) {
+            if ($paramName == 'GLOBALS') {
+                continue;
+            }
             if (is_string($paramName)) {
                 $paramName = '\'' . $paramName . '\'';
             }
             $return = $this->_getTypeAndValue($paramName, $paramValue, $tabNumber + 1);
-            if ($return === false) {
-                continue;
-            }
+            //if ($return === false) {
+            //    continue;
+            //}
             $log .= $return;
         }
         return $log . PHP_EOL . $tabs . ')';
@@ -173,9 +176,9 @@ final class BreakpointDebugging_Error
             PHP_EOL . $tab . '{';
         foreach ($constants as $constName => $constValue) {
             $return = $this->_getTypeAndValue($this->tag['i'] . 'const ' . $this->tag['/i'] . $constName, $constValue, $tabNumber + 1);
-            if ($return === false) {
-                continue;
-            }
+            //if ($return === false) {
+            //    continue;
+            //}
             $log .= $return;
         }
         count($constants) ? $log .= PHP_EOL : null;
@@ -194,9 +197,9 @@ final class BreakpointDebugging_Error
                 $paramValue = $propertyReflection->getValue($object);
             }
             $return = $this->_getTypeAndValue($paramName, $paramValue, $tabNumber + 1);
-            if ($return === false) {
-                continue;
-            }
+            //if ($return === false) {
+            //    continue;
+            //}
             $log .= $return;
         }
         return $log . PHP_EOL . $tab . '}';
@@ -356,9 +359,9 @@ final class BreakpointDebugging_Error
      * 
      * @return string Error call stack log.
      */
-    function buildErrorCallStackLog2($errorFile, $errorLine, $errorKind, $errorMessage, $backTrace, $prependLog)
+    function buildErrorCallStackLog2($errorFile, $errorLine, $errorKind, $errorMessage, $backTrace, $prependLog = '')
     {
-        assert(func_num_args() == 6);
+        assert(func_num_args() <= 6);
         assert(is_string($errorFile));
         assert(is_int($errorLine));
         assert(is_string($errorKind));
@@ -393,14 +396,16 @@ final class BreakpointDebugging_Error
             array_key_exists('line', $backtraceArrays) ? $line = $backtraceArrays['line'] : $line = '';
             array_key_exists('function', $backtraceArrays) ? $func = $backtraceArrays['function'] : $func = '';
             array_key_exists('class', $backtraceArrays) ? $class = $backtraceArrays['class'] : $class = '';
-            foreach ($_BreakpointDebugging->callStack as $callStack) {
-                array_key_exists('file', $callStack) ? $noFixFile = $callStack['file'] : $noFixFile = '';
-                array_key_exists('function', $callStack) ? $noFixFunc = $callStack['function'] : $noFixFunc = '';
-                array_key_exists('class', $callStack) ? $noFixClass = $callStack['class'] : $noFixClass = '';
-                if ($file == $noFixFile && $func == $noFixFunc && $class == $noFixClass) {
-                    $marks = str_repeat($this->_mark, 10);
-                    $log .= PHP_EOL . $this->tag['font']['caution'] . $marks . $this->tag['b'] . ' This function has been not fixed. ' . $this->tag['/b'] . $marks . $this->tag['/font'];
-                    break;
+            if (is_array($_BreakpointDebugging->callStack)) {
+                foreach ($_BreakpointDebugging->callStack as $callStack) {
+                    array_key_exists('file', $callStack) ? $noFixFile = $callStack['file'] : $noFixFile = '';
+                    array_key_exists('function', $callStack) ? $noFixFunc = $callStack['function'] : $noFixFunc = '';
+                    array_key_exists('class', $callStack) ? $noFixClass = $callStack['class'] : $noFixClass = '';
+                    if ($file == $noFixFile && $func == $noFixFunc && $class == $noFixClass) {
+                        $marks = str_repeat($this->_mark, 10);
+                        $log .= PHP_EOL . $this->tag['font']['caution'] . $marks . $this->tag['b'] . ' This function has been not fixed. ' . $this->tag['/b'] . $marks . $this->tag['/font'];
+                        break;
+                    }
                 }
             }
             $log .= PHP_EOL . $this->_mark . 'Error file =======>' . $this->tag['font']['string'] . '\'' . $file . '\'' . $this->tag['/font'];
@@ -432,7 +437,8 @@ final class BreakpointDebugging_Error
         
         if (is_array($paramValue)) {
             if ($paramName == 'GLOBALS') {
-                return false;
+                //return false;
+                return '';
             }
             return $this->_reflectArray($paramName, $paramValue, $tabNumber);
         } else if (is_object($paramValue)) {
@@ -491,9 +497,9 @@ final class BreakpointDebugging_Error
                 $log .= PHP_EOL . "\t,";
             }
             $return = $this->_getTypeAndValue($paramName, $paramValue, 1);
-            if ($return === false) {
-                continue;
-            }
+            //if ($return === false) {
+            //    continue;
+            //}
             $log .= $return;
         }
         return $log;

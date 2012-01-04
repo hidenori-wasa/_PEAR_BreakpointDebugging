@@ -54,7 +54,7 @@
  * PHP version 5.3
  * 
  * LICENSE:
- * Copyright (c) 2011, Hidenori Wasa
+ * Copyright (c) 2012, Hidenori Wasa
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification,
@@ -86,7 +86,8 @@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
 
-require_once 'PEAR/Exception.php';
+//require_once 'PEAR/Exception.php';
+require_once __DIR__ . '/PEAR/Exception.php';
 
 /**
  * This class is own package exception.
@@ -100,6 +101,30 @@ require_once 'PEAR/Exception.php';
  */
 class BreakpointDebugging_Exception extends PEAR_Exception
 {
+    /**
+     * This is "PEAR_Exception" breakpoint in case of local.
+     * 
+     * @param string $message  Exception message.
+     * @param int    $code     Exception code.
+     * @param string $previous Previous exception.
+     * 
+     * @return void
+     */
+    function __construct($message, $code = null, $previous = null)
+    {
+        global $_BreakpointDebugging_EXE_MODE;
+        assert(func_num_args() <= 3);
+        assert(is_string($message));
+        assert(is_int($code));
+        assert($previous instanceof Exception || $previous === null);
+        assert(mb_detect_encoding($message, 'utf8', true) != false);
+        
+        parent::__construct($message, $previous, $code);
+        // In case of local-debug. "BreakpointDebugging_breakpoint()" is called. Therefore we do the step execution to error place, and we can see condition of variables.
+        if ($_BreakpointDebugging_EXE_MODE & ( BreakpointDebugging::LOCAL_DEBUG | BreakpointDebugging::LOCAL_DEBUG_OF_RELEASE)) { // In case of local.
+            BreakpointDebugging_breakpoint();
+        }
+    }
 }
 
 /**
@@ -295,31 +320,6 @@ class BreakpointDebugging_InAllCase
         $error = new BreakpointDebugging_Error();
         return $error->errorHandler($errorNumber, $errorMessage, $errorFile, $errorLine, self::$prependErrorLog);
     }
-    
-    /**
-     * //This triggers error.
-     * This throws error exception.
-     * 
-     * @param string $errorMessage Error message.
-     * 
-     * @return void
-     */
-    final static function throwErrorException($errorMessage)
-    {
-        global $_BreakpointDebugging_EXE_MODE;
-        assert(func_num_args() == 1);
-        assert(mb_detect_encoding($errorMessage, 'utf8', true) != false);
-        
-        // In case of local-debug. "BreakpointDebugging_breakpoint()" is called. Therefore we do the step execution to error place, and we can see condition of variables.
-        if ($_BreakpointDebugging_EXE_MODE & self::LOCAL_DEBUG) {
-            $trace = debug_backtrace(true);
-            echo self::buildErrorCallStackLog($trace[0]['file'], $trace[0]['line'], 'EXCEPTION', $errorMessage);
-            BreakpointDebugging_breakpoint();
-        } else { // In case of not local-debug.
-            // Throw error exception.
-            throw new BreakpointDebugging_Error_Exception($errorMessage);
-        }
-    }
 }
 
 if ($_BreakpointDebugging_EXE_MODE & BreakpointDebugging_InAllCase::RELEASE) { // In case of release.
@@ -358,7 +358,8 @@ if ($_BreakpointDebugging_EXE_MODE & BreakpointDebugging_InAllCase::RELEASE) { /
         }
     }
     if (assert_options(ASSERT_ACTIVE, 0) === false) { // Ignore assert().
-        BreakpointDebugging::throwErrorException('');
+        //BreakpointDebugging::throwErrorException('');
+        throw new BreakpointDebugging_Error_Exception('');
     }
 } else { // In case of not release.
     include_once __DIR__ . '/BreakpointDebugging_Option.php';
