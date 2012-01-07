@@ -53,3 +53,7 @@ The features list
 The dependences
     Windows, but I want to support "Linux" in future.
     PHP >= 5.3.0
+
+Notice
+    I am creating a new package for "MySQLi".
+    In those influence, I am changing this package.

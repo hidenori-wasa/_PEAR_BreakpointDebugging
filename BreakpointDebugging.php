@@ -86,7 +86,6 @@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
 
-//require_once 'PEAR/Exception.php';
 require_once __DIR__ . '/PEAR/Exception.php';
 
 /**
@@ -121,7 +120,7 @@ class BreakpointDebugging_Exception extends PEAR_Exception
         
         parent::__construct($message, $previous, $code);
         // In case of local-debug. "BreakpointDebugging_breakpoint()" is called. Therefore we do the step execution to error place, and we can see condition of variables.
-        if ($_BreakpointDebugging_EXE_MODE & ( BreakpointDebugging::LOCAL_DEBUG | BreakpointDebugging::LOCAL_DEBUG_OF_RELEASE)) { // In case of local.
+        if ($_BreakpointDebugging_EXE_MODE & (BreakpointDebugging::LOCAL_DEBUG | BreakpointDebugging::LOCAL_DEBUG_OF_RELEASE)) { // In case of local.
             BreakpointDebugging_breakpoint();
         }
     }
@@ -189,6 +188,11 @@ class BreakpointDebugging_InAllCase
      * @var string This prepend to logging when self::errorHandler() is called.
      */
     public static $prependErrorLog = '';
+    
+    /**
+     * @var int Max log parameter nesting level.
+     */
+    public static $maxLogParamNestingLevel = 20;
     
     /**
      * @var array Function call stack information.
@@ -358,7 +362,6 @@ if ($_BreakpointDebugging_EXE_MODE & BreakpointDebugging_InAllCase::RELEASE) { /
         }
     }
     if (assert_options(ASSERT_ACTIVE, 0) === false) { // Ignore assert().
-        //BreakpointDebugging::throwErrorException('');
         throw new BreakpointDebugging_Error_Exception('');
     }
 } else { // In case of not release.

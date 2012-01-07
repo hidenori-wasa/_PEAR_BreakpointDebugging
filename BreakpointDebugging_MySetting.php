@@ -48,13 +48,13 @@ use \BreakpointDebugging as B;
 
 /**
  * This is function to set breakpoint. You must define this function outside namespace, and you must not change function name.
+ * If you don't have breakpoint, you can debug to set '$_BreakpointDebugging_EXE_MODE = B::REMOTE_DEBUG;'.
  * 
  * @return void
  */
 function BreakpointDebugging_breakpoint()
 {
     echo ''; // Please, set here breakpoint.
-    // If you don't have breakpoint, you can debug to set '$_BreakpointDebugging_EXE_MODE = B::REMOTE_DEBUG;'.
 }
 
 // Reference path setting.
@@ -75,6 +75,8 @@ $_BreakpointDebugging_EXE_MODE = B::LOCAL_DEBUG;
 // ### <=== Execution mode setting.
 
 // ### Item setting. ===>
+// B::$maxLogParamNestingLevel = 20; // Max log parameter nesting level. Default is 20. (1-100)
+assert(1 <= B::$maxLogParamNestingLevel && B::$maxLogParamNestingLevel <= 100);
 const LANGUAGE = 'Japanese';
 const TIMEZONE = 'Asia/Tokyo';
 const PHP_ERROR_LOG_FILE_PATH = './php_error.log';

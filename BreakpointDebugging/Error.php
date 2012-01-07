@@ -132,18 +132,21 @@ final class BreakpointDebugging_Error
         
         $tabs = str_repeat("\t", $tabNumber);
         $log = PHP_EOL . $tabs . $paramName . $this->tag['font']['=>'] . ' => ' . $this->tag['/font'] . $this->tag['b'] . 'array' . $this->tag['/b'] . ' (';
-        foreach ($array as $paramName => $paramValue) {
-            if ($paramName == 'GLOBALS') {
-                continue;
+        // Beyond max log param nesting level
+        if ($tabNumber >= B::$maxLogParamNestingLevel) {
+            $log .= PHP_EOL . $tabs . "\t...";
+        } else {
+            foreach ($array as $paramName => $paramValue) {
+                if ($paramName == 'GLOBALS') {
+                    continue;
+                }
+                if (is_string($paramName)) {
+                    $paramName = '\'' . $paramName . '\'';
+                }
+                //$return = $this->_getTypeAndValue($paramName, $paramValue, $tabNumber + 1);
+                //$log .= $return;
+                $log .= $this->_getTypeAndValue($paramName, $paramValue, $tabNumber + 1);
             }
-            if (is_string($paramName)) {
-                $paramName = '\'' . $paramName . '\'';
-            }
-            $return = $this->_getTypeAndValue($paramName, $paramValue, $tabNumber + 1);
-            //if ($return === false) {
-            //    continue;
-            //}
-            $log .= $return;
         }
         return $log . PHP_EOL . $tabs . ')';
     }
@@ -167,42 +170,43 @@ final class BreakpointDebugging_Error
         assert(is_object($object));
         assert(is_int($tabNumber));
         
-        $tab = str_repeat("\t", $tabNumber);
+        $tabs = str_repeat("\t", $tabNumber);
         $classReflection = new ReflectionClass($className);
         $propertyReflections = $classReflection->getProperties();
         $constants = $classReflection->getConstants();
         
-        $log = PHP_EOL . $tab . $paramName . $this->tag['font']['=>'] . ' => ' . $this->tag['/font'] . $this->tag['b'] . 'class ' . $this->tag['/b'] . $this->tag['i'] . $className . $this->tag['/i'] .
-            PHP_EOL . $tab . '{';
-        foreach ($constants as $constName => $constValue) {
-            $return = $this->_getTypeAndValue($this->tag['i'] . 'const ' . $this->tag['/i'] . $constName, $constValue, $tabNumber + 1);
-            //if ($return === false) {
-            //    continue;
-            //}
-            $log .= $return;
-        }
-        count($constants) ? $log .= PHP_EOL : null;
-        foreach ($propertyReflections as $propertyReflection) {
-            $propertyReflection->setAccessible(true);
-            $paramName = $this->tag['i'];
-            $paramName .= $propertyReflection->isPublic() ? 'public ' : '';
-            $paramName .= $propertyReflection->isPrivate() ? 'private ' : '';
-            $paramName .= $propertyReflection->isProtected() ? 'protected ' : '';
-            $paramName .= $propertyReflection->isStatic() ? 'static ' : '';
-            $paramName .= $this->tag['/i'];
-            $paramName .= '$' . $propertyReflection->getName();
-            if ($propertyReflection->isStatic()) {
-                $paramValue = $propertyReflection->getValue($propertyReflection);
-            } else {
-                $paramValue = $propertyReflection->getValue($object);
+        $log = PHP_EOL . $tabs . $paramName . $this->tag['font']['=>'] . ' => ' . $this->tag['/font'] . $this->tag['b'] . 'class ' . $this->tag['/b'] . $this->tag['i'] . $className . $this->tag['/i'] .
+            PHP_EOL . $tabs . '{';
+        // Beyond max log param nesting level
+        if ($tabNumber >= B::$maxLogParamNestingLevel) {
+            $log .= PHP_EOL . $tabs . "\t...";
+        } else {
+            foreach ($constants as $constName => $constValue) {
+                //$return = $this->_getTypeAndValue($this->tag['i'] . 'const ' . $this->tag['/i'] . $constName, $constValue, $tabNumber + 1);
+                //$log .= $return;
+                $log .= $this->_getTypeAndValue($this->tag['i'] . 'const ' . $this->tag['/i'] . $constName, $constValue, $tabNumber + 1);
             }
-            $return = $this->_getTypeAndValue($paramName, $paramValue, $tabNumber + 1);
-            //if ($return === false) {
-            //    continue;
-            //}
-            $log .= $return;
+            count($constants) ? $log .= PHP_EOL : null;
+            foreach ($propertyReflections as $propertyReflection) {
+                $propertyReflection->setAccessible(true);
+                $paramName = $this->tag['i'];
+                $paramName .= $propertyReflection->isPublic() ? 'public ' : '';
+                $paramName .= $propertyReflection->isPrivate() ? 'private ' : '';
+                $paramName .= $propertyReflection->isProtected() ? 'protected ' : '';
+                $paramName .= $propertyReflection->isStatic() ? 'static ' : '';
+                $paramName .= $this->tag['/i'];
+                $paramName .= '$' . $propertyReflection->getName();
+                if ($propertyReflection->isStatic()) {
+                    $paramValue = $propertyReflection->getValue($propertyReflection);
+                } else {
+                    $paramValue = $propertyReflection->getValue($object);
+                }
+                //$return = $this->_getTypeAndValue($paramName, $paramValue, $tabNumber + 1);
+                //$log .= $return;
+                $log .= $this->_getTypeAndValue($paramName, $paramValue, $tabNumber + 1);
+            }
         }
-        return $log . PHP_EOL . $tab . '}';
+        return $log . PHP_EOL . $tabs . '}';
     }
     
     /**
@@ -226,7 +230,8 @@ final class BreakpointDebugging_Error
             $backtrace = debug_backtrace();
             $trace = array ($backtrace[count($backtrace) - 1]);
         }
-        $log = $this->buildErrorCallStackLog2($pException->getfile(), $pException->getline(), 'EXCEPTION', $pException->getmessage(), $trace, $prependLog);
+        $log = $this->buildErrorCallStackLog2($pException->getfile(), $pException->getline(), get_class($pException), $pException->getmessage(), $trace, $prependLog);
+        
         $diplayLog = function ($log) {
             echo $log;
         };
@@ -437,7 +442,6 @@ final class BreakpointDebugging_Error
         
         if (is_array($paramValue)) {
             if ($paramName == 'GLOBALS') {
-                //return false;
                 return '';
             }
             return $this->_reflectArray($paramName, $paramValue, $tabNumber);
@@ -496,11 +500,9 @@ final class BreakpointDebugging_Error
             } else {
                 $log .= PHP_EOL . "\t,";
             }
-            $return = $this->_getTypeAndValue($paramName, $paramValue, 1);
-            //if ($return === false) {
-            //    continue;
-            //}
-            $log .= $return;
+            //$return = $this->_getTypeAndValue($paramName, $paramValue, 1);
+            //$log .= $return;
+            $log .= $this->_getTypeAndValue($paramName, $paramValue, 1);
         }
         return $log;
     }
