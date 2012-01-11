@@ -37,6 +37,11 @@ The features list
     Last "RELEASE" mode is log debugging with remote personal computer, and we must set on last for security.
         For example, on release.
 
+    ### Exception hierarchical structure ###
+    PEAR_Exception
+        BreakpointDebugging_Exception
+            BreakpointDebugging_Error_Exception
+
     ### Useful function index. ###
     Please, register at top of the function or method being not fixed.
         final static function BreakpointDebugging::registerNotFixedLocation(&$isRegister)

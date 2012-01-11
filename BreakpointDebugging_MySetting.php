@@ -79,6 +79,7 @@ $_BreakpointDebugging_EXE_MODE = B::LOCAL_DEBUG;
 assert(1 <= B::$maxLogParamNestingLevel && B::$maxLogParamNestingLevel <= 100);
 const LANGUAGE = 'Japanese';
 const TIMEZONE = 'Asia/Tokyo';
+// Warning: When you use existing log, it is destroyed if it is not "UTF-8". It is necessary to be a single character sets.
 const PHP_ERROR_LOG_FILE_PATH = './php_error.log';
 // The HTTPS web application root directory.
 const LOCAL_HTTPS_APP_ROOT = '';
