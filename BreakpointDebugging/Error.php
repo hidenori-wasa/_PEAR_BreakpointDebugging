@@ -143,8 +143,6 @@ final class BreakpointDebugging_Error
                 if (is_string($paramName)) {
                     $paramName = '\'' . $paramName . '\'';
                 }
-                //$return = $this->_getTypeAndValue($paramName, $paramValue, $tabNumber + 1);
-                //$log .= $return;
                 $log .= $this->_getTypeAndValue($paramName, $paramValue, $tabNumber + 1);
             }
         }
@@ -182,8 +180,6 @@ final class BreakpointDebugging_Error
             $log .= PHP_EOL . $tabs . "\t...";
         } else {
             foreach ($constants as $constName => $constValue) {
-                //$return = $this->_getTypeAndValue($this->tag['i'] . 'const ' . $this->tag['/i'] . $constName, $constValue, $tabNumber + 1);
-                //$log .= $return;
                 $log .= $this->_getTypeAndValue($this->tag['i'] . 'const ' . $this->tag['/i'] . $constName, $constValue, $tabNumber + 1);
             }
             count($constants) ? $log .= PHP_EOL : null;
@@ -201,8 +197,6 @@ final class BreakpointDebugging_Error
                 } else {
                     $paramValue = $propertyReflection->getValue($object);
                 }
-                //$return = $this->_getTypeAndValue($paramName, $paramValue, $tabNumber + 1);
-                //$log .= $return;
                 $log .= $this->_getTypeAndValue($paramName, $paramValue, $tabNumber + 1);
             }
         }
@@ -401,11 +395,11 @@ final class BreakpointDebugging_Error
             array_key_exists('line', $backtraceArrays) ? $line = $backtraceArrays['line'] : $line = '';
             array_key_exists('function', $backtraceArrays) ? $func = $backtraceArrays['function'] : $func = '';
             array_key_exists('class', $backtraceArrays) ? $class = $backtraceArrays['class'] : $class = '';
-            if (is_array($_BreakpointDebugging->callStack)) {
-                foreach ($_BreakpointDebugging->callStack as $callStack) {
-                    array_key_exists('file', $callStack) ? $noFixFile = $callStack['file'] : $noFixFile = '';
-                    array_key_exists('function', $callStack) ? $noFixFunc = $callStack['function'] : $noFixFunc = '';
-                    array_key_exists('class', $callStack) ? $noFixClass = $callStack['class'] : $noFixClass = '';
+            if (is_array($_BreakpointDebugging->notFixedLocations)) {
+                foreach ($_BreakpointDebugging->notFixedLocations as $notFixedLocation) {
+                    array_key_exists('file', $notFixedLocation) ? $noFixFile = $notFixedLocation['file'] : $noFixFile = '';
+                    array_key_exists('function', $notFixedLocation) ? $noFixFunc = $notFixedLocation['function'] : $noFixFunc = '';
+                    array_key_exists('class', $notFixedLocation) ? $noFixClass = $notFixedLocation['class'] : $noFixClass = '';
                     if ($file == $noFixFile && $func == $noFixFunc && $class == $noFixClass) {
                         $marks = str_repeat($this->_mark, 10);
                         $log .= PHP_EOL . $this->tag['font']['caution'] . $marks . $this->tag['b'] . ' This function has been not fixed. ' . $this->tag['/b'] . $marks . $this->tag['/font'];
@@ -417,11 +411,29 @@ final class BreakpointDebugging_Error
             $log .= PHP_EOL . $this->_mark . 'Error line =======>' . $this->tag['font']['int'] . $line . $this->tag['/font'];
             $log .= PHP_EOL . $this->_mark . 'Function call ====>' . $this->tag['i'] . $func . $this->tag['/i'] . '( ';
             if (array_key_exists('args', $backtraceArrays)) {
-                // Analyze parameter part of back trace array, and return string.
+                // Analyze parameters part of trace array, and return character string.
                 $log .= $this->_searchDebugBacktraceArgsToString($backtraceArrays['args']);
             }
-            $log .= PHP_EOL . ');' .
-                PHP_EOL;
+            $log .= PHP_EOL . ');';
+            $log .= PHP_EOL . $this->_mark . 'Function values ==>';
+            $valuesToTraceLines = &$_BreakpointDebugging->valuesToTrace;
+            $onceFlag = false;
+            foreach ($valuesToTraceLines as $valuesToTraceFiles) {
+                foreach ($valuesToTraceFiles as $trace) {
+                    array_key_exists('file', $trace) ? $callFile = $trace['file'] : $callFile = '';
+                    array_key_exists('function', $trace) ? $callFunc = $trace['function'] : $callFunc = '';
+                    array_key_exists('class', $trace) ? $callClass = $trace['class'] : $callClass = '';
+                    if ($file == $callFile && $func == $callFunc && $class == $callClass) {
+                        if ($onceFlag) {
+                            $log .= PHP_EOL . "\t,";
+                        }
+                        $onceFlag = true;
+                        // Analyze values part of trace array, and return character string.
+                        $log .= $this->_searchDebugBacktraceArgsToString($trace['values']);
+                    }
+                }
+            }
+            $log .= PHP_EOL;
         }
         $log .= '//////////////////////////////// CALL STACK END ////////////////////////////////';
         return $this->tag['pre'] . $prependLog . $log . $this->tag['/pre'];
@@ -500,8 +512,6 @@ final class BreakpointDebugging_Error
             } else {
                 $log .= PHP_EOL . "\t,";
             }
-            //$return = $this->_getTypeAndValue($paramName, $paramValue, 1);
-            //$log .= $return;
             $log .= $this->_getTypeAndValue($paramName, $paramValue, 1);
         }
         return $log;

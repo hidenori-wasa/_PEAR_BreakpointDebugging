@@ -35,7 +35,15 @@ function fnTestB()
     // Register the function being not fixed.
     static $isRegister; B::registerNotFixedLocation( $isRegister);
     global $object, $array, $varietyObject;
-
+	define ('TEST_CONST', '<TEST CONST>');
+	
+	$testString = '<TEST STRING>';
+	// Add value to trace.
+    B::addValuesToTrace(array('TEST_CONST' => TEST_CONST, '$testString' => $testString, '$varietyObject' => $varietyObject));
+    for ($count = 0; $count <= 10; $count++) {
+        B::addValuesToTrace(array('$count' => $count));
+    }
+    
     try {
         fnTestC(true, false, 1, 1.1, 'ABC', $object, $array, tmpfile(), null, $varietyObject);
     } catch (\Exception $exception) {

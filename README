@@ -56,9 +56,10 @@ The features list
         static function BreakpointDebugging::convertMbStringForDebug($params)
 
 The dependences
-    Windows, but I want to support "Linux" in future.
+    Windows, but I want to support "Linux", therefore I am studying remote linux rental server, then I will debug with it.
     PHP >= 5.3.0
 
 Notice
-    I am creating a new package for "MySQLi".
-    In those influence, I am changing this package.
+    In the case except the release, I am planning to check whether an extension module is loaded.
+    I am planning to move a code except the release to this file by creating the option file "BreakpointDebugging_MySetting_option.php" of "BreakpointDebugging_MySetting.php".
+    Also, in case of remote debug, when the value of "php.ini" differ in "BreakpointDebugging::iniSet()", it displays to move "BreakpointDebugging::iniSet()" to "BreakpointDebugging_MySetting.php".

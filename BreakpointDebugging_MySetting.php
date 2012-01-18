@@ -136,8 +136,8 @@ if ($_BreakpointDebugging_EXE_MODE & B::RELEASE) { // In case of release.
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // ### [mbstring] setting in "php.ini" file. ###
-// The character code specification of regular expression of PHP
-mb_regex_encoding('utf8');
+//// The character code specification of regular expression of PHP
+//mb_regex_encoding('utf8');
 // The default character sets of PHP
 B::iniSet('default_charset', 'utf8');
 // The default value of language setting (NLS)
@@ -206,5 +206,6 @@ B::iniCheck('post_max_size', '8M', 'We recommends to set "post_max_size = 8M" of
 // The SMTP port setting of Windows
 B::iniSet('smtp_port', '25');
 B::iniCheck('mail.add_x_header', '', 'We recommend to set "mail.add_x_header = Off" of "php.ini" file because does not write that header continue "UID" behind the file name.');
+B::iniCheck('upload_max_filesize', '128M', 'We recommend to set "upload_max_filesize = 128M" of "php.ini" file because it is "XAMPP" value.');
 
 ?>

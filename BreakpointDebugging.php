@@ -195,9 +195,14 @@ class BreakpointDebugging_InAllCase
     public static $maxLogParamNestingLevel = 20;
     
     /**
-     * @var array Function call stack information.
+     * @var array Locations to be not Fixed
      */
-    public $callStack;
+    public $notFixedLocations;
+    
+    /**
+     * @var array Values to trace
+     */
+    public $valuesToTrace = array();
     
     /**
      * Please, register at top of the function or method being not fixed.
@@ -217,16 +222,48 @@ class BreakpointDebugging_InAllCase
         $isRegister = true;
         
         global $_BreakpointDebugging;
-        static $currentNumber = 0; // Location current number.
         
-        // Location number.
         $backTrace = debug_backtrace(true);
         $index = 0;
         if (array_key_exists(1, $backTrace)) {
             $index = 1;
         }
-        $_BreakpointDebugging->callStack[$currentNumber] = $backTrace[$index];
-        $currentNumber++;
+        $_BreakpointDebugging->notFixedLocations[] = $backTrace[$index];
+    }
+    
+    /**
+     * Add values to trace
+     * 
+     * @param array $values Values
+     * 
+     * @return void
+     * 
+     * @example BreakpointDebugging::addValuesToTrace(array('TEST_CONST' => TEST_CONST, '$testString' => $testString, '$varietyObject' => $varietyObject));
+     */
+    final static function addValuesToTrace($values)
+    {
+        global $_BreakpointDebugging;
+        
+        $backTrace = debug_backtrace(true);
+        $index = 0;
+        if (array_key_exists(1, $backTrace)) {
+            $index = 1;
+        }
+        $callInfo = &$backTrace[0];
+        if (array_key_exists('file', $callInfo)) {
+            // The file name to call
+            $file = &$callInfo['file'];
+        } else {
+            return;
+        }
+        if (array_key_exists('line', $callInfo)) {
+            // The line number to call
+            $line = &$callInfo['line'];
+        } else {
+            return;
+        }
+        $_BreakpointDebugging->valuesToTrace[$line][$file] = $backTrace[$index];
+        $_BreakpointDebugging->valuesToTrace[$line][$file]['values'] = $values;
     }
     
     /**
