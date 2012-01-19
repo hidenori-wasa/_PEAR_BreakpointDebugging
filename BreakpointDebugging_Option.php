@@ -160,6 +160,7 @@ final class BreakpointDebugging extends BreakpointDebugging_InAllCase
     
     /**
      * This is ini_set() with validation except for release mode.
+     * I set with "ini_set()" because "php.ini" file and ".htaccess" file isn't sometimes possible to be set on sharing server.
      * 
      * @param string $phpIniVariable This is php.ini variable.
      * @param string $setValue       Value of variable.
@@ -190,7 +191,6 @@ EOD;
             return;
         }
         if (ini_set($phpIniVariable, $setValue) === false) {
-            //self::throwErrorException('');
             throw new BreakpointDebugging_Error_Exception('');
         }
     }
@@ -233,19 +233,15 @@ EOD;
 
 // ### Assertion setting. ###
 if (assert_options(ASSERT_ACTIVE, 1) === false) { // This makes the evaluation of assert() effective.
-    //B::throwErrorException('');
     throw new BreakpointDebugging_Error_Exception('');
 }
 if (assert_options(ASSERT_WARNING, 1) === false) { // In case of failing in assertion, this generates a warning.
-    //B::throwErrorException('');
     throw new BreakpointDebugging_Error_Exception('');
 }
 if (assert_options(ASSERT_BAIL, 0) === false) { // In case of failing in assertion, this doesn't end execution.
-    //B::throwErrorException('');
     throw new BreakpointDebugging_Error_Exception('');
 }
 if (assert_options(ASSERT_QUIET_EVAL, 0) === false) { // As for assertion expression, this doesn't make error_reporting invalid.
-    //B::throwErrorException('');
     throw new BreakpointDebugging_Error_Exception('');
 }
 // ### usage ###

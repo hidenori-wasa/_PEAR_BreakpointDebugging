@@ -136,14 +136,10 @@ if ($_BreakpointDebugging_EXE_MODE & B::RELEASE) { // In case of release.
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // ### [mbstring] setting in "php.ini" file. ###
-//// The character code specification of regular expression of PHP
-//mb_regex_encoding('utf8');
 // The default character sets of PHP
 B::iniSet('default_charset', 'utf8');
 // The default value of language setting (NLS)
 B::iniSet('mbstring.language', LANGUAGE);
-// // The character code in case of internal process of PHP script
-// mb_internal_encoding('utf8');
 // Set "mbstring.internal_encoding = utf8" of "php.ini" file because this is purpose to define default value of inner character encoding.
 B::iniSet('mbstring.internal_encoding', 'utf8');
 // Set "mbstring.http_input = auto" of "php.ini" file because this is purpose to define default value of HTTP entry character encoding.

@@ -41,10 +41,13 @@
  * ### Useful function index. ###
  * Please, register at top of the function or method being not fixed.
  *     final static function BreakpointDebugging::registerNotFixedLocation(&$isRegister)
+ * Add values to trace
+ *     final static function BreakpointDebugging::addValuesToTrace($values)
  * This writes inside of "catch()", then display logging or log.
- *     static function exceptionHandler($exception, $prependLog = '')
+ *     BreakpointDebugging::$prependExceptionLog
+ *     final static function BreakpointDebugging::exceptionHandler($exception)
  * This return the function call stack log.
- *     final static function BreakpointDebugging::buildErrorCallStackLog($errorFile, $errorLine, $errorKind, $errorMessage)
+ *     final static function BreakpointDebugging::buildErrorCallStackLog($errorKind, $errorMessage)
  * This changes to unify multibyte character strings such as system-output in UTF8, and this returns.
  *     final static function BreakpointDebugging::convertMbString($string)
  * This changes a character sets to display a multibyte character string with local window of debugger, and this returns it.
@@ -180,9 +183,9 @@ class BreakpointDebugging_InAllCase
     const RELEASE = 8;
     
     /**
-     * @var string This prepend to logging when self::exceptionHandlerOfGlobal() is called.
+     * @var string This prepend to logging when self::exceptionHandler() is called.
      */
-    public static $prependGlobalExceptionLog = '';
+    public static $prependExceptionLog = '';
     
     /**
      * @var string This prepend to logging when self::errorHandler() is called.
@@ -224,11 +227,13 @@ class BreakpointDebugging_InAllCase
         global $_BreakpointDebugging;
         
         $backTrace = debug_backtrace(true);
-        $index = 0;
+        // In case of scope of method or function or included file.
         if (array_key_exists(1, $backTrace)) {
-            $index = 1;
+            $backTrace2 = &$backTrace[1];
+        } else { // In case of scope of top file.
+            $backTrace2['file'] = &$backTrace[0]['file'];
         }
-        $_BreakpointDebugging->notFixedLocations[] = $backTrace[$index];
+        $_BreakpointDebugging->notFixedLocations[] = $backTrace2;
     }
     
     /**
@@ -245,10 +250,6 @@ class BreakpointDebugging_InAllCase
         global $_BreakpointDebugging;
         
         $backTrace = debug_backtrace(true);
-        $index = 0;
-        if (array_key_exists(1, $backTrace)) {
-            $index = 1;
-        }
         $callInfo = &$backTrace[0];
         if (array_key_exists('file', $callInfo)) {
             // The file name to call
@@ -262,42 +263,47 @@ class BreakpointDebugging_InAllCase
         } else {
             return;
         }
-        $_BreakpointDebugging->valuesToTrace[$line][$file] = $backTrace[$index];
+        // In case of scope of method or function or included file.
+        if (array_key_exists(1, $backTrace)) {
+            $backTrace2 = &$backTrace[1];
+        } else { // In case of scope of top file.
+            $backTrace2['file'] = &$backTrace[0]['file'];
+        }
+        $_BreakpointDebugging->valuesToTrace[$line][$file] = $backTrace2;
         $_BreakpointDebugging->valuesToTrace[$line][$file]['values'] = $values;
     }
     
     /**
      * This writes inside of "catch()", then display logging or log.
      * 
-     * @param object $exception  Exception info.
-     * @param string $prependLog This prepend this parameter logging.
+     * @param object $pException Exception info.
      * 
      * @return void
      */
-    final static function exceptionHandler($exception, $prependLog = '')
+    final static function exceptionHandler($pException)
     {
         $error = new BreakpointDebugging_Error();
-        $error->exceptionHandler2($exception, $prependLog);
+        $error->exceptionHandler2($pException, self::$prependExceptionLog);
     }
     
     /**
      * This return the function call stack log.
      * 
-     * @param string $errorFile    Error file name.
-     * @param int    $errorLine    Error file line.
      * @param int    $errorKind    Error kind.
      * @param string $errorMessage Error message.
      * 
      * @return string Function call stack log.
      * 
-     * @example $log = buildErrorCallStackLog(__FILE__, __LINE__, 'EXCEPTION', 'Description of exception.');
+     * @example $log = BreakpointDebugging::buildErrorCallStackLog('EXCEPTION', 'Description of exception.');
      */
-    final static function buildErrorCallStackLog($errorFile, $errorLine, $errorKind, $errorMessage)
+    final static function buildErrorCallStackLog($errorKind, $errorMessage)
     {
         $error = new BreakpointDebugging_Error();
         $trace = debug_backtrace(true);
         unset($trace[0]);
-        return $error->buildErrorCallStackLog2($errorFile, $errorLine, $errorKind, $errorMessage, $trace);
+        // Add scope of top file.
+        array_push($trace,	array());
+        return $error->buildErrorCallStackLog2($errorKind, $errorMessage, $trace);
     }
     
     /**
@@ -334,19 +340,6 @@ class BreakpointDebugging_InAllCase
     }
     
     /**
-     * Global exception handler.
-     * 
-     * @param object $exception Exception info.
-     * 
-     * @return void
-     */
-    final static function exceptionHandlerOfGlobal($exception)
-    {
-        self::exceptionHandler($exception, self::$prependGlobalExceptionLog);
-        echo 'Program has been ending as global exception.';
-    }
-    
-    /**
      * Error handler.
      * 
      * @param int    $errorNumber  Error number.
@@ -377,7 +370,8 @@ if ($_BreakpointDebugging_EXE_MODE & BreakpointDebugging_InAllCase::RELEASE) { /
     final class BreakpointDebugging extends BreakpointDebugging_InAllCase
     {
         /**
-        * This is ini_set() without validation in case of release mode.
+         * This is ini_set() without validation in case of release mode.
+         * I set with "ini_set()" because "php.ini" file and ".htaccess" file isn't sometimes possible to be set on sharing server.
          * 
          * @param string $phpIniVariable This is php.ini variable.
          * @param string $setValue       Value of variable.
@@ -406,7 +400,7 @@ if ($_BreakpointDebugging_EXE_MODE & BreakpointDebugging_InAllCase::RELEASE) { /
 }
 
 // This sets global exception handler.
-set_exception_handler('BreakpointDebugging::exceptionHandlerOfGlobal');
+set_exception_handler('BreakpointDebugging::exceptionHandler');
 // This sets error handler.( -1 sets all bits on 1. Therefore, this specifies error, warning and note of all kinds and so on.)
 set_error_handler('BreakpointDebugging::errorHandler', -1);
 $_BreakpointDebugging = new BreakpointDebugging();

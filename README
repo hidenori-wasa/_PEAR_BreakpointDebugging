@@ -45,10 +45,13 @@ The features list
     ### Useful function index. ###
     Please, register at top of the function or method being not fixed.
         final static function BreakpointDebugging::registerNotFixedLocation(&$isRegister)
+    Add values to trace
+        final static function BreakpointDebugging::addValuesToTrace($values)
     This writes inside of "catch()", then display logging or log.
-        static function exceptionHandler($exception, $prependLog = '')
+        BreakpointDebugging::$prependExceptionLog
+        final static function BreakpointDebugging::exceptionHandler($exception)
     This return the function call stack log.
-        final static function BreakpointDebugging::buildErrorCallStackLog($errorFile, $errorLine, $errorKind, $errorMessage)
+        final static function BreakpointDebugging::buildErrorCallStackLog($errorKind, $errorMessage)
     This changes to unify multibyte character strings such as system-output in UTF8, and this returns.
         final static function BreakpointDebugging::convertMbString($string)
     This changes a character sets to display a multibyte character string with local window of debugger, and this returns it.
