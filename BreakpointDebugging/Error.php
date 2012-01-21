@@ -59,7 +59,7 @@ use \BreakpointDebugging as B;
 final class BreakpointDebugging_Error
 {
     private $_isLogging;
-    public $mark;
+    private $_mark;
     public $tag;
     
     /**
@@ -73,7 +73,7 @@ final class BreakpointDebugging_Error
 
         if ($_BreakpointDebugging_EXE_MODE & (B::RELEASE | B::LOCAL_DEBUG_OF_RELEASE)) { // In case of the logging.
             $this->_isLogging = true;
-            $this->mark = '#';
+            $this->_mark = '#';
             $this->tag['font']['caution'] = '';
             $this->tag['font']['bool'] = '';
             $this->tag['font']['int'] = '';
@@ -93,7 +93,7 @@ final class BreakpointDebugging_Error
             $this->tag['/pre'] = '';
         } else { // In case of not the logging.
             $this->_isLogging = false;
-            $this->mark = '&diams;';
+            $this->_mark = '&diams;';
             $this->tag['font']['caution'] = '<font color=\'#ff0000\'>';
             $this->tag['font']['bool'] = '<font color=\'#75507b\'>';
             $this->tag['font']['int'] = '<font color=\'#4e9a06\'>';
@@ -115,11 +115,60 @@ final class BreakpointDebugging_Error
     }
     
     /**
+     * Add function-values to log.
+     * Caution: When using this method in scope of start page, create start page of dummy, then call this page by "require_once".
+     *          Because it is specification of "$Trace" property of "Exception" class.
+     * 
+     * @param string &$logBuffer Error log buffer
+     * @param string &$log       Error log
+     * @param bool   &$onceFlag2 False means logging parameter header.
+     * @param string $func       Function name of call stack
+     * @param string $class      Class name of call stack
+     * @param string $line       Line number of call stack
+     * @param string $file       File name of call stack
+     * @param string $tabs       Tabs to indent
+     * 
+     * @return void
+     */
+    private function _addFunctionValuesToLog(&$logBuffer, &$log, &$onceFlag2, $func, $class, $line, $file, $tabs = '')
+    {
+        global $_BreakpointDebugging;
+        $paramNumber = func_num_args();
+        
+        $valuesToTraceFiles = &$_BreakpointDebugging->valuesToTrace;
+        $onceFlag = false;
+        foreach ($valuesToTraceFiles as $traceFile => $valuesToTraceLines) {
+            foreach ($valuesToTraceLines as $trace) {
+                array_key_exists('function', $trace) ? $callFunc = $trace['function'] : $callFunc = '';
+                array_key_exists('class', $trace) ? $callClass = $trace['class'] : $callClass = '';
+                if ($callFunc == '' && $callClass == '' && $paramNumber == 8) {
+                    continue;
+                }
+                if ($func == $callFunc && $class == $callClass) {
+                    if ($onceFlag2) {
+                        $onceFlag2 = false;
+                        array_key_exists('file', $trace) ? $callFile = $trace['file'] : $callFile = '';
+                        $this->_addParameterHeaderToLog($log, $callFile, $line, $func, $class);
+                    }
+                    if ($onceFlag) {
+                        $logBuffer .= PHP_EOL . $tabs . "\t,";
+                    } else {
+                        $logBuffer .= PHP_EOL . $tabs . $this->_mark . 'Function values ==>';
+                        $onceFlag = true;
+                    }
+                    // Analyze values part of trace array, and return character string.
+                    $logBuffer .= $this->_searchDebugBacktraceArgsToString($trace['values'], strlen($tabs) + 1);
+                }
+            }
+        }
+    }
+    
+    /**
      * This method builds array information.
      * 
-     * @param mixed $paramName Parameter name or number.
-     * @param array $array     The array to reflect.
-     * @param int   $tabNumber The tab number to indent.
+     * @param mixed $paramName Parameter name or number
+     * @param array $array     The array to reflect
+     * @param int   $tabNumber The tab number to indent
      * 
      * @return string Array information.
      */
@@ -131,7 +180,12 @@ final class BreakpointDebugging_Error
         assert(is_int($tabNumber));
         
         $tabs = str_repeat("\t", $tabNumber);
-        $log = PHP_EOL . $tabs . $paramName . $this->tag['font']['=>'] . ' => ' . $this->tag['/font'] . $this->tag['b'] . 'array' . $this->tag['/b'] . ' (';
+        
+        $onceFlag2 = false;
+        $this->_outputFixedFunctionToLogging($array, $log, $onceFlag2, $func, $class, '', $tabs);
+        $this->_addFunctionValuesToLog($logBuffer, $log, $onceFlag2, $func, $class, '', '', "\t" . $tabs);
+        
+        $log .= PHP_EOL . $tabs . $paramName . $this->tag['font']['=>'] . ' => ' . $this->tag['/font'] . $this->tag['b'] . 'array' . $this->tag['/b'] . ' (';
         // Beyond max log param nesting level
         if ($tabNumber >= B::$maxLogParamNestingLevel) {
             $log .= PHP_EOL . $tabs . "\t...";
@@ -146,7 +200,9 @@ final class BreakpointDebugging_Error
                 $log .= $this->_getTypeAndValue($paramName, $paramValue, $tabNumber + 1);
             }
         }
-        return $log . PHP_EOL . $tabs . ')';
+        $log .= $logBuffer .
+            PHP_EOL . $tabs . ')';
+        return $log;
     }
     
     /**
@@ -319,7 +375,7 @@ final class BreakpointDebugging_Error
         }
         $trace = debug_backtrace(true);
         unset($trace[0], $trace[1]);
-        // Add scope of top file.
+        // Add scope of start page file.
         array_push($trace,	array());
         $log = $this->buildErrorCallStackLog2($errorKind, $errorMessage, $trace, $prependLog);
         $diplayLog = function ($log) {
@@ -342,6 +398,74 @@ final class BreakpointDebugging_Error
         default:
             assert(false);
             exit(-1);
+        }
+    }
+    
+    /**
+     * Add parameter header to error log
+     * 
+     * @param string &$log  Error log
+     * @param string $file  File name
+     * @param string $line  Line number
+     * @param string $func  Function name
+     * @param string $class Class name
+     * 
+     * @return void
+     */
+    private function _addParameterHeaderToLog(&$log, $file, $line, $func, $class)
+    {
+        if ($file) {
+            $log .= PHP_EOL . $this->_mark . 'Error file =======>' . $this->tag['font']['string'] . '\'' . $file . '\'' . $this->tag['/font'];
+        }
+        if ($line) {
+            $log .= PHP_EOL . $this->_mark . 'Error line =======>' . $this->tag['font']['int'] . $line . $this->tag['/font'];
+        }
+        if ($class) {
+            $log .= PHP_EOL . $this->_mark . 'Error class ======>' . $this->tag['i'] . $class . $this->tag['/i'];
+        }
+        if ($func) {
+            $log .= PHP_EOL . $this->_mark . 'Error function ===>' . $this->tag['i'] . $func . $this->tag['/i'] . '( ';
+        }
+    }
+    
+    /**
+     * Output fixed-function to logging
+     * 
+     * @param array  $backTrace  Call stack
+     * @param string &$log       Error log
+     * @param bool   &$onceFlag2 False means logging parameter header.
+     * @param string &$func      Function name of call stack
+     * @param string &$class     Class name of call stack
+     * @param string $line       Line number of call stack
+     * @param string $tabs       Tabs to indent
+     * 
+     * @return void
+     */
+    private function _outputFixedFunctionToLogging($backTrace, &$log, &$onceFlag2, &$func, &$class, $line, $tabs = '')
+    {
+        global $_BreakpointDebugging;
+        $paramNumber = func_num_args();
+        
+        array_key_exists('function', $backTrace) ? $func = $backTrace['function'] : $func = '';
+        array_key_exists('class', $backTrace) ? $class = $backTrace['class'] : $class = '';
+        if (is_array($_BreakpointDebugging->notFixedLocations)) {
+            foreach ($_BreakpointDebugging->notFixedLocations as $notFixedLocation) {
+                array_key_exists('function', $notFixedLocation) ? $noFixFunc = $notFixedLocation['function'] : $noFixFunc = '';
+                array_key_exists('class', $notFixedLocation) ? $noFixClass = $notFixedLocation['class'] : $noFixClass = '';
+                if ($noFixFunc == '' && $noFixClass == '' && $paramNumber == 7) {
+                    continue;
+                }
+                if ($func == $noFixFunc && $class == $noFixClass) {
+                    $marks = str_repeat($this->_mark, 10);
+                    $log .= PHP_EOL . $tabs . $this->tag['font']['caution'] . $marks . $this->tag['b'] . ' This function has been not fixed. ' . $this->tag['/b'] . $marks . $this->tag['/font'];
+                    if ($onceFlag2) {
+                        $onceFlag2 = false;
+                        array_key_exists('file', $notFixedLocation) ? $noFixFile = $notFixedLocation['file'] : $noFixFile = '';
+                        $this->_addParameterHeaderToLog($log, $noFixFile, $line, $func, $class);
+                    }
+                    break;
+                }
+            }
         }
     }
     
@@ -378,77 +502,24 @@ final class BreakpointDebugging_Error
         }
         // Create error log from the argument.
         $log = '/////////////////////////////// CALL STACK BEGIN ///////////////////////////////' .
-            PHP_EOL . $this->mark . 'Error kind =======>' . $this->tag['font']['string'] . '\'' . $errorKind . '\'' . $this->tag['/font'] .
-            PHP_EOL . $this->mark . 'Error message ====>' . $this->tag['font']['string'] . '\'' . $errorMessage . '\'' . $this->tag['/font'] .
+            PHP_EOL . $this->_mark . 'Error kind =======>' . $this->tag['font']['string'] . '\'' . $errorKind . '\'' . $this->tag['/font'] .
+            PHP_EOL . $this->_mark . 'Error message ====>' . $this->tag['font']['string'] . '\'' . $errorMessage . '\'' . $this->tag['/font'] .
             PHP_EOL;
         // Search array which debug_backtrace() or getTrace() returns, and add a parametric information.
-        $addToLog = function (&$log, $self, $file, $line, $func, $class) {
-            if ($file) {
-                $log .= PHP_EOL . $self->mark . 'Error file =======>' . $self->tag['font']['string'] . '\'' . $file . '\'' . $self->tag['/font'];
-            }
-            if ($line) {
-                $log .= PHP_EOL . $self->mark . 'Error line =======>' . $self->tag['font']['int'] . $line . $self->tag['/font'];
-            }
-            if ($class) {
-                $log .= PHP_EOL . $self->mark . 'Error class ======>' . $self->tag['i'] . $class . $self->tag['/i'];
-            }
-            if ($func) {
-                $log .= PHP_EOL . $self->mark . 'Error function ===>' . $self->tag['i'] . $func . $self->tag['/i'] . '( ';
-            }
-        };
         foreach ($backTrace as $backtraceArrays) {
             $onceFlag2 = true;
             $logBuffer = '';
             array_key_exists('file', $backtraceArrays) ? $file = $backtraceArrays['file'] : $file = '';
             array_key_exists('line', $backtraceArrays) ? $line = $backtraceArrays['line'] : $line = '';
-            array_key_exists('function', $backtraceArrays) ? $func = $backtraceArrays['function'] : $func = '';
-            array_key_exists('class', $backtraceArrays) ? $class = $backtraceArrays['class'] : $class = '';
-            if (is_array($_BreakpointDebugging->notFixedLocations)) {
-                foreach ($_BreakpointDebugging->notFixedLocations as $notFixedLocation) {
-                    array_key_exists('function', $notFixedLocation) ? $noFixFunc = $notFixedLocation['function'] : $noFixFunc = '';
-                    array_key_exists('class', $notFixedLocation) ? $noFixClass = $notFixedLocation['class'] : $noFixClass = '';
-                    if ($func == $noFixFunc && $class == $noFixClass) {
-                        $marks = str_repeat($this->mark, 10);
-                        $log .= PHP_EOL . $this->tag['font']['caution'] . $marks . $this->tag['b'] . ' This function has been not fixed. ' . $this->tag['/b'] . $marks . $this->tag['/font'];
-                        if ($onceFlag2) {
-                            $onceFlag2 = false;
-                            array_key_exists('file', $notFixedLocation) ? $noFixFile = $notFixedLocation['file'] : $noFixFile = '';
-                            $addToLog($log, $this, $noFixFile, $line, $func, $class);
-                        }
-                        break;
-                    }
-                }
-            }
+            $this->_outputFixedFunctionToLogging($backtraceArrays, $log, $onceFlag2, $func, $class, $line);
             if (array_key_exists('args', $backtraceArrays)) {
                 // Analyze parameters part of trace array, and return character string.
                 $logBuffer .= $this->_searchDebugBacktraceArgsToString($backtraceArrays['args']);
                 $logBuffer .= PHP_EOL . ');';
             }
-            $valuesToTraceLines = &$_BreakpointDebugging->valuesToTrace;
-            $onceFlag = false;
-            foreach ($valuesToTraceLines as $valuesToTraceFiles) {
-                foreach ($valuesToTraceFiles as $trace) {
-                    array_key_exists('function', $trace) ? $callFunc = $trace['function'] : $callFunc = '';
-                    array_key_exists('class', $trace) ? $callClass = $trace['class'] : $callClass = '';
-                    if ($func == $callFunc && $class == $callClass) {
-                        if ($onceFlag2) {
-                            $onceFlag2 = false;
-                            array_key_exists('file', $trace) ? $callFile = $trace['file'] : $callFile = '';
-                            $addToLog($log, $this, $callFile, $line, $func, $class);
-                        }
-                        if ($onceFlag) {
-                            $logBuffer .= PHP_EOL . "\t,";
-                        } else {
-                            $logBuffer .= PHP_EOL . $this->mark . 'Function values ==>';
-                            $onceFlag = true;
-                        }
-                        // Analyze values part of trace array, and return character string.
-                        $logBuffer .= $this->_searchDebugBacktraceArgsToString($trace['values']);
-                    }
-                }
-            }
+            $this->_addFunctionValuesToLog($logBuffer, $log, $onceFlag2, $func, $class, $line, $file);
             if ($onceFlag2) {
-                $addToLog($log, $this, $file, $line, $func, $class);
+                $this->_addParameterHeaderToLog($log, $file, $line, $func, $class);
             }
             $log .= $logBuffer . PHP_EOL;
         }
@@ -513,12 +584,13 @@ final class BreakpointDebugging_Error
      * Analyze parameter part of back trace array, and return string.
      * 
      * @param array $backtraceParams Back trace parameters.
+     * @param int   $tabNumber       The tab number to indent.
      * 
      * @return string Part of log lines.
      */
-    private function _searchDebugBacktraceArgsToString($backtraceParams)
+    private function _searchDebugBacktraceArgsToString($backtraceParams, $tabNumber = 1)
     {
-        assert(func_num_args() == 1);
+        assert(func_num_args() <= 2);
         global $_BreakpointDebugging_EXE_MODE;
         
         $isFirst = true;
@@ -527,9 +599,9 @@ final class BreakpointDebugging_Error
             if ($isFirst) {
                 $isFirst = false;
             } else {
-                $log .= PHP_EOL . "\t,";
+                $log .= PHP_EOL . str_repeat("\t", $tabNumber) . ',';
             }
-            $log .= $this->_getTypeAndValue($paramName, $paramValue, 1);
+            $log .= $this->_getTypeAndValue($paramName, $paramValue, $tabNumber);
         }
         return $log;
     }

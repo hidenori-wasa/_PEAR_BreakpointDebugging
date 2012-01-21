@@ -23,9 +23,8 @@ static $isRegister; B::registerNotFixedLocation( $isRegister);
  */
 function fnTestC()
 {
-    // echo B::buildErrorCallStackLog('EXCEPTION', 'Description of exception.');
     // assert(false); // This is error location.
-    throw new \Exception('test exception 1.'); // This is exception location.
+    B::throwException('Exception', 'test exception 1.'); // This is exception location.
 }
 
 /**
@@ -56,7 +55,7 @@ function fnTestB()
         // This writes inside of "catch()", then display logging or log.
         B::exceptionHandler($exception);
         // This doesn't specify previous exception because "B::exceptionHandler()" logged.
-        throw new \Exception('test exception 2.');
+        B::throwException('Exception', 'test exception 2.');
     }
 }
 
@@ -74,8 +73,6 @@ function fnTestA()
 // A tag inside of the "<pre class='xdebug-var-dump' dir='ltr'>" tag isn't changed because the prepend logging is executed "htmlspecialchars()".
 B::$prependErrorLog = '<i>Some error happened.</i> αβ∞' . PHP_EOL;
 
-var_dump(true, false, 1, 1.1, 'ABC', $object, $array, tmpfile(), null);
-
 for ($globalCount = 0; $globalCount <= 20; $globalCount++) {
     B::addValuesToTrace(array('$globalCount' => $globalCount));
 }
@@ -85,7 +82,7 @@ try {
 } catch (\Exception $exception) {
     B::$prependExceptionLog = '<i>Some global exception happened.</i> αβ∞' . PHP_EOL;
     // This specifies previous exception, and global exception handler will process.
-    throw new \Exception('test exception 3.', 3, $exception);
+    B::throwException('Exception', 'test exception 3.', 3, $exception);
 }
 
 echo 'END';

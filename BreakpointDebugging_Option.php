@@ -170,28 +170,39 @@ final class BreakpointDebugging extends BreakpointDebugging_InAllCase
     static function iniSet($phpIniVariable, $setValue)
     {
         global $_BreakpointDebugging_EXE_MODE;
+        static $onceFlag = true;
         assert(func_num_args() == 2);
         
         $getValue = ini_get($phpIniVariable);
         assert(self::_isSameType($setValue, $getValue));
-        if ($setValue === $getValue) {
+        if ($setValue !== $getValue) {
             // In case of remote.
             if ($_BreakpointDebugging_EXE_MODE & self::REMOTE_DEBUG) {
                 $backTrace = debug_backtrace(true);
-                echo <<<EOD
+                $baseName = basename($backTrace[0]['file']);
+                $cmpName = '_MySetting_Option.php';
+                $cmpNameLength = strlen($cmpName);
+                if (!substr_compare($baseName, $cmpName, 0 - $cmpNameLength, $cmpNameLength, true)) {
+                    if ($onceFlag) {
+                        $onceFlag = false;
+                        $packageName = substr($baseName, 0, 0 - $cmpNameLength);
+                        echo <<<EOD
 <pre>
-### BreakpointDebugging::iniSet(): You can do comment out because set value and value of php.ini are same.
-### But, When remote php.ini is changed, make return completely from comment, then you must redo remote debug.
+### "BreakpointDebugging::iniSet()": You must copy from "./{$packageName}_MySetting_Option.php" to user place folder of "./{$packageName}_MySetting.php" because set value and value of php.ini differ.
+### But, When remote "php.ini" is changed, you must redo remote debug.<pre/>
+EOD;
+                    }
+                    echo <<<EOD
 	file: {$backTrace[0]['file']}
 	line: {$backTrace[0]['line']}
 
 <pre/>
 EOD;
+                }
             }
-            return;
-        }
-        if (ini_set($phpIniVariable, $setValue) === false) {
-            throw new BreakpointDebugging_Error_Exception('');
+            if (ini_set($phpIniVariable, $setValue) === false) {
+                throw new BreakpointDebugging_Error_Exception('');
+            }
         }
     }
     

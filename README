@@ -4,29 +4,31 @@ The basic concept
 The features list
     ### Environment which can do breakpoint debugging. ###
     For example, in case of windows environment, there is "VS.Php" debugger.
-
+    
     ### The advantage of breakpoint debugging. ###
     it is to be able to find a position of a bug immediately.
     In addition to it, condition of variable can be examined.
     Therefore, it is possible to do debugging quickly.
-
+    
     ### How to do breakpoint debugging coding. ###
     We have to do coding as follows to process in "BreakpointDebugging" class.
     We have to verify a impossible return value of function or method with "assert()".
     We have to verify a impossible value in code.
     Also, an error and an exception which wasn't caught are processed in "BreakpointDebugging" class.
-
+    
     ### The execution procedure. ###
     Procedure 1: Please, set php file format to utf8, but we should create backup of php files because multibyte strings may be destroyed.
     Procedure 2: Please, copy BreakpointDebugging_MySetting.php as your project php file.
     Procedure 3: Please, edit BreakpointDebugging_MySetting.php for customize.
-        Then, it is possible to make specific setting about all debugging modes.
+         Then, it is possible to make specific setting about all debugging modes.
     Procedure 4: Please, set a breakpoint into BreakpointDebugging_breakpoint() of BreakpointDebugging_MySetting.php.
     Procedure 5: Please, set debugging mode to $_BreakpointDebugging_EXE_MODE.
     Procedure 6: Please, register at top of the function or method to have been not fixed. Please, copy following.
     "static $isRegister; BreakpointDebugging::registerNotFixedLocation( $isRegister);"
     Then, it is possible to discern function or method which does not fix with browser screen or log.
-
+    Procedure 7: Please, register value which you want to see inside function with BreakpointDebugging::addValuesToTrace().
+    Procedure 8: Please, Throw a exception with BreakpointDebugging::throwException().
+    
     ### The debugging mode which we can use. ###
     First "LOCAL_DEBUG" mode is breakpoint debugging with local personal computer.
         For example, VS.Php environment.
@@ -36,13 +38,15 @@ The features list
         For example, we debug client server environment by browser.
     Last "RELEASE" mode is log debugging with remote personal computer, and we must set on last for security.
         For example, on release.
-
-    ### Exception hierarchical structure ###
-    PEAR_Exception
-        BreakpointDebugging_Exception
-            BreakpointDebugging_Error_Exception
-
+    
+     ### Exception hierarchical structure ###
+     PEAR_Exception
+         BreakpointDebugging_Exception
+             BreakpointDebugging_Error_Exception
+    
     ### Useful function index. ###
+    Please, use this method when you throw a exception.
+        final static function throwException($exception, $message = '' , $code = 0 , $previous = null)
     Please, register at top of the function or method being not fixed.
         final static function BreakpointDebugging::registerNotFixedLocation(&$isRegister)
     Add values to trace
@@ -61,8 +65,3 @@ The features list
 The dependences
     Windows, but I want to support "Linux", therefore I am studying remote linux rental server, then I will debug with it.
     PHP >= 5.3.0
-
-Notice
-    In the case except the release, I am planning to check whether an extension module is loaded.
-    I am planning to move a code except the release to this file by creating the option file "BreakpointDebugging_MySetting_option.php" of "BreakpointDebugging_MySetting.php".
-    Also, in case of remote debug, when the value of "php.ini" differ in "BreakpointDebugging::iniSet()", it displays to move "BreakpointDebugging::iniSet()" to "BreakpointDebugging_MySetting.php".

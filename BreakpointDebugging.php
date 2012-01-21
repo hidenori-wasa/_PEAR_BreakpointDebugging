@@ -27,6 +27,8 @@
  * Procedure 6: Please, register at top of the function or method to have been not fixed. Please, copy following.
  * "static $isRegister; BreakpointDebugging::registerNotFixedLocation( $isRegister);"
  * Then, it is possible to discern function or method which does not fix with browser screen or log.
+ * Procedure 7: Please, register value which you want to see inside function with BreakpointDebugging::addValuesToTrace().
+ * Procedure 8: Please, Throw a exception with BreakpointDebugging::throwException().
  *
  * ### The debugging mode which we can use. ###
  * First "LOCAL_DEBUG" mode is breakpoint debugging with local personal computer.
@@ -38,7 +40,14 @@
  * Last "RELEASE" mode is log debugging with remote personal computer, and we must set on last for security.
  *     For example, on release.
  *
+ *  ### Exception hierarchical structure ###
+ *  PEAR_Exception
+ *      BreakpointDebugging_Exception
+ *          BreakpointDebugging_Error_Exception
+ *
  * ### Useful function index. ###
+ * Please, use this method when you throw a exception.
+ *     final static function throwException($exception, $message = '' , $code = 0 , $previous = null)
  * Please, register at top of the function or method being not fixed.
  *     final static function BreakpointDebugging::registerNotFixedLocation(&$isRegister)
  * Add values to trace
@@ -230,10 +239,30 @@ class BreakpointDebugging_InAllCase
         // In case of scope of method or function or included file.
         if (array_key_exists(1, $backTrace)) {
             $backTrace2 = &$backTrace[1];
-        } else { // In case of scope of top file.
+        } else { // In case of scope of start page file.
             $backTrace2['file'] = &$backTrace[0]['file'];
         }
         $_BreakpointDebugging->notFixedLocations[] = $backTrace2;
+    }
+    
+    /**
+     * Throw exception.
+     * 
+     * @param string    $exception An exception which you want to throw
+     * @param string    $message   Exception message
+     * @param int       $code      Exception number
+     * @param Exception $previous  Previous exception
+     * 
+     * @return void 
+     */
+    final static function throwException($exception, $message = '' , $code = 0 , $previous = null)
+    {
+        assert(is_string($exception));
+        assert(is_string($message));
+        assert(is_int($code));
+        assert($previous instanceof Exception || $previous == null);
+        
+        throw new $exception($message, $code, $previous);
     }
     
     /**
@@ -266,11 +295,11 @@ class BreakpointDebugging_InAllCase
         // In case of scope of method or function or included file.
         if (array_key_exists(1, $backTrace)) {
             $backTrace2 = &$backTrace[1];
-        } else { // In case of scope of top file.
+        } else { // In case of scope of start page file.
             $backTrace2['file'] = &$backTrace[0]['file'];
         }
-        $_BreakpointDebugging->valuesToTrace[$line][$file] = $backTrace2;
-        $_BreakpointDebugging->valuesToTrace[$line][$file]['values'] = $values;
+        $_BreakpointDebugging->valuesToTrace[$file][$line] = $backTrace2;
+        $_BreakpointDebugging->valuesToTrace[$file][$line]['values'] = $values;
     }
     
     /**
@@ -301,7 +330,7 @@ class BreakpointDebugging_InAllCase
         $error = new BreakpointDebugging_Error();
         $trace = debug_backtrace(true);
         unset($trace[0]);
-        // Add scope of top file.
+        // Add scope of start page file.
         array_push($trace,	array());
         return $error->buildErrorCallStackLog2($errorKind, $errorMessage, $trace);
     }
