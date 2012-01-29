@@ -1,5 +1,6 @@
 Please, set the following files into this directory.
     ./BreakpointDebugging_MySetting.php
+    ./BreakpointDebugging_MySetting_Option.php
     ./PEAR/BreakpointDebugging.php
     ./PEAR/BreakpointDebugging_Option.php
     ./PEAR/BreakpointDebugging/Error.php

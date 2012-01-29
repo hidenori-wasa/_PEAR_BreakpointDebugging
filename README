@@ -46,7 +46,7 @@ The features list
     
     ### Useful function index. ###
     Please, use this method when you throw a exception.
-        final static function throwException($exception, $message = '' , $code = 0 , $previous = null)
+        final static function BreakpointDebugging::throwException($exception, $message = '' , $code = 0 , $previous = null)
     Please, register at top of the function or method being not fixed.
         final static function BreakpointDebugging::registerNotFixedLocation(&$isRegister)
     Add values to trace
@@ -65,3 +65,6 @@ The features list
 The dependences
     Windows, but I want to support "Linux", therefore I am studying remote linux rental server, then I will debug with it.
     PHP >= 5.3.0
+
+Notice
+    I am developing this package.

@@ -47,7 +47,7 @@
  *
  * ### Useful function index. ###
  * Please, use this method when you throw a exception.
- *     final static function throwException($exception, $message = '' , $code = 0 , $previous = null)
+ *     final static function BreakpointDebugging::throwException($exception, $message = '' , $code = 0 , $previous = null)
  * Please, register at top of the function or method being not fixed.
  *     final static function BreakpointDebugging::registerNotFixedLocation(&$isRegister)
  * Add values to trace
@@ -98,6 +98,12 @@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
 
+// File to have "use" keyword does not inherit scope into a file including itself,
+// also it does not inherit scope into a file including,
+// and moreover "use" keyword alias has priority over class definition,
+// therefore "use" keyword alias does not be affected by other files.
+use \BreakpointDebugging as B;
+
 require_once __DIR__ . '/PEAR/Exception.php';
 
 /**
@@ -126,13 +132,13 @@ class BreakpointDebugging_Exception extends PEAR_Exception
         global $_BreakpointDebugging_EXE_MODE;
         assert(func_num_args() <= 3);
         assert(is_string($message));
-        assert(is_int($code));
+        assert(is_int($code) || $code === null);
         assert($previous instanceof Exception || $previous === null);
         assert(mb_detect_encoding($message, 'utf8', true) != false);
         
         parent::__construct($message, $previous, $code);
         // In case of local-debug. "BreakpointDebugging_breakpoint()" is called. Therefore we do the step execution to error place, and we can see condition of variables.
-        if ($_BreakpointDebugging_EXE_MODE & (BreakpointDebugging::LOCAL_DEBUG | BreakpointDebugging::LOCAL_DEBUG_OF_RELEASE)) { // In case of local.
+        if ($_BreakpointDebugging_EXE_MODE & (B::LOCAL_DEBUG | B::LOCAL_DEBUG_OF_RELEASE)) { // In case of local.
             BreakpointDebugging_breakpoint();
         }
     }
@@ -262,7 +268,7 @@ class BreakpointDebugging_InAllCase
         assert(is_int($code));
         assert($previous instanceof Exception || $previous == null);
         
-        throw new $exception($message, $code, $previous);
+        throw new $exception(B::convertMbString($message), $code, $previous);
     }
     
     /**
@@ -312,13 +318,13 @@ class BreakpointDebugging_InAllCase
     final static function exceptionHandler($pException)
     {
         $error = new BreakpointDebugging_Error();
-        $error->exceptionHandler2($pException, self::$prependExceptionLog);
+        $error->exceptionHandler2($pException, B::$prependExceptionLog);
     }
     
     /**
      * This return the function call stack log.
      * 
-     * @param int    $errorKind    Error kind.
+     * @param string $errorKind    Error kind.
      * @param string $errorMessage Error message.
      * 
      * @return string Function call stack log.
@@ -337,20 +343,27 @@ class BreakpointDebugging_InAllCase
     
     /**
      * This method changes it to unify multibyte character strings such as system-output or user input, and this returns UTF-8 multibyte character strings.
-     * In other words, this is not mixing a character sets, therefore this is not breaking character strings.
+     * This is security for not mixing a character sets.
      * 
      * @param string $string Character string which may be not UTF8.
      * 
      * @return string UTF8 character string.
+     * 
+     * @example B::convertMbString($warning['Message'])
      */
     final static function convertMbString($string)
     {
         assert(func_num_args() == 1);
         assert(is_string($string));
-        $string = mb_convert_encoding($string, 'utf8', 'auto');
-        $return = mb_detect_encoding($string);
-        assert($return == 'UTF-8' || $return == 'ASCII');
-        return $string;
+        // It analyzes character sets of character string head.
+        $charSet = mb_detect_encoding($string);
+        if ($charSet === 'UTF-8' || $charSet === 'ASCII') {
+            return $string;
+        } else if ($charSet === false) {
+            throw new BreakpointDebugging_Error_Exception('It isn\'t possible to recognize as the single character sets.');
+            // trigger_error('It isn\'t possible to recognize as the single character sets.', E_USER_ERROR);
+        }
+        return mb_convert_encoding($string, 'UTF-8', $charSet);
     }
     
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -381,7 +394,7 @@ class BreakpointDebugging_InAllCase
     final static function errorHandler($errorNumber, $errorMessage, $errorFile, $errorLine)
     {
         $error = new BreakpointDebugging_Error();
-        return $error->errorHandler($errorNumber, $errorMessage, $errorFile, $errorLine, self::$prependErrorLog);
+        return $error->errorHandler2($errorNumber, $errorMessage, $errorFile, $errorLine, B::$prependErrorLog);
     }
 }
 

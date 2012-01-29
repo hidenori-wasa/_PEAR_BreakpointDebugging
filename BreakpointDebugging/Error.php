@@ -115,6 +115,65 @@ final class BreakpointDebugging_Error
     }
     
     /**
+     * This is to avoid recursive method call inside error handling or exception handling.
+     * This method changes it to unify multibyte character strings such as system-output or user input, and this returns UTF-8 multibyte character strings.
+     * This is security for not mixing a character sets.
+     * 
+     * @param string $string Character string which may be not UTF8.
+     * 
+     * @return string UTF8 character string.
+     */
+    private function _convertMbString($string)
+    {
+        assert(func_num_args() == 1);
+        assert(is_string($string));
+        static $onceFlag = true;
+        
+        // It analyzes character sets of character string head.
+        $charSet = mb_detect_encoding($string);
+        if ($charSet === 'UTF-8' || $charSet === 'ASCII') {
+            return $string;
+        } else if ($charSet === false) {
+            if ($onceFlag) {
+                $onceFlag = false;
+                $trace = debug_backtrace(true);
+                $traceNumber = count($trace);
+                $cwd = getcwd();
+                $cwd = str_replace('\\', '/', $cwd);
+                $cwdLen = strlen($cwd);
+                for ($count = 0; $count < $traceNumber; $count++) {
+                    $includePaths = str_replace('\\', '/', get_include_path());
+                    $includePaths = explode(PATH_SEPARATOR, $includePaths);
+                    if (!array_key_exists('file', $trace[$count])) {
+                        continue;
+                    }
+                    $cmpPath = str_replace('\\', '/', $trace[$count]['file']);
+                    if (!substr_compare($cwd, $cmpPath, 0, $cwdLen)) {
+                        $cmpPath = substr_replace($cmpPath, '.', 0, $cwdLen);
+                    }
+                    foreach ($includePaths as $includePath) {
+                        if (!substr_compare($cwd, $includePath, 0, $cwdLen)) {
+                            $includePath = substr_replace($includePath, '.', 0, $cwdLen);
+                        }
+                        $skipPath = rtrim($includePath, '/') . '/' . 'BreakpointDebugging';
+                        if (!substr_compare($skipPath, $cmpPath, 0, strlen($skipPath), true)) {
+                            unset($trace[$count]);
+                            break;
+                        }
+                    }
+                }
+                // Add scope of start page file.
+                array_push($trace,	array());
+                $log = $this->buildErrorCallStackLog2('E_USER_ERROR', 'This isn\'t possible to recognize as the single character sets.', $trace);
+                $this->_errorLog($log);
+                exit (-1);
+            }
+            return '### This isn\'t possible to recognize as the single character sets. ###';
+        }
+        return mb_convert_encoding($string, 'UTF-8', $charSet);
+    }
+    
+    /**
      * Add function-values to log.
      * Caution: When using this method in scope of start page, create start page of dummy, then call this page by "require_once".
      *          Because it is specification of "$Trace" property of "Exception" class.
@@ -137,7 +196,8 @@ final class BreakpointDebugging_Error
         
         $valuesToTraceFiles = &$_BreakpointDebugging->valuesToTrace;
         $onceFlag = false;
-        foreach ($valuesToTraceFiles as $traceFile => $valuesToTraceLines) {
+        //foreach ($valuesToTraceFiles as $traceFile => $valuesToTraceLines) {
+        foreach ($valuesToTraceFiles as $valuesToTraceLines) {
             foreach ($valuesToTraceLines as $trace) {
                 array_key_exists('function', $trace) ? $callFunc = $trace['function'] : $callFunc = '';
                 array_key_exists('class', $trace) ? $callClass = $trace['class'] : $callClass = '';
@@ -191,7 +251,7 @@ final class BreakpointDebugging_Error
             $log .= PHP_EOL . $tabs . "\t...";
         } else {
             foreach ($array as $paramName => $paramValue) {
-                if ($paramName == 'GLOBALS') {
+                if ($paramName === 'GLOBALS') {
                     continue;
                 }
                 if (is_string($paramName)) {
@@ -272,30 +332,16 @@ final class BreakpointDebugging_Error
         assert(func_num_args() == 2);
         assert($pException instanceof Exception);
         assert(is_string($prependLog));
-        global $_BreakpointDebugging_EXE_MODE;
         
-        $trace = debug_backtrace();
-        $prependLog = B::convertMbString($prependLog);
-        $log = $this->buildErrorCallStackLog2(get_class($pException), $pException->getmessage(), array ($trace[1]), $prependLog);
-        $diplayLog = function ($log) {
-            echo $log;
-        };
-        switch ($_BreakpointDebugging_EXE_MODE) {
-        case B::LOCAL_DEBUG_OF_RELEASE:
-            BreakpointDebugging_breakpoint();
-        case B::RELEASE:
-            $this->_errorLog($log);
-            break;
-        case B::LOCAL_DEBUG:
-            $diplayLog($log);
-            BreakpointDebugging_breakpoint();
-            break;
-        case B::REMOTE_DEBUG:
-            $diplayLog($log); // This displays error log because breakpoint can not be used on remote debug.
-            exit(-1); // This exits immediately to avoid not ending.
-        default:
-            assert(false);
-        }
+        //$trace = debug_backtrace();
+        $trace = $pException->getTrace();
+        //unset($trace[0]);
+        // Add scope of start page file.
+        array_push($trace,	array());
+        $prependLog = $this->_convertMbString($prependLog);
+        //$log = $this->buildErrorCallStackLog2(get_class($pException), $pException->getmessage(), array ($trace[1]), $prependLog);
+        $log = $this->buildErrorCallStackLog2(get_class($pException), $pException->getmessage(), $trace, $prependLog);
+        $this->_errorLog($log);
     }
     
     /**
@@ -309,7 +355,7 @@ final class BreakpointDebugging_Error
      * 
      * @return bool Did the error handling end?
      */
-    function errorHandler($errorNumber, $errorMessage, $errorFile, $errorLine, $prependLog)
+    function errorHandler2($errorNumber, $errorMessage, $errorFile, $errorLine, $prependLog)
     {
         assert(func_num_args() == 5);
         assert(is_int($errorNumber));
@@ -319,8 +365,8 @@ final class BreakpointDebugging_Error
         assert(is_string($prependLog));
         global $_BreakpointDebugging_EXE_MODE;
         
-        $errorMessage = B::convertMbString($errorMessage);
-        $prependLog = B::convertMbString($prependLog);
+        $errorMessage = $this->_convertMbString($errorMessage);
+        $prependLog = $this->_convertMbString($prependLog);
         // This creates error log.
         switch ($errorNumber) {
         case E_USER_DEPRECATED:
@@ -378,27 +424,12 @@ final class BreakpointDebugging_Error
         // Add scope of start page file.
         array_push($trace,	array());
         $log = $this->buildErrorCallStackLog2($errorKind, $errorMessage, $trace, $prependLog);
-        $diplayLog = function ($log) {
-            echo $log;
-        };
-        switch ($_BreakpointDebugging_EXE_MODE)
-        {
-        case B::LOCAL_DEBUG_OF_RELEASE:
-            BreakpointDebugging_breakpoint();
-        case B::RELEASE:
-            $this->_errorLog($log);
-            return false; // with system log.
-        case B::LOCAL_DEBUG:
-            $diplayLog($log);
-            BreakpointDebugging_breakpoint();
-            return true;
-        case B::REMOTE_DEBUG:
-            $diplayLog($log); // This displays error log because breakpoint can not be used on remote debug.
-            return true;
-        default:
-            assert(false);
-            exit(-1);
+        $this->_errorLog($log);
+        
+        if ($_BreakpointDebugging_EXE_MODE & B::RELEASE) { // In case of release
+            return false; // With system log
         }
+        return true;
     }
     
     /**
@@ -472,7 +503,7 @@ final class BreakpointDebugging_Error
     /**
      * Build error call stack log except "E_NOTICE".
      * 
-     * @param int    $errorKind    Error kind.
+     * @param string $errorKind    Error kind.
      * @param string $errorMessage Error message.
      * @param object $backTrace    Back trace for debug.
      * @param string $prependLog   This prepend this parameter logging.
@@ -488,8 +519,8 @@ final class BreakpointDebugging_Error
         assert(is_string($prependLog));
         global $_BreakpointDebugging;
         
-        $errorMessage = B::convertMbString($errorMessage);
-        $prependLog = B::convertMbString($prependLog);
+        $errorMessage = $this->_convertMbString($errorMessage);
+        $prependLog = $this->_convertMbString($prependLog);
         if (!$this->_isLogging) {
             $errorMessage = htmlspecialchars($errorMessage, ENT_QUOTES, 'UTF-8');
             $prependLog = htmlspecialchars($prependLog, ENT_QUOTES, 'UTF-8');
@@ -541,7 +572,7 @@ final class BreakpointDebugging_Error
         assert(func_num_args() == 3);
         
         if (is_array($paramValue)) {
-            if ($paramName == 'GLOBALS') {
+            if ($paramName === 'GLOBALS') {
                 return '';
             }
             return $this->_reflectArray($paramName, $paramValue, $tabNumber);
@@ -563,7 +594,7 @@ final class BreakpointDebugging_Error
         } else if (is_float($paramValue)) {
             $log .= $tag($this, 'float', $paramValue);
         } else if (is_string($paramValue)) {
-            $paramValue = B::convertMbString($paramValue);
+            $paramValue = $this->_convertMbString($paramValue);
             $strlen = strlen($paramValue);
             $paramValue = '"' . $paramValue . '"';
             if (!$this->_isLogging) {
@@ -591,7 +622,6 @@ final class BreakpointDebugging_Error
     private function _searchDebugBacktraceArgsToString($backtraceParams, $tabNumber = 1)
     {
         assert(func_num_args() <= 2);
-        global $_BreakpointDebugging_EXE_MODE;
         
         $isFirst = true;
         $log = '';
@@ -613,12 +643,33 @@ final class BreakpointDebugging_Error
      * 
      * @return void
      */
-    private function _errorLog($errorLog)
+    private function _errorLog($log)
     {
         assert(func_num_args() == 1);
+        global $_BreakpointDebugging_EXE_MODE;
         
-        if (error_log(PHP_EOL . $errorLog . PHP_EOL) === false) {
-            echo '<br/>This failed in the output of the error log.<br/>';
+        $diplayLog = function ($log) {
+            echo <<<EOD
+<pre>{$log}</pre>
+EOD;
+        };
+        switch ($_BreakpointDebugging_EXE_MODE) {
+        case B::LOCAL_DEBUG_OF_RELEASE:
+            BreakpointDebugging_breakpoint();
+        case B::RELEASE:
+            if (error_log(PHP_EOL . $log . PHP_EOL) === false) {
+                echo '<br/>This failed in the output of the error log.<br/>';
+            }
+            break;
+        case B::LOCAL_DEBUG:
+            $diplayLog($log);
+            BreakpointDebugging_breakpoint();
+            break;
+        case B::REMOTE_DEBUG:
+            $diplayLog($log); // This displays error log because breakpoint can not be used on remote debug.
+            exit(-1); // This exits immediately to avoid not ending.
+        default:
+            assert(false);
         }
     }
 }
