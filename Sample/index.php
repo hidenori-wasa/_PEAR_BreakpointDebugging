@@ -32,8 +32,8 @@ if ($testNumber === 1) {
      */
     function fnTestC()
     {
-        assert(false); // This is error location.
-        // B::throwException('Exception', 'test exception 1.'); // This is exception location.
+        // assert(false); // This is error location.
+        B::throwException('Exception', 'test exception 1.'); // This is exception location.
     }
     
     /**

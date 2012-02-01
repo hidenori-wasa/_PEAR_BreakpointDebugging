@@ -19,10 +19,10 @@
  *
  * ### The execution procedure. ###
  * Procedure 1: Please, set php file format to utf8, but we should create backup of php files because multibyte strings may be destroyed.
- * Procedure 2: Please, copy BreakpointDebugging_MySetting.php as your project php file.
- * Procedure 3: Please, edit BreakpointDebugging_MySetting.php for customize.
+ * Procedure 2: Please, copy BreakpointDebugging_MySetting*.php as your project php file.
+ * Procedure 3: Please, edit BreakpointDebugging_MySetting*.php for customize.
  *      Then, it is possible to make specific setting about all debugging modes.
- * Procedure 4: Please, set a breakpoint into BreakpointDebugging_breakpoint() of BreakpointDebugging_MySetting.php.
+ * Procedure 4: Please, set a breakpoint into BreakpointDebugging_breakpoint() of BreakpointDebugging_MySetting_Option.php.
  * Procedure 5: Please, set debugging mode to $_BreakpointDebugging_EXE_MODE.
  * Procedure 6: Please, register at top of the function or method to have been not fixed. Please, copy following.
  * "static $isRegister; BreakpointDebugging::registerNotFixedLocation( $isRegister);"
@@ -139,7 +139,7 @@ class BreakpointDebugging_Exception extends PEAR_Exception
         parent::__construct($message, $previous, $code);
         // In case of local-debug. "BreakpointDebugging_breakpoint()" is called. Therefore we do the step execution to error place, and we can see condition of variables.
         if ($_BreakpointDebugging_EXE_MODE & (B::LOCAL_DEBUG | B::LOCAL_DEBUG_OF_RELEASE)) { // In case of local.
-            BreakpointDebugging_breakpoint();
+            BreakpointDebugging_breakpoint($message);
         }
     }
 }
@@ -260,6 +260,8 @@ class BreakpointDebugging_InAllCase
      * @param Exception $previous  Previous exception
      * 
      * @return void 
+     * 
+     * @example BreakpointDebugging::throwException('Exception', $warning['Message']);
      */
     final static function throwException($exception, $message = '' , $code = 0 , $previous = null)
     {
@@ -334,11 +336,10 @@ class BreakpointDebugging_InAllCase
     final static function buildErrorCallStackLog($errorKind, $errorMessage)
     {
         $error = new BreakpointDebugging_Error();
-        $trace = debug_backtrace(true);
-        unset($trace[0]);
+        $error->callStackInfo = debug_backtrace(true);
         // Add scope of start page file.
-        array_push($trace,	array());
-        return $error->buildErrorCallStackLog2($errorKind, $errorMessage, $trace);
+        $error->callStackInfo[] = array();
+        return $error->buildErrorCallStackLog2($errorKind, $errorMessage);
     }
     
     /**
@@ -349,7 +350,7 @@ class BreakpointDebugging_InAllCase
      * 
      * @return string UTF8 character string.
      * 
-     * @example B::convertMbString($warning['Message'])
+     * @example BreakpointDebugging::convertMbString($warning['Message']);
      */
     final static function convertMbString($string)
     {
@@ -360,8 +361,7 @@ class BreakpointDebugging_InAllCase
         if ($charSet === 'UTF-8' || $charSet === 'ASCII') {
             return $string;
         } else if ($charSet === false) {
-            throw new BreakpointDebugging_Error_Exception('It isn\'t possible to recognize as the single character sets.');
-            // trigger_error('It isn\'t possible to recognize as the single character sets.', E_USER_ERROR);
+            throw new BreakpointDebugging_Error_Exception('This isn\'t single character sets.');
         }
         return mb_convert_encoding($string, 'UTF-8', $charSet);
     }
@@ -386,15 +386,13 @@ class BreakpointDebugging_InAllCase
      * 
      * @param int    $errorNumber  Error number.
      * @param string $errorMessage Error message.
-     * @param string $errorFile    Error file name.
-     * @param int    $errorLine    Error file line.
      * 
      * @return bool Did the error handling end?
      */
-    final static function errorHandler($errorNumber, $errorMessage, $errorFile, $errorLine)
+    final static function errorHandler($errorNumber, $errorMessage)
     {
         $error = new BreakpointDebugging_Error();
-        return $error->errorHandler2($errorNumber, $errorMessage, $errorFile, $errorLine, B::$prependErrorLog);
+        return $error->errorHandler2($errorNumber, $errorMessage, B::$prependErrorLog);
     }
 }
 

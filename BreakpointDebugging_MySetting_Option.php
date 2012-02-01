@@ -51,10 +51,27 @@ use \BreakpointDebugging as B;
  * This is function to set breakpoint. You must define this function outside namespace, and you must not change function name.
  * If you don't have breakpoint, you can debug to set '$_BreakpointDebugging_EXE_MODE = B::REMOTE_DEBUG;'.
  * 
+ * @param string $message       Message
+ * @param array  $callStackInfo Call stack info
+ * 
  * @return void
  */
-function BreakpointDebugging_breakpoint()
+function BreakpointDebugging_breakpoint($message = '', $callStackInfo = null)
 {
+    assert(func_num_args() <= 2);
+    assert(is_string($message));
+    assert(is_array($callStackInfo) || is_null($callStackInfo));
+    
+    if ($callStackInfo !== null) {
+        $callStackInfo = each($callStackInfo);
+        $callStackInfo = $callStackInfo['value'];
+        if (array_key_exists('file', $callStackInfo)) {
+            $errorFile = $callStackInfo['file'];
+        }
+        if (array_key_exists('line', $callStackInfo)) {
+            $errorLine = $callStackInfo['line'];
+        }
+    }
     echo ''; // Please, set here breakpoint.
 }
 

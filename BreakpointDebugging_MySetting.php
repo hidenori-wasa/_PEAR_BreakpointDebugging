@@ -77,7 +77,7 @@ const REMOTE_HTTPS_APP_ROOT = ''; // 'https://???/???/'
 // Inner form of the browser of the default: HTML text, character sets = UTF8
 header('Content-type: text/html; charset=utf-8');
 // Set "mbstring.detect_order = UTF-8, UTF-7, ASCII, EUC-JP,SJIS, eucJP-win, SJIS-win, JIS, ISO-2022-JP" of "php.ini" file because this is purpose to define default value of character code detection.
-$result = mb_detect_order( 'UTF-8, UTF-7, ASCII, EUC-JP,SJIS, eucJP-win, SJIS-win, JIS, ISO-2022-JP');
+$result = mb_detect_order('UTF-8, UTF-7, ASCII, EUC-JP,SJIS, eucJP-win, SJIS-win, JIS, ISO-2022-JP');
 assert($result);
 // ### <=== Item setting.
 
