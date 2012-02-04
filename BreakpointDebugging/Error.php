@@ -166,7 +166,7 @@ final class BreakpointDebugging_Error
      */
     private function _convertMbString($string)
     {
-        $this->_assert(func_num_args() == 1);
+        $this->_assert(func_num_args() === 1);
         $this->_assert(is_string($string));
         static $onceFlag = true;
         
@@ -177,31 +177,31 @@ final class BreakpointDebugging_Error
             $message = 'This isn\'t single character sets.';
             if ($onceFlag) {
                 $onceFlag = false;
-                $traceNumber = count($this->callStackInfo);
-                $cwd = getcwd();
-                $cwd = str_replace('\\', '/', $cwd);
-                $cwdLen = strlen($cwd);
-                foreach ($this->callStackInfo as $callStackInfoKey => $callStackInfo) {
-                    $includePaths = str_replace('\\', '/', get_include_path());
-                    $includePaths = explode(PATH_SEPARATOR, $includePaths);
-                    if (!array_key_exists('file', $callStackInfo)) {
-                        continue;
-                    }
-                    $cmpPath = str_replace('\\', '/', $callStackInfo['file']);
-                    if (!substr_compare($cwd, $cmpPath, 0, $cwdLen)) {
-                        $cmpPath = substr_replace($cmpPath, '.', 0, $cwdLen);
-                    }
-                    foreach ($includePaths as $includePath) {
-                        if (!substr_compare($cwd, $includePath, 0, $cwdLen)) {
-                            $includePath = substr_replace($includePath, '.', 0, $cwdLen);
-                        }
-                        $skipPath = rtrim($includePath, '/') . '/' . 'BreakpointDebugging';
-                        if (!substr_compare($skipPath, $cmpPath, 0, strlen($skipPath), true)) {
-                            unset($this->callStackInfo[$callStackInfoKey]);
-                            break;
-                        }
-                    }
-                }
+                //$traceNumber = count($this->callStackInfo);
+                //$cwd = getcwd();
+                //$cwd = str_replace('\\', '/', $cwd);
+                //$cwdLen = strlen($cwd);
+                //foreach ($this->callStackInfo as $callStackInfoKey => $callStackInfo) {
+                //    $includePaths = str_replace('\\', '/', get_include_path());
+                //    $includePaths = explode(PATH_SEPARATOR, $includePaths);
+                //    if (!array_key_exists('file', $callStackInfo)) {
+                //        continue;
+                //    }
+                //    $cmpPath = str_replace('\\', '/', $callStackInfo['file']);
+                //    if (!substr_compare($cwd, $cmpPath, 0, $cwdLen)) {
+                //        $cmpPath = substr_replace($cmpPath, '.', 0, $cwdLen);
+                //    }
+                //    foreach ($includePaths as $includePath) {
+                //        if (!substr_compare($cwd, $includePath, 0, $cwdLen)) {
+                //            $includePath = substr_replace($includePath, '.', 0, $cwdLen);
+                //        }
+                //        $skipPath = rtrim($includePath, '/') . '/' . 'BreakpointDebugging';
+                //        if (!substr_compare($skipPath, $cmpPath, 0, strlen($skipPath), true)) {
+                //            unset($this->callStackInfo[$callStackInfoKey]);
+                //            break;
+                //        }
+                //    }
+                //}
                 $log = $this->buildErrorCallStackLog2('E_USER_ERROR', $message);
                 if ($this->_errorLog($log)) {
                     BreakpointDebugging_breakpoint($message, $this->callStackInfo);
@@ -238,10 +238,10 @@ final class BreakpointDebugging_Error
             foreach ($valuesToTraceLines as $trace) {
                 array_key_exists('function', $trace) ? $callFunc = $trace['function'] : $callFunc = '';
                 array_key_exists('class', $trace) ? $callClass = $trace['class'] : $callClass = '';
-                if ($callFunc == '' && $callClass == '' && $paramNumber == 8) {
+                if ($callFunc === '' && $callClass === '' && $paramNumber === 8) {
                     continue;
                 }
-                if ($func == $callFunc && $class == $callClass) {
+                if ($func === $callFunc && $class === $callClass) {
                     if ($onceFlag2) {
                         $onceFlag2 = false;
                         array_key_exists('file', $trace) ? $callFile = $trace['file'] : $callFile = '';
@@ -366,14 +366,18 @@ final class BreakpointDebugging_Error
      */
     function exceptionHandler2($pException, $prependLog)
     {
-        $this->_assert(func_num_args() == 2);
+        $this->_assert(func_num_args() === 2);
         $this->_assert($pException instanceof Exception);
         $this->_assert(is_string($prependLog));
         
+        $errorMessage = $this->_convertMbString($pException->getMessage());
+        $prependLog = $this->_convertMbString($prependLog);
+
         $this->callStackInfo = $pException->getTrace();
         // Add scope of start page file.
         $this->callStackInfo[] = array();
-        $log = $this->buildErrorCallStackLog2(get_class($pException), $pException->getMessage(), $prependLog);
+        //$log = $this->buildErrorCallStackLog2(get_class($pException), $pException->getMessage(), $prependLog);
+        $log = $this->buildErrorCallStackLog2(get_class($pException), $errorMessage, $prependLog);
         if ($this->_errorLog($log)) {
             BreakpointDebugging_breakpoint($pException->getMessage(), $this->callStackInfo);
         }
@@ -390,12 +394,14 @@ final class BreakpointDebugging_Error
      */
     function errorHandler2($errorNumber, $errorMessage, $prependLog)
     {
-        $this->_assert(func_num_args() == 3);
+        $this->_assert(func_num_args() === 3);
         $this->_assert(is_int($errorNumber));
         $this->_assert(is_string($errorMessage));
         $this->_assert(is_string($prependLog));
         global $_BreakpointDebugging_EXE_MODE;
         
+        $errorMessage = $this->_convertMbString($errorMessage);
+        $prependLog = $this->_convertMbString($prependLog);
         // This creates error log.
         switch ($errorNumber) {
         case E_USER_DEPRECATED:
@@ -514,10 +520,10 @@ final class BreakpointDebugging_Error
             foreach ($_BreakpointDebugging->notFixedLocations as $notFixedLocation) {
                 array_key_exists('function', $notFixedLocation) ? $noFixFunc = $notFixedLocation['function'] : $noFixFunc = '';
                 array_key_exists('class', $notFixedLocation) ? $noFixClass = $notFixedLocation['class'] : $noFixClass = '';
-                if ($noFixFunc == '' && $noFixClass == '' && $paramNumber == 7) {
+                if ($noFixFunc === '' && $noFixClass === '' && $paramNumber === 7) {
                     continue;
                 }
-                if ($func == $noFixFunc && $class == $noFixClass) {
+                if ($func === $noFixFunc && $class === $noFixClass) {
                     $marks = str_repeat($this->_mark, 10);
                     $log .= PHP_EOL . $tabs . $this->tag['font']['caution'] . $marks . $this->tag['b'] . ' This function has been not fixed. ' . $this->tag['/b'] . $marks . $this->tag['/font'];
                     if ($onceFlag2) {
@@ -549,8 +555,8 @@ final class BreakpointDebugging_Error
         $this->_assert(is_string($prependLog));
         global $_BreakpointDebugging;
         
-        $errorMessage = $this->_convertMbString($errorMessage);
-        $prependLog = $this->_convertMbString($prependLog);
+        //$errorMessage = $this->_convertMbString($errorMessage);
+        //$prependLog = $this->_convertMbString($prependLog);
         if (!$this->_isLogging) {
             $errorMessage = htmlspecialchars($errorMessage, ENT_QUOTES, 'UTF-8');
             $prependLog = htmlspecialchars($prependLog, ENT_QUOTES, 'UTF-8');
@@ -558,7 +564,7 @@ final class BreakpointDebugging_Error
         // We had better debug by breakpoint than the display screen in case of "E_NOTICE".
         // Also, we are possible to skip "E_NOTICE" which is generated while debugging execution is stopping.
         // Moreover, those "E_NOTICE" doesn't stop at breakpoint.
-        if ($errorKind == 'E_NOTICE') {
+        if ($errorKind === 'E_NOTICE') {
             return '';
         }
         // Create error log from the argument.
@@ -599,7 +605,7 @@ final class BreakpointDebugging_Error
      */
     private function _getTypeAndValue($paramName, $paramValue, $tabNumber)
     {
-        $this->_assert(func_num_args() == 3);
+        $this->_assert(func_num_args() === 3);
         
         if (is_array($paramValue)) {
             if ($paramName === 'GLOBALS') {
@@ -675,7 +681,7 @@ final class BreakpointDebugging_Error
      */
     private function _errorLog($log)
     {
-        $this->_assert(func_num_args() == 1);
+        $this->_assert(func_num_args() === 1);
         global $_BreakpointDebugging_EXE_MODE;
         $isBreak = false;
         

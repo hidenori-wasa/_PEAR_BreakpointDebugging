@@ -58,6 +58,8 @@ use \BreakpointDebugging as B;
  */
 final class BreakpointDebugging extends BreakpointDebugging_InAllCase
 {
+    private $_onceFlag = array();
+    
     /**
      * This constructer create object only one time.
      * 
@@ -67,7 +69,7 @@ final class BreakpointDebugging extends BreakpointDebugging_InAllCase
     {
         static $createOnlyOneTime = false;
         
-        assert($createOnlyOneTime == false);
+        assert($createOnlyOneTime === false);
         $createOnlyOneTime = true;
     }
     
@@ -169,9 +171,9 @@ final class BreakpointDebugging extends BreakpointDebugging_InAllCase
      */
     static function iniSet($phpIniVariable, $setValue)
     {
-        global $_BreakpointDebugging_EXE_MODE;
-        static $onceFlag = true;
-        assert(func_num_args() == 2);
+        global $_BreakpointDebugging_EXE_MODE, $_BreakpointDebugging;
+        //static $onceFlag = true;
+        assert(func_num_args() === 2);
         
         $getValue = ini_get($phpIniVariable);
         assert(self::_isSameType($setValue, $getValue));
@@ -183,14 +185,25 @@ final class BreakpointDebugging extends BreakpointDebugging_InAllCase
                 $cmpName = '_MySetting_Option.php';
                 $cmpNameLength = strlen($cmpName);
                 if (!substr_compare($baseName, $cmpName, 0 - $cmpNameLength, $cmpNameLength, true)) {
-                    if ($onceFlag) {
-                        $onceFlag = false;
+                    //if ($onceFlag) {
+                        //$onceFlag = false;
+                    $notExistFlag = true;
+                    foreach ($_BreakpointDebugging->_onceFlag as $cmpName) {
+                        if (!strcasecmp($baseName, $cmpName)) {
+                            $notExistFlag = false;
+                            break;
+                        }
+                    }
+                    if ($notExistFlag) {
+                        $_BreakpointDebugging->_onceFlag[] = $baseName;
                         $packageName = substr($baseName, 0, 0 - $cmpNameLength);
                         echo <<<EOD
 <pre>
 ### "BreakpointDebugging::iniSet()": You must copy from "./{$packageName}_MySetting_Option.php" to user place folder of "./{$packageName}_MySetting.php" because set value and value of php.ini differ.
 ### But, When remote "php.ini" is changed, you must redo remote debug.<pre/>
 EOD;
+                        //    break;
+                        //}
                     }
                     echo <<<EOD
 	file: {$backTrace[0]['file']}
@@ -218,7 +231,7 @@ EOD;
      */
     static function iniCheck($phpIniVariable, $cmpValue, $errorMessage)
     {
-        assert(func_num_args() == 3);
+        assert(func_num_args() === 3);
         $value = (string)ini_get($phpIniVariable);
         $cmpResult = false;
         if (is_array($cmpValue)) {

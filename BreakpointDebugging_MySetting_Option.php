@@ -140,7 +140,6 @@ B::iniSet('auto_detect_line_endings', '1');
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // ### "php.ini" the file setting ( This sets a security mainly ). ###
-
 // Timezone setting.
 B::iniSet('date.timezone', TIMEZONE);
 // This creates error log file "php_error.log" in "PHP_ERROR_LOG_FILE_PATH" folder.

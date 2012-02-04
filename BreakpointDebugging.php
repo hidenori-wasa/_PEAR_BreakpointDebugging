@@ -19,16 +19,18 @@
  *
  * ### The execution procedure. ###
  * Procedure 1: Please, set php file format to utf8, but we should create backup of php files because multibyte strings may be destroyed.
- * Procedure 2: Please, copy BreakpointDebugging_MySetting*.php as your project php file.
- * Procedure 3: Please, edit BreakpointDebugging_MySetting*.php for customize.
+ * Procedure 2: Please, copy *_MySetting*.php as your project php file.
+ * Procedure 3: Please, edit *_MySetting*.php for customize.
  *      Then, it is possible to make specific setting about all debugging modes.
- * Procedure 4: Please, set a breakpoint into BreakpointDebugging_breakpoint() of BreakpointDebugging_MySetting_Option.php.
- * Procedure 5: Please, set debugging mode to $_BreakpointDebugging_EXE_MODE.
- * Procedure 6: Please, register at top of the function or method to have been not fixed. Please, copy following.
- * "static $isRegister; BreakpointDebugging::registerNotFixedLocation( $isRegister);"
- * Then, it is possible to discern function or method which does not fix with browser screen or log.
- * Procedure 7: Please, register value which you want to see inside function with BreakpointDebugging::addValuesToTrace().
- * Procedure 8: Please, Throw a exception with BreakpointDebugging::throwException().
+ * Procedure 4: Please, copy following in your project php file.
+ *      "require_once './BreakpointDebugging_MySetting.php';"
+ * Procedure 5: Please, set a breakpoint into BreakpointDebugging_breakpoint() of BreakpointDebugging_MySetting_Option.php.
+ * Procedure 6: Please, set debugging mode to $_BreakpointDebugging_EXE_MODE.
+ * Procedure 7: Please, register at top of the function or method to have been not fixed. Please, copy following.
+ *      "static $isRegister; BreakpointDebugging::registerNotFixedLocation( $isRegister);"
+ *      Then, it is possible to discern function or method which does not fix with browser screen or log.
+ * Procedure 8: Please, register value which you want to see inside function with BreakpointDebugging::addValuesToTrace().
+ * Procedure 9: Please, Throw a exception with BreakpointDebugging::throwException().
  *
  * ### The debugging mode which we can use. ###
  * First "LOCAL_DEBUG" mode is breakpoint debugging with local personal computer.
@@ -134,7 +136,7 @@ class BreakpointDebugging_Exception extends PEAR_Exception
         assert(is_string($message));
         assert(is_int($code) || $code === null);
         assert($previous instanceof Exception || $previous === null);
-        assert(mb_detect_encoding($message, 'utf8', true) != false);
+        assert(mb_detect_encoding($message, 'utf8', true) !== false);
         
         parent::__construct($message, $previous, $code);
         // In case of local-debug. "BreakpointDebugging_breakpoint()" is called. Therefore we do the step execution to error place, and we can see condition of variables.
@@ -268,7 +270,7 @@ class BreakpointDebugging_InAllCase
         assert(is_string($exception));
         assert(is_string($message));
         assert(is_int($code));
-        assert($previous instanceof Exception || $previous == null);
+        assert($previous instanceof Exception || $previous === null);
         
         throw new $exception(B::convertMbString($message), $code, $previous);
     }
@@ -354,7 +356,7 @@ class BreakpointDebugging_InAllCase
      */
     final static function convertMbString($string)
     {
-        assert(func_num_args() == 1);
+        assert(func_num_args() === 1);
         assert(is_string($string));
         // It analyzes character sets of character string head.
         $charSet = mb_detect_encoding($string);
