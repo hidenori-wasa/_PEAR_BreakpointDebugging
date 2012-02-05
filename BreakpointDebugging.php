@@ -30,7 +30,7 @@
  *      "static $isRegister; BreakpointDebugging::registerNotFixedLocation( $isRegister);"
  *      Then, it is possible to discern function or method which does not fix with browser screen or log.
  * Procedure 8: Please, register value which you want to see inside function with BreakpointDebugging::addValuesToTrace().
- * Procedure 9: Please, Throw a exception with BreakpointDebugging::throwException().
+ * Procedure 9: Please, Throw a exception with "<YourClass>::throwException()" because this needs for call stack.
  *
  * ### The debugging mode which we can use. ###
  * First "LOCAL_DEBUG" mode is breakpoint debugging with local personal computer.
@@ -48,8 +48,6 @@
  *          BreakpointDebugging_Error_Exception
  *
  * ### Useful function index. ###
- * Please, use this method when you throw a exception.
- *     final static function BreakpointDebugging::throwException($exception, $message = '' , $code = 0 , $previous = null)
  * Please, register at top of the function or method being not fixed.
  *     final static function BreakpointDebugging::registerNotFixedLocation(&$isRegister)
  * Add values to trace
@@ -251,28 +249,6 @@ class BreakpointDebugging_InAllCase
             $backTrace2['file'] = &$backTrace[0]['file'];
         }
         $_BreakpointDebugging->notFixedLocations[] = $backTrace2;
-    }
-    
-    /**
-     * Throw exception.
-     * 
-     * @param string    $exception An exception which you want to throw
-     * @param string    $message   Exception message
-     * @param int       $code      Exception number
-     * @param Exception $previous  Previous exception
-     * 
-     * @return void 
-     * 
-     * @example BreakpointDebugging::throwException('Exception', $warning['Message']);
-     */
-    final static function throwException($exception, $message = '' , $code = 0 , $previous = null)
-    {
-        assert(is_string($exception));
-        assert(is_string($message));
-        assert(is_int($code));
-        assert($previous instanceof Exception || $previous === null);
-        
-        throw new $exception(B::convertMbString($message), $code, $previous);
     }
     
     /**

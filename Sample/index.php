@@ -24,24 +24,22 @@ if ($testNumber === 1) {
     // Register the function being not fixed.
     static $isRegister; B::registerNotFixedLocation( $isRegister);
     
-    /**
-     * Function has been fixed.
-     *
-     * @param object $object
-     *
-     */
+    // This function needs for call stack.
+    function throwException($message = '' , $code = 0 , $previous = null)
+    {
+        assert(is_string($message));
+        assert(is_int($code));
+        assert($previous instanceof Exception || $previous === null);
+        
+        throw new \Exception(B::convertMbString($message), $code, $previous);
+    }
+    
     function fnTestC()
     {
         // assert(false); // This is error location.
-        B::throwException('Exception', 'test exception 1.'); // This is exception location.
+        throwException('test exception 1.'); // This is exception location.
     }
     
-    /**
-     * Function has been not fixed.
-     *
-     * @param object $object
-     *
-     */
     function fnTestB()
     {
         // Register the function being not fixed.
@@ -64,16 +62,10 @@ if ($testNumber === 1) {
             // This writes inside of "catch()", then display logging or log.
             B::exceptionHandler($exception);
             // This doesn't specify previous exception because "B::exceptionHandler()" logged.
-            B::throwException('Exception', 'test exception 2.');
+            throwException('test exception 2.');
         }
     }
     
-    /**
-     * Function has been fixed.
-     *
-     * @param object $object
-     *
-     */
     function fnTestA()
     {
         fnTestB();
@@ -91,7 +83,7 @@ if ($testNumber === 1) {
     } catch (\Exception $exception) {
         B::$prependExceptionLog = '<i>Some global exception happened.</i> αβ∞' . PHP_EOL;
         // This specifies previous exception, and global exception handler will process.
-        B::throwException('Exception', 'test exception 3.', 3, $exception);
+        throwException('test exception 3.', 3, $exception);
     }
     
     echo 'END';

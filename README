@@ -29,7 +29,7 @@ The features list
         "static $isRegister; BreakpointDebugging::registerNotFixedLocation( $isRegister);"
         Then, it is possible to discern function or method which does not fix with browser screen or log.
     Procedure 8: Please, register value which you want to see inside function with BreakpointDebugging::addValuesToTrace().
-    Procedure 9: Please, Throw a exception with BreakpointDebugging::throwException().
+    Procedure 9: Please, Throw a exception with "<YourClass>::throwException()" because this needs for call stack.
 
     ### The debugging mode which we can use. ###
     First "LOCAL_DEBUG" mode is breakpoint debugging with local personal computer.
@@ -47,8 +47,6 @@ The features list
              BreakpointDebugging_Error_Exception
 
     ### Useful function index. ###
-    Please, use this method when you throw a exception.
-        final static function BreakpointDebugging::throwException($exception, $message = '' , $code = 0 , $previous = null)
     Please, register at top of the function or method being not fixed.
         final static function BreakpointDebugging::registerNotFixedLocation(&$isRegister)
     Add values to trace
