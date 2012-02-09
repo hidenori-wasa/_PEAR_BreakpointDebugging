@@ -82,22 +82,7 @@ assert($result);
 // ### <=== Item setting.
 
 ////////////////////////////////////////////////////////////////////////////////
-// This setting has been Fixed.
-if ($_BreakpointDebugging_EXE_MODE & B::RELEASE) { // In case of release.
-    // Output it at log to except notice and deprecated.
-    ini_set('error_reporting', (string)(PHP_INT_MAX & ~(E_NOTICE | E_DEPRECATED | E_STRICT)));
-    // For security, it doesn't display all errors, warnings and notices.
-    ini_set('display_errors', '');
-    // This changes "php.ini" file setting into "display_startup_errors = Off" Because this makes not display an error on start-up for security.
-    ini_set('display_startup_errors', '');
-    // This changes "php.ini" file setting into "log_errors = On" to record log for security.
-    ini_set('log_errors', '1');
-    // This changes "php.ini" file setting into "html_errors=Off" for security because this does not make output link to page which explains function which HTML error occurred.
-    ini_set('html_errors', '');
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// User place folder (Default is empty.)
+// ### User place folder (Default is empty.) ###
 
 
 
@@ -114,10 +99,6 @@ if ($_BreakpointDebugging_EXE_MODE & (B::REMOTE_DEBUG | B::RELEASE)) { // In cas
     // Windows mail address setting.
     B::iniSet('sendmail_from', '?@example.com'); // '???@???.com'
 }
-// This makes all errors, warnings and note a stop at breakpoint or a display.
-B::iniSet('error_reporting', (string)PHP_INT_MAX);
-// In case of debugging, this changes "php.ini" file setting into "log_errors = Off" because this doesn't record log.
-B::iniSet('log_errors', '');
 // The default character sets of PHP
 B::iniSet('default_charset', 'utf8');
 // The default value of language setting (NLS)
@@ -147,6 +128,21 @@ B::iniSet('arg_separator.output', '&amp;');
 // This changes "php.ini" file setting into "ignore_user_abort = Off" because it is purpose to end execution of script when client is disconnected.
 B::iniSet('ignore_user_abort', '');
 */
+
+////////////////////////////////////////////////////////////////////////////////
+// ### This setting has been Fixed. ###
+if ($_BreakpointDebugging_EXE_MODE & B::RELEASE) { // In case of release.
+    // Output it at log to except notice and deprecated.
+    ini_set('error_reporting', (string)(PHP_INT_MAX & ~(E_NOTICE | E_DEPRECATED | E_STRICT)));
+    // For security, it doesn't display all errors, warnings and notices.
+    ini_set('display_errors', '');
+    // This changes "php.ini" file setting into "display_startup_errors = Off" Because this makes not display an error on start-up for security.
+    ini_set('display_startup_errors', '');
+    // This changes "php.ini" file setting into "log_errors = On" to record log for security.
+    ini_set('log_errors', '1');
+    // This changes "php.ini" file setting into "html_errors=Off" for security because this does not make output link to page which explains function which HTML error occurred.
+    ini_set('html_errors', '');
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 if (!($_BreakpointDebugging_EXE_MODE & B::RELEASE)) { // In case of not release.

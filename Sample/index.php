@@ -29,7 +29,7 @@ if ($testNumber === 1) {
     {
         assert(is_string($message));
         assert(is_int($code));
-        assert($previous instanceof Exception || $previous === null);
+        assert($previous instanceof \Exception || $previous === null);
         
         throw new \Exception(B::convertMbString($message), $code, $previous);
     }
@@ -55,7 +55,8 @@ if ($testNumber === 1) {
         }
         
         try {
-            fnTestC(true, false, 1, 1.1, "\x95\xB6\x8E\x9A \xE6\x96\x87\xE5\xAD\x97 ", $object, $array, tmpfile(), null, $varietyObject);
+            //fnTestC(true, false, 1, 1.1, "\x95\xB6\x8E\x9A \xE6\x96\x87\xE5\xAD\x97 ", $object, $array, tmpfile(), null, $varietyObject);
+            fnTestC(true, false, 1, 1.1, "\x95\xB6\x8E\x9A ", $object, $array, tmpfile(), null, $varietyObject);
         } catch (\Exception $exception) {
             // A tag inside of the "<pre class='xdebug-var-dump' dir='ltr'>" tag isn't changed because the prepend logging is executed "htmlspecialchars()".
             B::$prependExceptionLog = '<i>This exception caused in fnTestB().</i> αβ∞' . PHP_EOL;

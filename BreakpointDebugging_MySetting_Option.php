@@ -96,18 +96,6 @@ if ($_BreakpointDebugging_EXE_MODE & B::LOCAL_DEBUG) {
     // "mbstring.func_overload" do coding with 0 for plainness, but release environment is any possibly.
     B::iniCheck('mbstring.func_overload', '0', 'To make coding plain must be set "mbstring.func_overload = 0" of "php.ini" file.');
 }
-// This makes all errors, warnings and note a stop at breakpoint or a display.
-B::iniSet('error_reporting', (string)PHP_INT_MAX);
-// This changes "php.ini" file setting into "display_errors = On" to display error, warning and note which isn't done handling by error handler.
-B::iniSet('display_errors', '1');
-// This changes "php.ini" file setting into "display_startup_errors = On" to display error in case of start-up.
-B::iniSet('display_startup_errors', '1');
-// In case of debugging, this changes "php.ini" file setting into "log_errors = Off" because this doesn't record log.
-B::iniSet('log_errors', '');
-// This outputs the message which it is possible to click to lead to the page which explains the function which generated a HTML error.
-B::iniSet('html_errors', '1');
-// // This doesn't make usual error report invalid.
-// B::iniCheck( 'xmlrpc_errors', '', 'Please, set "xmlrpc_errors = Off" in "php.ini" file because this does not change usual error report invalidly.');
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // ### [mbstring] setting in "php.ini" file. ###
@@ -163,6 +151,7 @@ B::iniSet('magic_quotes_runtime', '');
 // This changes "php.ini" file setting into "arg_separator.output = "&amp;" to be based on XHTML fully.
 B::iniSet('arg_separator.output', '&amp;');
 B::iniCheck('short_open_tag', '', 'This should change "php.ini" file setting into "short_open_tag = Off" because it can distinguish between other languages by using "<php?" opening tag.');
+B::iniCheck('asp_tags', '', 'This should change "php.ini" file setting into "asp_tags = Off" because it can distinguish between other languages by using "<php?" opening tag.');
 // This changes "php.ini" file setting into "ignore_user_abort = Off" because it is purpose to end execution of script when client is disconnected.
 B::iniSet('ignore_user_abort', '');
 // This changes "php.ini" file setting into "memory_limit = 128M" because it works stably by memory limit setting which can be used with script.
@@ -175,5 +164,25 @@ B::iniCheck('post_max_size', '8M', 'We recommends to set "post_max_size = 8M" of
 B::iniSet('smtp_port', '25');
 B::iniCheck('mail.add_x_header', '', 'We recommend to set "mail.add_x_header = Off" of "php.ini" file because does not write that header continue "UID" behind the file name.');
 B::iniCheck('upload_max_filesize', '128M', 'We recommend to set "upload_max_filesize = 128M" of "php.ini" file because it is "XAMPP" value.');
+
+////////////////////////////////////////////////////////////////////////////////
+// ### This uses "ini_set()" because this setting doesn't have relation with release. ###
+// This makes all errors, warnings and note a stop at breakpoint or a display.
+//B::iniSet('error_reporting', (string)PHP_INT_MAX);
+ini_set('error_reporting', (string)PHP_INT_MAX);
+// This changes "php.ini" file setting into "display_errors = On" to display error, warning and note which isn't done handling by error handler.
+//B::iniSet('display_errors', '1');
+ini_set('display_errors', '1');
+// This changes "php.ini" file setting into "display_startup_errors = On" to display error in case of start-up.
+//B::iniSet('display_startup_errors', '1');
+ini_set('display_startup_errors', '1');
+// In case of debugging, this changes "php.ini" file setting into "log_errors = Off" because this doesn't record log.
+//B::iniSet('log_errors', '');
+ini_set('log_errors', '');
+// This outputs the message which it is possible to click to lead to the page which explains the function which generated a HTML error.
+//B::iniSet('html_errors', '1');
+ini_set('html_errors', '1');
+// // This doesn't make usual error report invalid.
+// B::iniCheck( 'xmlrpc_errors', '', 'Please, set "xmlrpc_errors = Off" in "php.ini" file because this does not change usual error report invalidly.');
 
 ?>
