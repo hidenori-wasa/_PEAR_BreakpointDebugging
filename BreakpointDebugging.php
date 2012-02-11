@@ -34,13 +34,13 @@
  *
  * ### The debugging mode which we can use. ###
  * First "LOCAL_DEBUG" mode is breakpoint debugging with local personal computer.
- *     For example, VS.Php environment.
+ *      For example, VS.Php environment.
  * Second "LOCAL_DEBUG_OF_RELEASE" mode is breakpoint debugging to emulate release with local personal computer.
- *     For example, XAMPP environment.
+ *      For example, XAMPP environment.
  * Third "REMOTE_DEBUG" mode is browser display debugging with remote personal computer.
- *     For example, we debug client server environment by browser.
+ *      For example, we debug client server environment by browser.
  * Last "RELEASE" mode is log debugging with remote personal computer, and we must set on last for security.
- *     For example, on release.
+ *      For example, on release.
  *
  *  ### Exception hierarchical structure ###
  *  PEAR_Exception
@@ -49,19 +49,23 @@
  *
  * ### Useful function index. ###
  * Please, register at top of the function or method being not fixed.
- *     final static function BreakpointDebugging::registerNotFixedLocation(&$isRegister)
+ *      final static function BreakpointDebugging::registerNotFixedLocation(&$isRegister)
  * Add values to trace
- *     final static function BreakpointDebugging::addValuesToTrace($values)
+ *      final static function BreakpointDebugging::addValuesToTrace($values)
  * This writes inside of "catch()", then display logging or log.
- *     BreakpointDebugging::$prependExceptionLog
- *     final static function BreakpointDebugging::exceptionHandler($exception)
+ *      BreakpointDebugging::$prependExceptionLog
+ *      final static function BreakpointDebugging::exceptionHandler($exception)
  * This return the function call stack log.
- *     final static function BreakpointDebugging::buildErrorCallStackLog($errorKind, $errorMessage)
+ *      final static function BreakpointDebugging::buildErrorCallStackLog($errorKind, $errorMessage)
  * This changes to unify multibyte character strings such as system-output in UTF8, and this returns.
- *     final static function BreakpointDebugging::convertMbString($string)
+ *      final static function BreakpointDebugging::convertMbString($string)
  * This changes a character sets to display a multibyte character string with local window of debugger, and this returns it.
  * But, this doesn't exist in case of release.
- *     static function BreakpointDebugging::convertMbStringForDebug($params)
+ *      static function BreakpointDebugging::convertMbStringForDebug($params)
+ * 
+ * ### Useful class index. ###
+ * This class override a class without inheritance, but only public member can be inherited.
+ *      class BreakpointDebugging_OverrideClass
  * 
  * PHP version 5.3
  * 
