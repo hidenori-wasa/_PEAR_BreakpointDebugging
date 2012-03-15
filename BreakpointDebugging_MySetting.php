@@ -47,8 +47,8 @@
 use \BreakpointDebugging as B;
 
 // Reference path setting.
-ini_set('include_path', '.;./PEAR;C:/Program Files/Jcx.Software/VS.Php/2008/'); // In case of local.
-// ini_set('include_path', '.:./PEAR'); // In case of remote.
+ini_set('include_path', '.;./PEAR;\xampp\php\PEAR'); // In case of local.
+// ini_set('include_path', '.:./PEAR:/opt/lampp/php/PEAR'); // In case of remote.
 
 require_once 'BreakpointDebugging.php'; // 'BreakpointDebugging.php' must require_once because it is base of all class, and it sets php.ini, and it sets autoload.
 
@@ -73,7 +73,8 @@ const PHP_ERROR_LOG_FILE_PATH = './php_error.log';
 // The HTTPS web application root directory.
 const LOCAL_HTTPS_APP_ROOT = '';
 const REMOTE_HTTPS_APP_ROOT = ''; // 'https://???/???/'
-
+// Remote host name
+const REMOTE_HOST_NAME = '"www.example.com"';
 // Inner form of the browser of the default: HTML text, character sets = UTF8
 header('Content-type: text/html; charset=utf-8');
 // Set "mbstring.detect_order = UTF-8, UTF-7, ASCII, EUC-JP,SJIS, eucJP-win, SJIS-win, JIS, ISO-2022-JP" of "php.ini" file because this is purpose to define default value of character code detection.

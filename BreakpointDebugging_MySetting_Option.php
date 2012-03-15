@@ -76,6 +76,7 @@ function BreakpointDebugging_breakpoint($message = '', $callStackInfo = null)
 }
 
 // ### Item setting. ===>
+// "B::RELEASE" is needed to copy.
 if ($_BreakpointDebugging_EXE_MODE & (B::REMOTE_DEBUG | B::RELEASE)) { // In case of remote.
     // PHP It limits directory which opens a file.
     B::iniSet('open_basedir', 'C:\xampp\;.\\'); // '/???/:/???/'
@@ -83,11 +84,20 @@ if ($_BreakpointDebugging_EXE_MODE & (B::REMOTE_DEBUG | B::RELEASE)) { // In cas
     B::iniSet('SMTP', 'smtp.example.com'); // 'smtp.???.com'
     // Windows mail address setting.
     B::iniSet('sendmail_from', '?@example.com'); // '???@???.com'
+	// ### [XDebug] setting in "php.ini" file. ###
+	ini_set('xdebug.remote_host', REMOTE_HOST_NAME);
 } else { // In case of local.
     B::iniSet('open_basedir', 'C:\xampp\;.\\');
     B::iniSet('SMTP', 'smtp.example.com');
     B::iniSet('sendmail_from', '?@example.com');
+	// ### [XDebug] setting in "php.ini" file. ###
+	ini_set('xdebug.remote_host', '"127.0.0.1"');
 }
+// ### [XDebug] setting in "php.ini" file. ###
+B::iniCheck('zend_extension', '', 'Set "zend_extension = <newest xdebug *.dll or *.so file path, for example, "\xampp\php\ext\php_xdebug-2.1.3-5.3-vc9.dll">" of "php.ini" file because this is needed to do breakpoint debugging.');
+B::iniCheck('xdebug.remote_enable', '1', 'Set "xdebug.remote_enable = 1" of "php.ini" file because this is needed to do breakpoint debugging.');
+ini_set('xdebug.remote_handler', '"dbgp"');
+ini_set('xdebug.remote_port', '9000');
 // ### <=== Item setting.
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -1,0 +1,12 @@
+The basic concept
+    This makes it possible to do breakpoint debugging.
+
+The features list
+    Please, read the file level document block of "PEAR/BreakpointDebugging.php".
+
+The dependences
+    Windows, but I want to support "Linux", therefore I am studying remote linux rental server, then I will debug with it.
+    PHP >= 5.3.0
+
+Notice
+    I am developing this package yet.

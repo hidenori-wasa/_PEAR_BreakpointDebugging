@@ -3,7 +3,7 @@
 /**
  * This class override a class without inheritance, but only public member can be inherited.
  * 
- * If you use IntelliSense, should not you extend native class because it is c class. Then debugger may freeze.
+ * If you use variable reference on debugging, should not you extend native class because it is c class. Then debugger may freeze.
  * Also a class like "MySQLi_Result" should not extend because __construct() signature is fixed, and it is difficult to make derived class.
  * 
  * PHP version 5.3
