@@ -84,20 +84,19 @@ if ($_BreakpointDebugging_EXE_MODE & (B::REMOTE_DEBUG | B::RELEASE)) { // In cas
     B::iniSet('SMTP', 'smtp.example.com'); // 'smtp.???.com'
     // Windows mail address setting.
     B::iniSet('sendmail_from', '?@example.com'); // '???@???.com'
-	// ### [XDebug] setting in "php.ini" file. ###
-	ini_set('xdebug.remote_host', REMOTE_HOST_NAME);
+    // ### [XDebug] setting in "php.ini" file. ###
+    B::iniCheck('xdebug.remote_host', array('127.0.0.1', 'localhost'), 'Set "xdebug.remote_host = "&lt;Remote host name or ip&gt;"" of "php.ini" file because this is needed to do breakpoint debugging.');
 } else { // In case of local.
     B::iniSet('open_basedir', 'C:\xampp\;.\\');
     B::iniSet('SMTP', 'smtp.example.com');
     B::iniSet('sendmail_from', '?@example.com');
-	// ### [XDebug] setting in "php.ini" file. ###
-	ini_set('xdebug.remote_host', '"127.0.0.1"');
+    // ### [XDebug] setting in "php.ini" file. ###
+    B::iniCheck('xdebug.remote_host', '127.0.0.1', 'Set "xdebug.remote_host = "127.0.0.1"" of "php.ini" file because this is needed to do breakpoint debugging.');
 }
 // ### [XDebug] setting in "php.ini" file. ###
-B::iniCheck('zend_extension', '', 'Set "zend_extension = <newest xdebug *.dll or *.so file path, for example, "\xampp\php\ext\php_xdebug-2.1.3-5.3-vc9.dll">" of "php.ini" file because this is needed to do breakpoint debugging.');
+B::iniCheck('xdebug.remote_handler', 'dbgp', 'Set "xdebug.remote_handler = "dbgp"" of "php.ini" file because this is needed to do breakpoint debugging.');
+B::iniCheck('xdebug.remote_port', '9000', 'Set "xdebug.remote_port = 9000" of "php.ini" file because this is needed to do breakpoint debugging.');
 B::iniCheck('xdebug.remote_enable', '1', 'Set "xdebug.remote_enable = 1" of "php.ini" file because this is needed to do breakpoint debugging.');
-ini_set('xdebug.remote_handler', '"dbgp"');
-ini_set('xdebug.remote_port', '9000');
 // ### <=== Item setting.
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -160,8 +159,8 @@ B::iniSet('magic_quotes_runtime', '');
 
 // This changes "php.ini" file setting into "arg_separator.output = "&amp;" to be based on XHTML fully.
 B::iniSet('arg_separator.output', '&amp;');
-B::iniCheck('short_open_tag', '', 'This should change "php.ini" file setting into "short_open_tag = Off" because it can distinguish between other languages by using "<php?" opening tag.');
-B::iniCheck('asp_tags', '', 'This should change "php.ini" file setting into "asp_tags = Off" because it can distinguish between other languages by using "<php?" opening tag.');
+B::iniCheck('short_open_tag', '', 'This should change "php.ini" file setting into "short_open_tag = Off" because it can distinguish between other languages by using "&lt;php?" opening tag.');
+B::iniCheck('asp_tags', '', 'This should change "php.ini" file setting into "asp_tags = Off" because it can distinguish between other languages by using "&lt;php?" opening tag.');
 // This changes "php.ini" file setting into "ignore_user_abort = Off" because it is purpose to end execution of script when client is disconnected.
 B::iniSet('ignore_user_abort', '');
 // This changes "php.ini" file setting into "memory_limit = 128M" because it works stably by memory limit setting which can be used with script.
@@ -176,22 +175,27 @@ B::iniCheck('mail.add_x_header', '', 'We recommend to set "mail.add_x_header = O
 B::iniCheck('upload_max_filesize', '128M', 'We recommend to set "upload_max_filesize = 128M" of "php.ini" file because it is "XAMPP" value.');
 
 ////////////////////////////////////////////////////////////////////////////////
-// ### This uses "ini_set()" because this setting doesn't have relation with release. ###
+// ### This uses "false" because this setting doesn't have relation with release. ###
 // This makes all errors, warnings and note a stop at breakpoint or a display.
-//B::iniSet('error_reporting', (string)PHP_INT_MAX);
-ini_set('error_reporting', (string)PHP_INT_MAX);
+//$return = ini_set('error_reporting', (string)PHP_INT_MAX);
+//assert($return !== false);
+B::iniSet('error_reporting', (string)PHP_INT_MAX, false);
 // This changes "php.ini" file setting into "display_errors = On" to display error, warning and note which isn't done handling by error handler.
-//B::iniSet('display_errors', '1');
-ini_set('display_errors', '1');
+//$return = ini_set('display_errors', '1');
+//assert($return !== false);
+B::iniSet('display_errors', '1', false);
 // This changes "php.ini" file setting into "display_startup_errors = On" to display error in case of start-up.
-//B::iniSet('display_startup_errors', '1');
-ini_set('display_startup_errors', '1');
+//$return = ini_set('display_startup_errors', '1');
+//assert($return !== false);
+B::iniSet('display_startup_errors', '1', false);
 // In case of debugging, this changes "php.ini" file setting into "log_errors = Off" because this doesn't record log.
-//B::iniSet('log_errors', '');
-ini_set('log_errors', '');
+//$return = ini_set('log_errors', '');
+//assert($return !== false);
+B::iniSet('log_errors', '', false);
 // This outputs the message which it is possible to click to lead to the page which explains the function which generated a HTML error.
-//B::iniSet('html_errors', '1');
-ini_set('html_errors', '1');
+//$return = ini_set('html_errors', '1');
+//assert($return !== false);
+B::iniSet('html_errors', '1', false);
 // // This doesn't make usual error report invalid.
 // B::iniCheck( 'xmlrpc_errors', '', 'Please, set "xmlrpc_errors = Off" in "php.ini" file because this does not change usual error report invalidly.');
 

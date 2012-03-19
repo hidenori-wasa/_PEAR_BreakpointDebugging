@@ -4,22 +4,13 @@
  * This makes it possible to do breakpoint debugging.
  * 
  * ### Environment which can do breakpoint debugging. ###
- * Something-IDE which can do breakpoint debugging.
- * I recommend "NetBeans IDE" because this IDE may excel than other IDE. There is following.
- *      Easiness to set to install on windows.
- *      Multilingual online document.
- *      Simple project setting.
- *      The file level character string finding or replacement by "Ctrl-F, Ctrl-Shift-F".
- *      The project level character string finding or replacement by "Ctrl-H, Ctrl-Shift-H".
- *      Quick the file level bookmark.
- *      This java IDE has been developed by java developers.
- *      But version 7.1.1 cannot use refactoring because this does not support use-statement and identifier-inside-comment.
+ * Debugger which can use breakpoint.
  * 
  * ### The advantage of breakpoint debugging. ###
  * it is to be able to find a position of a bug immediately.
  * In addition to it, condition of variable can be examined.
  * Therefore, it is possible to do debugging quickly.
- *
+ * 
  * ### How to do breakpoint debugging coding. ###
  * We have to do coding as follows to process in "BreakpointDebugging" class.
  * We have to verify a impossible return value of function or method with "assert()".
@@ -36,18 +27,23 @@
  * Procedure 5: Please, set a breakpoint into BreakpointDebugging_breakpoint() of BreakpointDebugging_MySetting_Option.php.
  * Procedure 6: Please, set debugging mode to $_BreakpointDebugging_EXE_MODE.
  * Procedure 7: Please, register at top of the function or method to have been not fixed. Please, copy following.
- *      "static $isRegister; BreakpointDebugging::registerNotFixedLocation( $isRegister);"
+ *      "static $isRegister; BreakpointDebugging::registerNotFixedLocation($isRegister);"
  *      Then, it is possible to discern function or method which does not fix with browser screen or log.
  * Procedure 8: Please, register value which you want to see inside function with BreakpointDebugging::addValuesToTrace().
  * Procedure 9: Please, Throw a exception with "<YourClass>::throwException()" because this needs for call stack.
+ * Procedure 10: Please, download latest "xdebug*.dll" file into "C:\xampp\php\ext\".
+ *      It sets "C:\xampp\php\php.ini" file as follows.
+ *      zend_extension = "C:\xampp\php\ext\<latest xdebug*.dll the file name>"
+ *      Then, it is possible to do breakpoint debugging.
+ * Procedure 11: If you execute "REMOTE_DEBUG", please set "xdebug.remote_host = "<debugger host name or ip>"" into "php.ini" file.
  *
  * ### The debugging mode which we can use. ###
  * First "LOCAL_DEBUG" mode is breakpoint debugging with local personal computer.
- *      For example, "NetBeans IDE"
+ *      Debugger which can use breakpoint.
  * Second "LOCAL_DEBUG_OF_RELEASE" mode is breakpoint debugging to emulate release with local personal computer.
- *      For example, "NetBeans IDE"
+ *      Debugger which can use breakpoint.
  * Third "REMOTE_DEBUG" mode is browser display debugging with remote personal computer.
- *      For example, "NetBeans IDE"
+ *      Debugger which can use breakpoint.
  * Last "RELEASE" mode is log debugging with remote personal computer, and we must set on last for security.
  *      On release
  *
@@ -406,10 +402,11 @@ if ($_BreakpointDebugging_EXE_MODE & BreakpointDebugging_InAllCase::RELEASE) { /
          * 
          * @param string $phpIniVariable This is php.ini variable.
          * @param string $setValue       Value of variable.
+         * @param bool   $doCheck        It is dummy.
          * 
          * @return void
          */
-        static function iniSet( $phpIniVariable, $setValue)
+        static function iniSet($phpIniVariable, $setValue, $doCheck = true)
         {
             ini_set($phpIniVariable, $setValue);
         }

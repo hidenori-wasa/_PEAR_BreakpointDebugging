@@ -166,20 +166,21 @@ final class BreakpointDebugging extends BreakpointDebugging_InAllCase
      * 
      * @param string $phpIniVariable This is php.ini variable.
      * @param string $setValue       Value of variable.
+     * @param bool   $doCheck        Does it check to copy on to the release file?
      * 
      * @return void
      */
-    static function iniSet($phpIniVariable, $setValue)
+    static function iniSet($phpIniVariable, $setValue, $doCheck = true)
     {
         global $_BreakpointDebugging_EXE_MODE, $_BreakpointDebugging;
         //static $onceFlag = true;
-        assert(func_num_args() === 2);
+        assert(func_num_args() <= 3);
         
         $getValue = ini_get($phpIniVariable);
         assert(self::_isSameType($setValue, $getValue));
         if ($setValue !== $getValue) {
             // In case of remote.
-            if ($_BreakpointDebugging_EXE_MODE & self::REMOTE_DEBUG) {
+            if ( $doCheck === true && $_BreakpointDebugging_EXE_MODE & self::REMOTE_DEBUG) {
                 $backTrace = debug_backtrace(true);
                 $baseName = basename($backTrace[0]['file']);
                 $cmpName = '_MySetting_Option.php';
@@ -199,7 +200,7 @@ final class BreakpointDebugging extends BreakpointDebugging_InAllCase
                         $packageName = substr($baseName, 0, 0 - $cmpNameLength);
                         echo <<<EOD
 <pre>
-### "BreakpointDebugging::iniSet()": You must copy from "./{$packageName}_MySetting_Option.php" to user place folder of "./{$packageName}_MySetting.php" because set value and value of php.ini differ.
+### "BreakpointDebugging::iniSet()": You must copy from "./{$packageName}_MySetting_Option.php" to user place folder of "./{$packageName}_MySetting.php" for release because set value and value of php.ini differ.
 ### But, When remote "php.ini" is changed, you must redo remote debug.<pre/>
 EOD;
                         //    break;

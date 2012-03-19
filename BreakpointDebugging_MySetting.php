@@ -58,7 +58,7 @@ require_once 'BreakpointDebugging.php'; // 'BreakpointDebugging.php' must requir
  *       LOCAL_DEBUG
  *       LOCAL_DEBUG_OF_RELEASE
  *       REMOTE_DEBUG
- *       RELEASE
+ *       RELEASE                // We must execute "REMOTE_DEBUG" before this.
  */
 $_BreakpointDebugging_EXE_MODE = B::LOCAL_DEBUG;
 // ### <=== Execution mode setting.
@@ -73,8 +73,6 @@ const PHP_ERROR_LOG_FILE_PATH = './php_error.log';
 // The HTTPS web application root directory.
 const LOCAL_HTTPS_APP_ROOT = '';
 const REMOTE_HTTPS_APP_ROOT = ''; // 'https://???/???/'
-// Remote host name
-const REMOTE_HOST_NAME = '"www.example.com"';
 // Inner form of the browser of the default: HTML text, character sets = UTF8
 header('Content-type: text/html; charset=utf-8');
 // Set "mbstring.detect_order = UTF-8, UTF-7, ASCII, EUC-JP,SJIS, eucJP-win, SJIS-win, JIS, ISO-2022-JP" of "php.ini" file because this is purpose to define default value of character code detection.
@@ -90,7 +88,6 @@ assert($result);
 
 
 
-
 /*### Example ###
 if ($_BreakpointDebugging_EXE_MODE & (B::REMOTE_DEBUG | B::RELEASE)) { // In case of remote.
     // PHP It limits directory which opens a file.
@@ -100,26 +97,10 @@ if ($_BreakpointDebugging_EXE_MODE & (B::REMOTE_DEBUG | B::RELEASE)) { // In cas
     // Windows mail address setting.
     B::iniSet('sendmail_from', '?@example.com'); // '???@???.com'
 }
-// The default character sets of PHP
-B::iniSet('default_charset', 'utf8');
-// The default value of language setting (NLS)
-B::iniSet('mbstring.language', LANGUAGE);
-// Set "mbstring.internal_encoding = utf8" of "php.ini" file because this is purpose to define default value of inner character encoding.
-B::iniSet('mbstring.internal_encoding', 'utf8');
-// Set "mbstring.http_input = auto" of "php.ini" file because this is purpose to define default value of HTTP entry character encoding.
-B::iniSet('mbstring.http_input', 'auto');
-// Set "mbstring.http_output = utf8" of "php.ini" file because this is purpose to define default value of HTTP output character encoding.
-B::iniSet('mbstring.http_output', 'utf8');
-// Set "mbstring.detect_order = auto" of "php.ini" file because this is purpose to define default value of character code detection.
-B::iniSet('mbstring.detect_order', 'auto');
-// Set "mbstring.strict_detection = Off" of "php.ini" file because this is purpose to not do strict encoding detection.
-B::iniSet('mbstring.strict_detection', '');
 // This sets "user_agent" to "PHP".
 B::iniSet('user_agent', 'PHP');
 // This judges an end of a sentence character by the data which was read in "fgets()" and "file()", and we can use "PHP_EOL" constant.
 B::iniSet('auto_detect_line_endings', '1');
-// Timezone setting.
-B::iniSet('date.timezone', TIMEZONE);
 // This creates error log file "php_error.log" in "PHP_ERROR_LOG_FILE_PATH" folder.
 B::iniSet('error_log', PHP_ERROR_LOG_FILE_PATH);
 // Change "php.ini" file setting into "track_errors = Off" because this is not make to insert an error message in direct near "$php_errormsg" variable for security.
@@ -134,15 +115,20 @@ B::iniSet('ignore_user_abort', '');
 // ### This setting has been Fixed. ###
 if ($_BreakpointDebugging_EXE_MODE & B::RELEASE) { // In case of release.
     // Output it at log to except notice and deprecated.
-    ini_set('error_reporting', (string)(PHP_INT_MAX & ~(E_NOTICE | E_DEPRECATED | E_STRICT)));
+    //ini_set('error_reporting', (string)(PHP_INT_MAX & ~(E_NOTICE | E_DEPRECATED | E_STRICT)));
+    B::iniSet('error_reporting', (string)(PHP_INT_MAX & ~(E_NOTICE | E_DEPRECATED | E_STRICT)), false);
     // For security, it doesn't display all errors, warnings and notices.
-    ini_set('display_errors', '');
+    //ini_set('display_errors', '');
+    B::iniSet('display_errors', '', false);
     // This changes "php.ini" file setting into "display_startup_errors = Off" Because this makes not display an error on start-up for security.
-    ini_set('display_startup_errors', '');
+    //ini_set('display_startup_errors', '');
+    B::iniSet('display_startup_errors', '', false);
     // This changes "php.ini" file setting into "log_errors = On" to record log for security.
-    ini_set('log_errors', '1');
+    //ini_set('log_errors', '1');
+    B::iniSet('log_errors', '1', false);
     // This changes "php.ini" file setting into "html_errors=Off" for security because this does not make output link to page which explains function which HTML error occurred.
-    ini_set('html_errors', '');
+    //ini_set('html_errors', '');
+    B::iniSet('html_errors', '', false);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
