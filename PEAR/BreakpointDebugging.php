@@ -1,16 +1,18 @@
 <?php
 
 /**
- * This makes it possible to do breakpoint debugging.
- * 
+ * This package is for breakpoint debugging.
+ *
  * ### Environment which can do breakpoint debugging. ###
  * Debugger which can use breakpoint.
- * 
+ * The present recommendation debugging environment is "NetBeans IDE 7.1.1" + "XAMPP 1.7.3".
+ * Do not use version greater than "XAMPP 1.7.3" for "NetBeans IDE 7.1.1".
+ *
  * ### The advantage of breakpoint debugging. ###
  * it is to be able to find a position of a bug immediately.
  * In addition to it, condition of variable can be examined.
  * Therefore, it is possible to do debugging quickly.
- * 
+ *
  * ### How to do breakpoint debugging coding. ###
  * We have to do coding as follows to process in "BreakpointDebugging" class.
  * We have to verify a impossible return value of function or method with "assert()".
@@ -18,31 +20,32 @@
  * Also, an error and an exception which wasn't caught are processed in "BreakpointDebugging" class.
  *
  * ### The execution procedure. ###
- * Procedure 1: Please, set php file format to utf8, but we should create backup of php files because multibyte strings may be destroyed.
- * Procedure 2: Please, copy *_MySetting*.php as your project php file.
- * Procedure 3: Please, edit *_MySetting*.php for customize.
- *      Then, it is possible to make specific setting about all debugging modes.
- * Procedure 4: Please, copy following in your project php file.
- *      "require_once './BreakpointDebugging_MySetting.php';"
- * Procedure 5: Please, set a breakpoint into BreakpointDebugging_breakpoint() of BreakpointDebugging_MySetting_Option.php.
- * Procedure 6: Please, set debugging mode to $_BreakpointDebugging_EXE_MODE.
- * Procedure 7: Please, register at top of the function or method to have been not fixed. Please, copy following.
- *      "static $isRegister; BreakpointDebugging::registerNotFixedLocation($isRegister);"
- *      Then, it is possible to discern function or method which does not fix with browser screen or log.
- * Procedure 8: Please, register value which you want to see inside function with BreakpointDebugging::addValuesToTrace().
- * Procedure 9: Please, Throw a exception with "<YourClass>::throwException()" because this needs for call stack.
- * Procedure 10: Please, download latest "xdebug*.dll" file into "C:\xampp\php\ext\".
- *      It sets "C:\xampp\php\php.ini" file as follows.
+ * Procedure 1: Please, download latest "xdebug*.dll" file into "C:\xampp\php\ext\".
+ *      And, set "C:\xampp\php\php.ini" file as follows.
  *      zend_extension = "C:\xampp\php\ext\<latest xdebug*.dll the file name>"
- *      Then, it is possible to do breakpoint debugging.
- * Procedure 11: If you execute "REMOTE_DEBUG", please set "xdebug.remote_host = "<debugger host name or ip>"" into "php.ini" file.
+ *      This is required to stop at breakpoint.
+ * Procedure 2: If you execute "REMOTE_DEBUG", please set "xdebug.remote_host = "<name or ip of host which debugger exists>"" into "php.ini" file.
+ * Procedure 3: Please, set *.php file format to utf8, but we should create backup of php files because multibyte strings may be destroyed.
+ * Procedure 4: Please, copy *_MySetting*.php as your project php file.
+ * Procedure 5: Please, edit *_MySetting*.php for customize.
+ *      Then, it fixes part setting about all debugging modes.
+ * Procedure 6: Please, copy following in your project php file.
+ *      "require_once './BreakpointDebugging_MySetting.php';"
+ * Procedure 7: Please, Throw a exception inside of "<YourClass>::throwException()" because this needs for call stack.
+ * Procedure 8: Please, set a breakpoint into BreakpointDebugging_breakpoint() of BreakpointDebugging_MySetting_Option.php.
+ * Procedure 9: Please, set debugging mode to $_BreakpointDebugging_EXE_MODE.
+ *
+ * Option procedure 1: Please, register at top of the function or method or file which has been not fixed. Please, copy following.
+ *      "static $isRegister; BreakpointDebugging::registerNotFixedLocation($isRegister);"
+ *      Then, we can discern function or method or file which has been not fixed with browser screen or log.
+ * Option procedure 2: Please, register local variable or global variable which you want to see with BreakpointDebugging::addValuesToTrace().
  *
  * ### The debugging mode which we can use. ###
  * First "LOCAL_DEBUG" mode is breakpoint debugging with local personal computer.
  *      Debugger which can use breakpoint.
  * Second "LOCAL_DEBUG_OF_RELEASE" mode is breakpoint debugging to emulate release with local personal computer.
  *      Debugger which can use breakpoint.
- * Third "REMOTE_DEBUG" mode is browser display debugging with remote personal computer.
+ * Third "REMOTE_DEBUG" mode is browser display debugging with remote personal computer. And it is remote debugging by debugger.
  *      Debugger which can use breakpoint.
  * Last "RELEASE" mode is log debugging with remote personal computer, and we must set on last for security.
  *      On release
@@ -67,20 +70,20 @@
  * This changes a character sets to display a multibyte character string with local window of debugger, and this returns it.
  * But, this doesn't exist in case of release.
  *      static function BreakpointDebugging::convertMbStringForDebug($params)
- * 
+ *
  * ### Useful class index. ###
  * This class override a class without inheritance, but only public member can be inherited.
  *      class BreakpointDebugging_OverrideClass
- * 
+ *
  * PHP version 5.3
- * 
+ *
  * LICENSE:
  * Copyright (c) 2012, Hidenori Wasa
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- * 
+ *
  * Redistributions of source code must retain the above copyright notice,
  * this list of conditions and the following disclaimer.
  * Redistributions in binary form must reproduce the above copyright notice,
@@ -117,7 +120,7 @@ require_once __DIR__ . '/PEAR/Exception.php';
 
 /**
  * This class is own package exception.
- * 
+ *
  * @category PHP
  * @package  BreakpointDebugging
  * @author   Hidenori Wasa <wasa_@nifty.com>
@@ -129,11 +132,11 @@ class BreakpointDebugging_Exception extends PEAR_Exception
 {
     /**
      * This is "PEAR_Exception" breakpoint in case of local.
-     * 
+     *
      * @param string $message  Exception message.
      * @param int    $code     Exception code.
      * @param string $previous Previous exception.
-     * 
+     *
      * @return void
      */
     function __construct($message, $code = null, $previous = null)
@@ -144,7 +147,7 @@ class BreakpointDebugging_Exception extends PEAR_Exception
         assert(is_int($code) || $code === null);
         assert($previous instanceof Exception || $previous === null);
         assert(mb_detect_encoding($message, 'utf8', true) !== false);
-        
+
         parent::__construct($message, $previous, $code);
         // In case of local-debug. "BreakpointDebugging_breakpoint()" is called. Therefore we do the step execution to error place, and we can see condition of variables.
         if ($_BreakpointDebugging_EXE_MODE & (B::LOCAL_DEBUG | B::LOCAL_DEBUG_OF_RELEASE)) { // In case of local.
@@ -155,7 +158,7 @@ class BreakpointDebugging_Exception extends PEAR_Exception
 
 /**
  * This class is own package error exception.
- * 
+ *
  * @category PHP
  * @package  BreakpointDebugging
  * @author   Hidenori Wasa <wasa_@nifty.com>
@@ -174,7 +177,7 @@ global $_BreakpointDebugging_EXE_MODE;
 
 /**
  * This class executes error or exception handling
- * 
+ *
  * @category PHP
  * @package  BreakpointDebugging
  * @author   Hidenori Wasa <wasa_@nifty.com>
@@ -185,59 +188,59 @@ global $_BreakpointDebugging_EXE_MODE;
 class BreakpointDebugging_InAllCase
 {
     // ### Debug mode constant number ###
-    
+
     /**
      * @const int First mode is breakpoint debug with your personal computer.
      */
     const LOCAL_DEBUG = 1;
-    
+
     /**
      * @const int Next mode is breakpoint debug to emulate release mode with your personal computer.
      */
     const LOCAL_DEBUG_OF_RELEASE = 2;
-    
+
     /**
      * @const int Next mode is browser display debug with remote personal computer.
      */
     const REMOTE_DEBUG = 4;
-    
+
     /**
      * @const int Next mode is log debug with remote personal computer. That is, this is a release mode.
      */
     const RELEASE = 8;
-    
+
     /**
      * @var string This prepend to logging when self::exceptionHandler() is called.
      */
     public static $prependExceptionLog = '';
-    
+
     /**
      * @var string This prepend to logging when self::errorHandler() is called.
      */
     public static $prependErrorLog = '';
-    
+
     /**
      * @var int Max log parameter nesting level.
      */
     public static $maxLogParamNestingLevel = 20;
-    
+
     /**
      * @var array Locations to be not Fixed
      */
     public $notFixedLocations;
-    
+
     /**
      * @var array Values to trace
      */
     public $valuesToTrace = array();
-    
+
     /**
      * Please, register at top of the function or method being not fixed.
-     * 
+     *
      * @param bool &$isRegister Is this registered?
-     * 
+     *
      * @return void
-     * 
+     *
      * @example static $isRegister; BreakpointDebugging::registerNotFixedLocation( $isRegister);
      */
     final static function registerNotFixedLocation(&$isRegister)
@@ -247,9 +250,9 @@ class BreakpointDebugging_InAllCase
             return;
         }
         $isRegister = true;
-        
+
         global $_BreakpointDebugging;
-        
+
         $backTrace = debug_backtrace(true);
         // In case of scope of method or function or included file.
         if (array_key_exists(1, $backTrace)) {
@@ -259,20 +262,20 @@ class BreakpointDebugging_InAllCase
         }
         $_BreakpointDebugging->notFixedLocations[] = $backTrace2;
     }
-    
+
     /**
      * Add values to trace
-     * 
+     *
      * @param array $values Values
-     * 
+     *
      * @return void
-     * 
+     *
      * @example BreakpointDebugging::addValuesToTrace(array('TEST_CONST' => TEST_CONST, '$testString' => $testString, '$varietyObject' => $varietyObject));
      */
     final static function addValuesToTrace($values)
     {
         global $_BreakpointDebugging;
-        
+
         $backTrace = debug_backtrace(true);
         $callInfo = &$backTrace[0];
         if (array_key_exists('file', $callInfo)) {
@@ -296,12 +299,12 @@ class BreakpointDebugging_InAllCase
         $_BreakpointDebugging->valuesToTrace[$file][$line] = $backTrace2;
         $_BreakpointDebugging->valuesToTrace[$file][$line]['values'] = $values;
     }
-    
+
     /**
      * This writes inside of "catch()", then display logging or log.
-     * 
+     *
      * @param object $pException Exception info.
-     * 
+     *
      * @return void
      */
     final static function exceptionHandler($pException)
@@ -309,15 +312,15 @@ class BreakpointDebugging_InAllCase
         $error = new BreakpointDebugging_Error();
         $error->exceptionHandler2($pException, B::$prependExceptionLog);
     }
-    
+
     /**
      * This return the function call stack log.
-     * 
+     *
      * @param string $errorKind    Error kind.
      * @param string $errorMessage Error message.
-     * 
+     *
      * @return string Function call stack log.
-     * 
+     *
      * @example $log = BreakpointDebugging::buildErrorCallStackLog('EXCEPTION', 'Description of exception.');
      */
     final static function buildErrorCallStackLog($errorKind, $errorMessage)
@@ -328,15 +331,15 @@ class BreakpointDebugging_InAllCase
         $error->callStackInfo[] = array();
         return $error->buildErrorCallStackLog2($errorKind, $errorMessage);
     }
-    
+
     /**
      * This method changes it to unify multibyte character strings such as system-output or user input, and this returns UTF-8 multibyte character strings.
      * This is security for not mixing a character sets.
-     * 
+     *
      * @param string $string Character string which may be not UTF8.
-     * 
+     *
      * @return string UTF8 character string.
-     * 
+     *
      * @example BreakpointDebugging::convertMbString($warning['Message']);
      */
     final static function convertMbString($string)
@@ -352,13 +355,13 @@ class BreakpointDebugging_InAllCase
         }
         return mb_convert_encoding($string, 'UTF-8', $charSet);
     }
-    
+
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /**
      * This does autoload with word which was divided by name space separator and underscore separator as directory.
-     * 
+     *
      * @param string $className This is class name to do "new" and "extends".
-     * 
+     *
      * @return void
      */
     final static function autoload($className)
@@ -367,13 +370,13 @@ class BreakpointDebugging_InAllCase
         $className = str_replace(array('_', '\\'), '/', $className) . '.php';
         include_once $className;
     }
-    
+
     /**
      * Error handler.
-     * 
+     *
      * @param int    $errorNumber  Error number.
      * @param string $errorMessage Error message.
-     * 
+     *
      * @return bool Did the error handling end?
      */
     final static function errorHandler($errorNumber, $errorMessage)
@@ -386,7 +389,7 @@ class BreakpointDebugging_InAllCase
 if ($_BreakpointDebugging_EXE_MODE & BreakpointDebugging_InAllCase::RELEASE) { // In case of release.
     /**
     * This class executes error or exception handling, and it is only in case of release mode.
-     * 
+     *
      * @category PHP
      * @package  BreakpointDebugging
      * @author   Hidenori Wasa <wasa_@nifty.com>
@@ -399,21 +402,21 @@ if ($_BreakpointDebugging_EXE_MODE & BreakpointDebugging_InAllCase::RELEASE) { /
         /**
          * This is ini_set() without validation in case of release mode.
          * I set with "ini_set()" because "php.ini" file and ".htaccess" file isn't sometimes possible to be set on sharing server.
-         * 
+         *
          * @param string $phpIniVariable This is php.ini variable.
          * @param string $setValue       Value of variable.
          * @param bool   $doCheck        It is dummy.
-         * 
+         *
          * @return void
          */
         static function iniSet($phpIniVariable, $setValue, $doCheck = true)
         {
             ini_set($phpIniVariable, $setValue);
         }
-        
+
         /**
         * This is ini_check() without validate in case of release mode.
-         * 
+         *
          * @return void
          */
         static function iniCheck()

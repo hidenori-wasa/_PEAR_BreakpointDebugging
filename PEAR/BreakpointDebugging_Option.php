@@ -166,7 +166,7 @@ final class BreakpointDebugging extends BreakpointDebugging_InAllCase
      * 
      * @param string $phpIniVariable This is php.ini variable.
      * @param string $setValue       Value of variable.
-     * @param bool   $doCheck        Does it check to copy on to the release file?
+     * @param bool   $doCheck        Does it check to copy to the release file?
      * 
      * @return void
      */

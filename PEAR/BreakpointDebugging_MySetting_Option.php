@@ -2,19 +2,19 @@
 
 /**
  * This file is code except for release, therefore it does not read in case of release.
- * 
+ *
  * This reduces load of PHP parser in release mode, then it does speed up.
  * As for procedure, please, refer to the file level document block of BreakpointDebugging.php.
- * 
+ *
  * PHP version 5.3
- * 
+ *
  * LICENSE:
  * Copyright (c) 2012, Hidenori Wasa
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- * 
+ *
  * Redistributions of source code must retain the above copyright notice,
  * this list of conditions and the following disclaimer.
  * Redistributions in binary form must reproduce the above copyright notice,
@@ -50,10 +50,10 @@ use \BreakpointDebugging as B;
 /**
  * This is function to set breakpoint. You must define this function outside namespace, and you must not change function name.
  * If you don't have breakpoint, you can debug to set '$_BreakpointDebugging_EXE_MODE = B::REMOTE_DEBUG;'.
- * 
+ *
  * @param string $message       Message
  * @param array  $callStackInfo Call stack info
- * 
+ *
  * @return void
  */
 function BreakpointDebugging_breakpoint($message = '', $callStackInfo = null)
@@ -61,7 +61,7 @@ function BreakpointDebugging_breakpoint($message = '', $callStackInfo = null)
     assert(func_num_args() <= 2);
     assert(is_string($message));
     assert(is_array($callStackInfo) || is_null($callStackInfo));
-    
+
     if ($callStackInfo !== null) {
         $callStackInfo = each($callStackInfo);
         $callStackInfo = $callStackInfo['value'];
@@ -159,7 +159,8 @@ B::iniSet('magic_quotes_runtime', '');
 
 // This changes "php.ini" file setting into "arg_separator.output = "&amp;" to be based on XHTML fully.
 B::iniSet('arg_separator.output', '&amp;');
-B::iniCheck('short_open_tag', '', 'This should change "php.ini" file setting into "short_open_tag = Off" because it can distinguish between other languages by using "&lt;php?" opening tag.');
+//B::iniCheck('short_open_tag', '', 'This should change "php.ini" file setting into "short_open_tag = Off" because it can distinguish between other languages by using "&lt;php?" opening tag.');
+B::iniCheck('short_open_tag', '1', 'This should change "php.ini" file setting into "short_open_tag = On" because it needs for xampp using "&lt;?" opening tag.');
 B::iniCheck('asp_tags', '', 'This should change "php.ini" file setting into "asp_tags = Off" because it can distinguish between other languages by using "&lt;php?" opening tag.');
 // This changes "php.ini" file setting into "ignore_user_abort = Off" because it is purpose to end execution of script when client is disconnected.
 B::iniSet('ignore_user_abort', '');
@@ -168,7 +169,7 @@ B::iniSet('memory_limit', '128M');
 // This changes "php.ini" file setting into "implicit_flush = Off" because it is purpose to prevent a remarkable degradation.
 B::iniSet('implicit_flush', '');
 B::iniCheck('scream.enabled', '', 'This should change "php.ini" file setting into "scream.enabled = false" because it does not make "@" error display control operator invalid.');
-B::iniCheck('post_max_size', '8M', 'We recommends to set "post_max_size = 8M" of "php.ini" file because maximum size which is permitted to a POST data is different from the default.');
+B::iniCheck('post_max_size', '128M', 'We recommends to set "post_max_size = 128M" of "php.ini" file because maximum size which is permitted to a POST data is different from the default.');
 // The SMTP port setting of Windows
 B::iniSet('smtp_port', '25');
 B::iniCheck('mail.add_x_header', '', 'We recommend to set "mail.add_x_header = Off" of "php.ini" file because does not write that header continue "UID" behind the file name.');
