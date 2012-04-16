@@ -6,7 +6,8 @@
  * ### Environment which can do breakpoint debugging. ###
  * Debugger which can use breakpoint.
  * The present recommendation debugging environment is "NetBeans IDE 7.1.1" + "XAMPP 1.7.3".
- * Do not use version greater than "XAMPP 1.7.3" for "NetBeans IDE 7.1.1".
+ * Do not use version greater than "XAMPP 1.7.3" for "NetBeans IDE 7.1.1" because MySQL version causes discordance.
+ * Notice: Use "phpMyAdmin" to see database and to execute "MySQL" command.
  *
  * ### The advantage of breakpoint debugging. ###
  * it is to be able to find a position of a bug immediately.
@@ -20,9 +21,9 @@
  * Also, an error and an exception which wasn't caught are processed in "BreakpointDebugging" class.
  *
  * ### The execution procedure. ###
- * Procedure 1: Please, download latest "xdebug*.dll" file into "C:\xampp\php\ext\".
+ * Procedure 1: Please, download latest "php_xdebug*.dll" file for your OS into "C:\xampp\php\ext\".
  *      And, set "C:\xampp\php\php.ini" file as follows.
- *      zend_extension = "C:\xampp\php\ext\<latest xdebug*.dll the file name>"
+ *      zend_extension = "C:\xampp\php\ext\<latest php_xdebug*.dll the file name>"
  *      This is required to stop at breakpoint.
  * Procedure 2: If you execute "REMOTE_DEBUG", please set "xdebug.remote_host = "<name or ip of host which debugger exists>"" into "php.ini" file.
  * Procedure 3: Please, set *.php file format to utf8, but we should create backup of php files because multibyte strings may be destroyed.
@@ -35,10 +36,10 @@
  * Procedure 8: Please, set a breakpoint into BreakpointDebugging_breakpoint() of BreakpointDebugging_MySetting_Option.php.
  * Procedure 9: Please, set debugging mode to $_BreakpointDebugging_EXE_MODE.
  *
- * Option procedure 1: Please, register at top of the function or method or file which has been not fixed. Please, copy following.
+ * Option procedure: Please, register at top of the function or method or file which has been not fixed. Please, copy following.
  *      "static $isRegister; BreakpointDebugging::registerNotFixedLocation($isRegister);"
  *      Then, we can discern function or method or file which has been not fixed with browser screen or log.
- * Option procedure 2: Please, register local variable or global variable which you want to see with BreakpointDebugging::addValuesToTrace().
+ * Option procedure: Please, register local variable or global variable which you want to see with BreakpointDebugging::addValuesToTrace().
  *
  * ### The debugging mode which we can use. ###
  * First "LOCAL_DEBUG" mode is breakpoint debugging with local personal computer.
@@ -77,6 +78,10 @@
  *
  * PHP version 5.3
  *
+ * LICENSE OVERVIEW:
+ * 1. Do not change license text.
+ * 2. Copyrighters do not take responsibility for this file code.
+ *
  * LICENSE:
  * Copyright (c) 2012, Hidenori Wasa
  * All rights reserved.
@@ -109,12 +114,16 @@
  * @version  SVN: $Id$
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-
 // File to have "use" keyword does not inherit scope into a file including itself,
 // also it does not inherit scope into a file including,
 // and moreover "use" keyword alias has priority over class definition,
 // therefore "use" keyword alias does not be affected by other files.
 use \BreakpointDebugging as B;
+
+/**
+ * @const int $_BreakpointDebugging_EXE_MODE Debug mode constant.
+ */
+global $_BreakpointDebugging_EXE_MODE;
 
 require_once __DIR__ . '/PEAR/Exception.php';
 
@@ -130,6 +139,7 @@ require_once __DIR__ . '/PEAR/Exception.php';
  */
 class BreakpointDebugging_Exception extends PEAR_Exception
 {
+
     /**
      * This is "PEAR_Exception" breakpoint in case of local.
      *
@@ -154,6 +164,7 @@ class BreakpointDebugging_Exception extends PEAR_Exception
             BreakpointDebugging_breakpoint($message);
         }
     }
+
 }
 
 /**
@@ -168,12 +179,8 @@ class BreakpointDebugging_Exception extends PEAR_Exception
  */
 class BreakpointDebugging_Error_Exception extends BreakpointDebugging_Exception
 {
-}
 
-/**
- * @const int $_BreakpointDebugging_EXE_MODE Debug mode constant.
- */
-global $_BreakpointDebugging_EXE_MODE;
+}
 
 /**
  * This class executes error or exception handling
@@ -192,6 +199,7 @@ class BreakpointDebugging_InAllCase
     /**
      * @const int First mode is breakpoint debug with your personal computer.
      */
+
     const LOCAL_DEBUG = 1;
 
     /**
@@ -212,17 +220,27 @@ class BreakpointDebugging_InAllCase
     /**
      * @var string This prepend to logging when self::exceptionHandler() is called.
      */
-    public static $prependExceptionLog = '';
+    static $prependExceptionLog = '';
 
     /**
      * @var string This prepend to logging when self::errorHandler() is called.
      */
-    public static $prependErrorLog = '';
+    static $prependErrorLog = '';
 
     /**
      * @var int Max log parameter nesting level.
      */
-    public static $maxLogParamNestingLevel = 20;
+    static $maxLogParamNestingLevel = 20;
+
+    /**
+     * @var int Maximum count of elements in log. ( Total of parameters or array elements )
+     */
+    static $maxLogElementNumber = 50;
+
+    /**
+     * @var int Maximum string type byte-count of log.
+     */
+    static $maxLogStringSize = 3000;
 
     /**
      * @var array Locations to be not Fixed
@@ -384,11 +402,12 @@ class BreakpointDebugging_InAllCase
         $error = new BreakpointDebugging_Error();
         return $error->errorHandler2($errorNumber, $errorMessage, B::$prependErrorLog);
     }
+
 }
 
 if ($_BreakpointDebugging_EXE_MODE & BreakpointDebugging_InAllCase::RELEASE) { // In case of release.
     /**
-    * This class executes error or exception handling, and it is only in case of release mode.
+     * This class executes error or exception handling, and it is only in case of release mode.
      *
      * @category PHP
      * @package  BreakpointDebugging
@@ -397,8 +416,10 @@ if ($_BreakpointDebugging_EXE_MODE & BreakpointDebugging_InAllCase::RELEASE) { /
      * @version  Release: @package_version@
      * @link     http://pear.php.net/package/BreakpointDebugging
      */
+
     final class BreakpointDebugging extends BreakpointDebugging_InAllCase
     {
+
         /**
          * This is ini_set() without validation in case of release mode.
          * I set with "ini_set()" because "php.ini" file and ".htaccess" file isn't sometimes possible to be set on sharing server.
@@ -415,14 +436,17 @@ if ($_BreakpointDebugging_EXE_MODE & BreakpointDebugging_InAllCase::RELEASE) { /
         }
 
         /**
-        * This is ini_check() without validate in case of release mode.
+         * This is ini_check() without validate in case of release mode.
          *
          * @return void
          */
         static function iniCheck()
         {
+
         }
+
     }
+
     if (assert_options(ASSERT_ACTIVE, 0) === false) { // Ignore assert().
         throw new BreakpointDebugging_Error_Exception('');
     }
@@ -436,5 +460,4 @@ set_exception_handler('BreakpointDebugging::exceptionHandler');
 set_error_handler('BreakpointDebugging::errorHandler', -1);
 $_BreakpointDebugging = new BreakpointDebugging();
 spl_autoload_register('BreakpointDebugging::autoload', true, true);
-
 ?>

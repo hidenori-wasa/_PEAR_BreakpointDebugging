@@ -2,18 +2,22 @@
 
 /**
  * This is file for various setting.
- * 
+ *
  * As for procedure, please, refer to the file level document block of BreakpointDebugging.php.
- * 
+ *
  * PHP version 5.3
- * 
+ *
+ * LICENSE OVERVIEW:
+ * 1. Do not change license text.
+ * 2. Copyrighters do not take responsibility for this file code.
+ *
  * LICENSE:
  * Copyright (c) 2012, Hidenori Wasa
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- * 
+ *
  * Redistributions of source code must retain the above copyright notice,
  * this list of conditions and the following disclaimer.
  * Redistributions in binary form must reproduce the above copyright notice,
@@ -39,7 +43,6 @@
  * @version  SVN: $Id$
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-
 // File to have "use" keyword does not inherit scope into a file including itself,
 // also it does not inherit scope into a file including,
 // and moreover "use" keyword alias has priority over class definition,
@@ -51,7 +54,6 @@ ini_set('include_path', '.;./PEAR;\xampp\php\PEAR'); // In case of local.
 // ini_set('include_path', '.:./PEAR:/opt/lampp/php/PEAR'); // In case of remote.
 
 require_once 'BreakpointDebugging.php'; // 'BreakpointDebugging.php' must require_once because it is base of all class, and it sets php.ini, and it sets autoload.
-
 // ### Execution mode setting. ===>
 /**
  * @see '### Debug mode constant number ###' of class BreakpointDebugging_InAllCase in BreakpointDebugging.php.
@@ -62,10 +64,14 @@ require_once 'BreakpointDebugging.php'; // 'BreakpointDebugging.php' must requir
  */
 $_BreakpointDebugging_EXE_MODE = B::LOCAL_DEBUG;
 // ### <=== Execution mode setting.
-
 // ### Item setting. ===>
-// B::$maxLogParamNestingLevel = 20; // Max log parameter nesting level. Default is 20. (1-100)
-assert(1 <= B::$maxLogParamNestingLevel && B::$maxLogParamNestingLevel <= 100);
+// Maximum log parameter nesting level. Default is 20. (1-100)
+// B::$maxLogParamNestingLevel = 20;
+// Maximum count of elements in log. ( Count of parameter or array elements ) Default is 50. (1-100)
+// B::$maxLogElementNumber = 50;
+// Maximum string type byte-count of log. Default is 3000. (1-)
+// B::$maxLogStringSize = 3000;
+
 const LANGUAGE = 'Japanese';
 const TIMEZONE = 'Asia/Tokyo';
 // Warning: When you use existing log, it is destroyed if it is not "UTF-8". It is necessary to be a single character sets.
@@ -79,7 +85,6 @@ header('Content-type: text/html; charset=utf-8');
 $result = mb_detect_order('UTF-8, UTF-7, ASCII, EUC-JP,SJIS, eucJP-win, SJIS-win, JIS, ISO-2022-JP');
 assert($result);
 // ### <=== Item setting.
-
 ////////////////////////////////////////////////////////////////////////////////
 // ### User place folder (Default is empty.) ###
 
@@ -88,7 +93,8 @@ assert($result);
 
 
 
-/*### Example ###
+
+/* ### Example ###
 if ($_BreakpointDebugging_EXE_MODE & (B::REMOTE_DEBUG | B::RELEASE)) { // In case of remote.
     // PHP It limits directory which opens a file.
     B::iniSet('open_basedir', 'C:\xampp\;.\\'); // '/???/:/???/'
@@ -110,13 +116,12 @@ B::iniSet('arg_separator.output', '&amp;');
 // This changes "php.ini" file setting into "ignore_user_abort = Off" because it is purpose to end execution of script when client is disconnected.
 B::iniSet('ignore_user_abort', '');
 */
-
 ////////////////////////////////////////////////////////////////////////////////
 // ### This setting has been Fixed. ###
 if ($_BreakpointDebugging_EXE_MODE & B::RELEASE) { // In case of release.
     // Output it at log to except notice and deprecated.
     //ini_set('error_reporting', (string)(PHP_INT_MAX & ~(E_NOTICE | E_DEPRECATED | E_STRICT)));
-    B::iniSet('error_reporting', (string)(PHP_INT_MAX & ~(E_NOTICE | E_DEPRECATED | E_STRICT)), false);
+    B::iniSet('error_reporting', (string) (PHP_INT_MAX & ~(E_NOTICE | E_DEPRECATED | E_STRICT)), false);
     // For security, it doesn't display all errors, warnings and notices.
     //ini_set('display_errors', '');
     B::iniSet('display_errors', '', false);
@@ -135,5 +140,4 @@ if ($_BreakpointDebugging_EXE_MODE & B::RELEASE) { // In case of release.
 if (!($_BreakpointDebugging_EXE_MODE & B::RELEASE)) { // In case of not release.
     include_once './BreakpointDebugging_MySetting_Option.php';
 }
-
 ?>

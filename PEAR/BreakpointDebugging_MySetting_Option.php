@@ -8,6 +8,10 @@
  *
  * PHP version 5.3
  *
+ * LICENSE OVERVIEW:
+ * 1. Do not change license text.
+ * 2. Copyrighters do not take responsibility for this file code.
+ *
  * LICENSE:
  * Copyright (c) 2012, Hidenori Wasa
  * All rights reserved.
@@ -40,7 +44,6 @@
  * @version  SVN: $Id$
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-
 // File to have "use" keyword does not inherit scope into a file including itself,
 // also it does not inherit scope into a file including,
 // and moreover "use" keyword alias has priority over class definition,
@@ -98,7 +101,6 @@ B::iniCheck('xdebug.remote_handler', 'dbgp', 'Set "xdebug.remote_handler = "dbgp
 B::iniCheck('xdebug.remote_port', '9000', 'Set "xdebug.remote_port = 9000" of "php.ini" file because this is needed to do breakpoint debugging.');
 B::iniCheck('xdebug.remote_enable', '1', 'Set "xdebug.remote_enable = 1" of "php.ini" file because this is needed to do breakpoint debugging.');
 // ### <=== Item setting.
-
 ////////////////////////////////////////////////////////////////////////////////
 // On local.
 if ($_BreakpointDebugging_EXE_MODE & B::LOCAL_DEBUG) {
@@ -124,7 +126,6 @@ B::iniSet('mbstring.substitute_character', '');
 // Set "mbstring.strict_detection = Off" of "php.ini" file because this is purpose to not do strict encoding detection.
 B::iniSet('mbstring.strict_detection', '');
 // this is possible for any value because "mbstring.script_encoding" is unrelated.
-
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // ### The "Fopen wrappers" setting of "php.ini" file ###
 B::iniCheck('allow_url_fopen', '1', 'Set "allow_url_fopen = On" of "php.ini" file because this is purpose that a file path is made to be able to specify URL by "fopen()" type function.');
@@ -156,7 +157,6 @@ B::iniSet('magic_quotes_runtime', '');
 
 // This doesn't expose to be using php by server.
 // B::iniCheck('expose_php', '', 'This should change "php.ini" file setting into "expose_php = Off" for security.');
-
 // This changes "php.ini" file setting into "arg_separator.output = "&amp;" to be based on XHTML fully.
 B::iniSet('arg_separator.output', '&amp;');
 //B::iniCheck('short_open_tag', '', 'This should change "php.ini" file setting into "short_open_tag = Off" because it can distinguish between other languages by using "&lt;php?" opening tag.');
@@ -180,7 +180,7 @@ B::iniCheck('upload_max_filesize', '128M', 'We recommend to set "upload_max_file
 // This makes all errors, warnings and note a stop at breakpoint or a display.
 //$return = ini_set('error_reporting', (string)PHP_INT_MAX);
 //assert($return !== false);
-B::iniSet('error_reporting', (string)PHP_INT_MAX, false);
+B::iniSet('error_reporting', (string) PHP_INT_MAX, false);
 // This changes "php.ini" file setting into "display_errors = On" to display error, warning and note which isn't done handling by error handler.
 //$return = ini_set('display_errors', '1');
 //assert($return !== false);
@@ -200,4 +200,7 @@ B::iniSet('html_errors', '1', false);
 // // This doesn't make usual error report invalid.
 // B::iniCheck( 'xmlrpc_errors', '', 'Please, set "xmlrpc_errors = Off" in "php.ini" file because this does not change usual error report invalidly.');
 
+assert(1 <= B::$maxLogParamNestingLevel && B::$maxLogParamNestingLevel <= 100);
+assert(1 <= B::$maxLogElementNumber && B::$maxLogElementNumber <= 100);
+assert(1 <= B::$maxLogStringSize);
 ?>

@@ -2,18 +2,22 @@
 
 /**
  * There is this file to increase speed when does not do error or exception handling.
- * 
+ *
  * In other words, this file does not cause "__autoload()" because does not read except for error or exception handling.
- * 
+ *
  * PHP version 5.3
+ *
+ * LICENSE OVERVIEW:
+ * 1. Do not change license text.
+ * 2. Copyrighters do not take responsibility for this file code.
  *
  * LICENSE:
  * Copyright (c) 2012, Hidenori Wasa
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- * 
+ *
  * Redistributions of source code must retain the above copyright notice,
  * this list of conditions and the following disclaimer.
  * Redistributions in binary form must reproduce the above copyright notice,
@@ -39,7 +43,6 @@
  * @version  SVN: $Id$
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-
 // File to have "use" keyword does not inherit scope into a file including itself,
 // also it does not inherit scope into a file including,
 // and moreover "use" keyword alias has priority over class definition,
@@ -48,7 +51,7 @@ use \BreakpointDebugging as B;
 
 /**
  * This class do error or exception handling.
- * 
+ *
  * @category PHP
  * @package  BreakpointDebugging
  * @author   Hidenori Wasa <wasa_@nifty.com>
@@ -58,30 +61,30 @@ use \BreakpointDebugging as B;
  */
 final class BreakpointDebugging_Error
 {
-    
+
     /**
      * @var array Call stack information
      */
     public $callStackInfo;
-    
+
     /**
      * @var bool Is logging?
      */
     private $_isLogging;
-    
+
     /**
      * @var string Mark
      */
     private $_mark;
-    
+
     /**
      * @var array HTML tags
      */
     public $tag;
-    
+
     /**
      * This method makes HTML tags.
-     * 
+     *
      * @return void
      */
     function __construct()
@@ -130,38 +133,38 @@ final class BreakpointDebugging_Error
             $this->tag['/pre'] = '</pre>';
         }
     }
-    
+
     /**
      * This is to avoid recursive method call inside error handling or exception handling.
      * And this becomes possible to assert inside error handling.
-     * 
+     *
      * @param bool $expression Judgment expression
-     * 
+     *
      * @return void
      */
     private function _assert($expression)
     {
         global $_BreakpointDebugging_EXE_MODE;
         static $onceFlag = true;
-        
+
         if (!($_BreakpointDebugging_EXE_MODE & B::RELEASE)) { // In case of not release
             if ($onceFlag) {
                 $onceFlag = false;
                 if (func_num_args() !== 1 || !is_bool($expression) || $expression === false) {
                     B::errorHandler(E_USER_WARNING, 'Assertion failed.');
-                    exit (-1);
+                    exit(-1);
                 }
             }
         }
     }
-    
+
     /**
      * This is to avoid recursive method call inside error handling or exception handling.
      * This method changes it to unify multibyte character strings such as system-output or user input, and this returns UTF-8 multibyte character strings.
      * This is security for not mixing a character sets.
-     * 
+     *
      * @param string $string Character string which may be not UTF8.
-     * 
+     *
      * @return string UTF8 character string.
      */
     private function _convertMbString($string)
@@ -169,7 +172,7 @@ final class BreakpointDebugging_Error
         $this->_assert(func_num_args() === 1);
         $this->_assert(is_string($string));
         static $onceFlag = true;
-        
+
         $charSet = mb_detect_encoding($string);
         if ($charSet === 'UTF-8' || $charSet === 'ASCII') {
             return $string;
@@ -177,68 +180,43 @@ final class BreakpointDebugging_Error
             $message = 'This isn\'t single character sets.';
             if ($onceFlag) {
                 $onceFlag = false;
-                //$traceNumber = count($this->callStackInfo);
-                //$cwd = getcwd();
-                //$cwd = str_replace('\\', '/', $cwd);
-                //$cwdLen = strlen($cwd);
-                //foreach ($this->callStackInfo as $callStackInfoKey => $callStackInfo) {
-                //    $includePaths = str_replace('\\', '/', get_include_path());
-                //    $includePaths = explode(PATH_SEPARATOR, $includePaths);
-                //    if (!array_key_exists('file', $callStackInfo)) {
-                //        continue;
-                //    }
-                //    $cmpPath = str_replace('\\', '/', $callStackInfo['file']);
-                //    if (!substr_compare($cwd, $cmpPath, 0, $cwdLen)) {
-                //        $cmpPath = substr_replace($cmpPath, '.', 0, $cwdLen);
-                //    }
-                //    foreach ($includePaths as $includePath) {
-                //        if (!substr_compare($cwd, $includePath, 0, $cwdLen)) {
-                //            $includePath = substr_replace($includePath, '.', 0, $cwdLen);
-                //        }
-                //        $skipPath = rtrim($includePath, '/') . '/' . 'BreakpointDebugging';
-                //        if (!substr_compare($skipPath, $cmpPath, 0, strlen($skipPath), true)) {
-                //            unset($this->callStackInfo[$callStackInfoKey]);
-                //            break;
-                //        }
-                //    }
-                //}
                 $log = $this->buildErrorCallStackLog2('E_USER_ERROR', $message);
                 if ($this->_errorLog($log)) {
                     BreakpointDebugging_breakpoint($message, $this->callStackInfo);
                 }
-                exit (-1);
+                exit(-1);
             }
             return "### ERROR: {$message} ###";
         }
         return mb_convert_encoding($string, 'UTF-8', $charSet);
     }
-    
+
     /**
      * Add function-values to log.
-     * 
+     *
      * @param string &$logBuffer Error log buffer
      * @param string &$log       Error log
      * @param bool   &$onceFlag2 False means logging parameter header.
      * @param string $func       Function name of call stack
      * @param string $class      Class name of call stack
      * @param string $line       Line number of call stack
-     * @param string $file       File name of call stack
      * @param string $tabs       Tabs to indent
-     * 
+     *
      * @return void
      */
-    private function _addFunctionValuesToLog(&$logBuffer, &$log, &$onceFlag2, $func, $class, $line, $file, $tabs = '')
+    private function _addFunctionValuesToLog(&$logBuffer, &$log, &$onceFlag2, $func, $class, $line, $tabs = '')
     {
         global $_BreakpointDebugging;
         $paramNumber = func_num_args();
-        
+
         $valuesToTraceFiles = &$_BreakpointDebugging->valuesToTrace;
         $onceFlag = false;
         foreach ($valuesToTraceFiles as $valuesToTraceLines) {
             foreach ($valuesToTraceLines as $trace) {
                 array_key_exists('function', $trace) ? $callFunc = $trace['function'] : $callFunc = '';
                 array_key_exists('class', $trace) ? $callClass = $trace['class'] : $callClass = '';
-                if ($callFunc === '' && $callClass === '' && $paramNumber === 8) {
+                //if ($callFunc === '' && $callClass === '' && $paramNumber === 8) {
+                if ($callFunc === '' && $callClass === '' && $paramNumber === 7) {
                     continue;
                 }
                 if ($func === $callFunc && $class === $callClass) {
@@ -259,14 +237,14 @@ final class BreakpointDebugging_Error
             }
         }
     }
-    
+
     /**
      * This method builds array information.
-     * 
+     *
      * @param mixed $paramName Parameter name or number
      * @param array $array     The array to reflect
      * @param int   $tabNumber The tab number to indent
-     * 
+     *
      * @return string Array information.
      */
     private function _reflectArray($paramName, $array, $tabNumber = 1)
@@ -275,13 +253,17 @@ final class BreakpointDebugging_Error
         $this->_assert(is_string($paramName) || is_int($paramName));
         $this->_assert(is_array($array));
         $this->_assert(is_int($tabNumber));
-        
+
+        $isOverMaxLogElementNumber = false;
+        if (count($array) > B::$maxLogElementNumber) {
+            $isOverMaxLogElementNumber = true;
+            $array = array_slice($array, 0, B::$maxLogElementNumber, true);
+        }
         $tabs = str_repeat("\t", $tabNumber);
-        
         $onceFlag2 = false;
         $this->_outputFixedFunctionToLogging($array, $log, $onceFlag2, $func, $class, '', $tabs);
-        $this->_addFunctionValuesToLog($logBuffer, $log, $onceFlag2, $func, $class, '', '', "\t" . $tabs);
-        
+        $this->_addFunctionValuesToLog($logBuffer, $log, $onceFlag2, $func, $class, '', "\t" . $tabs);
+
         $log .= PHP_EOL . $tabs . $paramName . $this->tag['font']['=>'] . ' => ' . $this->tag['/font'] . $this->tag['b'] . 'array' . $this->tag['/b'] . ' (';
         // Beyond max log param nesting level
         if ($tabNumber >= B::$maxLogParamNestingLevel) {
@@ -296,38 +278,42 @@ final class BreakpointDebugging_Error
                 }
                 $log .= $this->_getTypeAndValue($paramName, $paramValue, $tabNumber + 1);
             }
+            if ($isOverMaxLogElementNumber !== false) {
+                $tmp = PHP_EOL . $tabs . "\t\t.";
+                $log .= $tmp . $tmp . $tmp;
+            }
         }
         $log .= $logBuffer .
-            PHP_EOL . $tabs . ')';
+        PHP_EOL . $tabs . ')';
         return $log;
     }
-    
+
     /**
      * This method builds property and constant information inside class difinition.
-     * 
+     *
      * @param mixed  $paramName Parameter name or number.
      * @param object $object    The object to reflect.
      * @param int    $tabNumber The tab number to indent.
-     * 
+     *
      * @return string Object information.
      */
     private function _reflectObject($paramName, $object, $tabNumber = 1)
     {
         $className = get_class($object);
-        
+
         $this->_assert(func_num_args() <= 3);
         $this->_assert(is_string($paramName) || is_int($paramName));
         $this->_assert(is_string($className));
         $this->_assert(is_object($object));
         $this->_assert(is_int($tabNumber));
-        
+
         $tabs = str_repeat("\t", $tabNumber);
         $classReflection = new ReflectionClass($className);
         $propertyReflections = $classReflection->getProperties();
         $constants = $classReflection->getConstants();
-        
+
         $log = PHP_EOL . $tabs . $paramName . $this->tag['font']['=>'] . ' => ' . $this->tag['/font'] . $this->tag['b'] . 'class ' . $this->tag['/b'] . $this->tag['i'] . $className . $this->tag['/i'] .
-            PHP_EOL . $tabs . '{';
+        PHP_EOL . $tabs . '{';
         // Beyond max log param nesting level
         if ($tabNumber >= B::$maxLogParamNestingLevel) {
             $log .= PHP_EOL . $tabs . "\t...";
@@ -355,13 +341,13 @@ final class BreakpointDebugging_Error
         }
         return $log . PHP_EOL . $tabs . '}';
     }
-    
+
     /**
      * This is Called from exception handler.
      *
      * @param object $pException Exception info.
      * @param string $prependLog This prepend this parameter logging.
-     * 
+     *
      * @return void
      */
     function exceptionHandler2($pException, $prependLog)
@@ -369,27 +355,26 @@ final class BreakpointDebugging_Error
         $this->_assert(func_num_args() === 2);
         $this->_assert($pException instanceof Exception);
         $this->_assert(is_string($prependLog));
-        
+
         $errorMessage = $this->_convertMbString($pException->getMessage());
         $prependLog = $this->_convertMbString($prependLog);
 
         $this->callStackInfo = $pException->getTrace();
         // Add scope of start page file.
         $this->callStackInfo[] = array();
-        //$log = $this->buildErrorCallStackLog2(get_class($pException), $pException->getMessage(), $prependLog);
         $log = $this->buildErrorCallStackLog2(get_class($pException), $errorMessage, $prependLog);
         if ($this->_errorLog($log)) {
             BreakpointDebugging_breakpoint($pException->getMessage(), $this->callStackInfo);
         }
     }
-    
+
     /**
      * This is Called from error handler.
-     * 
+     *
      * @param int    $errorNumber  Error number.
      * @param string $errorMessage Error message.
      * @param string $prependLog   This prepend this parameter logging.
-     * 
+     *
      * @return bool Did the error handling end?
      */
     function errorHandler2($errorNumber, $errorMessage, $prependLog)
@@ -399,7 +384,7 @@ final class BreakpointDebugging_Error
         $this->_assert(is_string($errorMessage));
         $this->_assert(is_string($prependLog));
         global $_BreakpointDebugging_EXE_MODE;
-        
+
         $errorMessage = $this->_convertMbString($errorMessage);
         $prependLog = $this->_convertMbString($prependLog);
         // This creates error log.
@@ -462,22 +447,22 @@ final class BreakpointDebugging_Error
         if ($this->_errorLog($log)) {
             BreakpointDebugging_breakpoint($errorMessage, $this->callStackInfo);
         }
-        
+
         if ($_BreakpointDebugging_EXE_MODE & B::RELEASE) { // In case of release
             return false; // With system log
         }
         return true;
     }
-    
+
     /**
      * Add parameter header to error log
-     * 
+     *
      * @param string &$log  Error log
      * @param string $file  File name
      * @param string $line  Line number
      * @param string $func  Function name
      * @param string $class Class name
-     * 
+     *
      * @return void
      */
     private function _addParameterHeaderToLog(&$log, $file, $line, $func, $class)
@@ -495,10 +480,10 @@ final class BreakpointDebugging_Error
             $log .= PHP_EOL . $this->_mark . 'Error function ===>' . $this->tag['i'] . $func . $this->tag['/i'] . '( ';
         }
     }
-    
+
     /**
      * Output fixed-function to logging
-     * 
+     *
      * @param array  $backTrace  Call stack
      * @param string &$log       Error log
      * @param bool   &$onceFlag2 False means logging parameter header.
@@ -506,14 +491,14 @@ final class BreakpointDebugging_Error
      * @param string &$class     Class name of call stack
      * @param string $line       Line number of call stack
      * @param string $tabs       Tabs to indent
-     * 
+     *
      * @return void
      */
     private function _outputFixedFunctionToLogging($backTrace, &$log, &$onceFlag2, &$func, &$class, $line, $tabs = '')
     {
         global $_BreakpointDebugging;
         $paramNumber = func_num_args();
-        
+
         array_key_exists('function', $backTrace) ? $func = $backTrace['function'] : $func = '';
         array_key_exists('class', $backTrace) ? $class = $backTrace['class'] : $class = '';
         if (is_array($_BreakpointDebugging->notFixedLocations)) {
@@ -536,14 +521,14 @@ final class BreakpointDebugging_Error
             }
         }
     }
-    
+
     /**
      * Build error call stack log except "E_NOTICE".
-     * 
+     *
      * @param string $errorKind    Error kind.
      * @param string $errorMessage Error message.
      * @param string $prependLog   This prepend this parameter logging.
-     * 
+     *
      * @return string Error call stack log.
      */
     function buildErrorCallStackLog2($errorKind, $errorMessage, $prependLog = '')
@@ -553,10 +538,7 @@ final class BreakpointDebugging_Error
         $this->_assert(is_string($errorMessage));
         $this->_assert(is_array($this->callStackInfo));
         $this->_assert(is_string($prependLog));
-        global $_BreakpointDebugging;
-        
-        //$errorMessage = $this->_convertMbString($errorMessage);
-        //$prependLog = $this->_convertMbString($prependLog);
+
         if (!$this->_isLogging) {
             $errorMessage = htmlspecialchars($errorMessage, ENT_QUOTES, 'UTF-8');
             $prependLog = htmlspecialchars($prependLog, ENT_QUOTES, 'UTF-8');
@@ -569,9 +551,9 @@ final class BreakpointDebugging_Error
         }
         // Create error log from the argument.
         $log = '/////////////////////////////// CALL STACK BEGIN ///////////////////////////////' .
-            PHP_EOL . $this->_mark . 'Error kind =======>' . $this->tag['font']['string'] . '\'' . $errorKind . '\'' . $this->tag['/font'] .
-            PHP_EOL . $this->_mark . 'Error message ====>' . $this->tag['font']['string'] . '\'' . $errorMessage . '\'' . $this->tag['/font'] .
-            PHP_EOL;
+        PHP_EOL . $this->_mark . 'Error kind =======>' . $this->tag['font']['string'] . '\'' . $errorKind . '\'' . $this->tag['/font'] .
+        PHP_EOL . $this->_mark . 'Error message ====>' . $this->tag['font']['string'] . '\'' . $errorMessage . '\'' . $this->tag['/font'] .
+        PHP_EOL;
         // Search array which debug_backtrace() or getTrace() returns, and add a parametric information.
         foreach ($this->callStackInfo as $backtraceArrays) {
             $onceFlag2 = true;
@@ -584,7 +566,7 @@ final class BreakpointDebugging_Error
                 $logBuffer .= $this->_searchDebugBacktraceArgsToString($backtraceArrays['args']);
                 $logBuffer .= PHP_EOL . ');';
             }
-            $this->_addFunctionValuesToLog($logBuffer, $log, $onceFlag2, $func, $class, $line, $file);
+            $this->_addFunctionValuesToLog($logBuffer, $log, $onceFlag2, $func, $class, $line);
             if ($onceFlag2) {
                 $this->_addParameterHeaderToLog($log, $file, $line, $func, $class);
             }
@@ -593,20 +575,20 @@ final class BreakpointDebugging_Error
         $log .= '//////////////////////////////// CALL STACK END ////////////////////////////////';
         return $this->tag['pre'] . $prependLog . $log . $this->tag['/pre'];
     }
-    
+
     /**
      * Get parameter type and value.
-     * 
+     *
      * @param mixed $paramName  Parameter name or number.
      * @param mixed $paramValue Parameter value.
      * @param int   $tabNumber  The tab number to indent.
-     * 
+     *
      * @return string parameter information.
      */
     private function _getTypeAndValue($paramName, $paramValue, $tabNumber)
     {
         $this->_assert(func_num_args() === 3);
-        
+
         if (is_array($paramValue)) {
             if ($paramName === 'GLOBALS') {
                 return '';
@@ -615,7 +597,7 @@ final class BreakpointDebugging_Error
         } else if (is_object($paramValue)) {
             return $this->_reflectObject($paramName, $paramValue, $tabNumber);
         }
-        
+
         $prefix = PHP_EOL . str_repeat("\t", $tabNumber);
         $log = $prefix . $paramName . $this->tag['font']['=>'] . ' => ' . $this->tag['/font'];
         $tag = function ($self, $type, $paramValue) {
@@ -632,33 +614,42 @@ final class BreakpointDebugging_Error
         } else if (is_string($paramValue)) {
             $paramValue = $this->_convertMbString($paramValue);
             $strlen = strlen($paramValue);
+            $isOverMaxLogStringSize = false;
+            if ($strlen > B::$maxLogStringSize) {
+                $isOverMaxLogStringSize = true;
+                $paramValue = substr($paramValue, 0, B::$maxLogStringSize);
+            }
             $paramValue = '"' . $paramValue . '"';
             if (!$this->_isLogging) {
                 $paramValue = htmlspecialchars($paramValue, ENT_QUOTES, 'UTF-8');
             }
-            $log .= $tag($this, 'string', $paramValue) . $this->tag['i'] . ' (length=' . $strlen . ')' . $this->tag['/i'];
+            if ($isOverMaxLogStringSize === false) {
+                $log .= $tag($this, 'string', $paramValue) . $this->tag['i'] . ' (length=' . $strlen . ')' . $this->tag['/i'];
+            } else {
+                $log .= $tag($this, 'string', $paramValue) . $this->tag['i'] . '... (length=' . $strlen . ')' . $this->tag['/i'];
+            }
         } else if (is_resource($paramValue)) {
             $log .= $this->tag['b'] . 'resource' . $this->tag['/b'] . ' ' .
-                $this->tag['i'] . get_resource_type($paramValue) . $this->tag['/i'] . ' ' .
-                $this->tag['font']['resource'] . $paramValue . $this->tag['/font'];
+            $this->tag['i'] . get_resource_type($paramValue) . $this->tag['/i'] . ' ' .
+            $this->tag['font']['resource'] . $paramValue . $this->tag['/font'];
         } else {
             $this->_assert(false);
         }
         return $log;
     }
-    
+
     /**
      * Analyze parameter part of back trace array, and return string.
-     * 
+     *
      * @param array $backtraceParams Back trace parameters.
      * @param int   $tabNumber       The tab number to indent.
-     * 
+     *
      * @return string Part of log lines.
      */
     private function _searchDebugBacktraceArgsToString($backtraceParams, $tabNumber = 1)
     {
         $this->_assert(func_num_args() <= 2);
-        
+
         $isFirst = true;
         $log = '';
         foreach ($backtraceParams as $paramName => $paramValue) {
@@ -671,12 +662,12 @@ final class BreakpointDebugging_Error
         }
         return $log;
     }
-    
+
     /**
      * Log errors.
-     * 
+     *
      * @param string $log Error log.
-     * 
+     *
      * @return Is break?
      */
     private function _errorLog($log)
@@ -684,7 +675,7 @@ final class BreakpointDebugging_Error
         $this->_assert(func_num_args() === 1);
         global $_BreakpointDebugging_EXE_MODE;
         $isBreak = false;
-        
+
         $diplayLog = function ($log) {
             echo <<<EOD
 <pre>{$log}</pre>
@@ -710,6 +701,7 @@ EOD;
         }
         return $isBreak;
     }
+
 }
 
 ?>
