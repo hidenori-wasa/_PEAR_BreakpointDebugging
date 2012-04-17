@@ -1,15 +1,22 @@
+BreakpointDebugging
+===================
+
 The basic concept
+-----------------
     This package is for breakpoint debugging.
 
 The features list
-    Please, read the file level document block of "PEAR/BreakpointDebugging.php".
+-----------------
+    Please, read the file level document block of `PEAR/BreakpointDebugging.php`.
 
 The dependences
+---------------
     IDE OS in case of remote debug is Windows.
     Server OS in case of remote debug is Linux or Windows.
     Release OS is Linux or Windows.
     PHP >= 5.3.0
 
 Notice
+------
     I am developing this package yet. And I am studying remote linux server debugging by "NetBeans IDE 7.1.1".
     Then I would debug with it.
