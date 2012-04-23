@@ -54,8 +54,8 @@ use \BreakpointDebugging as B;
  * This is function to set breakpoint. You must define this function outside namespace, and you must not change function name.
  * If you don't have breakpoint, you can debug to set '$_BreakpointDebugging_EXE_MODE = B::REMOTE_DEBUG;'.
  *
- * @param string $message       Message
- * @param array  $callStackInfo Call stack info
+ * @param string $message       Message.
+ * @param array  $callStackInfo Call stack info.
  *
  * @return void
  */
@@ -117,10 +117,10 @@ if ($_BreakpointDebugging_EXE_MODE & B::LOCAL_DEBUG) {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // ### [mbstring] setting in "php.ini" file. ###
-// The default character sets of PHP
+// The default character sets of PHP.
 B::iniSet('default_charset', 'utf8');
-// The default value of language setting (NLS)
-B::iniSet('mbstring.language', LANGUAGE);
+// The default value of language setting (NLS).
+B::iniSet('mbstring.language', $language);
 // Set "mbstring.internal_encoding = utf8" of "php.ini" file because this is purpose to define default value of inner character encoding.
 B::iniSet('mbstring.internal_encoding', 'utf8');
 // Set "mbstring.http_input = auto" of "php.ini" file because this is purpose to define default value of HTTP entry character encoding.
@@ -146,9 +146,9 @@ B::iniSet('auto_detect_line_endings', '1');
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // ### "php.ini" the file setting ( This sets a security mainly ). ###
 // Timezone setting.
-B::iniSet('date.timezone', TIMEZONE);
-// This creates error log file "php_error.log" in "PHP_ERROR_LOG_FILE_PATH" folder.
-B::iniSet('error_log', PHP_ERROR_LOG_FILE_PATH);
+B::iniSet('date.timezone', $timezone);
+// This creates error log file "php_error.log" in "$phpErrorLogFilePath" folder.
+B::iniSet('error_log', $phpErrorLogFilePath);
 // This sets safe mode invalidly.
 B::iniCheck('safe_mode', '', 'This feature has been deprecated in PHP5.3.0. Not to use this feature is strongly recommended generally. Therefore, set "safe_mode = Off" of "php.ini" file.');
 // This changes "php.ini" file setting into "report_memleaks = On" because this setting detects a memory leak.
@@ -177,7 +177,7 @@ B::iniSet('memory_limit', '128M');
 B::iniSet('implicit_flush', '');
 B::iniCheck('scream.enabled', '', 'This should change "php.ini" file setting into "scream.enabled = false" because it does not make "@" error display control operator invalid.');
 B::iniCheck('post_max_size', '128M', 'We recommends to set "post_max_size = 128M" of "php.ini" file because maximum size which is permitted to a POST data is different from the default.');
-// The SMTP port setting of Windows
+// The SMTP port setting of Windows.
 B::iniSet('smtp_port', '25');
 B::iniCheck('mail.add_x_header', '', 'We recommend to set "mail.add_x_header = Off" of "php.ini" file because does not write that header continue "UID" behind the file name.');
 B::iniCheck('upload_max_filesize', '128M', 'We recommend to set "upload_max_filesize = 128M" of "php.ini" file because it is "XAMPP" value.');

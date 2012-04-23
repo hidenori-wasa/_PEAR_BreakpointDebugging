@@ -72,14 +72,11 @@ $_BreakpointDebugging_EXE_MODE = B::LOCAL_DEBUG;
 // Maximum string type byte-count of log. Default is 3000. (1-)
 // B::$maxLogStringSize = 3000;
 
-const LANGUAGE = 'Japanese';
-const TIMEZONE = 'Asia/Tokyo';
+$language = 'Japanese';
+$timezone = 'Asia/Tokyo';
 // Warning: When you use existing log, it is destroyed if it is not "UTF-8". It is necessary to be a single character sets.
-const PHP_ERROR_LOG_FILE_PATH = './php_error.log';
-// The HTTPS web application root directory.
-const LOCAL_HTTPS_APP_ROOT = '';
-const REMOTE_HTTPS_APP_ROOT = ''; // 'https://???/???/'
-// Inner form of the browser of the default: HTML text, character sets = UTF8
+$phpErrorLogFilePath = './php_error.log';
+// Inner form of the browser of the default: HTML text, character sets = UTF8.
 header('Content-type: text/html; charset=utf-8');
 // Set "mbstring.detect_order = UTF-8, UTF-7, ASCII, EUC-JP,SJIS, eucJP-win, SJIS-win, JIS, ISO-2022-JP" of "php.ini" file because this is purpose to define default value of character code detection.
 $result = mb_detect_order('UTF-8, UTF-7, ASCII, EUC-JP,SJIS, eucJP-win, SJIS-win, JIS, ISO-2022-JP');
@@ -103,10 +100,10 @@ if ($_BreakpointDebugging_EXE_MODE & (B::REMOTE_DEBUG | B::RELEASE)) { // In cas
     // Windows mail address setting.
     B::iniSet('sendmail_from', '?@example.com'); // '???@???.com'
 }
-// The default character sets of PHP
+// The default character sets of PHP.
 B::iniSet('default_charset', 'utf8');
-// The default value of language setting (NLS)
-B::iniSet('mbstring.language', LANGUAGE);
+// The default value of language setting (NLS).
+B::iniSet('mbstring.language', $language);
 // Set "mbstring.internal_encoding = utf8" of "php.ini" file because this is purpose to define default value of inner character encoding.
 B::iniSet('mbstring.internal_encoding', 'utf8');
 // Set "mbstring.http_input = auto" of "php.ini" file because this is purpose to define default value of HTTP entry character encoding.
@@ -121,8 +118,8 @@ B::iniSet('user_agent', 'PHP');
 // Set for the debugging because "from" can be set only in "php.ini".
 // This judges an end of a sentence character by the data which was read in "fgets()" and "file()", and we can use "PHP_EOL" constant.
 B::iniSet('auto_detect_line_endings', '1');
-// This creates error log file "php_error.log" in "PHP_ERROR_LOG_FILE_PATH" folder.
-B::iniSet('error_log', PHP_ERROR_LOG_FILE_PATH);
+// This creates error log file "php_error.log" in "$phpErrorLogFilePath" folder.
+B::iniSet('error_log', $phpErrorLogFilePath);
 // This changes "php.ini" file setting into "ignore_user_abort = Off" because it is purpose to end execution of script when client is disconnected.
 B::iniSet('ignore_user_abort', '');
 */
@@ -150,4 +147,9 @@ if ($_BreakpointDebugging_EXE_MODE & B::RELEASE) { // In case of release.
 if (!($_BreakpointDebugging_EXE_MODE & B::RELEASE)) { // In case of not release.
     include_once './BreakpointDebugging_MySetting_Option.php';
 }
+
+unset($result);
+unset($phpErrorLogFilePath);
+unset($timezone);
+unset($language);
 ?>

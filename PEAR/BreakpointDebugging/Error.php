@@ -193,13 +193,13 @@ final class BreakpointDebugging_Error
     /**
      * Add function-values to log.
      *
-     * @param mixed  &$pTmpLog2   Error temporary log pointer.
-     * @param mixed  &$pTmpLog    Error temporary log pointer.
-     * @param bool   &$onceFlag2  False means logging parameter header.
-     * @param string $func        Function name of call stack.
-     * @param string $class       Class name of call stack.
-     * @param string $line        Line number of call stack.
-     * @param string $tabs        Tabs to indent.
+     * @param mixed  &$pTmpLog2  Error temporary log pointer.
+     * @param mixed  &$pTmpLog   Error temporary log pointer.
+     * @param bool   &$onceFlag2 False means logging parameter header.
+     * @param string $func       Function name of call stack.
+     * @param string $class      Class name of call stack.
+     * @param string $line       Line number of call stack.
+     * @param string $tabs       Tabs to indent.
      *
      * @return void
      */
@@ -722,6 +722,8 @@ final class BreakpointDebugging_Error
      * This reduces amount of memory consumption in case of production server.
      *
      * @param mixed &$pTmpLog Error temporary log pointer.
+     *
+     * @return void
      */
     private function _logWriting(&$pTmpLog)
     {
@@ -821,8 +823,8 @@ final class BreakpointDebugging_Error
      * Error log combination.
      * This reduces amount of memory consumption in case of production server.
      *
-     * @param mixed &$pTmpLog    Error temporary log pointer.
-     * @param mixed &$pTmpLog2   Error temporary log pointer.
+     * @param mixed &$pTmpLog  Error temporary log pointer.
+     * @param mixed &$pTmpLog2 Error temporary log pointer.
      *
      * @return void
      */

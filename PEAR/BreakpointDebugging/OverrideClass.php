@@ -128,7 +128,7 @@ class BreakpointDebugging_OverrideClass
 {
 
     /**
-     * @var object Native class object
+     * @var object Native class object.
      */
     public $pr_pNativeClass;
 
@@ -140,7 +140,7 @@ class BreakpointDebugging_OverrideClass
     /**
      * This constructor holds native class object.
      *
-     * @param object $pNativeClass Native class object
+     * @param object $pNativeClass Native class object.
      *
      * @return void
      */
@@ -152,9 +152,9 @@ class BreakpointDebugging_OverrideClass
     /**
      * This is magic method which gets auto property to have been not defined.
      *
-     * @param string $propertyName Property name
+     * @param string $propertyName Property name.
      *
-     * @return mixed Property value
+     * @return mixed Property value.
      */
     final function __get($propertyName)
     {
@@ -165,8 +165,8 @@ class BreakpointDebugging_OverrideClass
     /**
      * This is magic method which sets auto property to have been not defined.
      *
-     * @param string $propertyName Property name
-     * @param mixed  $setValue     Value to set
+     * @param string $propertyName Property name.
+     * @param mixed  $setValue     Value to set.
      *
      * @return void
      */
@@ -179,10 +179,10 @@ class BreakpointDebugging_OverrideClass
     /**
      * This is magic method which calls auto method to have been not defined.
      *
-     * @param string $methodName Method name
-     * @param array  $params     Parameter array
+     * @param string $methodName Method name.
+     * @param array  $params     Parameter array.
      *
-     * @return mixed Method return value
+     * @return mixed Method return value.
      */
     final function __call($methodName, $params)
     {
@@ -196,10 +196,10 @@ class BreakpointDebugging_OverrideClass
     /**
      * This is magic method which calls static method to have been not defined.
      *
-     * @param string $methodName Method name
-     * @param array  $params     Parameter array
+     * @param string $methodName Method name.
+     * @param array  $params     Parameter array.
      *
-     * @return mixed Method return value
+     * @return mixed Method return value.
      */
     final static function __callStatic($methodName, $params)
     {
@@ -215,10 +215,10 @@ class BreakpointDebugging_OverrideClass
     /**
      * This executes "new" by parameter array.
      *
-     * @param string $className Class name
-     * @param array  $params    Parameter array
+     * @param string $className Class name.
+     * @param array  $params    Parameter array.
      *
-     * @return object Created object
+     * @return object Created object.
      *
      * @example $pNativeClass = self::newArray('\class_name', func_get_args());
      *           $pNativeClass = self::newArray('\class_name', array ($object, $resource, &$reference));

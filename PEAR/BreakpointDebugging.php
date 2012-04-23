@@ -59,7 +59,7 @@
  * ### Useful function index. ###
  * Please, register at top of the function or method being not fixed.
  *      final static function BreakpointDebugging::registerNotFixedLocation(&$isRegister)
- * Add values to trace
+ * Add values to trace.
  *      final static function BreakpointDebugging::addValuesToTrace($values)
  * This writes inside of "catch()", then display logging or log.
  *      BreakpointDebugging::$prependExceptionLog
@@ -183,7 +183,7 @@ class BreakpointDebugging_Error_Exception extends BreakpointDebugging_Exception
 }
 
 /**
- * This class executes error or exception handling
+ * This class executes error or exception handling.
  *
  * @category PHP
  * @package  BreakpointDebugging
@@ -243,12 +243,12 @@ class BreakpointDebugging_InAllCase
     static $maxLogStringSize = 3000;
 
     /**
-     * @var array Locations to be not Fixed
+     * @var array Locations to be not Fixed.
      */
     public $notFixedLocations;
 
     /**
-     * @var array Values to trace
+     * @var array Values to trace.
      */
     public $valuesToTrace = array();
 
@@ -282,9 +282,9 @@ class BreakpointDebugging_InAllCase
     }
 
     /**
-     * Add values to trace
+     * Add values to trace.
      *
-     * @param array $values Values
+     * @param array $values Values.
      *
      * @return void
      *
@@ -297,13 +297,13 @@ class BreakpointDebugging_InAllCase
         $backTrace = debug_backtrace(true);
         $callInfo = &$backTrace[0];
         if (array_key_exists('file', $callInfo)) {
-            // The file name to call
+            // The file name to call.
             $file = &$callInfo['file'];
         } else {
             return;
         }
         if (array_key_exists('line', $callInfo)) {
-            // The line number to call
+            // The line number to call.
             $line = &$callInfo['line'];
         } else {
             return;
@@ -337,7 +337,7 @@ class BreakpointDebugging_InAllCase
      * @param string $errorKind    Error kind.
      * @param string $errorMessage Error message.
      *
-     * @//return string Function call stack log.
+     * @return void
      *
      * @example BreakpointDebugging::outputErrorCallStackLog('EXCEPTION', 'Description of exception.');
      */
