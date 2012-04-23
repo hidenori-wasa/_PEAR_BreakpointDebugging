@@ -65,7 +65,7 @@
  *      BreakpointDebugging::$prependExceptionLog
  *      final static function BreakpointDebugging::exceptionHandler($exception)
  * This return the function call stack log.
- *      final static function BreakpointDebugging::buildErrorCallStackLog($errorKind, $errorMessage)
+ *      final static function BreakpointDebugging::outputErrorCallStackLog($errorKind, $errorMessage)
  * This changes to unify multibyte character strings such as system-output in UTF8, and this returns.
  *      final static function BreakpointDebugging::convertMbString($string)
  * This changes a character sets to display a multibyte character string with local window of debugger, and this returns it.
@@ -337,17 +337,19 @@ class BreakpointDebugging_InAllCase
      * @param string $errorKind    Error kind.
      * @param string $errorMessage Error message.
      *
-     * @return string Function call stack log.
+     * @//return string Function call stack log.
      *
-     * @example $log = BreakpointDebugging::buildErrorCallStackLog('EXCEPTION', 'Description of exception.');
+     * @example BreakpointDebugging::outputErrorCallStackLog('EXCEPTION', 'Description of exception.');
      */
-    final static function buildErrorCallStackLog($errorKind, $errorMessage)
+    final static function outputErrorCallStackLog($errorKind, $errorMessage)
     {
         $error = new BreakpointDebugging_Error();
         $error->callStackInfo = debug_backtrace(true);
         // Add scope of start page file.
         $error->callStackInfo[] = array();
-        return $error->buildErrorCallStackLog2($errorKind, $errorMessage);
+        if ($error->outputErrorCallStackLog2($errorKind, $errorMessage)) {
+            BreakpointDebugging_breakpoint($errorMessage, $error->callStackInfo);
+        }
     }
 
     /**

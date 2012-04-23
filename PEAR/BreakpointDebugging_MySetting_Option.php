@@ -61,6 +61,8 @@ use \BreakpointDebugging as B;
  */
 function BreakpointDebugging_breakpoint($message = '', $callStackInfo = null)
 {
+    global $_BreakpointDebugging_EXE_MODE;
+
     assert(func_num_args() <= 2);
     assert(is_string($message));
     assert(is_array($callStackInfo) || is_null($callStackInfo));
@@ -75,7 +77,12 @@ function BreakpointDebugging_breakpoint($message = '', $callStackInfo = null)
             $errorLine = $callStackInfo['line'];
         }
     }
+
     echo ''; // Please, set here breakpoint.
+
+    if ($_BreakpointDebugging_EXE_MODE & B::REMOTE_DEBUG) {
+        exit(-1); // This exits immediately to avoid not ending.
+    }
 }
 
 // ### Item setting. ===>
@@ -88,7 +95,7 @@ if ($_BreakpointDebugging_EXE_MODE & (B::REMOTE_DEBUG | B::RELEASE)) { // In cas
     // Windows mail address setting.
     B::iniSet('sendmail_from', '?@example.com'); // '???@???.com'
     // ### [XDebug] setting in "php.ini" file. ###
-    B::iniCheck('xdebug.remote_host', array('127.0.0.1', 'localhost'), 'Set "xdebug.remote_host = "&lt;Remote host name or ip&gt;"" of "php.ini" file because this is needed to do breakpoint debugging.');
+    B::iniCheck('xdebug.remote_host', array('127.0.0.1', 'localhost'), 'Set "xdebug.remote_host = "&lt;Remote host name or ip seeing from server&gt;"" of "php.ini" file because this is needed to do breakpoint debugging.');
 } else { // In case of local.
     B::iniSet('open_basedir', 'C:\xampp\;.\\');
     B::iniSet('SMTP', 'smtp.example.com');

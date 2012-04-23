@@ -63,7 +63,7 @@ final class BreakpointDebugging_Error
 {
 
     /**
-     * @var array Call stack information
+     * @var array Call stack information.
      */
     public $callStackInfo;
 
@@ -73,12 +73,12 @@ final class BreakpointDebugging_Error
     private $_isLogging;
 
     /**
-     * @var string Mark
+     * @var string Mark.
      */
     private $_mark;
 
     /**
-     * @var array HTML tags
+     * @var array HTML tags.
      */
     public $tag;
 
@@ -110,7 +110,7 @@ final class BreakpointDebugging_Error
             $this->tag['b'] = '';
             $this->tag['/b'] = '';
             $this->tag['pre'] = '';
-            $this->tag['/pre'] = '';
+            $this->tag['/pre'] = PHP_EOL . PHP_EOL;
         } else { // In case of not the logging.
             $this->_isLogging = false;
             $this->_mark = '&diams;';
@@ -138,7 +138,7 @@ final class BreakpointDebugging_Error
      * This is to avoid recursive method call inside error handling or exception handling.
      * And this becomes possible to assert inside error handling.
      *
-     * @param bool $expression Judgment expression
+     * @param bool $expression Judgment expression.
      *
      * @return void
      */
@@ -147,7 +147,7 @@ final class BreakpointDebugging_Error
         global $_BreakpointDebugging_EXE_MODE;
         static $onceFlag = true;
 
-        if (!($_BreakpointDebugging_EXE_MODE & B::RELEASE)) { // In case of not release
+        if (!($_BreakpointDebugging_EXE_MODE & B::RELEASE)) { // In case of not release.
             if ($onceFlag) {
                 $onceFlag = false;
                 if (func_num_args() !== 1 || !is_bool($expression) || $expression === false) {
@@ -180,8 +180,7 @@ final class BreakpointDebugging_Error
             $message = 'This isn\'t single character sets.';
             if ($onceFlag) {
                 $onceFlag = false;
-                $log = $this->buildErrorCallStackLog2('E_USER_ERROR', $message);
-                if ($this->_errorLog($log)) {
+                if ($this->outputErrorCallStackLog2('E_USER_ERROR', $message)) {
                     BreakpointDebugging_breakpoint($message, $this->callStackInfo);
                 }
                 exit(-1);
@@ -194,17 +193,17 @@ final class BreakpointDebugging_Error
     /**
      * Add function-values to log.
      *
-     * @param string &$logBuffer Error log buffer
-     * @param string &$log       Error log
-     * @param bool   &$onceFlag2 False means logging parameter header.
-     * @param string $func       Function name of call stack
-     * @param string $class      Class name of call stack
-     * @param string $line       Line number of call stack
-     * @param string $tabs       Tabs to indent
+     * @param mixed  &$pTmpLog2   Error temporary log pointer.
+     * @param mixed  &$pTmpLog    Error temporary log pointer.
+     * @param bool   &$onceFlag2  False means logging parameter header.
+     * @param string $func        Function name of call stack.
+     * @param string $class       Class name of call stack.
+     * @param string $line        Line number of call stack.
+     * @param string $tabs        Tabs to indent.
      *
      * @return void
      */
-    private function _addFunctionValuesToLog(&$logBuffer, &$log, &$onceFlag2, $func, $class, $line, $tabs = '')
+    private function _addFunctionValuesToLog(&$pTmpLog2, &$pTmpLog, &$onceFlag2, $func, $class, $line, $tabs = '')
     {
         global $_BreakpointDebugging;
         $paramNumber = func_num_args();
@@ -215,7 +214,6 @@ final class BreakpointDebugging_Error
             foreach ($valuesToTraceLines as $trace) {
                 array_key_exists('function', $trace) ? $callFunc = $trace['function'] : $callFunc = '';
                 array_key_exists('class', $trace) ? $callClass = $trace['class'] : $callClass = '';
-                //if ($callFunc === '' && $callClass === '' && $paramNumber === 8) {
                 if ($callFunc === '' && $callClass === '' && $paramNumber === 7) {
                     continue;
                 }
@@ -223,16 +221,16 @@ final class BreakpointDebugging_Error
                     if ($onceFlag2) {
                         $onceFlag2 = false;
                         array_key_exists('file', $trace) ? $callFile = $trace['file'] : $callFile = '';
-                        $this->_addParameterHeaderToLog($log, $callFile, $line, $func, $class);
+                        $this->_addParameterHeaderToLog($pTmpLog, $callFile, $line, $func, $class);
                     }
                     if ($onceFlag) {
-                        $logBuffer .= PHP_EOL . $tabs . "\t,";
+                        $this->_logBufferWriting($pTmpLog2, PHP_EOL . $tabs . "\t,");
                     } else {
-                        $logBuffer .= PHP_EOL . $tabs . $this->_mark . 'Function values ==>';
+                        $this->_logBufferWriting($pTmpLog2, PHP_EOL . $tabs . $this->_mark . 'Function values ==>');
                         $onceFlag = true;
                     }
                     // Analyze values part of trace array, and return character string.
-                    $logBuffer .= $this->_searchDebugBacktraceArgsToString($trace['values'], strlen($tabs) + 1);
+                    $this->_searchDebugBacktraceArgsToString($pTmpLog2, $trace['values'], strlen($tabs) + 1);
                 }
             }
         }
@@ -241,13 +239,14 @@ final class BreakpointDebugging_Error
     /**
      * This method builds array information.
      *
-     * @param mixed $paramName Parameter name or number
-     * @param array $array     The array to reflect
-     * @param int   $tabNumber The tab number to indent
+     * @param mixed &$pTmpLog  Error temporary log pointer.
+     * @param mixed $paramName Parameter name or number.
+     * @param array $array     The array to reflect.
+     * @param int   $tabNumber The tab number to indent.
      *
-     * @return string Array information.
+     * @return void
      */
-    private function _reflectArray($paramName, $array, $tabNumber = 1)
+    private function _reflectArray(&$pTmpLog, $paramName, $array, $tabNumber = 1)
     {
         $this->_assert(func_num_args() <= 3);
         $this->_assert(is_string($paramName) || is_int($paramName));
@@ -261,13 +260,15 @@ final class BreakpointDebugging_Error
         }
         $tabs = str_repeat("\t", $tabNumber);
         $onceFlag2 = false;
-        $this->_outputFixedFunctionToLogging($array, $log, $onceFlag2, $func, $class, '', $tabs);
-        $this->_addFunctionValuesToLog($logBuffer, $log, $onceFlag2, $func, $class, '', "\t" . $tabs);
+        $pTmpLog2 = $this->_logPointerOpening();
+        // For "Exception::$trace".
+        $this->_outputFixedFunctionToLogging($array, $pTmpLog2, $onceFlag2, $func, $class, '', "\t" . $tabs);
+        $this->_addFunctionValuesToLog($pTmpLog2, $pTmpLog, $onceFlag2, $func, $class, '', "\t" . $tabs);
 
-        $log .= PHP_EOL . $tabs . $paramName . $this->tag['font']['=>'] . ' => ' . $this->tag['/font'] . $this->tag['b'] . 'array' . $this->tag['/b'] . ' (';
-        // Beyond max log param nesting level
+        $this->_logBufferWriting($pTmpLog, PHP_EOL . $tabs . $paramName . $this->tag['font']['=>'] . ' => ' . $this->tag['/font'] . $this->tag['b'] . 'array' . $this->tag['/b'] . ' (');
+        // Beyond max log param nesting level.
         if ($tabNumber >= B::$maxLogParamNestingLevel) {
-            $log .= PHP_EOL . $tabs . "\t...";
+            $this->_logBufferWriting($pTmpLog, PHP_EOL . $tabs . "\t...");
         } else {
             foreach ($array as $paramName => $paramValue) {
                 if ($paramName === 'GLOBALS') {
@@ -276,28 +277,29 @@ final class BreakpointDebugging_Error
                 if (is_string($paramName)) {
                     $paramName = '\'' . $paramName . '\'';
                 }
-                $log .= $this->_getTypeAndValue($paramName, $paramValue, $tabNumber + 1);
+                $this->_getTypeAndValue($pTmpLog, $paramName, $paramValue, $tabNumber + 1);
             }
             if ($isOverMaxLogElementNumber !== false) {
                 $tmp = PHP_EOL . $tabs . "\t\t.";
-                $log .= $tmp . $tmp . $tmp;
+                $this->_logBufferWriting($pTmpLog, $tmp . $tmp . $tmp);
             }
         }
-        $log .= $logBuffer .
-        PHP_EOL . $tabs . ')';
-        return $log;
+        $this->_logBufferWriting($pTmpLog2, PHP_EOL . $tabs . ')');
+        assert($pTmpLog2 !== null);
+        $this->_logCombination($pTmpLog, $pTmpLog2);
     }
 
     /**
      * This method builds property and constant information inside class difinition.
      *
+     * @param mixed  &$pTmpLog  Error temporary log pointer.
      * @param mixed  $paramName Parameter name or number.
      * @param object $object    The object to reflect.
      * @param int    $tabNumber The tab number to indent.
      *
-     * @return string Object information.
+     * @return void
      */
-    private function _reflectObject($paramName, $object, $tabNumber = 1)
+    private function _reflectObject(&$pTmpLog, $paramName, $object, $tabNumber = 1)
     {
         $className = get_class($object);
 
@@ -312,16 +314,15 @@ final class BreakpointDebugging_Error
         $propertyReflections = $classReflection->getProperties();
         $constants = $classReflection->getConstants();
 
-        $log = PHP_EOL . $tabs . $paramName . $this->tag['font']['=>'] . ' => ' . $this->tag['/font'] . $this->tag['b'] . 'class ' . $this->tag['/b'] . $this->tag['i'] . $className . $this->tag['/i'] .
-        PHP_EOL . $tabs . '{';
-        // Beyond max log param nesting level
+        $this->_logBufferWriting($pTmpLog, PHP_EOL . $tabs . $paramName . $this->tag['font']['=>'] . ' => ' . $this->tag['/font'] . $this->tag['b'] . 'class ' . $this->tag['/b'] . $this->tag['i'] . $className . $this->tag['/i'] . PHP_EOL . $tabs . '{');
+        // Beyond max log param nesting level.
         if ($tabNumber >= B::$maxLogParamNestingLevel) {
-            $log .= PHP_EOL . $tabs . "\t...";
+            $this->_logBufferWriting($pTmpLog, PHP_EOL . $tabs . "\t...");
         } else {
             foreach ($constants as $constName => $constValue) {
-                $log .= $this->_getTypeAndValue($this->tag['i'] . 'const ' . $this->tag['/i'] . $constName, $constValue, $tabNumber + 1);
+                $this->_getTypeAndValue($pTmpLog, $this->tag['i'] . 'const ' . $this->tag['/i'] . $constName, $constValue, $tabNumber + 1);
             }
-            count($constants) ? $log .= PHP_EOL : null;
+            count($constants) ? $this->_logBufferWriting($pTmpLog, PHP_EOL) : null;
             foreach ($propertyReflections as $propertyReflection) {
                 $propertyReflection->setAccessible(true);
                 $paramName = $this->tag['i'];
@@ -336,10 +337,10 @@ final class BreakpointDebugging_Error
                 } else {
                     $paramValue = $propertyReflection->getValue($object);
                 }
-                $log .= $this->_getTypeAndValue($paramName, $paramValue, $tabNumber + 1);
+                $this->_getTypeAndValue($pTmpLog, $paramName, $paramValue, $tabNumber + 1);
             }
         }
-        return $log . PHP_EOL . $tabs . '}';
+        $this->_logBufferWriting($pTmpLog, PHP_EOL . $tabs . '}');
     }
 
     /**
@@ -362,8 +363,7 @@ final class BreakpointDebugging_Error
         $this->callStackInfo = $pException->getTrace();
         // Add scope of start page file.
         $this->callStackInfo[] = array();
-        $log = $this->buildErrorCallStackLog2(get_class($pException), $errorMessage, $prependLog);
-        if ($this->_errorLog($log)) {
+        if ($this->outputErrorCallStackLog2(get_class($pException), $errorMessage, $prependLog)) {
             BreakpointDebugging_breakpoint($pException->getMessage(), $this->callStackInfo);
         }
     }
@@ -443,58 +443,54 @@ final class BreakpointDebugging_Error
         unset($this->callStackInfo[0], $this->callStackInfo[1]);
         // Add scope of start page file.
         $this->callStackInfo[] = array();
-        $log = $this->buildErrorCallStackLog2($errorKind, $errorMessage, $prependLog);
-        if ($this->_errorLog($log)) {
+        if ($this->outputErrorCallStackLog2($errorKind, $errorMessage, $prependLog)) {
             BreakpointDebugging_breakpoint($errorMessage, $this->callStackInfo);
+            return true;
         }
-
-        if ($_BreakpointDebugging_EXE_MODE & B::RELEASE) { // In case of release
-            return false; // With system log
-        }
-        return true;
+        return false; // With system log.
     }
 
     /**
-     * Add parameter header to error log
+     * Add parameter header to error log.
      *
-     * @param string &$log  Error log
-     * @param string $file  File name
-     * @param string $line  Line number
-     * @param string $func  Function name
-     * @param string $class Class name
+     * @param mixed  &$pTmpLog Error temporary log pointer.
+     * @param string $file     File name.
+     * @param string $line     Line number.
+     * @param string $func     Function name.
+     * @param string $class    Class name.
      *
      * @return void
      */
-    private function _addParameterHeaderToLog(&$log, $file, $line, $func, $class)
+    private function _addParameterHeaderToLog(&$pTmpLog, $file, $line, $func, $class)
     {
         if ($file) {
-            $log .= PHP_EOL . $this->_mark . 'Error file =======>' . $this->tag['font']['string'] . '\'' . $file . '\'' . $this->tag['/font'];
+            $this->_logBufferWriting($pTmpLog, PHP_EOL . $this->_mark . 'Error file =======>' . $this->tag['font']['string'] . '\'' . $file . '\'' . $this->tag['/font']);
         }
         if ($line) {
-            $log .= PHP_EOL . $this->_mark . 'Error line =======>' . $this->tag['font']['int'] . $line . $this->tag['/font'];
+            $this->_logBufferWriting($pTmpLog, PHP_EOL . $this->_mark . 'Error line =======>' . $this->tag['font']['int'] . $line . $this->tag['/font']);
         }
         if ($class) {
-            $log .= PHP_EOL . $this->_mark . 'Error class ======>' . $this->tag['i'] . $class . $this->tag['/i'];
+            $this->_logBufferWriting($pTmpLog, PHP_EOL . $this->_mark . 'Error class ======>' . $this->tag['i'] . $class . $this->tag['/i']);
         }
         if ($func) {
-            $log .= PHP_EOL . $this->_mark . 'Error function ===>' . $this->tag['i'] . $func . $this->tag['/i'] . '( ';
+            $this->_logBufferWriting($pTmpLog, PHP_EOL . $this->_mark . 'Error function ===>' . $this->tag['i'] . $func . $this->tag['/i'] . '( ');
         }
     }
 
     /**
-     * Output fixed-function to logging
+     * Output fixed-function to logging.
      *
-     * @param array  $backTrace  Call stack
-     * @param string &$log       Error log
+     * @param array  $backTrace  Call stack.
+     * @param mixed  &$pTmpLog   Error temporary log pointer.
      * @param bool   &$onceFlag2 False means logging parameter header.
-     * @param string &$func      Function name of call stack
-     * @param string &$class     Class name of call stack
-     * @param string $line       Line number of call stack
-     * @param string $tabs       Tabs to indent
+     * @param string &$func      Function name of call stack.
+     * @param string &$class     Class name of call stack.
+     * @param string $line       Line number of call stack.
+     * @param string $tabs       Tabs to indent.
      *
      * @return void
      */
-    private function _outputFixedFunctionToLogging($backTrace, &$log, &$onceFlag2, &$func, &$class, $line, $tabs = '')
+    private function _outputFixedFunctionToLogging($backTrace, &$pTmpLog, &$onceFlag2, &$func, &$class, $line, $tabs = '')
     {
         global $_BreakpointDebugging;
         $paramNumber = func_num_args();
@@ -505,16 +501,17 @@ final class BreakpointDebugging_Error
             foreach ($_BreakpointDebugging->notFixedLocations as $notFixedLocation) {
                 array_key_exists('function', $notFixedLocation) ? $noFixFunc = $notFixedLocation['function'] : $noFixFunc = '';
                 array_key_exists('class', $notFixedLocation) ? $noFixClass = $notFixedLocation['class'] : $noFixClass = '';
+                // $notFixedLocation of file scope is "$noFixFunc === '' && $noFixClass === '' && $paramNumber === 6".
                 if ($noFixFunc === '' && $noFixClass === '' && $paramNumber === 7) {
                     continue;
                 }
                 if ($func === $noFixFunc && $class === $noFixClass) {
                     $marks = str_repeat($this->_mark, 10);
-                    $log .= PHP_EOL . $tabs . $this->tag['font']['caution'] . $marks . $this->tag['b'] . ' This function has been not fixed. ' . $this->tag['/b'] . $marks . $this->tag['/font'];
+                    $this->_logBufferWriting($pTmpLog, PHP_EOL . $tabs . $this->tag['font']['caution'] . $marks . $this->tag['b'] . ' This function has been not fixed. ' . $this->tag['/b'] . $marks . $this->tag['/font']);
                     if ($onceFlag2) {
                         $onceFlag2 = false;
                         array_key_exists('file', $notFixedLocation) ? $noFixFile = $notFixedLocation['file'] : $noFixFile = '';
-                        $this->_addParameterHeaderToLog($log, $noFixFile, $line, $func, $class);
+                        $this->_addParameterHeaderToLog($pTmpLog, $noFixFile, $line, $func, $class);
                     }
                     break;
                 }
@@ -529,10 +526,12 @@ final class BreakpointDebugging_Error
      * @param string $errorMessage Error message.
      * @param string $prependLog   This prepend this parameter logging.
      *
-     * @return string Error call stack log.
+     * @return bool Is break?
      */
-    function buildErrorCallStackLog2($errorKind, $errorMessage, $prependLog = '')
+    function outputErrorCallStackLog2($errorKind, $errorMessage, $prependLog = '')
     {
+        global $_BreakpointDebugging_EXE_MODE;
+
         $this->_assert(func_num_args() <= 6);
         $this->_assert(is_string($errorKind));
         $this->_assert(is_string($errorMessage));
@@ -547,70 +546,84 @@ final class BreakpointDebugging_Error
         // Also, we are possible to skip "E_NOTICE" which is generated while debugging execution is stopping.
         // Moreover, those "E_NOTICE" doesn't stop at breakpoint.
         if ($errorKind === 'E_NOTICE') {
-            return '';
+            return;
         }
+        if ($_BreakpointDebugging_EXE_MODE & (B::LOCAL_DEBUG_OF_RELEASE | B::RELEASE)) { // In case of logging debug.
+            error_log('');
+        }
+        $dummy = null;
+        $this->_logBufferWriting($dummy, $this->tag['pre'] . $prependLog);
         // Create error log from the argument.
-        $log = '/////////////////////////////// CALL STACK BEGIN ///////////////////////////////' .
+        $tmp = '/////////////////////////////// CALL STACK BEGIN ///////////////////////////////' .
         PHP_EOL . $this->_mark . 'Error kind =======>' . $this->tag['font']['string'] . '\'' . $errorKind . '\'' . $this->tag['/font'] .
         PHP_EOL . $this->_mark . 'Error message ====>' . $this->tag['font']['string'] . '\'' . $errorMessage . '\'' . $this->tag['/font'] .
         PHP_EOL;
+        $this->_logBufferWriting($dummy, $tmp);
         // Search array which debug_backtrace() or getTrace() returns, and add a parametric information.
         foreach ($this->callStackInfo as $backtraceArrays) {
             $onceFlag2 = true;
-            $logBuffer = '';
+            $pTmpLog2 = $this->_logPointerOpening();
             array_key_exists('file', $backtraceArrays) ? $file = $backtraceArrays['file'] : $file = '';
             array_key_exists('line', $backtraceArrays) ? $line = $backtraceArrays['line'] : $line = '';
-            $this->_outputFixedFunctionToLogging($backtraceArrays, $log, $onceFlag2, $func, $class, $line);
+            $this->_outputFixedFunctionToLogging($backtraceArrays, $dummy, $onceFlag2, $func, $class, $line);
             if (array_key_exists('args', $backtraceArrays)) {
                 // Analyze parameters part of trace array, and return character string.
-                $logBuffer .= $this->_searchDebugBacktraceArgsToString($backtraceArrays['args']);
-                $logBuffer .= PHP_EOL . ');';
+                $this->_searchDebugBacktraceArgsToString($pTmpLog2, $backtraceArrays['args']);
+                $this->_logBufferWriting($pTmpLog2, PHP_EOL . ');');
             }
-            $this->_addFunctionValuesToLog($logBuffer, $log, $onceFlag2, $func, $class, $line);
+            $this->_addFunctionValuesToLog($pTmpLog, $dummy, $onceFlag2, $func, $class, $line);
             if ($onceFlag2) {
-                $this->_addParameterHeaderToLog($log, $file, $line, $func, $class);
+                $this->_addParameterHeaderToLog($dummy, $file, $line, $func, $class);
             }
-            $log .= $logBuffer . PHP_EOL;
+            $this->_logBufferWriting($pTmpLog2, PHP_EOL);
+            $this->_logWriting($pTmpLog2);
         }
-        $log .= '//////////////////////////////// CALL STACK END ////////////////////////////////';
-        return $this->tag['pre'] . $prependLog . $log . $this->tag['/pre'];
+        $this->_logBufferWriting($dummy, '//////////////////////////////// CALL STACK END ////////////////////////////////');
+        $this->_logBufferWriting($dummy, $this->tag['/pre']);
+        if ($_BreakpointDebugging_EXE_MODE & B::RELEASE) {
+            return false;
+        }
+        return true;
     }
 
     /**
      * Get parameter type and value.
      *
+     * @param mixed &$pTmpLog   Error temporary log pointer.
      * @param mixed $paramName  Parameter name or number.
      * @param mixed $paramValue Parameter value.
      * @param int   $tabNumber  The tab number to indent.
      *
-     * @return string parameter information.
+     * @return void
      */
-    private function _getTypeAndValue($paramName, $paramValue, $tabNumber)
+    private function _getTypeAndValue(&$pTmpLog, $paramName, $paramValue, $tabNumber)
     {
         $this->_assert(func_num_args() === 3);
 
         if (is_array($paramValue)) {
             if ($paramName === 'GLOBALS') {
-                return '';
+                return;
             }
-            return $this->_reflectArray($paramName, $paramValue, $tabNumber);
+            $this->_reflectArray($pTmpLog, $paramName, $paramValue, $tabNumber);
+            return;
         } else if (is_object($paramValue)) {
-            return $this->_reflectObject($paramName, $paramValue, $tabNumber);
+            $this->_reflectObject($pTmpLog, $paramName, $paramValue, $tabNumber);
+            return;
         }
 
         $prefix = PHP_EOL . str_repeat("\t", $tabNumber);
-        $log = $prefix . $paramName . $this->tag['font']['=>'] . ' => ' . $this->tag['/font'];
+        $this->_logBufferWriting($pTmpLog, $prefix . $paramName . $this->tag['font']['=>'] . ' => ' . $this->tag['/font']);
         $tag = function ($self, $type, $paramValue) {
             return $self->tag['small'] . $type . $self->tag['/small'] . ' ' . $self->tag['font'][$type] . $paramValue . $self->tag['/font'];
         };
         if (is_null($paramValue)) {
-            $log .= $tag($this, 'null', 'null');
+            $this->_logBufferWriting($pTmpLog, $tag($this, 'null', 'null'));
         } else if (is_bool($paramValue)) {
-            $log .= $tag($this, 'bool', $paramValue ? 'true' : 'false');
+            $this->_logBufferWriting($pTmpLog, $tag($this, 'bool', $paramValue ? 'true' : 'false'));
         } else if (is_int($paramValue)) {
-            $log .= $tag($this, 'int', $paramValue);
+            $this->_logBufferWriting($pTmpLog, $tag($this, 'int', $paramValue));
         } else if (is_float($paramValue)) {
-            $log .= $tag($this, 'float', $paramValue);
+            $this->_logBufferWriting($pTmpLog, $tag($this, 'float', $paramValue));
         } else if (is_string($paramValue)) {
             $paramValue = $this->_convertMbString($paramValue);
             $strlen = strlen($paramValue);
@@ -624,82 +637,256 @@ final class BreakpointDebugging_Error
                 $paramValue = htmlspecialchars($paramValue, ENT_QUOTES, 'UTF-8');
             }
             if ($isOverMaxLogStringSize === false) {
-                $log .= $tag($this, 'string', $paramValue) . $this->tag['i'] . ' (length=' . $strlen . ')' . $this->tag['/i'];
+                $this->_logBufferWriting($pTmpLog, $tag($this, 'string', $paramValue) . $this->tag['i'] . ' (length=' . $strlen . ')' . $this->tag['/i']);
             } else {
-                $log .= $tag($this, 'string', $paramValue) . $this->tag['i'] . '... (length=' . $strlen . ')' . $this->tag['/i'];
+                $this->_logBufferWriting($pTmpLog, $tag($this, 'string', $paramValue) . $this->tag['i'] . '... (length=' . $strlen . ')' . $this->tag['/i']);
             }
         } else if (is_resource($paramValue)) {
-            $log .= $this->tag['b'] . 'resource' . $this->tag['/b'] . ' ' .
+            $tmp = $this->tag['b'] . 'resource' . $this->tag['/b'] . ' ' .
             $this->tag['i'] . get_resource_type($paramValue) . $this->tag['/i'] . ' ' .
             $this->tag['font']['resource'] . $paramValue . $this->tag['/font'];
+            $this->_logBufferWriting($pTmpLog, $tmp);
         } else {
             $this->_assert(false);
         }
-        return $log;
     }
 
     /**
      * Analyze parameter part of back trace array, and return string.
      *
+     * @param mixed &$pTmpLog        Error temporary log pointer.
      * @param array $backtraceParams Back trace parameters.
      * @param int   $tabNumber       The tab number to indent.
      *
-     * @return string Part of log lines.
+     * @return void
      */
-    private function _searchDebugBacktraceArgsToString($backtraceParams, $tabNumber = 1)
+    private function _searchDebugBacktraceArgsToString(&$pTmpLog, $backtraceParams, $tabNumber = 1)
     {
         $this->_assert(func_num_args() <= 2);
 
         $isFirst = true;
-        $log = '';
+        $paramCount = 0;
         foreach ($backtraceParams as $paramName => $paramValue) {
+            $paramCount++;
+            if ($paramCount > B::$maxLogElementNumber) {
+                $tmp = PHP_EOL . str_repeat("\t", $tabNumber);
+                $this->_logBufferWriting($pTmpLog, $tmp . ',');
+                $tmp = $tmp . "\t.";
+                $this->_logBufferWriting($pTmpLog, $tmp . $tmp . $tmp);
+                break;
+            }
             if ($isFirst) {
                 $isFirst = false;
             } else {
-                $log .= PHP_EOL . str_repeat("\t", $tabNumber) . ',';
+                $this->_logBufferWriting($pTmpLog, PHP_EOL . str_repeat("\t", $tabNumber) . ',');
             }
-            $log .= $this->_getTypeAndValue($paramName, $paramValue, $tabNumber);
+            $this->_getTypeAndValue($pTmpLog, $paramName, $paramValue, $tabNumber);
         }
-        return $log;
     }
 
     /**
-     * Log errors.
+     * Open error-log-pointer.
      *
-     * @param string $log Error log.
-     *
-     * @return Is break?
+     * @return mixed Error log pointer.
      */
-    private function _errorLog($log)
+    private function _logPointerOpening()
+    {
+        global $_BreakpointDebugging_EXE_MODE;
+
+        if ($_BreakpointDebugging_EXE_MODE & (B::LOCAL_DEBUG | B::LOCAL_DEBUG_OF_RELEASE)) { // In case of local.
+            return array();
+        } else { // In case of not local debug.
+            return tmpfile();
+        }
+    }
+
+    /**
+     * Close error-log-pointer.
+     *
+     * @param mixed &$pTmpLog Error temporary log pointer.
+     *
+     * @return void
+     */
+    private function _logPointerClosing(&$pTmpLog)
+    {
+        global $_BreakpointDebugging_EXE_MODE;
+
+        if ($_BreakpointDebugging_EXE_MODE & (B::REMOTE_DEBUG | B::RELEASE)) { // In case of remote.
+            fclose($pTmpLog);
+        }
+        $pTmpLog = null;
+    }
+
+    /**
+     * Error log writing.
+     * This reduces amount of memory consumption in case of production server.
+     *
+     * @param mixed &$pTmpLog Error temporary log pointer.
+     */
+    private function _logWriting(&$pTmpLog)
     {
         $this->_assert(func_num_args() === 1);
         global $_BreakpointDebugging_EXE_MODE;
-        $isBreak = false;
 
-        $diplayLog = function ($log) {
-            echo <<<EOD
-<pre>{$log}</pre>
-EOD;
-        };
         switch ($_BreakpointDebugging_EXE_MODE) {
-        case B::LOCAL_DEBUG_OF_RELEASE:
-            $isBreak = true;
         case B::RELEASE:
-            if (error_log(PHP_EOL . $log . PHP_EOL) === false) {
-                echo '<br/>This failed in the output of the error log.<br/>';
+            $pLog = fopen(ini_get('error_log'), 'a');
+            rewind($pTmpLog);
+            while (!feof($pTmpLog)) {
+                fwrite($pLog, fread($pTmpLog, 4096));
             }
+            fclose($pLog);
+            // Delete temporary file.
+            fclose($pTmpLog);
             break;
         case B::LOCAL_DEBUG:
-            $diplayLog($log);
-            $isBreak = true;
+            foreach ($pTmpLog as $log) {
+                echo $log;
+            }
             break;
         case B::REMOTE_DEBUG:
-            $diplayLog($log); // This displays error log because breakpoint can not be used on remote debug.
-            exit(-1); // This exits immediately to avoid not ending.
+            rewind($pTmpLog);
+            while (!feof($pTmpLog)) {
+                echo fread($pTmpLog, 4096);
+            }
+            // Delete temporary file.
+            fclose($pTmpLog);
+            break;
+        case B::LOCAL_DEBUG_OF_RELEASE:
+            $pLog = fopen(ini_get('error_log'), 'a');
+            foreach ($pTmpLog as $log) {
+                fwrite($pLog, $log);
+            }
+            fclose($pLog);
+            break;
         default:
             $this->_assert(false);
         }
-        return $isBreak;
+        $pTmpLog = null;
+    }
+
+    /**
+     * Error log buffer writing.
+     * This reduces amount of memory consumption in case of production server.
+     *
+     * @param mixed  &$pLogBuffer Error log buffer pointer.
+     * @param string $log         Error log.
+     *
+     * @return void
+     */
+    private function _logBufferWriting(&$pLogBuffer, $log)
+    {
+        $this->_assert(is_array($pLogBuffer));
+        global $_BreakpointDebugging_EXE_MODE;
+
+        switch ($_BreakpointDebugging_EXE_MODE) {
+        case B::RELEASE:
+            if ($pLogBuffer === null) {
+                $pLog = fopen(ini_get('error_log'), 'a');
+                fwrite($pLog, $log);
+                fclose($pLog);
+            } else {
+                fwrite($pLogBuffer, $log);
+            }
+            break;
+        case B::LOCAL_DEBUG:
+            if ($pLogBuffer === null) {
+                echo $log;
+            } else {
+                $pLogBuffer[] = $log;
+            }
+            break;
+        case B::REMOTE_DEBUG:
+            if ($pLogBuffer === null) {
+                echo $log;
+            } else {
+                fwrite($pLogBuffer, $log);
+            }
+            break;
+        case B::LOCAL_DEBUG_OF_RELEASE:
+            if ($pLogBuffer === null) {
+                $pLog = fopen(ini_get('error_log'), 'a');
+                fwrite($pLog, $log);
+                fclose($pLog);
+            } else {
+                $pLogBuffer[] = $log;
+            }
+            break;
+        default:
+            assert(false);
+        }
+    }
+
+    /**
+     * Error log combination.
+     * This reduces amount of memory consumption in case of production server.
+     *
+     * @param mixed &$pTmpLog    Error temporary log pointer.
+     * @param mixed &$pTmpLog2   Error temporary log pointer.
+     *
+     * @return void
+     */
+    private function _logCombination(&$pTmpLog, &$pTmpLog2)
+    {
+        global $_BreakpointDebugging_EXE_MODE;
+
+        switch ($_BreakpointDebugging_EXE_MODE) {
+        case B::RELEASE:
+            rewind($pTmpLog2);
+            if ($pTmpLog === null) {
+                $pLog = fopen(ini_get('error_log'), 'a');
+                while (!feof($pTmpLog2)) {
+                    fwrite($pLog, fread($pTmpLog2, 4096));
+                }
+                fclose($pLog);
+            } else {
+                while (!feof($pTmpLog2)) {
+                    fwrite($pTmpLog, fread($pTmpLog2, 4096));
+                }
+            }
+            break;
+        case B::LOCAL_DEBUG:
+            if ($pTmpLog === null) {
+                echo $pTmpLog2;
+            } else if (count($pTmpLog) === 0) {
+                if (count($pTmpLog2) !== 0) {
+                    $pTmpLog = $pTmpLog2;
+                }
+            } else if (count($pTmpLog2) !== 0) {
+                $pTmpLog = array_merge($pTmpLog, $pTmpLog2);
+            }
+            break;
+        case B::REMOTE_DEBUG:
+            rewind($pTmpLog2);
+            if ($pTmpLog === null) {
+                while (!feof($pTmpLog2)) {
+                    echo fread($pTmpLog2, 4096);
+                }
+            } else {
+                while (!feof($pTmpLog2)) {
+                    fwrite($pTmpLog, fread($pTmpLog2, 4096));
+                }
+            }
+            break;
+        case B::LOCAL_DEBUG_OF_RELEASE:
+            if ($pTmpLog === null) {
+                $pLog = fopen(ini_get('error_log'), 'a');
+                foreach ($pTmpLog2 as $log) {
+                    fwrite($pLog, $log);
+                }
+                fclose($pLog);
+            } else if (count($pTmpLog) === 0) {
+                if (count($pTmpLog2) !== 0) {
+                    $pTmpLog = $pTmpLog2;
+                }
+            } else if (count($pTmpLog2) !== 0) {
+                $pTmpLog = array_merge($pTmpLog, $pTmpLog2);
+            }
+            break;
+        default:
+            assert(false);
+        }
+        $this->_logPointerClosing($pTmpLog2);
     }
 
 }
