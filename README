@@ -13,3 +13,6 @@ The dependences
 Notice
     I am developing this package yet. And I am studying remote linux server debugging by "NetBeans IDE 7.1.1".
     Then I would debug with it.
+
+Warning
+    I am making synchronization to output a log. Therefore do not use this package.
