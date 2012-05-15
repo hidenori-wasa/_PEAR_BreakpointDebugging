@@ -9,7 +9,7 @@ The dependences
     Server OS in case of remote debug is Linux or Windows.
     Release OS is Linux or Windows.
     PHP >= 5.3.0
-    This package requires "shmop" extension if you use "BreakpointDebugging_Mutex" class(This class is implementing). (optional)
+    This package requires "shmop" extension if you use "BreakpointDebugging_Mutex" class(This class is implementing.). (optional)
 
 Notice
     I am developing this package yet. And I am studying remote linux server debugging by "NetBeans IDE 7.1.1".
