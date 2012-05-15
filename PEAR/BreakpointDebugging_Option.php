@@ -178,6 +178,7 @@ final class BreakpointDebugging extends BreakpointDebugging_InAllCase
     {
         global $_BreakpointDebugging_EXE_MODE, $_BreakpointDebugging;
         assert(func_num_args() <= 3);
+        assert($phpIniVariable !== 'error_log');
 
         $getValue = ini_get($phpIniVariable);
         assert(self::_isSameType($setValue, $getValue));
@@ -252,6 +253,48 @@ EOD;
             echo '<br/>' . $errorMessage . '<br/>' .
             'Current value is ' . $value . '<br/>';
         }
+    }
+
+    /**
+     * Get property for test.
+     *
+     * @param mixed  $objectOrClassName A object or class name.
+     * @param string $propertyName      Property name or constant name.
+     *
+     * @return mixed Property value.
+     *
+     * @example $propertyValue = BreakpointDebugging::getPropertyForTest('ClassName', 'CONST_NAME');
+     *           $propertyValue = BreakpointDebugging::getPropertyForTest($object, '$_privateName');
+     */
+    final static function getPropertyForTest($objectOrClassName, $propertyName)
+    {
+        if (is_object($objectOrClassName)) {
+            $className = get_class($objectOrClassName);
+            $classReflection = new ReflectionClass($className);
+            $propertyReflections = $classReflection->getProperties();
+            foreach ($propertyReflections as $propertyReflection) {
+                $propertyReflection->setAccessible(true);
+                $paramName = '$' . $propertyReflection->getName();
+                if ($paramName !== $propertyName) {
+                    continue;
+                }
+                if ($propertyReflection->isStatic()) {
+                    return $propertyReflection->getValue($propertyReflection);
+                } else {
+                    return $propertyReflection->getValue($objectOrClassName);
+                }
+            }
+        } else {
+            $classReflection = new ReflectionClass($objectOrClassName);
+            $constants = $classReflection->getConstants();
+            foreach ($constants as $constName => $constValue) {
+                if ($constName !== $propertyName) {
+                    continue;
+                }
+                return $constValue;
+            }
+        }
+        assert(false);
     }
 
 }

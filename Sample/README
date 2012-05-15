@@ -5,4 +5,5 @@ Please, set the following files into this directory.
     ./PEAR/BreakpointDebugging_Option.php
     ./PEAR/BreakpointDebugging/OverrideClass.php
     ./PEAR/BreakpointDebugging/Error.php
+    ./PEAR/BreakpointDebugging/LockByMkdir.php
     ./PEAR/PEAR/Exception.php

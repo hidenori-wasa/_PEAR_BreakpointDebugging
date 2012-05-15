@@ -210,6 +210,9 @@ final class BreakpointDebugging_Error
 
         $valuesToTraceFiles = &$_BreakpointDebugging->valuesToTrace;
         $onceFlag = false;
+        if (!is_array($valuesToTraceFiles)) {
+            return;
+        }
         foreach ($valuesToTraceFiles as $valuesToTraceLines) {
             foreach ($valuesToTraceLines as $trace) {
                 array_key_exists('function', $trace) ? $callFunc = $trace['function'] : $callFunc = '';
@@ -389,55 +392,55 @@ final class BreakpointDebugging_Error
         $prependLog = $this->_convertMbString($prependLog);
         // This creates error log.
         switch ($errorNumber) {
-        case E_USER_DEPRECATED:
-            $errorKind = 'E_USER_DEPRECATED';
-            break;
-        case E_USER_NOTICE:
-            $errorKind = 'E_USER_NOTICE';
-            break;
-        case E_USER_WARNING:
-            $errorKind = 'E_USER_WARNING';
-            break;
-        case E_USER_ERROR:
-            $errorKind = 'E_USER_ERROR';
-            break;
-        case E_ERROR:
-            $errorKind = 'E_ERROR';
-            break;
-        case E_WARNING:
-            $errorKind = 'E_WARNING';
-            break;
-        case E_PARSE:
-            $errorKind = 'E_PARSE';
-            break;
-        case E_NOTICE:
-            $errorKind = 'E_NOTICE';
-            break;
-        case E_CORE_ERROR:
-            $errorKind = 'E_CORE_ERROR';
-            break;
-        case E_CORE_WARNING:
-            $errorKind = 'E_CORE_WARNING';
-            break;
-        case E_COMPILE_ERROR:
-            $errorKind = 'E_COMPILE_ERROR';
-            break;
-        case E_COMPILE_WARNING:
-            $errorKind = 'E_COMPILE_WARNING';
-            break;
-        case E_STRICT:
-            $errorKind = 'E_STRICT';
-            break;
-        case E_RECOVERABLE_ERROR:
-            $errorKind = 'E_RECOVERABLE_ERROR';
-            break;
-        case E_DEPRECATED:
-            $errorKind = 'E_DEPRECATED';
-            break;
-        default:
-            $errorKind = 'E_UNKNOWN';
-            BreakpointDebugging_breakpoint($errorMessage);
-            break;
+            case E_USER_DEPRECATED:
+                $errorKind = 'E_USER_DEPRECATED';
+                break;
+            case E_USER_NOTICE:
+                $errorKind = 'E_USER_NOTICE';
+                break;
+            case E_USER_WARNING:
+                $errorKind = 'E_USER_WARNING';
+                break;
+            case E_USER_ERROR:
+                $errorKind = 'E_USER_ERROR';
+                break;
+            case E_ERROR:
+                $errorKind = 'E_ERROR';
+                break;
+            case E_WARNING:
+                $errorKind = 'E_WARNING';
+                break;
+            case E_PARSE:
+                $errorKind = 'E_PARSE';
+                break;
+            case E_NOTICE:
+                $errorKind = 'E_NOTICE';
+                break;
+            case E_CORE_ERROR:
+                $errorKind = 'E_CORE_ERROR';
+                break;
+            case E_CORE_WARNING:
+                $errorKind = 'E_CORE_WARNING';
+                break;
+            case E_COMPILE_ERROR:
+                $errorKind = 'E_COMPILE_ERROR';
+                break;
+            case E_COMPILE_WARNING:
+                $errorKind = 'E_COMPILE_WARNING';
+                break;
+            case E_STRICT:
+                $errorKind = 'E_STRICT';
+                break;
+            case E_RECOVERABLE_ERROR:
+                $errorKind = 'E_RECOVERABLE_ERROR';
+                break;
+            case E_DEPRECATED:
+                $errorKind = 'E_DEPRECATED';
+                break;
+            default:
+                $errorKind = 'E_UNKNOWN';
+                BreakpointDebugging_breakpoint($errorMessage);
+                break;
         }
         $this->callStackInfo = debug_backtrace(true);
         unset($this->callStackInfo[0], $this->callStackInfo[1]);
@@ -548,13 +551,14 @@ final class BreakpointDebugging_Error
         if ($errorKind === 'E_NOTICE') {
             return;
         }
-        if ($_BreakpointDebugging_EXE_MODE & (B::LOCAL_DEBUG_OF_RELEASE | B::RELEASE)) { // In case of logging debug.
-            error_log('');
-        }
+        // Lock error log file.
+        $lockByMkdir = new \BreakpointDebugging_LockByMkdir(B::$phpErrorLogFilePath);
+        $lockByMkdir->lock();
+        $tmp = date('[Y-m-d H:i:s]') . PHP_EOL;
         $dummy = null;
         $this->_logBufferWriting($dummy, $this->tag['pre'] . $prependLog);
         // Create error log from the argument.
-        $tmp = '/////////////////////////////// CALL STACK BEGIN ///////////////////////////////' .
+        $tmp .= '/////////////////////////////// CALL STACK BEGIN ///////////////////////////////' .
         PHP_EOL . $this->_mark . 'Error kind =======>' . $this->tag['font']['string'] . '\'' . $errorKind . '\'' . $this->tag['/font'] .
         PHP_EOL . $this->_mark . 'Error message ====>' . $this->tag['font']['string'] . '\'' . $errorMessage . '\'' . $this->tag['/font'] .
         PHP_EOL;
@@ -580,6 +584,8 @@ final class BreakpointDebugging_Error
         }
         $this->_logBufferWriting($dummy, '//////////////////////////////// CALL STACK END ////////////////////////////////');
         $this->_logBufferWriting($dummy, $this->tag['/pre']);
+        // Unlock error log file.
+        $lockByMkdir->unlock();
         if ($_BreakpointDebugging_EXE_MODE & B::RELEASE) {
             return false;
         }
@@ -731,38 +737,40 @@ final class BreakpointDebugging_Error
         global $_BreakpointDebugging_EXE_MODE;
 
         switch ($_BreakpointDebugging_EXE_MODE) {
-        case B::RELEASE:
-            $pLog = fopen(ini_get('error_log'), 'a');
-            rewind($pTmpLog);
-            while (!feof($pTmpLog)) {
-                fwrite($pLog, fread($pTmpLog, 4096));
-            }
-            fclose($pLog);
-            // Delete temporary file.
-            fclose($pTmpLog);
-            break;
-        case B::LOCAL_DEBUG:
-            foreach ($pTmpLog as $log) {
-                echo $log;
-            }
-            break;
-        case B::REMOTE_DEBUG:
-            rewind($pTmpLog);
-            while (!feof($pTmpLog)) {
-                echo fread($pTmpLog, 4096);
-            }
-            // Delete temporary file.
-            fclose($pTmpLog);
-            break;
-        case B::LOCAL_DEBUG_OF_RELEASE:
-            $pLog = fopen(ini_get('error_log'), 'a');
-            foreach ($pTmpLog as $log) {
-                fwrite($pLog, $log);
-            }
-            fclose($pLog);
-            break;
-        default:
-            $this->_assert(false);
+            case B::RELEASE:
+                //$pLog = fopen(ini_get('error_log'), 'a');
+                $pLog = fopen(B::$phpErrorLogFilePath, 'a');
+                rewind($pTmpLog);
+                while (!feof($pTmpLog)) {
+                    fwrite($pLog, fread($pTmpLog, 4096));
+                }
+                fclose($pLog);
+                // Delete temporary file.
+                fclose($pTmpLog);
+                break;
+            case B::LOCAL_DEBUG:
+                foreach ($pTmpLog as $log) {
+                    echo $log;
+                }
+                break;
+            case B::REMOTE_DEBUG:
+                rewind($pTmpLog);
+                while (!feof($pTmpLog)) {
+                    echo fread($pTmpLog, 4096);
+                }
+                // Delete temporary file.
+                fclose($pTmpLog);
+                break;
+            case B::LOCAL_DEBUG_OF_RELEASE:
+                //$pLog = fopen(ini_get('error_log'), 'a');
+                $pLog = fopen(B::$phpErrorLogFilePath, 'a');
+                foreach ($pTmpLog as $log) {
+                    fwrite($pLog, $log);
+                }
+                fclose($pLog);
+                break;
+            default:
+                $this->_assert(false);
         }
         $pTmpLog = null;
     }
@@ -782,40 +790,42 @@ final class BreakpointDebugging_Error
         global $_BreakpointDebugging_EXE_MODE;
 
         switch ($_BreakpointDebugging_EXE_MODE) {
-        case B::RELEASE:
-            if ($pLogBuffer === null) {
-                $pLog = fopen(ini_get('error_log'), 'a');
-                fwrite($pLog, $log);
-                fclose($pLog);
-            } else {
-                fwrite($pLogBuffer, $log);
-            }
-            break;
-        case B::LOCAL_DEBUG:
-            if ($pLogBuffer === null) {
-                echo $log;
-            } else {
-                $pLogBuffer[] = $log;
-            }
-            break;
-        case B::REMOTE_DEBUG:
-            if ($pLogBuffer === null) {
-                echo $log;
-            } else {
-                fwrite($pLogBuffer, $log);
-            }
-            break;
-        case B::LOCAL_DEBUG_OF_RELEASE:
-            if ($pLogBuffer === null) {
-                $pLog = fopen(ini_get('error_log'), 'a');
-                fwrite($pLog, $log);
-                fclose($pLog);
-            } else {
-                $pLogBuffer[] = $log;
-            }
-            break;
-        default:
-            assert(false);
+            case B::RELEASE:
+                if ($pLogBuffer === null) {
+                    //$pLog = fopen(ini_get('error_log'), 'a');
+                    $pLog = fopen(B::$phpErrorLogFilePath, 'a');
+                    fwrite($pLog, $log);
+                    fclose($pLog);
+                } else {
+                    fwrite($pLogBuffer, $log);
+                }
+                break;
+            case B::LOCAL_DEBUG:
+                if ($pLogBuffer === null) {
+                    echo $log;
+                } else {
+                    $pLogBuffer[] = $log;
+                }
+                break;
+            case B::REMOTE_DEBUG:
+                if ($pLogBuffer === null) {
+                    echo $log;
+                } else {
+                    fwrite($pLogBuffer, $log);
+                }
+                break;
+            case B::LOCAL_DEBUG_OF_RELEASE:
+                if ($pLogBuffer === null) {
+                    //$pLog = fopen(ini_get('error_log'), 'a');
+                    $pLog = fopen(B::$phpErrorLogFilePath, 'a');
+                    fwrite($pLog, $log);
+                    fclose($pLog);
+                } else {
+                    $pLogBuffer[] = $log;
+                }
+                break;
+            default:
+                assert(false);
         }
     }
 
@@ -833,60 +843,62 @@ final class BreakpointDebugging_Error
         global $_BreakpointDebugging_EXE_MODE;
 
         switch ($_BreakpointDebugging_EXE_MODE) {
-        case B::RELEASE:
-            rewind($pTmpLog2);
-            if ($pTmpLog === null) {
-                $pLog = fopen(ini_get('error_log'), 'a');
-                while (!feof($pTmpLog2)) {
-                    fwrite($pLog, fread($pTmpLog2, 4096));
+            case B::RELEASE:
+                rewind($pTmpLog2);
+                if ($pTmpLog === null) {
+                    //$pLog = fopen(ini_get('error_log'), 'a');
+                    $pLog = fopen(B::$phpErrorLogFilePath, 'a');
+                    while (!feof($pTmpLog2)) {
+                        fwrite($pLog, fread($pTmpLog2, 4096));
+                    }
+                    fclose($pLog);
+                } else {
+                    while (!feof($pTmpLog2)) {
+                        fwrite($pTmpLog, fread($pTmpLog2, 4096));
+                    }
                 }
-                fclose($pLog);
-            } else {
-                while (!feof($pTmpLog2)) {
-                    fwrite($pTmpLog, fread($pTmpLog2, 4096));
+                break;
+            case B::LOCAL_DEBUG:
+                if ($pTmpLog === null) {
+                    echo $pTmpLog2;
+                } else if (count($pTmpLog) === 0) {
+                    if (count($pTmpLog2) !== 0) {
+                        $pTmpLog = $pTmpLog2;
+                    }
+                } else if (count($pTmpLog2) !== 0) {
+                    $pTmpLog = array_merge($pTmpLog, $pTmpLog2);
                 }
-            }
-            break;
-        case B::LOCAL_DEBUG:
-            if ($pTmpLog === null) {
-                echo $pTmpLog2;
-            } else if (count($pTmpLog) === 0) {
-                if (count($pTmpLog2) !== 0) {
-                    $pTmpLog = $pTmpLog2;
+                break;
+            case B::REMOTE_DEBUG:
+                rewind($pTmpLog2);
+                if ($pTmpLog === null) {
+                    while (!feof($pTmpLog2)) {
+                        echo fread($pTmpLog2, 4096);
+                    }
+                } else {
+                    while (!feof($pTmpLog2)) {
+                        fwrite($pTmpLog, fread($pTmpLog2, 4096));
+                    }
                 }
-            } else if (count($pTmpLog2) !== 0) {
-                $pTmpLog = array_merge($pTmpLog, $pTmpLog2);
-            }
-            break;
-        case B::REMOTE_DEBUG:
-            rewind($pTmpLog2);
-            if ($pTmpLog === null) {
-                while (!feof($pTmpLog2)) {
-                    echo fread($pTmpLog2, 4096);
+                break;
+            case B::LOCAL_DEBUG_OF_RELEASE:
+                if ($pTmpLog === null) {
+                    //$pLog = fopen(ini_get('error_log'), 'a');
+                    $pLog = fopen(B::$phpErrorLogFilePath, 'a');
+                    foreach ($pTmpLog2 as $log) {
+                        fwrite($pLog, $log);
+                    }
+                    fclose($pLog);
+                } else if (count($pTmpLog) === 0) {
+                    if (count($pTmpLog2) !== 0) {
+                        $pTmpLog = $pTmpLog2;
+                    }
+                } else if (count($pTmpLog2) !== 0) {
+                    $pTmpLog = array_merge($pTmpLog, $pTmpLog2);
                 }
-            } else {
-                while (!feof($pTmpLog2)) {
-                    fwrite($pTmpLog, fread($pTmpLog2, 4096));
-                }
-            }
-            break;
-        case B::LOCAL_DEBUG_OF_RELEASE:
-            if ($pTmpLog === null) {
-                $pLog = fopen(ini_get('error_log'), 'a');
-                foreach ($pTmpLog2 as $log) {
-                    fwrite($pLog, $log);
-                }
-                fclose($pLog);
-            } else if (count($pTmpLog) === 0) {
-                if (count($pTmpLog2) !== 0) {
-                    $pTmpLog = $pTmpLog2;
-                }
-            } else if (count($pTmpLog2) !== 0) {
-                $pTmpLog = array_merge($pTmpLog, $pTmpLog2);
-            }
-            break;
-        default:
-            assert(false);
+                break;
+            default:
+                assert(false);
         }
         $this->_logPointerClosing($pTmpLog2);
     }

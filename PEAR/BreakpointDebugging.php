@@ -35,6 +35,7 @@
  * Procedure 7: Please, Throw a exception inside of "<YourClass>::throwException()" because this needs for call stack.
  * Procedure 8: Please, set a breakpoint into BreakpointDebugging_breakpoint() of BreakpointDebugging_MySetting_Option.php.
  * Procedure 9: Please, set debugging mode to $_BreakpointDebugging_EXE_MODE.
+ * Procedure 10: Do not execute "ini_set('error_log')" because this package cannot use system log.
  *
  * Option procedure: Please, register at top of the function or method or file which has been not fixed. Please, copy following.
  *      "static $isRegister; BreakpointDebugging::registerNotFixedLocation($isRegister);"
@@ -216,6 +217,12 @@ class BreakpointDebugging_InAllCase
      * @const int Next mode is log debug with remote personal computer. That is, this is a release mode.
      */
     const RELEASE = 8;
+
+    /**
+     * @var string Error log path.
+     *             When you use existing log, it is destroyed if it is not "UTF-8". It is necessary to be a single character sets.
+     */
+    static $phpErrorLogFilePath;
 
     /**
      * @var string This prepend to logging when self::exceptionHandler() is called.

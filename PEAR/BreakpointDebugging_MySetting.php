@@ -50,7 +50,8 @@
 use \BreakpointDebugging as B;
 
 // Reference path setting.
-ini_set('include_path', '.;./PEAR;\xampp\php\PEAR'); // In case of local.
+ini_set('include_path', '.;./PEAR;C:\xampp\php\PEAR'); // In case of local.
+//ini_set('include_path', '.;./PEAR;C:\xampp\php\PEAR;./PEAR/BreakpointDebugging/tests/PEAR'); // In case of local tests.
 // ini_set('include_path', '.:./PEAR:/opt/lampp/php/PEAR'); // In case of remote.
 
 require_once 'BreakpointDebugging.php'; // 'BreakpointDebugging.php' must require_once because it is base of all class, and it sets php.ini, and it sets autoload.
@@ -75,9 +76,9 @@ $_BreakpointDebugging_EXE_MODE = B::LOCAL_DEBUG;
 $language = 'Japanese';
 $timezone = 'Asia/Tokyo';
 // Warning: When you use existing log, it is destroyed if it is not "UTF-8". It is necessary to be a single character sets.
-$phpErrorLogFilePath = './php_error.log';
+B::$phpErrorLogFilePath = './php_error.log';
 // Inner form of the browser of the default: HTML text, character sets = UTF8.
-header('Content-type: text/html; charset=utf-8');
+//header('Content-type: text/html; charset=utf-8');
 // Set "mbstring.detect_order = UTF-8, UTF-7, ASCII, EUC-JP,SJIS, eucJP-win, SJIS-win, JIS, ISO-2022-JP" of "php.ini" file because this is purpose to define default value of character code detection.
 $result = mb_detect_order('UTF-8, UTF-7, ASCII, EUC-JP,SJIS, eucJP-win, SJIS-win, JIS, ISO-2022-JP');
 assert($result);
@@ -91,7 +92,7 @@ assert($result);
 
 
 
-/* ### Example ###
+///* ### Example ###
 if ($_BreakpointDebugging_EXE_MODE & (B::REMOTE_DEBUG | B::RELEASE)) { // In case of remote.
     // PHP It limits directory which opens a file.
     B::iniSet('open_basedir', 'C:\xampp\;.\\'); // '/???/:/???/'
@@ -118,11 +119,11 @@ B::iniSet('user_agent', 'PHP');
 // Set for the debugging because "from" can be set only in "php.ini".
 // This judges an end of a sentence character by the data which was read in "fgets()" and "file()", and we can use "PHP_EOL" constant.
 B::iniSet('auto_detect_line_endings', '1');
-// This creates error log file "php_error.log" in "$phpErrorLogFilePath" folder.
-B::iniSet('error_log', $phpErrorLogFilePath);
+//// This creates error log file "php_error.log" in "$phpErrorLogFilePath" folder.
+//B::iniSet('error_log', $phpErrorLogFilePath);
 // This changes "php.ini" file setting into "ignore_user_abort = Off" because it is purpose to end execution of script when client is disconnected.
 B::iniSet('ignore_user_abort', '');
-*/
+//*/
 ////////////////////////////////////////////////////////////////////////////////
 // ### This setting has been Fixed. ###
 if ($_BreakpointDebugging_EXE_MODE & B::RELEASE) { // In case of release.
@@ -149,7 +150,7 @@ if (!($_BreakpointDebugging_EXE_MODE & B::RELEASE)) { // In case of not release.
 }
 
 unset($result);
-unset($phpErrorLogFilePath);
+//unset($phpErrorLogFilePath);
 unset($timezone);
 unset($language);
 ?>

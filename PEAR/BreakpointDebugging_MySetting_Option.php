@@ -147,8 +147,8 @@ B::iniSet('auto_detect_line_endings', '1');
 // ### "php.ini" the file setting ( This sets a security mainly ). ###
 // Timezone setting.
 B::iniSet('date.timezone', $timezone);
-// This creates error log file "php_error.log" in "$phpErrorLogFilePath" folder.
-B::iniSet('error_log', $phpErrorLogFilePath);
+//// This creates error log file "php_error.log" in "$phpErrorLogFilePath" folder.
+//B::iniSet('error_log', $phpErrorLogFilePath);
 // This sets safe mode invalidly.
 B::iniCheck('safe_mode', '', 'This feature has been deprecated in PHP5.3.0. Not to use this feature is strongly recommended generally. Therefore, set "safe_mode = Off" of "php.ini" file.');
 // This changes "php.ini" file setting into "report_memleaks = On" because this setting detects a memory leak.
