@@ -1,11 +1,13 @@
 <?php
 
+require_once './BreakpointDebugging_MySetting.php';
+
 // Native emulating class who is out of namespace.
 class BaseNativeClass
 {
     const BOOL_TRUE = true;
     const BOOL_FALSE = false;
-    
+
     private $private = 'ThisIsNotDisplayed';
     protected $integer = 3;
     public $float = 3.3;
@@ -15,7 +17,7 @@ class BaseNativeClass
     protected static $array;
     protected static $resource;
     protected static $null = null;
-    
+
     function __construct()
     {
         global $object, $array;
@@ -24,12 +26,12 @@ class BaseNativeClass
         self::$array = $array;
         self::$resource = tmpfile();
     }
-    
+
     private function privateFunction()
     {
         var_dump('Called basePrivateFunction.');
     }
-    
+
     protected function protectedFunction()
     {
         var_dump('Called baseProtectedFunction.');
@@ -44,7 +46,7 @@ class BaseNativeClass
     {
         var_dump('Called basePrivateStaticFunction.');
     }
-    
+
     protected static function protectedStaticFunction()
     {
         var_dump('Called baseProtectedStaticFunction.');
@@ -62,7 +64,7 @@ class NativeClass extends BaseNativeClass
     {
         var_dump('Called privateFunction.');
     }
-    
+
     protected function protectedFunction()
     {
         var_dump('Called protectedFunction.');
@@ -77,7 +79,7 @@ class NativeClass extends BaseNativeClass
     {
         var_dump('Called privateStaticFunction.');
     }
-    
+
     protected static function protectedStaticFunction()
     {
         var_dump('Called protectedStaticFunction.');
@@ -93,7 +95,7 @@ class OtherClass
 {
     const OTHER_CONST1 = ' CONST1';
     const OTHER_CONST2 = 'CONST2 ';
-    
+
     private $private = '<Private>';
     protected $protected = ' Protected';
     public $public = 'Public ';

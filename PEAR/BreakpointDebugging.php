@@ -412,6 +412,32 @@ class BreakpointDebugging_InAllCase
         return $error->errorHandler2($errorNumber, $errorMessage, B::$prependErrorLog);
     }
 
+    /**
+     * Method which throw exception inside exception handler. (For this package developer)
+     *
+     * @param string $message Exception message.
+     */
+    final static function internalException($message)
+    {
+        global $_BreakpointDebugging_EXE_MODE;
+
+        $callStack = debug_backtrace();
+        foreach ($callStack as $call) {
+            // In case of internal exception.
+            if (array_key_exists('class', $call) && $call['class'] === 'BreakpointDebugging_Error') {
+                if ($_BreakpointDebugging_EXE_MODE & self::RELEASE) { // In case of release.
+                    exit(-1);
+                } else if ($_BreakpointDebugging_EXE_MODE & self::REMOTE_DEBUG) { // In case of remote debug.
+                    var_dump(debug_backtrace());
+                    exit(-1);
+                }
+                new BreakpointDebugging_Error_Exception($message);
+                return;
+            }
+        }
+        throw new BreakpointDebugging_Error_Exception($message);
+    }
+
 }
 
 if ($_BreakpointDebugging_EXE_MODE & BreakpointDebugging_InAllCase::RELEASE) { // In case of release.

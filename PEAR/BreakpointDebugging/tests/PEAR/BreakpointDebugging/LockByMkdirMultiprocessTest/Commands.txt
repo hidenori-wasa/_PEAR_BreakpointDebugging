@@ -1,2 +1,0 @@
-"C:\Program Files\Internet Explorer\iexplore.exe" localhost/Pear-Package/PEAR/BreakpointDebugging/tests/PEAR/BreakpointDebugging/LockByMkdirMultiprocessTest/Test.php
-"C:\Program Files\Internet Explorer\iexplore.exe" localhost/Pear-Package/PEAR/BreakpointDebugging/tests/PEAR/BreakpointDebugging/LockByMkdirMultiprocessTest/Test.php

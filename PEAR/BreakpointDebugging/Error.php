@@ -551,9 +551,12 @@ final class BreakpointDebugging_Error
         if ($errorKind === 'E_NOTICE') {
             return;
         }
+        // Make error log file.
+        $pLog = fopen(B::$phpErrorLogFilePath, 'a');
+        fclose($pLog);
         // Lock error log file.
-        $lockByMkdir = new \BreakpointDebugging_LockByMkdir(B::$phpErrorLogFilePath);
-        $lockByMkdir->lock();
+        $lockByFile = new \BreakpointDebugging_LockByFile(B::$phpErrorLogFilePath);
+        $lockByFile->lock();
         $tmp = date('[Y-m-d H:i:s]') . PHP_EOL;
         $dummy = null;
         $this->_logBufferWriting($dummy, $this->tag['pre'] . $prependLog);
@@ -585,7 +588,7 @@ final class BreakpointDebugging_Error
         $this->_logBufferWriting($dummy, '//////////////////////////////// CALL STACK END ////////////////////////////////');
         $this->_logBufferWriting($dummy, $this->tag['/pre']);
         // Unlock error log file.
-        $lockByMkdir->unlock();
+        $lockByFile->unlock();
         if ($_BreakpointDebugging_EXE_MODE & B::RELEASE) {
             return false;
         }

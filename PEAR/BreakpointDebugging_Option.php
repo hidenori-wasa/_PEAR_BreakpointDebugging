@@ -4,6 +4,7 @@
  * This file is code except for release, therefore it does not read in case of release.
  *
  * This reduces load of PHP parser in release mode, then it does speed up.
+ * These file name puts "_" to become an error when we do autoload because we do not load "*_Option.php".
  *
  * PHP version 5.3
  *
