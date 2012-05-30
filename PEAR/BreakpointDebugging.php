@@ -250,6 +250,11 @@ class BreakpointDebugging_InAllCase
     static $maxLogStringSize = 3000;
 
     /**
+     * @var string Work directory of this package.
+     */
+    static $workDir;
+
+    /**
      * @var array Locations to be not Fixed.
      */
     public $notFixedLocations;

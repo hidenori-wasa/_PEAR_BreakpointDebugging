@@ -5,14 +5,14 @@ require_once './BreakpointDebugging_MySetting.php';
 
 use \BreakpointDebugging as B;
 
-class LockByFileTest extends PHPUnit_Framework_TestCase
+class LockByFileExistingTest extends PHPUnit_Framework_TestCase
 {
 
     protected $object;
 
     protected function setUp()
     {
-        $this->object = new \BreakpointDebugging_LockByFile(__DIR__ . '/LockByFileMultiprocessTest/SomethingDir/FileWhichWantsToLock.txt');
+        $this->object = new \BreakpointDebugging_LockByFileExisting(__DIR__ . '/LockByFileExistingMultiprocessTest/SomethingDir/FileForLockByFileExisting.txt');
     }
 
     protected function tearDown()
