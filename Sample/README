@@ -7,4 +7,5 @@ Please, set the following files into this directory.
     ./PEAR/BreakpointDebugging/Error.php
     ./PEAR/BreakpointDebugging/Lock.php
     ./PEAR/BreakpointDebugging/LockByFileExisting.php
+    ./PEAR/BreakpointDebugging/LockByShmop.php
     ./PEAR/PEAR/Exception.php

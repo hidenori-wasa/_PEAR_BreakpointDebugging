@@ -555,8 +555,8 @@ final class BreakpointDebugging_Error
         $pLog = fopen(B::$phpErrorLogFilePath, 'a');
         fclose($pLog);
         // Lock error log file.
-        $lockByFile = new \BreakpointDebugging_LockByFile(B::$phpErrorLogFilePath);
-        $lockByFile->lock();
+        $lockByFileExisting = new \BreakpointDebugging_LockByFileExisting(B::$phpErrorLogFilePath);
+        $lockByFileExisting->lock();
         $tmp = date('[Y-m-d H:i:s]') . PHP_EOL;
         $dummy = null;
         $this->_logBufferWriting($dummy, $this->tag['pre'] . $prependLog);
@@ -588,7 +588,7 @@ final class BreakpointDebugging_Error
         $this->_logBufferWriting($dummy, '//////////////////////////////// CALL STACK END ////////////////////////////////');
         $this->_logBufferWriting($dummy, $this->tag['/pre']);
         // Unlock error log file.
-        $lockByFile->unlock();
+        $lockByFileExisting->unlock();
         if ($_BreakpointDebugging_EXE_MODE & B::RELEASE) {
             return false;
         }

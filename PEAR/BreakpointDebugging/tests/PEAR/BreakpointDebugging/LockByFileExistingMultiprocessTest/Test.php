@@ -45,7 +45,7 @@ class Test
                 set_error_handler('BreakpointDebugging::errorHandler', -1);
                 break;
             case 'LockByFileExisting1':
-                $lockByFileExisting1 = new \BreakpointDebugging_LockByFileExisting(__DIR__ . '/SomethingDir/FileForLockByFileExisting.txt');
+                $lockByFileExisting1 = new \BreakpointDebugging_LockByFileExisting(__DIR__ . '/SomethingDir/FileForLockByFileExisting.txt', 60, 300, 10000);
                 for ($count = 0; $count < 625; $count++) {
                     $lockByFileExisting1->lock();
                     $this->_incrementSheredMemory();
@@ -53,7 +53,7 @@ class Test
                 }
                 break;
             case 'LockByFileExisting2':
-                $lockByFileExisting1 = new \BreakpointDebugging_LockByFileExisting(__DIR__ . '/SomethingDir/FileForLockByFileExisting.txt');
+                $lockByFileExisting1 = new \BreakpointDebugging_LockByFileExisting(__DIR__ . '/SomethingDir/FileForLockByFileExisting.txt', 60, 300, 10000);
                 for ($count = 0; $count < 125; $count++) {
                     $lockByFileExisting1->lock();
                     $this->_incrementSheredMemory();
@@ -67,8 +67,8 @@ class Test
                 }
                 break;
             case 'LockByFileExisting3':
-                $lockByFileExisting1 = new \BreakpointDebugging_LockByFileExisting(__DIR__ . '/SomethingDir/FileForLockByFileExisting.txt');
-                $lockByFileExisting2 = new \BreakpointDebugging_LockByFileExisting(__DIR__ . '/SomethingDir2/FileForLockByFileExisting.txt');
+                $lockByFileExisting1 = new \BreakpointDebugging_LockByFileExisting(__DIR__ . '/SomethingDir/FileForLockByFileExisting.txt', 60, 300, 10000);
+                $lockByFileExisting2 = new \BreakpointDebugging_LockByFileExisting(__DIR__ . '/SomethingDir2/FileForLockByFileExisting.txt', 60, 300, 10000);
                 for ($count = 0; $count < 125; $count++) {
                     $lockByFileExisting1->lock();
                     $this->_incrementSheredMemory();

@@ -66,28 +66,40 @@ abstract class BreakpointDebugging_Lock
     /**
      * @var string The lock flag file path.
      */
-    protected $_lockingFlagFilePath;
+    protected $lockingFlagFilePath;
 
     /**
      * @var resource File pointer of lock flag file.
      */
-    protected $_pFile;
+    protected $pFile;
 
     /**
-     * @var int Seconds of timeout.
+     * @var int Seconds number of timeout.
      */
-    private $_timeout;
+    protected $timeout;
+
+    /**
+     * @var int Micro seconds to sleep.
+     */
+    protected $sleepMicroSeconds;
 
     /**
      * Construct the lock system.
      *
-     * @param string $lockFilePath The file path for lock.
-     *                              This file must have reading permission.
-     * @param int    $timeout      Seconds of timeout.
+     * @param string $lockFilePath      The file path for lock.
+     *                                  This file must have reading permission.
+     * @param int    $timeout           Seconds number of timeout.
+     * @//param int    $flagFileExpire    Seconds number which flag-file expires.
+     * @param int    $sleepMicroSeconds Micro seconds to sleep.
      */
-    function __construct($lockFilePath, $timeout = 60) // $timeout = 5)
+    //function __construct($lockFilePath, $timeout = 60, $flagFileExpire = 300, $sleepMicroSeconds = 100000)
+    protected function __construct($lockFilePath, $timeout, $sleepMicroSeconds)
     {
-        $this->_timeout = $timeout;
+        // Extend maximum execution time.
+        set_time_limit($timeout + 10);
+        $this->timeout = $timeout;
+        $this->sleepMicroSeconds = $sleepMicroSeconds;
+
         $lockFlagDir = realpath(B::$workDir) . '/Flag'; // Flag directory must exist.
         if (substr(PHP_OS, 0, 3) === 'WIN') {
             $lockFlagDir = strtolower($lockFlagDir);
@@ -101,29 +113,29 @@ abstract class BreakpointDebugging_Lock
         }
         $path = str_replace('\\', '/', $path);
         $lockingFlagFilePath = $lockFlagDir . '/' . substr($path, strpos($path, '/') + 1);
-        $this->_lockingFlagFilePath = $lockingFlagFilePath;
-        if (strlen($this->_lockingFlagFilePath) > PHP_MAXPATHLEN) {
-            B::internalException('Param1 is too long because result which merged flag file exceeded PHP_MAXPATHLEN. ' . $this->_lockingFlagFilePath . ' PHP_MAXPATHLEN = ' . PHP_MAXPATHLEN);
+        $this->lockingFlagFilePath = $lockingFlagFilePath;
+        if (strlen($this->lockingFlagFilePath) > PHP_MAXPATHLEN) {
+            B::internalException('Param1 is too long because result which merged flag file exceeded PHP_MAXPATHLEN. ' . $this->lockingFlagFilePath . ' PHP_MAXPATHLEN = ' . PHP_MAXPATHLEN);
         }
-        clearstatcache();
-        if (!file_exists(dirname($this->_lockingFlagFilePath))) {
+        clearstatcache(true, $this->lockingFlagFilePath);
+        if (!file_exists(dirname($this->lockingFlagFilePath))) {
             restore_error_handler();
             // Make directory of the lock-flag file for initialize.
-            @mkdir(dirname($this->_lockingFlagFilePath), 0600, true);
+            @mkdir(dirname($this->lockingFlagFilePath), 0600, true);
             set_error_handler('BreakpointDebugging::errorHandler', -1);
         }
-        // The file does not exist.
-        if (!is_file($this->_lockingFlagFilePath)) {
-            return;
-        }
-        $stat = stat($this->_lockingFlagFilePath);
-        // Locking flag file is too old.
-        if (time() - $stat['mtime'] > 300) { // 300) {
-            restore_error_handler();
-            // Delete locking flag file.
-            @unlink($this->_lockingFlagFilePath);
-            set_error_handler('BreakpointDebugging::errorHandler', -1);
-        }
+//        // The file does not exist.
+//        if (!is_file($this->lockingFlagFilePath)) {
+//            return;
+//        }
+//        $stat = stat($this->lockingFlagFilePath);
+//        // Locking flag file is too old.
+//        if (time() - $stat['mtime'] > $flagFileExpire) {
+//            restore_error_handler();
+//            // Delete locking flag file.
+//            @unlink($this->lockingFlagFilePath);
+//            set_error_handler('BreakpointDebugging::errorHandler', -1);
+//        }
     }
 
     function __destruct()
@@ -132,11 +144,11 @@ abstract class BreakpointDebugging_Lock
     }
 
     /**
-     * Locking condition.
+     * Locking loop.
      *
-     * @return bool "false" in case of not being the condition.
+     * @return void
      */
-    abstract protected function _lockingCondition();
+    abstract protected function lockingLoop();
 
     /**
      * Lock php-code.
@@ -151,16 +163,9 @@ abstract class BreakpointDebugging_Lock
             return;
         }
         // Extend maximum execution time.
-        set_time_limit($this->_timeout + 10);
-        $startTime = time();
+        set_time_limit($this->timeout + 10);
         restore_error_handler();
-        while ($this->_lockingCondition() === false) {
-            if (time() - $startTime > $this->_timeout) {
-                B::internalException('This process has been timeouted.');
-            }
-            // Wait 0.01 second.
-            usleep(10000);
-        }
+        $this->lockingLoop();
         set_error_handler('BreakpointDebugging::errorHandler', -1);
 
         assert($this->_lockCount === 0);
@@ -168,11 +173,11 @@ abstract class BreakpointDebugging_Lock
     }
 
     /**
-     * Unlocking condition.
+     * Unlocking loop.
      *
-     * @return bool "false" in case of not being the condition.
+     * @return void
      */
-    abstract protected function _unlockingCondition();
+    abstract protected function unlockingLoop();
 
     /**
      * Unlock php-code.
@@ -189,12 +194,8 @@ abstract class BreakpointDebugging_Lock
         $this->_lockCount--;
         assert($this->_lockCount === 0);
 
-        fclose($this->_pFile);
         restore_error_handler();
-        while ($this->_unlockingCondition() === false) {
-            // Wait 0.01 second.
-            usleep(10000);
-        }
+        $this->unlockingLoop();
         set_error_handler('BreakpointDebugging::errorHandler', -1);
     }
 

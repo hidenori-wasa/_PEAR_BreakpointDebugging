@@ -54,26 +54,62 @@
  */
 final class BreakpointDebugging_LockByFileExisting extends \BreakpointDebugging_Lock
 {
-
     /**
-     * Locking condition.
+     * Construct the lock system.
      *
-     * @return bool "false" in case of not being the condition.
+     * @param string $lockFilePath      The file path for lock.
+     *                                  This file must have reading permission.
+     * @param int    $timeout           Seconds number of timeout.
+     * @param int    $flagFileExpire    Seconds number which flag-file expires.
+     * @param int    $sleepMicroSeconds Micro seconds to sleep.
      */
-    protected function _lockingCondition()
+    function __construct($lockFilePath, $timeout = 60, $flagFileExpire = 300, $sleepMicroSeconds = 100000)
     {
-        $this->_pFile = @fopen($this->_lockingFlagFilePath, 'x+b');
-        return $this->_pFile;
+        parent::__construct($lockFilePath, $timeout, $sleepMicroSeconds);
+
+        // The file does not exist.
+        if (!is_file($this->lockingFlagFilePath)) {
+            return;
+        }
+        $stat = stat($this->lockingFlagFilePath);
+        // Locking flag file is too old.
+        if (time() - $stat['mtime'] > $flagFileExpire) {
+            restore_error_handler();
+            // Delete locking flag file.
+            @unlink($this->lockingFlagFilePath);
+            set_error_handler('BreakpointDebugging::errorHandler', -1);
+        }
     }
 
     /**
-     * Unlocking condition.
+     * Locking loop.
      *
-     * @return bool "false" in case of not being the condition.
+     * @return void
      */
-    protected function _unlockingCondition()
+    protected function lockingLoop()
     {
-        return @unlink($this->_lockingFlagFilePath);
+        $startTime = time();
+        while (($this->pFile = @fopen($this->lockingFlagFilePath, 'x+b')) === false) {
+            if (time() - $startTime > $this->timeout) {
+                BreakpointDebugging::internalException('This process has been timeouted.');
+            }
+            // Wait micro seconds.
+            usleep($this->sleepMicroSeconds);
+        }
+    }
+
+    /**
+     * Unlocking loop.
+     *
+     * @return void
+     */
+    protected function unlockingLoop()
+    {
+        fclose($this->pFile);
+        while (@unlink($this->lockingFlagFilePath) === false) {
+            // Wait micro seconds.
+            usleep($this->sleepMicroSeconds);
+        }
     }
 
 }
