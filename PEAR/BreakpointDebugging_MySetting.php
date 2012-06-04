@@ -72,7 +72,7 @@ $_BreakpointDebugging_EXE_MODE = B::LOCAL_DEBUG;
 // B::$maxLogElementNumber = 50;
 // Maximum string type byte-count of log. Default is 3000. (1-)
 // B::$maxLogStringSize = 3000;
-B::$workDir = './Work';
+B::$workDir = realpath('./Work');
 
 $language = 'Japanese';
 $timezone = 'Asia/Tokyo';
@@ -151,7 +151,6 @@ if (!($_BreakpointDebugging_EXE_MODE & B::RELEASE)) { // In case of not release.
 }
 
 unset($result);
-//unset($phpErrorLogFilePath);
 unset($timezone);
 unset($language);
 ?>

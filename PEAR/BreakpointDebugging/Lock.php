@@ -89,10 +89,8 @@ abstract class BreakpointDebugging_Lock
      * @param string $lockFilePath      The file path for lock.
      *                                  This file must have reading permission.
      * @param int    $timeout           Seconds number of timeout.
-     * @//param int    $flagFileExpire    Seconds number which flag-file expires.
      * @param int    $sleepMicroSeconds Micro seconds to sleep.
      */
-    //function __construct($lockFilePath, $timeout = 60, $flagFileExpire = 300, $sleepMicroSeconds = 100000)
     protected function __construct($lockFilePath, $timeout, $sleepMicroSeconds)
     {
         // Extend maximum execution time.
@@ -100,13 +98,13 @@ abstract class BreakpointDebugging_Lock
         $this->timeout = $timeout;
         $this->sleepMicroSeconds = $sleepMicroSeconds;
 
-        $lockFlagDir = realpath(B::$workDir) . '/Flag'; // Flag directory must exist.
+        $lockFlagDir = B::$workDir . '/Flag'; // Flag directory must exist.
         if (substr(PHP_OS, 0, 3) === 'WIN') {
             $lockFlagDir = strtolower($lockFlagDir);
             $lockFilePath = strtolower($lockFilePath);
         }
         $lockFlagDir = str_replace('\\', '/', $lockFlagDir);
-        assert(is_dir($lockFlagDir));
+        B::internalAssert(is_dir($lockFlagDir));
         $path = realpath($lockFilePath);
         if ($path === false) {
             B::internalException("Param1 file must have reading permission. ($lockFilePath)");
@@ -124,23 +122,11 @@ abstract class BreakpointDebugging_Lock
             @mkdir(dirname($this->lockingFlagFilePath), 0600, true);
             set_error_handler('BreakpointDebugging::errorHandler', -1);
         }
-//        // The file does not exist.
-//        if (!is_file($this->lockingFlagFilePath)) {
-//            return;
-//        }
-//        $stat = stat($this->lockingFlagFilePath);
-//        // Locking flag file is too old.
-//        if (time() - $stat['mtime'] > $flagFileExpire) {
-//            restore_error_handler();
-//            // Delete locking flag file.
-//            @unlink($this->lockingFlagFilePath);
-//            set_error_handler('BreakpointDebugging::errorHandler', -1);
-//        }
     }
 
     function __destruct()
     {
-        assert($this->_lockCount === 0);
+        B::internalAssert($this->_lockCount === 0);
     }
 
     /**
@@ -168,7 +154,7 @@ abstract class BreakpointDebugging_Lock
         $this->lockingLoop();
         set_error_handler('BreakpointDebugging::errorHandler', -1);
 
-        assert($this->_lockCount === 0);
+        B::internalAssert($this->_lockCount === 0);
         $this->_lockCount++;
     }
 
@@ -192,7 +178,7 @@ abstract class BreakpointDebugging_Lock
             return;
         }
         $this->_lockCount--;
-        assert($this->_lockCount === 0);
+        B::internalAssert($this->_lockCount === 0);
 
         restore_error_handler();
         $this->unlockingLoop();

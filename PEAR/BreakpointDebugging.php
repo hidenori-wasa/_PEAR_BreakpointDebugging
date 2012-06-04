@@ -76,6 +76,10 @@
  * ### Useful class index. ###
  * This class override a class without inheritance, but only public member can be inherited.
  *      class BreakpointDebugging_OverrideClass
+ * Class which lock php-code by file existing.
+ *      class BreakpointDebugging_LockByFileExisting
+ * Class which locks by shared memory operation.
+ *      class BreakpointDebugging_LockByShmop
  *
  * PHP version 5.3
  *
@@ -415,6 +419,37 @@ class BreakpointDebugging_InAllCase
     {
         $error = new BreakpointDebugging_Error();
         return $error->errorHandler2($errorNumber, $errorMessage, B::$prependErrorLog);
+    }
+
+    /**
+     * This is avoiding recursive method call inside error handling or exception handling.
+     * And this is possible assertion inside error handling.
+     *
+     * @param bool $expression Judgment expression.
+     *
+     * @return void
+     */
+    final static function internalAssert($expression)
+    {
+        global $_BreakpointDebugging_EXE_MODE;
+
+        if (!($_BreakpointDebugging_EXE_MODE & B::RELEASE)) { // In case of not release.
+            if (func_num_args() !== 1 || !is_bool($expression) || $expression === false) {
+                $callStack = debug_backtrace();
+                foreach ($callStack as $call) {
+                    // In case of internal assertion.
+                    if (array_key_exists('class', $call) && $call['class'] === 'BreakpointDebugging_Error') {
+                        if ($_BreakpointDebugging_EXE_MODE & self::REMOTE_DEBUG) { // In case of remote debug.
+                            var_dump($callStack);
+                            exit(-1);
+                        }
+                        BreakpointDebugging_breakpoint('Assertion failed.', $callStack);
+                        return;
+                    }
+                }
+                assert($expression);
+            }
+        }
     }
 
     /**

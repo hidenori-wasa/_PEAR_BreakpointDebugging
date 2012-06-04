@@ -147,8 +147,6 @@ B::iniSet('auto_detect_line_endings', '1');
 // ### "php.ini" the file setting ( This sets a security mainly ). ###
 // Timezone setting.
 B::iniSet('date.timezone', $timezone);
-//// This creates error log file "php_error.log" in "$phpErrorLogFilePath" folder.
-//B::iniSet('error_log', $phpErrorLogFilePath);
 // This sets safe mode invalidly.
 B::iniCheck('safe_mode', '', 'This feature has been deprecated in PHP5.3.0. Not to use this feature is strongly recommended generally. Therefore, set "safe_mode = Off" of "php.ini" file.');
 // This changes "php.ini" file setting into "report_memleaks = On" because this setting detects a memory leak.
@@ -166,7 +164,6 @@ B::iniSet('magic_quotes_runtime', '');
 // B::iniCheck('expose_php', '', 'This should change "php.ini" file setting into "expose_php = Off" for security.');
 // This changes "php.ini" file setting into "arg_separator.output = "&amp;" to be based on XHTML fully.
 B::iniSet('arg_separator.output', '&amp;');
-//B::iniCheck('short_open_tag', '', 'This should change "php.ini" file setting into "short_open_tag = Off" because it can distinguish between other languages by using "&lt;php?" opening tag.');
 B::iniCheck('short_open_tag', '1', 'This should change "php.ini" file setting into "short_open_tag = On" because it needs for xampp using "&lt;?" opening tag.');
 B::iniCheck('asp_tags', '', 'This should change "php.ini" file setting into "asp_tags = Off" because it can distinguish between other languages by using "&lt;php?" opening tag.');
 // This changes "php.ini" file setting into "ignore_user_abort = Off" because it is purpose to end execution of script when client is disconnected.
@@ -185,24 +182,14 @@ B::iniCheck('upload_max_filesize', '128M', 'We recommend to set "upload_max_file
 ////////////////////////////////////////////////////////////////////////////////
 // ### This uses "false" because this setting doesn't have relation with release. ###
 // This makes all errors, warnings and note a stop at breakpoint or a display.
-//$return = ini_set('error_reporting', (string)PHP_INT_MAX);
-//assert($return !== false);
 B::iniSet('error_reporting', (string) PHP_INT_MAX, false);
 // This changes "php.ini" file setting into "display_errors = On" to display error, warning and note which isn't done handling by error handler.
-//$return = ini_set('display_errors', '1');
-//assert($return !== false);
 B::iniSet('display_errors', '1', false);
 // This changes "php.ini" file setting into "display_startup_errors = On" to display error in case of start-up.
-//$return = ini_set('display_startup_errors', '1');
-//assert($return !== false);
 B::iniSet('display_startup_errors', '1', false);
 // In case of debugging, this changes "php.ini" file setting into "log_errors = Off" because this doesn't record log.
-//$return = ini_set('log_errors', '');
-//assert($return !== false);
 B::iniSet('log_errors', '', false);
 // This outputs the message which it is possible to click to lead to the page which explains the function which generated a HTML error.
-//$return = ini_set('html_errors', '1');
-//assert($return !== false);
 B::iniSet('html_errors', '1', false);
 // // This doesn't make usual error report invalid.
 // B::iniCheck( 'xmlrpc_errors', '', 'Please, set "xmlrpc_errors = Off" in "php.ini" file because this does not change usual error report invalidly.');

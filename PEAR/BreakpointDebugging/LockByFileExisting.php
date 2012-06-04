@@ -41,6 +41,7 @@
  * @version  SVN: $Id$
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
+use BreakpointDebugging as B;
 
 /**
  * Class which lock php-code by file existing.
@@ -54,6 +55,7 @@
  */
 final class BreakpointDebugging_LockByFileExisting extends \BreakpointDebugging_Lock
 {
+
     /**
      * Construct the lock system.
      *
@@ -91,7 +93,8 @@ final class BreakpointDebugging_LockByFileExisting extends \BreakpointDebugging_
         $startTime = time();
         while (($this->pFile = @fopen($this->lockingFlagFilePath, 'x+b')) === false) {
             if (time() - $startTime > $this->timeout) {
-                BreakpointDebugging::internalException('This process has been timeouted.');
+                B::internalException('This process has been timeouted.');
+                break;
             }
             // Wait micro seconds.
             usleep($this->sleepMicroSeconds);

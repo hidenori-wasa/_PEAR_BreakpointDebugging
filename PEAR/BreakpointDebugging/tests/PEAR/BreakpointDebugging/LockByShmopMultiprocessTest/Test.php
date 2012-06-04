@@ -10,7 +10,7 @@ class Test
 
     function __construct()
     {
-        $this->shmopId = shmop_open(1234, 'w', 0600, 10);
+        $this->shmopId = shmop_open(1234, 'c', 0600, 10);
     }
 
     function __destruct()
@@ -22,8 +22,8 @@ class Test
     {
         $tmpCount = shmop_read($this->shmopId, 0, 10);
         $tmpCount++;
-        // Wait 0.01 seconds.
-        usleep(10000);
+        // Sleep 0.0001 seconds.
+        usleep(100);
         shmop_write($this->shmopId, sprintf('0x%08X', $tmpCount), 0);
     }
 
@@ -32,22 +32,19 @@ class Test
         // Extend maximum execution time.
         set_time_limit(300);
         $start = microtime(true);
-        switch ('BreakpointDebugging_LockByShmop1') {
-            case 'shmop':
-
-
-
-                break;
-            case 'BreakpointDebugging_LockByShmop1':
-                $lockByShmop1 = \BreakpointDebugging_LockByShmop::singleton(__DIR__ . '/SomethingDir/FileForLockByShmop.txt', 60, 300, 10000);
-                for ($count = 0; $count < 1000; $count++) {
+        switch ('LockByShmop1') {
+            case 'LockByShmop1':
+                //$lockByShmop1 = \BreakpointDebugging_LockByShmop::singleton(__DIR__ . '/SomethingDir/FileForLockByShmop.txt', 60, 10, 1000);
+                $lockByShmop1 = \BreakpointDebugging_LockByShmop::singleton(__DIR__ . '/SomethingDir/FileForLockByShmop.txt', 60, 300, 1000);
+                //for ($count = 0; $count < 625; $count++) {
+                for ($count = 0; $count < 125; $count++) {
                     $lockByShmop1->lock();
                     $this->_incrementSheredMemory();
                     $lockByShmop1->unlock();
                 }
                 break;
-            case 'BreakpointDebugging_LockByShmop2':
-                $lockByShmop1 = \BreakpointDebugging_LockByShmop::singleton(__DIR__ . '/SomethingDir/FileForLockByShmop.txt', 60, 300, 10000);
+            case 'LockByShmop2':
+                $lockByShmop1 = \BreakpointDebugging_LockByShmop::singleton(__DIR__ . '/SomethingDir/FileForLockByShmop.txt');
                 for ($count = 0; $count < 125; $count++) {
                     $lockByShmop1->lock();
                     $this->_incrementSheredMemory();
@@ -61,19 +58,8 @@ class Test
                 }
                 break;
             case 'LockByShmop3':
-                $lockByShmop1 = \BreakpointDebugging_LockByShmop::singleton(__DIR__ . '/SomethingDir/FileForLockByShmop.txt', 60, 300, 10000);
-                $lockByShmop2 = \BreakpointDebugging_LockByShmop::singleton(__DIR__ . '/SomethingDir2/FileForLockByShmop.txt', 60, 300, 10000);
-                for ($count = 0; $count < 125; $count++) {
-                    $lockByShmop1->lock();
-                    $this->_incrementSheredMemory();
-                    $this->_incrementSheredMemory();
-                    $lockByShmop2->lock();
-                    $this->_incrementSheredMemory();
-                    $this->_incrementSheredMemory();
-                    $lockByShmop1->unlock();
-                    $this->_incrementSheredMemory();
-                    $lockByShmop2->unlock();
-                }
+                $lockByShmop1 = \BreakpointDebugging_LockByShmop::singleton(__DIR__ . '/SomethingDir/FileForLockByShmop.txt');
+                $lockByShmop2 = \BreakpointDebugging_LockByShmop::singleton(__DIR__ . '/SomethingDir2/FileForLockByShmop.txt'); // Error.
                 break;
             case 'LockByShmop4':
                 $lockByShmop1 = \BreakpointDebugging_LockByShmop::singleton(__DIR__ . '/SomethingDir/FileForLockByShmop.txt');
@@ -86,7 +72,7 @@ class Test
                 $lockByShmop1->lock(); // Error.
                 break;
             case 'LockByShmop6':
-                $lockByShmop1 = \BreakpointDebugging_LockByShmop::singleton(__DIR__ . '/SomethingDir/FileForLockByShmop.txt');
+                $lockByShmop1 = \BreakpointDebugging_LockByShmop::singleton(__DIR__ . '/SomethingDir/FileForLockByShmop.txt', 5, 10);
                 $lockByShmop1->unlock(); // Error.
                 break;
             default:
