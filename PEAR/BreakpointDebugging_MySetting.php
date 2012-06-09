@@ -72,12 +72,16 @@ $_BreakpointDebugging_EXE_MODE = B::LOCAL_DEBUG;
 // B::$maxLogElementNumber = 50;
 // Maximum string type byte-count of log. Default is 3000. (1-)
 // B::$maxLogStringSize = 3000;
+// This is work directory. "php_error.log" file is created in this directory.
 B::$workDir = realpath('./Work');
+if (B::$workDir === false) {
+    B::internalException('Param1 file must have reading permission.');
+}
 
 $language = 'Japanese';
 $timezone = 'Asia/Tokyo';
-// Warning: When you use existing log, it is destroyed if it is not "UTF-8". It is necessary to be a single character sets.
-B::$phpErrorLogFilePath = './php_error.log';
+//// Warning: When you use existing log, it is destroyed if it is not "UTF-8". It is necessary to be a single character sets.
+//B::$phpErrorLogFilePath = './php_error.log';
 // Inner form of the browser of the default: HTML text, character sets = UTF8.
 //header('Content-type: text/html; charset=utf-8');
 // Set "mbstring.detect_order = UTF-8, UTF-7, ASCII, EUC-JP,SJIS, eucJP-win, SJIS-win, JIS, ISO-2022-JP" of "php.ini" file because this is purpose to define default value of character code detection.
@@ -147,7 +151,7 @@ if ($_BreakpointDebugging_EXE_MODE & B::RELEASE) { // In case of release.
 
 ////////////////////////////////////////////////////////////////////////////////
 if (!($_BreakpointDebugging_EXE_MODE & B::RELEASE)) { // In case of not release.
-    include_once './BreakpointDebugging_MySetting_Option.php';
+    include_once './PEAR_Setting/BreakpointDebugging_MySetting_Option.php';
 }
 
 unset($result);

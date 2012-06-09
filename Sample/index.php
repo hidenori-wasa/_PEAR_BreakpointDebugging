@@ -10,7 +10,7 @@ namespace Your_Name;
 // therefore "use" keyword alias does not be affected by other files.
 use \BreakpointDebugging as B;
 
-//require_once './BreakpointDebugging_MySetting.php'; // We must include.
+//require_once './PEAR_Setting/BreakpointDebugging_MySetting.php'; // We must include.
 require_once './NativeClass.php'; // Test class.
 
 $testNumber = 2;

@@ -61,6 +61,11 @@ use \BreakpointDebugging as B;
  */
 final class BreakpointDebugging_Error
 {
+    /**
+     * @var string Error log file path.
+     *             Warning: When you use existing log, it is destroyed if it is not "UTF-8". It is necessary to be a single character sets.
+     */
+    private $_phpErrorLogFilePath;
 
     /**
      * @var array Call stack information.
@@ -91,6 +96,9 @@ final class BreakpointDebugging_Error
     {
         global $_BreakpointDebugging_EXE_MODE;
 
+        if (substr(PHP_OS, 0, 3) === 'WIN') {
+            $this->_phpErrorLogFilePath = strtolower(B::$workDir . '/php_error.log');
+        }
         if ($_BreakpointDebugging_EXE_MODE & (B::RELEASE | B::LOCAL_DEBUG_OF_RELEASE)) { // In case of the logging.
             $this->_isLogging = true;
             $this->_mark = '#';
@@ -527,13 +535,14 @@ final class BreakpointDebugging_Error
         // Also, we are possible to skip "E_NOTICE" which is generated while debugging execution is stopping.
         // Moreover, those "E_NOTICE" doesn't stop at breakpoint.
         if ($errorKind === 'E_NOTICE') {
-            return;
+            //return;
+            return false;
         }
         // Make error log file.
-        $pLog = fopen(B::$phpErrorLogFilePath, 'a');
+        $pLog = fopen($this->_phpErrorLogFilePath, 'a');
         fclose($pLog);
         // Lock error log file.
-        $lockByFileExisting = new \BreakpointDebugging_LockByFileExisting(B::$phpErrorLogFilePath);
+        $lockByFileExisting = new \BreakpointDebugging_LockByFileExisting($this->_phpErrorLogFilePath);
         $lockByFileExisting->lock();
         $tmp = date('[Y-m-d H:i:s]') . PHP_EOL;
         $dummy = null;
@@ -720,7 +729,7 @@ final class BreakpointDebugging_Error
 
         switch ($_BreakpointDebugging_EXE_MODE) {
             case B::RELEASE:
-                $pLog = fopen(B::$phpErrorLogFilePath, 'a');
+                $pLog = fopen($this->_phpErrorLogFilePath, 'a');
                 rewind($pTmpLog);
                 while (!feof($pTmpLog)) {
                     fwrite($pLog, fread($pTmpLog, 4096));
@@ -743,7 +752,7 @@ final class BreakpointDebugging_Error
                 fclose($pTmpLog);
                 break;
             case B::LOCAL_DEBUG_OF_RELEASE:
-                $pLog = fopen(B::$phpErrorLogFilePath, 'a');
+                $pLog = fopen($this->_phpErrorLogFilePath, 'a');
                 foreach ($pTmpLog as $log) {
                     fwrite($pLog, $log);
                 }
@@ -766,14 +775,14 @@ final class BreakpointDebugging_Error
      */
     private function _logBufferWriting(&$pLogBuffer, $log)
     {
-        B::internalAssert(is_array($pLogBuffer) || $pLogBuffer === null);
+        B::internalAssert(is_array($pLogBuffer) || is_resource($pLogBuffer) || $pLogBuffer === null);
 
         global $_BreakpointDebugging_EXE_MODE;
 
         switch ($_BreakpointDebugging_EXE_MODE) {
             case B::RELEASE:
                 if ($pLogBuffer === null) {
-                    $pLog = fopen(B::$phpErrorLogFilePath, 'a');
+                    $pLog = fopen($this->_phpErrorLogFilePath, 'a');
                     fwrite($pLog, $log);
                     fclose($pLog);
                 } else {
@@ -796,7 +805,7 @@ final class BreakpointDebugging_Error
                 break;
             case B::LOCAL_DEBUG_OF_RELEASE:
                 if ($pLogBuffer === null) {
-                    $pLog = fopen(B::$phpErrorLogFilePath, 'a');
+                    $pLog = fopen($this->_phpErrorLogFilePath, 'a');
                     fwrite($pLog, $log);
                     fclose($pLog);
                 } else {
@@ -825,7 +834,7 @@ final class BreakpointDebugging_Error
             case B::RELEASE:
                 rewind($pTmpLog2);
                 if ($pTmpLog === null) {
-                    $pLog = fopen(B::$phpErrorLogFilePath, 'a');
+                    $pLog = fopen($this->_phpErrorLogFilePath, 'a');
                     while (!feof($pTmpLog2)) {
                         fwrite($pLog, fread($pTmpLog2, 4096));
                     }
@@ -861,7 +870,7 @@ final class BreakpointDebugging_Error
                 break;
             case B::LOCAL_DEBUG_OF_RELEASE:
                 if ($pTmpLog === null) {
-                    $pLog = fopen(B::$phpErrorLogFilePath, 'a');
+                    $pLog = fopen($this->_phpErrorLogFilePath, 'a');
                     foreach ($pTmpLog2 as $log) {
                         fwrite($pLog, $log);
                     }

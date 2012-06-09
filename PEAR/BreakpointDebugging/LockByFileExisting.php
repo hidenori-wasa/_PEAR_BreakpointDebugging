@@ -1,7 +1,10 @@
 <?php
 
 /**
- * Class which lock php-code by file existing.
+ * Class which locks php-code by file existing.
+ *
+ * This class is required for environment where "flock()" doesn't exist.
+ * We can synchronize applications by setting the same directory to "B::$workDir" of "BreakpointDebugging_MySetting.php".
  *
  * PHP version 5.3
  *
@@ -44,7 +47,7 @@
 use BreakpointDebugging as B;
 
 /**
- * Class which lock php-code by file existing.
+ * Class which locks php-code by file existing.
  *
  * @category PHP
  * @package  BreakpointDebugging
@@ -94,6 +97,7 @@ final class BreakpointDebugging_LockByFileExisting extends \BreakpointDebugging_
         while (($this->pFile = @fopen($this->lockingFlagFilePath, 'x+b')) === false) {
             if (time() - $startTime > $this->timeout) {
                 B::internalException('This process has been timeouted.');
+                // We do not delete locking flag file here because we cannot lock php code.
                 break;
             }
             // Wait micro seconds.

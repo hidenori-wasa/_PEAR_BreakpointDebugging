@@ -1,7 +1,7 @@
 <?php
 
 /**
- * This package is for breakpoint debugging.
+ * Class which is for breakpoint debugging.
  *
  * ### Environment which can do breakpoint debugging. ###
  * Debugger which can use breakpoint.
@@ -31,9 +31,9 @@
  * Procedure 5: Please, edit *_MySetting*.php for customize.
  *      Then, it fixes part setting about all debugging modes.
  * Procedure 6: Please, copy following in your project php file.
- *      "require_once './BreakpointDebugging_MySetting.php';"
+ *      "require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';"
  * Procedure 7: Please, Throw a exception inside of "<YourClass>::throwException()" because this needs for call stack.
- * Procedure 8: Please, set a breakpoint into BreakpointDebugging_breakpoint() of BreakpointDebugging_MySetting_Option.php.
+ * Procedure 8: Please, set a breakpoint into BreakpointDebugging_breakpoint() of "./PEAR_Setting/BreakpointDebugging_MySetting_Option.php".
  * Procedure 9: Please, set debugging mode to $_BreakpointDebugging_EXE_MODE.
  * Procedure 10: Do not execute "ini_set('error_log')" because this package cannot use system log.
  *
@@ -58,15 +58,15 @@
  *          BreakpointDebugging_Error_Exception
  *
  * ### Useful function index. ###
- * Please, register at top of the function or method being not fixed.
+ * This outputs function call stack log.
+ *      final static function BreakpointDebugging::outputErrorCallStackLog($errorKind, $errorMessage)
+ * This registers as function or method being not fixed.
  *      final static function BreakpointDebugging::registerNotFixedLocation(&$isRegister)
  * Add values to trace.
  *      final static function BreakpointDebugging::addValuesToTrace($values)
  * This writes inside of "catch()", then display logging or log.
  *      BreakpointDebugging::$prependExceptionLog
  *      final static function BreakpointDebugging::exceptionHandler($exception)
- * This return the function call stack log.
- *      final static function BreakpointDebugging::outputErrorCallStackLog($errorKind, $errorMessage)
  * This changes to unify multibyte character strings such as system-output in UTF8, and this returns.
  *      final static function BreakpointDebugging::convertMbString($string)
  * This changes a character sets to display a multibyte character string with local window of debugger, and this returns it.
@@ -76,9 +76,9 @@
  * ### Useful class index. ###
  * This class override a class without inheritance, but only public member can be inherited.
  *      class BreakpointDebugging_OverrideClass
- * Class which lock php-code by file existing.
+ * Class which locks php-code by file existing.
  *      class BreakpointDebugging_LockByFileExisting
- * Class which locks by shared memory operation.
+ * Class which locks php-code by shared memory operation.
  *      class BreakpointDebugging_LockByShmop
  *
  * PHP version 5.3
@@ -269,7 +269,12 @@ class BreakpointDebugging_InAllCase
     public $valuesToTrace = array();
 
     /**
-     * Please, register at top of the function or method being not fixed.
+     * @var bool Once error display flag.
+     */
+    static $onceErrorDispFlag = false;
+
+    /**
+     * This registers as function or method being not fixed.
      *
      * @param bool &$isRegister Is this registered?
      *
@@ -348,7 +353,7 @@ class BreakpointDebugging_InAllCase
     }
 
     /**
-     * This return the function call stack log.
+     * This outputs function call stack log.
      *
      * @param string $errorKind    Error kind.
      * @param string $errorMessage Error message.
@@ -387,7 +392,7 @@ class BreakpointDebugging_InAllCase
         if ($charSet === 'UTF-8' || $charSet === 'ASCII') {
             return $string;
         } else if ($charSet === false) {
-            throw new BreakpointDebugging_Error_Exception('This isn\'t single character sets.');
+            throw new BreakpointDebugging_Error_Exception('This is not single character sets.');
         }
         return mb_convert_encoding($string, 'UTF-8', $charSet);
     }
@@ -433,14 +438,20 @@ class BreakpointDebugging_InAllCase
     {
         global $_BreakpointDebugging_EXE_MODE;
 
+        if (self::$onceErrorDispFlag) {
+            return;
+        }
         if (!($_BreakpointDebugging_EXE_MODE & B::RELEASE)) { // In case of not release.
             if (func_num_args() !== 1 || !is_bool($expression) || $expression === false) {
                 $callStack = debug_backtrace();
                 foreach ($callStack as $call) {
                     // In case of internal assertion.
                     if (array_key_exists('class', $call) && $call['class'] === 'BreakpointDebugging_Error') {
+                        self::$onceErrorDispFlag = true;
                         if ($_BreakpointDebugging_EXE_MODE & self::REMOTE_DEBUG) { // In case of remote debug.
-                            var_dump($callStack);
+                            //var_dump($callStack);
+                            var_dump(array_reverse($callStack));
+                            echo '//////////////////////////////// CALL STACK END ////////////////////////////////' . PHP_EOL . PHP_EOL;
                             exit(-1);
                         }
                         BreakpointDebugging_breakpoint('Assertion failed.', $callStack);
@@ -461,14 +472,20 @@ class BreakpointDebugging_InAllCase
     {
         global $_BreakpointDebugging_EXE_MODE;
 
+        if (self::$onceErrorDispFlag) {
+            return;
+        }
         $callStack = debug_backtrace();
         foreach ($callStack as $call) {
             // In case of internal exception.
             if (array_key_exists('class', $call) && $call['class'] === 'BreakpointDebugging_Error') {
+                self::$onceErrorDispFlag = true;
                 if ($_BreakpointDebugging_EXE_MODE & self::RELEASE) { // In case of release.
                     exit(-1);
                 } else if ($_BreakpointDebugging_EXE_MODE & self::REMOTE_DEBUG) { // In case of remote debug.
-                    var_dump(debug_backtrace());
+                    //var_dump(debug_backtrace());
+                    var_dump(array_reverse($callStack));
+                    echo '//////////////////////////////// CALL STACK END ////////////////////////////////' . PHP_EOL . PHP_EOL;
                     exit(-1);
                 }
                 new BreakpointDebugging_Error_Exception($message);

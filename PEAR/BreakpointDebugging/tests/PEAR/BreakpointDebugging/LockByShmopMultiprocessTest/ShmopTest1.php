@@ -1,7 +1,7 @@
 <?php
 
 chdir(__DIR__ . '/../../../../../../');
-require_once './BreakpointDebugging_MySetting.php';
+require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
 
 class ShmopTest1
 {

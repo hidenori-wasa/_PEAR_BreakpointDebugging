@@ -2,7 +2,7 @@
 
 //require_once dirname(__FILE__) . '/../../../LockByShmop.php';
 chdir('../../../../../');
-require_once './BreakpointDebugging_MySetting.php';
+require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
 
 /**
  * Test class for BreakpointDebugging_LockByShmop.

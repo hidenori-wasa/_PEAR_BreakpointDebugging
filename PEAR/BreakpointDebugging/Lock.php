@@ -41,12 +41,12 @@
  * @version  SVN: $Id$
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-require_once './BreakpointDebugging_MySetting.php';
+require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
 
 use BreakpointDebugging as B;
 
 /**
- * Class which lock by file existing.
+ * Class which locks php-code.
  *
  * @category PHP
  * @package  BreakpointDebugging
@@ -126,6 +126,9 @@ abstract class BreakpointDebugging_Lock
 
     function __destruct()
     {
+        if (B::$onceErrorDispFlag) {
+            return;
+        }
         B::internalAssert($this->_lockCount === 0);
     }
 

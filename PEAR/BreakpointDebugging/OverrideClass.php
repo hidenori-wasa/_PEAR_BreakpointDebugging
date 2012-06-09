@@ -49,7 +49,7 @@
 
   namespace Your_Name;
 
-  require_once './BreakpointDebugging_MySetting.php';
+  require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
   require_once './NativeClass.php';
 
   // This defines an override class in namespace by the class name ( For example: NativeClass ) which is the same as the native class.
@@ -112,7 +112,7 @@
   }
  */
 
-require_once './BreakpointDebugging_MySetting.php';
+require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
 
 /**
  * This class override a class without inheritance, but only public member can be inherited.

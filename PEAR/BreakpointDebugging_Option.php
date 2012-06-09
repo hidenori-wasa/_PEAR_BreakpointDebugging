@@ -1,10 +1,10 @@
 <?php
 
 /**
- * This file is code except for release, therefore it does not read in case of release.
+ * Class which is for breakpoint debugging.
  *
- * This reduces load of PHP parser in release mode, then it does speed up.
- * These file name puts "_" to become an error when we do autoload because we do not load "*_Option.php".
+ * "*_Option.php" file does not use on release. Therefore, response time is zero on release.
+ * These file names put "_" to become error when we do autoload.
  *
  * PHP version 5.3
  *

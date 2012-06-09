@@ -1,6 +1,4 @@
 Please, set the following files into this directory.
-    ./BreakpointDebugging_MySetting.php
-    ./BreakpointDebugging_MySetting_Option.php
     ./PEAR/BreakpointDebugging.php
     ./PEAR/BreakpointDebugging_Option.php
     ./PEAR/BreakpointDebugging/OverrideClass.php
@@ -9,3 +7,5 @@ Please, set the following files into this directory.
     ./PEAR/BreakpointDebugging/LockByFileExisting.php
     ./PEAR/BreakpointDebugging/LockByShmop.php
     ./PEAR/PEAR/Exception.php
+    ./PEAR_Setting/BreakpointDebugging_MySetting.php
+    ./PEAR_Setting/BreakpointDebugging_MySetting_Option.php
