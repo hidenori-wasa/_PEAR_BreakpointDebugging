@@ -89,20 +89,28 @@ function BreakpointDebugging_breakpoint($message = '', $callStackInfo = null)
 // ### Item setting. ===>
 // "B::RELEASE" is needed to copy.
 if ($_BreakpointDebugging_EXE_MODE & (B::REMOTE_DEBUG | B::RELEASE)) { // In case of remote.
-    // PHP It limits directory which opens a file.
-    B::iniSet('open_basedir', 'C:\xampp\;.\\'); // '/???/:/???/'
+    //B::iniSet('open_basedir', 'C:\xampp\;.\\');
     // Windows e-mail sending server setting.
     B::iniSet('SMTP', 'smtp.example.com'); // 'smtp.???.com'
     // Windows mail address setting.
     B::iniSet('sendmail_from', '?@example.com'); // '???@???.com'
     // ### [XDebug] setting in "php.ini" file. ###
-    B::iniCheck('xdebug.remote_host', array('127.0.0.1', 'localhost'), 'Set "xdebug.remote_host = "&lt;Remote host name or ip seeing from server&gt;"" of "php.ini" file because this is needed to do breakpoint debugging.');
+    B::iniCheck('xdebug.remote_host', array ('127.0.0.1', 'localhost'), 'Set "xdebug.remote_host = "&lt;Remote host name or ip seeing from server&gt;"" of "php.ini" file because this is needed to do breakpoint debugging.');
 } else { // In case of local.
-    B::iniSet('open_basedir', 'C:\xampp\;.\\');
+    //B::iniSet('open_basedir', 'C:\xampp\;.\\');
+    //B::iniSet('open_basedir', '/opt/lampp/:./');
     B::iniSet('SMTP', 'smtp.example.com');
     B::iniSet('sendmail_from', '?@example.com');
     // ### [XDebug] setting in "php.ini" file. ###
     B::iniCheck('xdebug.remote_host', '127.0.0.1', 'Set "xdebug.remote_host = "127.0.0.1"" of "php.ini" file because this is needed to do breakpoint debugging.');
+}
+// PHP It limits directory which opens a file.
+if (substr(PHP_OS, 0, 3) === 'WIN') { // In case of Windows.
+    B::iniSet('open_basedir', 'C:\xampp\;.\\');
+} else if (PHP_OS === 'Linux') { // In case of Linux.
+    B::iniSet('open_basedir', '/opt/lampp/:./');
+} else { // In case of other.
+    assert(false);
 }
 // ### [XDebug] setting in "php.ini" file. ###
 B::iniCheck('xdebug.remote_handler', 'dbgp', 'Set "xdebug.remote_handler = "dbgp"" of "php.ini" file because this is needed to do breakpoint debugging.');
@@ -128,7 +136,7 @@ B::iniSet('mbstring.internal_encoding', 'utf8');
 B::iniSet('mbstring.http_input', 'auto');
 // Set "mbstring.http_output = utf8" of "php.ini" file because this is purpose to define default value of HTTP output character encoding.
 B::iniSet('mbstring.http_output', 'utf8');
-B::iniCheck('mbstring.encoding_translation', array('1'), 'Set "mbstring.encoding_translation = Off" of "php.ini" file because this is purpose not to change a input HTTP query into inner character encoding automatically.');
+B::iniCheck('mbstring.encoding_translation', array ('1'), 'Set "mbstring.encoding_translation = Off" of "php.ini" file because this is purpose not to change a input HTTP query into inner character encoding automatically.');
 // Set "mbstring.substitute_character = none" of "php.ini" file because this is purpose to define character ( it does not display ) which substitutes an invalid character.
 B::iniSet('mbstring.substitute_character', '');
 // Set "mbstring.strict_detection = Off" of "php.ini" file because this is purpose to not do strict encoding detection.
@@ -174,11 +182,20 @@ B::iniSet('memory_limit', '128M');
 // This changes "php.ini" file setting into "implicit_flush = Off" because it is purpose to prevent a remarkable degradation.
 B::iniSet('implicit_flush', '');
 B::iniCheck('scream.enabled', '', 'This should change "php.ini" file setting into "scream.enabled = false" because it does not make "@" error display control operator invalid.');
-B::iniCheck('post_max_size', '128M', 'We recommends to set "post_max_size = 128M" of "php.ini" file because maximum size which is permitted to a POST data is different from the default.');
+//B::iniCheck('post_max_size', '128M', 'We recommends to set "post_max_size = 128M" of "php.ini" file because maximum size which is permitted to a POST data is different from the default.');
+if (substr(PHP_OS, 0, 3) === 'WIN') { // In case of Windows.
+    B::iniCheck('post_max_size', '128M', 'We recommend to set "post_max_size = 128M" of "php.ini" file because maximum size which is permitted to a POST data is different from the default.');
+    B::iniCheck('upload_max_filesize', '128M', 'We recommend to set "upload_max_filesize = 128M" of "php.ini" file because it is "XAMPP" value.');
+} else if (PHP_OS === 'Linux') { // In case of Linux.
+    B::iniCheck('post_max_size', '8M', 'We recommend to set "post_max_size = 8M" of "php.ini" file because maximum size which is permitted to a POST data is different from the default.');
+    B::iniCheck('upload_max_filesize', '2M', 'We recommend to set "upload_max_filesize = 2M" of "php.ini" file because it is "XAMPP" value.');
+} else { // In case of other.
+    assert(false);
+}
 // The SMTP port setting of Windows.
 B::iniSet('smtp_port', '25');
 B::iniCheck('mail.add_x_header', '', 'We recommend to set "mail.add_x_header = Off" of "php.ini" file because does not write that header continue "UID" behind the file name.');
-B::iniCheck('upload_max_filesize', '128M', 'We recommend to set "upload_max_filesize = 128M" of "php.ini" file because it is "XAMPP" value.');
+//B::iniCheck('upload_max_filesize', '128M', 'We recommend to set "upload_max_filesize = 128M" of "php.ini" file because it is "XAMPP" value.');
 
 ////////////////////////////////////////////////////////////////////////////////
 // ### This uses "false" because this setting doesn't have relation with release. ###

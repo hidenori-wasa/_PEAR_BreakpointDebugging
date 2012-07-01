@@ -35,17 +35,18 @@ class Test
                 // Extend maximum execution time.
                 set_time_limit(300);
                 restore_error_handler();
-                @unlink(__DIR__ . '/LockFlag.file');
+                @unlink(BreakpointDebugging::$workDir . '/LockFlag.file');
                 for ($count = 0; $count < 625; $count++) {
-                    while (!($pFile = @fopen(__DIR__ . '/LockFlag.file', 'x+b')));
+                    while (!($pFile = @fopen(BreakpointDebugging::$workDir . '/LockFlag.file', 'x+b')));
+                    chmod(BreakpointDebugging::$workDir . '/LockFlag.file', 0600);
                     $this->_incrementSheredMemory();
                     fclose($pFile);
-                    while (!@unlink(__DIR__ . '/LockFlag.file'));
+                    while (!@unlink(BreakpointDebugging::$workDir . '/LockFlag.file'));
                 }
                 set_error_handler('BreakpointDebugging::errorHandler', -1);
                 break;
             case 'LockByFileExisting1':
-                $lockByFileExisting1 = new \BreakpointDebugging_LockByFileExisting(__DIR__ . '/SomethingDir/FileForLockByFileExisting.txt', 60, 300, 10000);
+                $lockByFileExisting1 = \BreakpointDebugging_LockByFileExisting::singleton(__DIR__ . '/SomethingDir/FileForLockByFileExisting.txt', 60, 300, 10000);
                 for ($count = 0; $count < 625; $count++) {
                     $lockByFileExisting1->lock();
                     $this->_incrementSheredMemory();
@@ -53,7 +54,7 @@ class Test
                 }
                 break;
             case 'LockByFileExisting2':
-                $lockByFileExisting1 = new \BreakpointDebugging_LockByFileExisting(__DIR__ . '/SomethingDir/FileForLockByFileExisting.txt', 60, 300, 10000);
+                $lockByFileExisting1 = \BreakpointDebugging_LockByFileExisting::singleton(__DIR__ . '/SomethingDir/FileForLockByFileExisting.txt', 5, 10, 10000);
                 for ($count = 0; $count < 125; $count++) {
                     $lockByFileExisting1->lock();
                     $this->_incrementSheredMemory();
@@ -67,8 +68,8 @@ class Test
                 }
                 break;
             case 'LockByFileExisting3':
-                $lockByFileExisting1 = new \BreakpointDebugging_LockByFileExisting(__DIR__ . '/SomethingDir/FileForLockByFileExisting.txt', 60, 300, 10000);
-                $lockByFileExisting2 = new \BreakpointDebugging_LockByFileExisting(__DIR__ . '/SomethingDir2/FileForLockByFileExisting.txt', 60, 300, 10000);
+                $lockByFileExisting1 = \BreakpointDebugging_LockByFileExisting::singleton(__DIR__ . '/SomethingDir/FileForLockByFileExisting.txt', 5, 10, 10000);
+                $lockByFileExisting2 = \BreakpointDebugging_LockByFileExisting::singleton(__DIR__ . '/SomethingDir2/FileForLockByFileExisting.txt', 5, 10, 10000);
                 for ($count = 0; $count < 125; $count++) {
                     $lockByFileExisting1->lock();
                     $this->_incrementSheredMemory();
@@ -82,17 +83,17 @@ class Test
                 }
                 break;
             case 'LockByFileExisting4':
-                $lockByFileExisting1 = new \BreakpointDebugging_LockByFileExisting(__DIR__ . '/SomethingDir/FileForLockByFileExisting.txt');
+                $lockByFileExisting1 = \BreakpointDebugging_LockByFileExisting::singleton(__DIR__ . '/SomethingDir/FileForLockByFileExisting.txt', 5, 10);
                 $lockByFileExisting1->lock();
                 $lockByFileExisting1->unlock();
                 $lockByFileExisting1->unlock(); // Error.
                 break;
             case 'LockByFileExisting5':
-                $lockByFileExisting1 = new \BreakpointDebugging_LockByFileExisting(__DIR__ . '/SomethingDir/FileForLockByFileExisting.txt');
+                $lockByFileExisting1 = \BreakpointDebugging_LockByFileExisting::singleton(__DIR__ . '/SomethingDir/FileForLockByFileExisting.txt', 5, 10);
                 $lockByFileExisting1->lock(); // Error.
                 break;
             case 'LockByFileExisting6':
-                $lockByFileExisting1 = new \BreakpointDebugging_LockByFileExisting(__DIR__ . '/SomethingDir/FileForLockByFileExisting.txt');
+                $lockByFileExisting1 = \BreakpointDebugging_LockByFileExisting::singleton(__DIR__ . '/SomethingDir/FileForLockByFileExisting.txt', 5, 10);
                 $lockByFileExisting1->unlock(); // Error.
                 break;
             default:
@@ -105,4 +106,5 @@ class Test
 
 $Test = new Test();
 $Test->testLock();
+
 ?>

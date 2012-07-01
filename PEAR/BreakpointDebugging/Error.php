@@ -98,6 +98,8 @@ final class BreakpointDebugging_Error
 
         if (substr(PHP_OS, 0, 3) === 'WIN') {
             $this->_phpErrorLogFilePath = strtolower(B::$workDir . '/php_error.log');
+        } else {
+            $this->_phpErrorLogFilePath = B::$workDir . '/php_error.log';
         }
         if ($_BreakpointDebugging_EXE_MODE & (B::RELEASE | B::LOCAL_DEBUG_OF_RELEASE)) { // In case of the logging.
             $this->_isLogging = true;
@@ -350,7 +352,7 @@ final class BreakpointDebugging_Error
 
         $this->callStackInfo = $pException->getTrace();
         // Add scope of start page file.
-        $this->callStackInfo[] = array();
+        $this->callStackInfo[] = array ();
         if ($this->outputErrorCallStackLog2(get_class($pException), $errorMessage, $prependLog)) {
             BreakpointDebugging_breakpoint($pException->getMessage(), $this->callStackInfo);
         }
@@ -431,7 +433,7 @@ final class BreakpointDebugging_Error
         $this->callStackInfo = debug_backtrace(true);
         unset($this->callStackInfo[0], $this->callStackInfo[1]);
         // Add scope of start page file.
-        $this->callStackInfo[] = array();
+        $this->callStackInfo[] = array ();
         if ($this->outputErrorCallStackLog2($errorKind, $errorMessage, $prependLog)) {
             BreakpointDebugging_breakpoint($errorMessage, $this->callStackInfo);
             return true;
@@ -538,20 +540,26 @@ final class BreakpointDebugging_Error
             //return;
             return false;
         }
-        // Make error log file.
-        $pLog = fopen($this->_phpErrorLogFilePath, 'a');
-        fclose($pLog);
+        if (!is_file($this->_phpErrorLogFilePath)) {
+            // Make error log file.
+            $pLog = fopen($this->_phpErrorLogFilePath, 'wb');
+            chmod($this->_phpErrorLogFilePath, 0600);
+            fclose($pLog);
+        }
         // Lock error log file.
-        $lockByFileExisting = new \BreakpointDebugging_LockByFileExisting($this->_phpErrorLogFilePath);
+        // $lockByFileExisting = new \BreakpointDebugging_LockByFileExisting($this->_phpErrorLogFilePath);
+        //$lockByFileExisting = new \BreakpointDebugging_LockByFileExisting($this->_phpErrorLogFilePath, 60, 5);
+        //$lockByFileExisting = \BreakpointDebugging_LockByFileExisting::singletonPerFile($this->_phpErrorLogFilePath, 60, 5);
+        $lockByFileExisting = \BreakpointDebugging_LockByFileExisting::singleton($this->_phpErrorLogFilePath, 60, 5);
         $lockByFileExisting->lock();
         $tmp = date('[Y-m-d H:i:s]') . PHP_EOL;
         $dummy = null;
         $this->_logBufferWriting($dummy, $this->tag['pre'] . $prependLog);
         // Create error log from the argument.
         $tmp .= '/////////////////////////////// CALL STACK BEGIN ///////////////////////////////' .
-        PHP_EOL . $this->_mark . 'Error kind =======>' . $this->tag['font']['string'] . '\'' . $errorKind . '\'' . $this->tag['/font'] .
-        PHP_EOL . $this->_mark . 'Error message ====>' . $this->tag['font']['string'] . '\'' . $errorMessage . '\'' . $this->tag['/font'] .
-        PHP_EOL;
+            PHP_EOL . $this->_mark . 'Error kind =======>' . $this->tag['font']['string'] . '\'' . $errorKind . '\'' . $this->tag['/font'] .
+            PHP_EOL . $this->_mark . 'Error message ====>' . $this->tag['font']['string'] . '\'' . $errorMessage . '\'' . $this->tag['/font'] .
+            PHP_EOL;
         $this->_logBufferWriting($dummy, $tmp);
         // Search array which debug_backtrace() or getTrace() returns, and add a parametric information.
         foreach ($this->callStackInfo as $backtraceArrays) {
@@ -610,8 +618,8 @@ final class BreakpointDebugging_Error
         $prefix = PHP_EOL . str_repeat("\t", $tabNumber);
         $this->_logBufferWriting($pTmpLog, $prefix . $paramName . $this->tag['font']['=>'] . ' => ' . $this->tag['/font']);
         $tag = function ($self, $type, $paramValue) {
-            return $self->tag['small'] . $type . $self->tag['/small'] . ' ' . $self->tag['font'][$type] . $paramValue . $self->tag['/font'];
-        };
+                return $self->tag['small'] . $type . $self->tag['/small'] . ' ' . $self->tag['font'][$type] . $paramValue . $self->tag['/font'];
+            };
         if (is_null($paramValue)) {
             $this->_logBufferWriting($pTmpLog, $tag($this, 'null', 'null'));
         } else if (is_bool($paramValue)) {
@@ -639,8 +647,8 @@ final class BreakpointDebugging_Error
             }
         } else if (is_resource($paramValue)) {
             $tmp = $this->tag['b'] . 'resource' . $this->tag['/b'] . ' ' .
-            $this->tag['i'] . get_resource_type($paramValue) . $this->tag['/i'] . ' ' .
-            $this->tag['font']['resource'] . $paramValue . $this->tag['/font'];
+                $this->tag['i'] . get_resource_type($paramValue) . $this->tag['/i'] . ' ' .
+                $this->tag['font']['resource'] . $paramValue . $this->tag['/font'];
             $this->_logBufferWriting($pTmpLog, $tmp);
         } else {
             B::internalAssert(false);
@@ -690,7 +698,7 @@ final class BreakpointDebugging_Error
         global $_BreakpointDebugging_EXE_MODE;
 
         if ($_BreakpointDebugging_EXE_MODE & (B::LOCAL_DEBUG | B::LOCAL_DEBUG_OF_RELEASE)) { // In case of local.
-            return array();
+            return array ();
         } else { // In case of not local debug.
             return tmpfile();
         }

@@ -22,7 +22,7 @@ class BreakpointDebugging_LockByShmopTest extends PHPUnit_Framework_TestCase
      */
     protected function setUp()
     {
-        $this->object = new BreakpointDebugging_LockByShmop;
+        $this->object = \BreakpointDebugging_LockByShmop::singleton(__FILE__);
     }
 
     /**

@@ -12,7 +12,7 @@ class LockByFileExistingTest extends PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $this->object = new \BreakpointDebugging_LockByFileExisting(__DIR__ . '/LockByFileExistingMultiprocessTest/SomethingDir/FileForLockByFileExisting.txt');
+        $this->object = \BreakpointDebugging_LockByFileExisting::singleton(__DIR__ . '/LockByFileExistingMultiprocessTest/SomethingDir/FileForLockByFileExisting.txt');
     }
 
     protected function tearDown()

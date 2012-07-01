@@ -50,9 +50,14 @@
 use \BreakpointDebugging as B;
 
 // Reference path setting.
-ini_set('include_path', '.;./PEAR;C:\xampp\php\PEAR'); // In case of local.
-//ini_set('include_path', '.;./PEAR;C:\xampp\php\PEAR;./PEAR/BreakpointDebugging/tests/PEAR'); // In case of local tests.
-// ini_set('include_path', '.:./PEAR:/opt/lampp/php/PEAR'); // In case of remote.
+if (substr(PHP_OS, 0, 3) === 'WIN') { // In case of Windows.
+    ini_set('include_path', '.;./PEAR;C:\xampp\php\PEAR'); // In case of local.
+// ini_set('include_path', '.:/opt/lampp/lib/php/PEAR'); // In case of Linux remote.
+} else if (PHP_OS === 'Linux') { // In case of Linux.
+    ini_set('include_path', '.:./PEAR:/opt/lampp/lib/php/PEAR'); // In case of local.
+} else { // In case of other.
+    assert(false);
+}
 
 require_once 'BreakpointDebugging.php'; // 'BreakpointDebugging.php' must require_once because it is base of all class, and it sets php.ini, and it sets autoload.
 // ### Execution mode setting. ===>
@@ -65,6 +70,11 @@ require_once 'BreakpointDebugging.php'; // 'BreakpointDebugging.php' must requir
  */
 $_BreakpointDebugging_EXE_MODE = B::LOCAL_DEBUG;
 // ### <=== Execution mode setting.
+$language = 'Japanese';
+$timezone = 'Asia/Tokyo';
+if (!($_BreakpointDebugging_EXE_MODE & B::RELEASE)) { // In case of not release.
+    include_once './PEAR_Setting/BreakpointDebugging_MySetting_Option.php';
+}
 // ### Item setting. ===>
 // Maximum log parameter nesting level. Default is 20. (1-100)
 // B::$maxLogParamNestingLevel = 20;
@@ -73,13 +83,18 @@ $_BreakpointDebugging_EXE_MODE = B::LOCAL_DEBUG;
 // Maximum string type byte-count of log. Default is 3000. (1-)
 // B::$maxLogStringSize = 3000;
 // This is work directory. "php_error.log" file is created in this directory.
-B::$workDir = realpath('./Work');
-if (B::$workDir === false) {
-    B::internalException('Param1 file must have reading permission.');
+B::$workDir = './Work';
+if(!is_dir(B::$workDir)){
+    mkdir(B::$workDir, 0700);
+    //chmod('Work', 0700);
 }
+//B::$workDir = realpath('./Work');
+B::$workDir = realpath(B::$workDir);
+//if (B::$workDir === false) {
+//    B::internalException('Param1 file must have reading permission.');
+//}
+assert(B::$workDir!==false);
 
-$language = 'Japanese';
-$timezone = 'Asia/Tokyo';
 //// Warning: When you use existing log, it is destroyed if it is not "UTF-8". It is necessary to be a single character sets.
 //B::$phpErrorLogFilePath = './php_error.log';
 // Inner form of the browser of the default: HTML text, character sets = UTF8.
@@ -90,17 +105,16 @@ assert($result);
 // ### <=== Item setting.
 ////////////////////////////////////////////////////////////////////////////////
 // ### User place folder (Default is empty.) ###
-
-
-
-
-
-
-
 ///* ### Example ###
 if ($_BreakpointDebugging_EXE_MODE & (B::REMOTE_DEBUG | B::RELEASE)) { // In case of remote.
-    // PHP It limits directory which opens a file.
-    B::iniSet('open_basedir', 'C:\xampp\;.\\'); // '/???/:/???/'
+    if (substr(PHP_OS, 0, 3) === 'WIN') { // In case of Windows.
+        // PHP It limits directory which opens a file.
+        B::iniSet('open_basedir', 'C:\xampp\;.\\'); // '/???/:/???/'
+    } else if (PHP_OS === 'Linux') { // In case of Linux.
+        B::iniSet('open_basedir', '/opt/lampp/:./'); // '/???/:/???/'
+    } else { // In case of other.
+        assert(false);
+    }
     // Windows e-mail sending server setting.
     B::iniSet('SMTP', 'smtp.example.com'); // 'smtp.???.com'
     // Windows mail address setting.
@@ -150,9 +164,9 @@ if ($_BreakpointDebugging_EXE_MODE & B::RELEASE) { // In case of release.
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-if (!($_BreakpointDebugging_EXE_MODE & B::RELEASE)) { // In case of not release.
-    include_once './PEAR_Setting/BreakpointDebugging_MySetting_Option.php';
-}
+//if (!($_BreakpointDebugging_EXE_MODE & B::RELEASE)) { // In case of not release.
+//    include_once './PEAR_Setting/BreakpointDebugging_MySetting_Option.php';
+//}
 
 unset($result);
 unset($timezone);

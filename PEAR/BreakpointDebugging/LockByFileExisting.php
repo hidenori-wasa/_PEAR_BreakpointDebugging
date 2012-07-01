@@ -58,30 +58,73 @@ use BreakpointDebugging as B;
  */
 final class BreakpointDebugging_LockByFileExisting extends \BreakpointDebugging_Lock
 {
+//    /**
+//     * Construct the lock system object per file.
+//     *
+//     * @param string $lockFilePath      The file path for lock.
+//     *                                  This file must have reading permission.
+//     * @param int    $timeout           Seconds number of timeout.
+//     * @param int    $flagFileExpire    Seconds number which flag-file expires.
+//     * @param int    $sleepMicroSeconds Micro seconds to sleep.
+//     */
+//    static function singletonPerFile($lockFilePath, $timeout = 60, $flagFileExpire = 300, $sleepMicroSeconds = 100000)
+//    {
+//        global $_BreakpointDebugging;
+//
+//        $fullLockFilePath = getFullLockFilePath($lockFilePath);
+//        // Search about whether or not the object exists per file.
+//        foreach ($_BreakpointDebugging->lockByFileExistingObjects as $lockByFileExistingObject) {
+//            if ($lockByFileExistingObject->fullLockFilePath === $fullLockFilePath) {
+//                return $lockByFileExistingObject;
+//            }
+//        }
+//        $c = '\\' . __CLASS__;
+//        return new $c($fullLockFilePath, $timeout, $flagFileExpire, $sleepMicroSeconds);
+//    }
+    /**
+     * Singleton method.
+     *
+     * @param string $lockFilePath       The file path which wants the lock.
+     *                                   This file must have reading permission.
+     * @param int    $timeout            The timeout.
+     * @param int    $expire             The number of seconds which lock-flag-file expires.
+     * @param int    $sleepMicroSeconds  Micro seconds to sleep.
+     *
+     * @return object Instance of this class.
+     */
+    static function singleton($lockFilePath, $timeout = 60, $expire = 300, $sleepMicroSeconds = 100000)
+    {
+        return parent::singletonBase('\\' . __CLASS__, $lockFilePath, $timeout, $expire, $sleepMicroSeconds);
+    }
 
     /**
      * Construct the lock system.
      *
-     * @param string $lockFilePath      The file path for lock.
-     *                                  This file must have reading permission.
+     * @param string $fullLockFilePath  Full lock flag file path.
+     *                                  //This file must have reading permission.
      * @param int    $timeout           Seconds number of timeout.
      * @param int    $flagFileExpire    Seconds number which flag-file expires.
      * @param int    $sleepMicroSeconds Micro seconds to sleep.
      */
-    function __construct($lockFilePath, $timeout = 60, $flagFileExpire = 300, $sleepMicroSeconds = 100000)
+    //protected function __construct($lockFilePath, $timeout = 60, $flagFileExpire = 300, $sleepMicroSeconds = 100000)
+    protected function __construct($fullLockFilePath, $timeout, $flagFileExpire, $sleepMicroSeconds)
     {
-        parent::__construct($lockFilePath, $timeout, $sleepMicroSeconds);
+        //parent::__construct($lockFilePath, $timeout, $sleepMicroSeconds);
+        parent::__construct($fullLockFilePath, $timeout, $sleepMicroSeconds);
 
         // The file does not exist.
-        if (!is_file($this->lockingFlagFilePath)) {
+        //if (!is_file($this->fullLockFilePath)) {
+        if (!is_file($fullLockFilePath)) {
             return;
         }
-        $stat = stat($this->lockingFlagFilePath);
+        //$stat = stat($this->fullLockFilePath);
+        $stat = stat($fullLockFilePath);
         // Locking flag file is too old.
         if (time() - $stat['mtime'] > $flagFileExpire) {
             restore_error_handler();
             // Delete locking flag file.
-            @unlink($this->lockingFlagFilePath);
+            //@unlink($this->fullLockFilePath);
+            @unlink($fullLockFilePath);
             set_error_handler('BreakpointDebugging::errorHandler', -1);
         }
     }
@@ -94,7 +137,7 @@ final class BreakpointDebugging_LockByFileExisting extends \BreakpointDebugging_
     protected function lockingLoop()
     {
         $startTime = time();
-        while (($this->pFile = @fopen($this->lockingFlagFilePath, 'x+b')) === false) {
+        while (($this->pFile = @fopen($this->fullLockFilePath, 'x+b')) === false) {
             if (time() - $startTime > $this->timeout) {
                 B::internalException('This process has been timeouted.');
                 // We do not delete locking flag file here because we cannot lock php code.
@@ -103,6 +146,7 @@ final class BreakpointDebugging_LockByFileExisting extends \BreakpointDebugging_
             // Wait micro seconds.
             usleep($this->sleepMicroSeconds);
         }
+        chmod($this->fullLockFilePath, 0600);
     }
 
     /**
@@ -113,7 +157,7 @@ final class BreakpointDebugging_LockByFileExisting extends \BreakpointDebugging_
     protected function unlockingLoop()
     {
         fclose($this->pFile);
-        while (@unlink($this->lockingFlagFilePath) === false) {
+        while (@unlink($this->fullLockFilePath) === false) {
             // Wait micro seconds.
             usleep($this->sleepMicroSeconds);
         }

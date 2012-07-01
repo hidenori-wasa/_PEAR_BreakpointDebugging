@@ -80,11 +80,10 @@ use BreakpointDebugging as B;
  */
 final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
 {
-
-    /**
-     * @var object Maintains a instance.
-     */
-    private static $_instance;
+//    /**
+//     * @var object Maintains a instance.
+//     */
+//    private static $_instance;
 
     /**
      * @var object The object for lock.
@@ -94,7 +93,6 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
     /**
      * Hexadecimal character string size.
      */
-
     const HEXADECIMAL_SIZE = 10;
 
     /**
@@ -110,7 +108,6 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
     /**
      * Memory block size.
      */
-
     const MEMORY_BLOCK_SIZE = 4096;
 
     /**
@@ -123,30 +120,51 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
         throw new \BreakpointDebugging_Error_Exception(B::convertMbString($message));
     }
 
+//    /**
+//     * We must use singleton method because processes is executed in turn.
+//     *
+//     * @param string $lockFilePath       The file path which wants the lock.
+//     *                                   This file must have reading permission.
+//     * @param int    $timeout            The timeout.
+//     * @param int    $sharedMemoryExpire The number of seconds which shared memory expires.
+//     * @param int    $sleepMicroSeconds  Micro seconds to sleep.
+//     *
+//     * @return object Instance of this class.
+//     */
+//    static function singleton($lockFilePath, $timeout = 60, $sharedMemoryExpire = 300, $sleepMicroSeconds = 100000)
+//    {
+//        //static $storeLockFilePath = null;
+//        static $storeFullLockFilePath = null;
+//
+//        $fullLockFilePath = getFullLockFilePath($lockFilePath);
+//        //if ($lockFilePath !== $storeLockFilePath) {
+//        if ($fullLockFilePath !== $storeFullLockFilePath) {
+//            //assert($storeLockFilePath === null);
+//            assert($storeFullLockFilePath === null);
+//            //$storeLockFilePath = $lockFilePath;
+//            $storeFullLockFilePath = $fullLockFilePath;
+//        }
+//        if (!isset(self::$_instance)) {
+//            $c = '\\' . __CLASS__;
+//            //self::$_instance = new $c($lockFilePath, $timeout, $sharedMemoryExpire, $sleepMicroSeconds);
+//            self::$_instance = new $c($fullLockFilePath, $timeout, $sharedMemoryExpire, $sleepMicroSeconds);
+//        }
+//        return self::$_instance;
+//    }
     /**
-     * We must use singleton method because processes is executed in turn.
+     * Singleton method.
      *
      * @param string $lockFilePath       The file path which wants the lock.
      *                                   This file must have reading permission.
      * @param int    $timeout            The timeout.
-     * @param int    $sharedMemoryExpire The number of seconds which shared memory expires.
+     * @param int    $expire             The number of seconds which lock-flag-file expires.
      * @param int    $sleepMicroSeconds  Micro seconds to sleep.
      *
      * @return object Instance of this class.
      */
-    public static function singleton($lockFilePath, $timeout = 60, $sharedMemoryExpire = 300, $sleepMicroSeconds = 100000)
+    static function singleton($lockFilePath, $timeout = 60, $expire = 300, $sleepMicroSeconds = 100000)
     {
-        static $storeLockFilePath = null;
-
-        if ($lockFilePath !== $storeLockFilePath) {
-            assert($storeLockFilePath === null);
-            $storeLockFilePath = $lockFilePath;
-        }
-        if (!isset(self::$_instance)) {
-            $c = '\\' . __CLASS__;
-            self::$_instance = new $c($lockFilePath, $timeout, $sharedMemoryExpire, $sleepMicroSeconds);
-        }
-        return self::$_instance;
+        return parent::singletonBase('\\' . __CLASS__, $lockFilePath, $timeout, $expire, $sleepMicroSeconds);
     }
 
     /**
@@ -154,37 +172,41 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
      *
      * @return void
      */
-    public function __clone()
+    function __clone()
     {
-        //B::internalException('Clone is not allowed.');
         $this->_throwErrorException('Clone is not allowed.');
     }
 
     /**
      * Construct the lock system.
      *
-     * @param string $lockFilePath       The file path which wants the lock.
-     *                                   This file must have reading permission.
+     * @param string $fullLockFilePath   Full lock flag file path.
+     *                                   //This file must have reading permission.
      * @param int    $timeout            The timeout.
      * @param int    $sharedMemoryExpire The number of seconds which shared memory expires.
      * @param int    $sleepMicroSeconds  Micro seconds to sleep.
      */
-    protected function __construct($lockFilePath, $timeout, $sharedMemoryExpire, $sleepMicroSeconds)
+    //protected function __construct($lockFilePath, $timeout, $sharedMemoryExpire, $sleepMicroSeconds)
+    protected function __construct($fullLockFilePath, $timeout, $sharedMemoryExpire, $sleepMicroSeconds)
     {
-        parent::__construct($lockFilePath, $timeout, $sleepMicroSeconds);
+        //parent::__construct($lockFilePath, $timeout, $sleepMicroSeconds);
+        parent::__construct($fullLockFilePath, $timeout, $sleepMicroSeconds);
 
-        $this->_lockingObject = new BreakpointDebugging_LockByFileExisting(__FILE__);
+        //$this->_lockingObject = BreakpointDebugging_LockByFileExisting::singletonPerFile(__FILE__);
+        $this->_lockingObject = BreakpointDebugging_LockByFileExisting::singleton(__FILE__);
         // Lock php code.
         $this->_lockingObject->lock();
 
         restore_error_handler();
-        $this->pFile = @fopen($this->lockingFlagFilePath, 'x+b');
+        //$this->pFile = @fopen($this->fullLockFilePath, 'x+b');
+        $this->pFile = @fopen($fullLockFilePath, 'x+b');
         set_error_handler('BreakpointDebugging::errorHandler', -1);
         while (true) {
             // In case of existing file.
             if ($this->pFile === false) {
                 // The file header is opened reading and writing mode.
-                $this->pFile = fopen($this->lockingFlagFilePath, 'r+b');
+                //$this->pFile = fopen($this->fullLockFilePath, 'r+b');
+                $this->pFile = fopen($fullLockFilePath, 'r+b');
                 // Does not use writing and reading buffer.
                 stream_set_write_buffer($this->pFile, 0);
 
@@ -209,10 +231,15 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
                 if ($isContinue) {
                     fclose($this->pFile);
                     // Delete locking flag file.
-                    $this->pFile = fopen($this->lockingFlagFilePath, 'w+b');
+                    //$this->pFile = fopen($this->fullLockFilePath, 'w+b');
+                    $this->pFile = fopen($fullLockFilePath, 'w+b');
+                    //chmod($this->fullLockFilePath, 0600);
+                    chmod($fullLockFilePath, 0600);
                     continue;
                 }
             } else { // In case of not existing file.
+                //chmod($this->fullLockFilePath, 0600);
+                chmod($fullLockFilePath, 0600);
                 // Does not use writing and reading buffer.
                 stream_set_write_buffer($this->pFile, 0);
 
