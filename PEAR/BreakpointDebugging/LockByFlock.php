@@ -1,9 +1,9 @@
 <?php
 
 /**
- * Class which locks php-code by file existing.
+ * Class which locks php-code by "flock()".
  *
- * This class is required for environment where "flock()" doesn't exist.
+ * This class has to be environment which can use "flock()".
  * We can synchronize applications by setting the same directory to "B::$workDir" of "BreakpointDebugging_MySetting.php".
  *
  * PHP version 5.3
@@ -47,7 +47,7 @@
 use BreakpointDebugging as B;
 
 /**
- * Class which locks php-code by file existing.
+ * Class which locks php-code by "flock()".
  *
  * @category PHP
  * @package  BreakpointDebugging
@@ -56,63 +56,45 @@ use BreakpointDebugging as B;
  * @version  Release: @package_version@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-final class BreakpointDebugging_LockByFileExisting extends \BreakpointDebugging_Lock
+final class BreakpointDebugging_LockByFlock extends \BreakpointDebugging_Lock
 {
     /**
      * Singleton method.
      *
      * @param int    $timeout            The timeout.
-     * @param int    $expire             The number of seconds which lock-flag-file expires.
      * @param int    $sleepMicroSeconds  Micro seconds to sleep.
      *
      * @return object Instance of this class.
      */
-    static function &singleton($timeout = 60, $expire = 300, $sleepMicroSeconds = 100000)
+    static function &singleton($timeout = 60, $sleepMicroSeconds = 100000)
     {
-        return parent::singletonBase('\\' . __CLASS__, B::$workDir . '/LockByFileExisting.txt', $timeout, $expire, $sleepMicroSeconds);
-        //$object = &parent::singletonBase('\\' . __CLASS__, B::$workDir . '/LockByFileExisting.txt', $timeout, $expire, $sleepMicroSeconds);
+        return parent::singletonBase('\\' . __CLASS__, B::$workDir . '/LockByFlock.txt', $timeout, 0, $sleepMicroSeconds);
+        //$object = &parent::singletonBase('\\' . __CLASS__, B::$workDir . '/LockByFlock.txt', $timeout, 0, $sleepMicroSeconds);
         //return $object;
-    }
-
-    /**
-     * Singleton method of internal.
-     *
-     * @return object Instance of this class.
-     */
-    static function &internalSingleton()
-    {
-        //$object = &parent::singletonBase('\\' . __CLASS__, B::$workDir . '/LockByFileExisting.txt', 60, 300, 100000, false);
-        //return $object;
-        return parent::singletonBase('\\' . __CLASS__, B::$workDir . '/LockByFileExisting.txt', 60, 300, 100000, true);
     }
 
     /**
      * Construct the lock system.
      *
-     * @//param string $fullLockFilePath  Full lock flag file path.
      * @param string $lockFilePath      Lock-flag-file path.
      * @param int    $timeout           Seconds number of timeout.
-     * @param int    $flagFileExpire    Seconds number which flag-file expires.
+     * @param int    $dummy             Dummy.
      * @param int    $sleepMicroSeconds Micro seconds to sleep.
      */
-    protected function __construct($lockFilePath, $timeout, $flagFileExpire, $sleepMicroSeconds)
+    protected function __construct($lockFilePath, $timeout, $dummy, $sleepMicroSeconds)
     {
         parent::__construct($lockFilePath, $timeout, $sleepMicroSeconds);
 
-        // The file does not exist.
-        if (!is_file($lockFilePath)) {
-            return;
-        }
-        $stat = stat($lockFilePath);
-        // Locking flag file is too old.
-        if (time() - $stat['mtime'] > $flagFileExpire) {
-            restore_error_handler();
-            // Delete locking flag file.
-            @unlink($lockFilePath);
-            set_error_handler('BreakpointDebugging::errorHandler', -1);
-        }
+        $this->pFile = fopen($lockFilePath, 'a+b');
+        chmod($lockFilePath, 0600);
+        B::internalAssert(stream_supports_lock($this->pFile));
     }
 
+//    function __destruct()
+//    {
+//        fclose($this->pFile);
+//        parent::__destruct();
+//    }
     /**
      * Locking loop.
      *
@@ -120,17 +102,7 @@ final class BreakpointDebugging_LockByFileExisting extends \BreakpointDebugging_
      */
     protected function lockingLoop()
     {
-        $startTime = time();
-        while (($this->pFile = @fopen($this->lockFilePath, 'x+b')) === false) {
-            if (time() - $startTime > $this->timeout) {
-                B::internalException('This process has been timeouted.');
-                // We do not delete locking flag file here because we cannot lock php code.
-                break;
-            }
-            // Wait micro seconds.
-            usleep($this->sleepMicroSeconds);
-        }
-        chmod($this->lockFilePath, 0600);
+        flock($this->pFile, LOCK_EX);
     }
 
     /**
@@ -140,11 +112,7 @@ final class BreakpointDebugging_LockByFileExisting extends \BreakpointDebugging_
      */
     protected function unlockingLoop()
     {
-        fclose($this->pFile);
-        while (@unlink($this->lockFilePath) === false) {
-            // Wait micro seconds.
-            usleep($this->sleepMicroSeconds);
-        }
+        flock($this->pFile, LOCK_UN);
     }
 
 }

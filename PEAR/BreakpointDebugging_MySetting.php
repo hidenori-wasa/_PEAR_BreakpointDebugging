@@ -66,10 +66,13 @@ require_once 'BreakpointDebugging.php'; // 'BreakpointDebugging.php' must requir
  *       LOCAL_DEBUG
  *       LOCAL_DEBUG_OF_RELEASE
  *       REMOTE_DEBUG
- *       RELEASE                // We must execute "REMOTE_DEBUG" before this.
+ *       RELEASE                    // We must execute "REMOTE_DEBUG" before this.
+ *       LOCAL_DEBUG | UNIT_TEST    // Tests by "phpunit".
  */
-$_BreakpointDebugging_EXE_MODE = B::LOCAL_DEBUG;
+$_BreakpointDebugging_EXE_MODE = B::LOCAL_DEBUG_OF_RELEASE | B::UNIT_TEST;
+// $_BreakpointDebugging_EXE_MODE = B::LOCAL_DEBUG;
 // ### <=== Execution mode setting.
+
 $language = 'Japanese';
 $timezone = 'Asia/Tokyo';
 if (!($_BreakpointDebugging_EXE_MODE & B::RELEASE)) { // In case of not release.
@@ -84,7 +87,7 @@ if (!($_BreakpointDebugging_EXE_MODE & B::RELEASE)) { // In case of not release.
 // B::$maxLogStringSize = 3000;
 // This is work directory. "php_error.log" file is created in this directory.
 B::$workDir = './Work';
-if(!is_dir(B::$workDir)){
+if (!is_dir(B::$workDir)) {
     mkdir(B::$workDir, 0700);
     //chmod('Work', 0700);
 }
@@ -93,7 +96,7 @@ B::$workDir = realpath(B::$workDir);
 //if (B::$workDir === false) {
 //    B::internalException('Param1 file must have reading permission.');
 //}
-assert(B::$workDir!==false);
+assert(B::$workDir !== false);
 
 //// Warning: When you use existing log, it is destroyed if it is not "UTF-8". It is necessary to be a single character sets.
 //B::$phpErrorLogFilePath = './php_error.log';
@@ -171,4 +174,5 @@ if ($_BreakpointDebugging_EXE_MODE & B::RELEASE) { // In case of release.
 unset($result);
 unset($timezone);
 unset($language);
+
 ?>

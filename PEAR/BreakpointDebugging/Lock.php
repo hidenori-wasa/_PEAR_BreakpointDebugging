@@ -46,7 +46,7 @@ require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
 use BreakpointDebugging as B;
 
 /**
- * Class which locks php-code.
+ * The abstract base class which lock php-code.
  *
  * @category PHP
  * @package  BreakpointDebugging
@@ -58,19 +58,24 @@ use BreakpointDebugging as B;
 abstract class BreakpointDebugging_Lock
 {
     /**
+     * @var object Maintains a instance of internal.
+     */
+    private static $_internalInstance = null;
+
+    /**
      * @var object Maintains a instance.
      */
-    private static $_instance;
+    private static $_instance = null;
 
     /**
      * @var int The lock count.
      */
-    private $_lockCount = 0;
+    private $_lockCount;
 
     /**
-     * @var string Full lock flag file path.
+     * @var string Lock-flag-file path.
      */
-    protected $fullLockFilePath;
+    protected $lockFilePath;
 
     /**
      * @var resource File pointer of lock flag file.
@@ -88,45 +93,6 @@ abstract class BreakpointDebugging_Lock
     protected $sleepMicroSeconds;
 
     /**
-     * Get full lock file path.
-     *
-     * @param string $lockFilePath      The file path for lock.
-     *                                  This file must have reading permission.
-     *
-     * @return string Full lock file path.
-     */
-    //protected function getFullLockFilePath($lockFilePath)
-    private static function getFullLockFilePath($lockFilePath)
-    {
-        $lockFlagDir = B::$workDir . '/Flag';
-        if (substr(PHP_OS, 0, 3) === 'WIN') {
-            $lockFlagDir = strtolower($lockFlagDir);
-            $lockFilePath = strtolower($lockFilePath);
-        }
-        $lockFlagDir = str_replace('\\', '/', $lockFlagDir);
-        if (!is_dir($lockFlagDir)) {
-            mkdir($lockFlagDir, 0700);
-        }
-        $path = realpath($lockFilePath);
-        if ($path === false) {
-            B::internalException("Param1 file must have reading permission. ($lockFilePath)");
-        }
-        $path = str_replace('\\', '/', $path);
-        $fullLockFilePath = $lockFlagDir . '/' . substr($path, strpos($path, '/') + 1);
-        if (strlen($fullLockFilePath) > PHP_MAXPATHLEN) {
-            B::internalException('Param1 is too long because result which merged flag file exceeded PHP_MAXPATHLEN. ' . $fullLockFilePath . ' PHP_MAXPATHLEN = ' . PHP_MAXPATHLEN);
-        }
-        clearstatcache(true, $fullLockFilePath);
-        if (!file_exists(dirname($fullLockFilePath))) {
-            restore_error_handler();
-            // Make directory of the lock-flag file for initialize.
-            @mkdir(dirname($fullLockFilePath), 0700, true);
-            set_error_handler('BreakpointDebugging::errorHandler', -1);
-        }
-        return $fullLockFilePath;
-    }
-
-    /**
      * A synchronous object must be singleton because dead-lock occurs.
      * Example:Process A locks file A, and process B locks file B.
      *         Then, process A is waiting for file B, and process B is waiting for file A.
@@ -137,112 +103,80 @@ abstract class BreakpointDebugging_Lock
      * @param int    $timeout            The timeout.
      * @param int    $expire             The number of seconds which lock-flag-file expires.
      * @param int    $sleepMicroSeconds  Micro seconds to sleep.
+     * @param bool   $isInternal         Is it internal call?
      *
      * @return object Instance of this class.
      */
-    protected static function singletonBase($className, $lockFilePath, $timeout, $expire, $sleepMicroSeconds)
+    protected static function &singletonBase($className, $lockFilePath, $timeout, $expire, $sleepMicroSeconds, $isInternal = false)
     {
-//        //static $storeLockFilePath = null;
-//        static $storeFullLockFilePath = null;
-//
-//        //$fullLockFilePath = getFullLockFilePath($lockFilePath);
-//        $fullLockFilePath = self::getFullLockFilePath($lockFilePath);
-//        //if ($lockFilePath !== $storeLockFilePath) {
-//        while (true) {
-//            if ($fullLockFilePath !== $storeFullLockFilePath) {
-//                $callStack = debug_backtrace();
-//                foreach ($callStack as $call) {
-//                    // In case of inside of error handler or exception handler.
-//                    if (array_key_exists('class', $call) && $call['class'] === 'BreakpointDebugging_Error') {
-//                        break 2;
-//                    }
-//                }
-//                //assert($storeLockFilePath === null);
-//                B::internalAssert($storeFullLockFilePath === null);
-//                //$storeLockFilePath = $lockFilePath;
-//                $storeFullLockFilePath = $fullLockFilePath;
-//            }
-//            break;
-//        }
-        if (!isset(self::$_instance)) {
-            //$c = '\\' . __CLASS__;
-            //self::$_instance = new $c($fullLockFilePath, $timeout, $expire, $sleepMicroSeconds);
-            //self::$_instance = new $className($fullLockFilePath, $timeout, $expire, $sleepMicroSeconds);
-            self::$_instance = new $className(self::getFullLockFilePath($lockFilePath), $timeout, $expire, $sleepMicroSeconds);
+        static $currentClassName = null;
+
+        if ($isInternal) {
+            if (self::$_internalInstance === null) {
+                self::$_internalInstance = new $className($lockFilePath, $timeout, $expire, $sleepMicroSeconds);
+            }
+            return self::$_internalInstance;
+        } else {
+            // Synchronous class has to be any one of derived classes because dead-lock occurs.
+            B::internalAssert($currentClassName === null || $currentClassName === $className);
+            $currentClassName = $className;
+            if (self::$_instance === null) {
+                self::$_instance = new $className($lockFilePath, $timeout, $expire, $sleepMicroSeconds);
+            }
+            return self::$_instance;
         }
-        return self::$_instance;
+    }
+
+    /**
+     * Prevents duplicating an instance.
+     *
+     * @return void
+     */
+    function __clone()
+    {
+        $this->_throwErrorException('Clone is not allowed.');
     }
 
     /**
      * Construct the lock system.
      *
-     * @param string $lockFilePath      Full lock flag file path.
-     *                                  //This file must have reading permission.
+     * @param string $lockFilePath      Lock-flag-file path.
      * @param int    $timeout           Seconds number of timeout.
      * @param int    $sleepMicroSeconds Micro seconds to sleep.
      */
-    //protected function __construct($lockFilePath, $timeout, $sleepMicroSeconds)
-    protected function __construct($fullLockFilePath, $timeout, $sleepMicroSeconds)
+    protected function __construct($lockFilePath, $timeout, $sleepMicroSeconds)
     {
-        global $_BreakpointDebugging;
-
         // Extend maximum execution time.
         set_time_limit($timeout + 10);
+        $this->_lockCount = 0;
         $this->timeout = $timeout;
         $this->sleepMicroSeconds = $sleepMicroSeconds;
-
-//        $lockFlagDir = B::$workDir . '/Flag';
-//        if (substr(PHP_OS, 0, 3) === 'WIN') {
-//            $lockFlagDir = strtolower($lockFlagDir);
-//            $lockFilePath = strtolower($lockFilePath);
-//        }
-//        $lockFlagDir = str_replace('\\', '/', $lockFlagDir);
-//        if (!is_dir($lockFlagDir)) {
-//            mkdir($lockFlagDir, 0700);
-//        }
-//        $path = realpath($lockFilePath);
-//        if ($path === false) {
-//            B::internalException("Param1 file must have reading permission. ($lockFilePath)");
-//        }
-//        $path = str_replace('\\', '/', $path);
-//        $lockingFlagFilePath = $lockFlagDir . '/' . substr($path, strpos($path, '/') + 1);
-//        $this->fullLockFilePath = $lockingFlagFilePath;
-//        if (strlen($this->fullLockFilePath) > PHP_MAXPATHLEN) {
-//            B::internalException('Param1 is too long because result which merged flag file exceeded PHP_MAXPATHLEN. ' . $this->fullLockFilePath . ' PHP_MAXPATHLEN = ' . PHP_MAXPATHLEN);
-//        }
-//        clearstatcache(true, $this->fullLockFilePath);
-//        if (!file_exists(dirname($this->fullLockFilePath))) {
-//            restore_error_handler();
-//            // Make directory of the lock-flag file for initialize.
-//            @mkdir(dirname($this->fullLockFilePath), 0700, true);
-//            set_error_handler('BreakpointDebugging::errorHandler', -1);
-//        }
-        $this->fullLockFilePath = $fullLockFilePath;
-//        // Register this object.
-//        $_BreakpointDebugging->lockByFileExistingObjects[] = $this;
+        $this->lockFilePath = $lockFilePath;
+        $this->pFile = null;
     }
 
     function __destruct()
     {
-//        global $_BreakpointDebugging;
-//
-//        // Search this object.
-//        foreach ($_BreakpointDebugging->lockByFileExistingObjects as &$lockByFileExistingObject) {
-//            if ($lockByFileExistingObject === $this) {
-//                // Unregister this object.
-//                unset($lockByFileExistingObject);
-//                if (B::$onceErrorDispFlag) {
-//                    return;
-//                }
-//                B::internalAssert($this->_lockCount === 0);
-//                return;
-//            }
-//        }
-//        B::internalAssert(false);
+        if (is_resource($this->pFile)) {
+            fclose($this->pFile);
+        }
         if (B::$onceErrorDispFlag) {
             return;
         }
-        B::internalAssert($this->_lockCount === 0);
+        $this->_checkLockCount();
+    }
+
+    /**
+     * Check lock count.
+     */
+    private function _checkLockCount()
+    {
+        if ($this->_lockCount !== 0) {
+            $tmp = $this->_lockCount;
+            $this->_lockCount = 0;
+            B::internalAssert(false);
+            $this->_lockCount = $tmp;
+        }
     }
 
     /**
@@ -265,11 +199,12 @@ abstract class BreakpointDebugging_Lock
         }
         // Extend maximum execution time.
         set_time_limit($this->timeout + 10);
+
         restore_error_handler();
         $this->lockingLoop();
         set_error_handler('BreakpointDebugging::errorHandler', -1);
 
-        B::internalAssert($this->_lockCount === 0);
+        $this->_checkLockCount();
         $this->_lockCount++;
     }
 
@@ -292,7 +227,7 @@ abstract class BreakpointDebugging_Lock
             return;
         }
         $this->_lockCount--;
-        B::internalAssert($this->_lockCount === 0);
+        $this->_checkLockCount();
 
         restore_error_handler();
         $this->unlockingLoop();

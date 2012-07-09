@@ -55,28 +55,48 @@ use \BreakpointDebugging as B;
  * This is function to set breakpoint. You must define this function outside namespace, and you must not change function name.
  * If you don't have breakpoint, you can debug to set '$_BreakpointDebugging_EXE_MODE = B::REMOTE_DEBUG;'.
  *
- * @param string $message       Message.
- * @param array  $callStackInfo Call stack info.
+ * @param string $message        Message.
+ * @param array  &$callStackInfo A call stack info.
  *
  * @return void
  */
-function BreakpointDebugging_breakpoint($message = '', $callStackInfo = null)
+function BreakpointDebugging_breakpoint($message, &$callStackInfo)
 {
     global $_BreakpointDebugging_EXE_MODE;
+    //static $onceFlag = true;
+    //$errorFile = '';
+    //$errorLine = '';
 
     assert(func_num_args() <= 2);
     assert(is_string($message));
-    assert(is_array($callStackInfo) || is_null($callStackInfo));
+    assert(is_array($callStackInfo));
 
-    if ($callStackInfo !== null) {
-        $callStackInfo = each($callStackInfo);
-        $callStackInfo = $callStackInfo['value'];
-        if (array_key_exists('file', $callStackInfo)) {
-            $errorFile = $callStackInfo['file'];
-        }
-        if (array_key_exists('line', $callStackInfo)) {
-            $errorLine = $callStackInfo['line'];
-        }
+//    if ($_BreakpointDebugging_EXE_MODE & B::UNIT_TEST && $onceFlag) {
+//        $onceFlag = false;
+//        //$callStack = debug_backtrace();
+//        array_reverse($callStackInfo);
+//        reset($callStackInfo);
+//        $call = each($callStackInfo);
+//        $call = $call['value'];
+//        if (array_key_exists('file', $call)) {
+//            $errorFile = $call['file'];
+//        }
+//        if (array_key_exists('line', $call)) {
+//            $errorLine = $call['line'];
+//        }
+//        restore_exception_handler();
+//        throw new BreakpointDebugging_Error_Exception($errorFile, $errorLine);
+//    }
+    B::makeUnitTestException();
+
+    reset($callStackInfo);
+    $call = each($callStackInfo);
+    $call = $call['value'];
+    if (array_key_exists('file', $call)) {
+        $errorFile = $call['file'];
+    }
+    if (array_key_exists('line', $call)) {
+        $errorLine = $call['line'];
     }
 
     echo ''; // Please, set here breakpoint.
@@ -196,7 +216,6 @@ if (substr(PHP_OS, 0, 3) === 'WIN') { // In case of Windows.
 B::iniSet('smtp_port', '25');
 B::iniCheck('mail.add_x_header', '', 'We recommend to set "mail.add_x_header = Off" of "php.ini" file because does not write that header continue "UID" behind the file name.');
 //B::iniCheck('upload_max_filesize', '128M', 'We recommend to set "upload_max_filesize = 128M" of "php.ini" file because it is "XAMPP" value.');
-
 ////////////////////////////////////////////////////////////////////////////////
 // ### This uses "false" because this setting doesn't have relation with release. ###
 // This makes all errors, warnings and note a stop at breakpoint or a display.
@@ -215,4 +234,5 @@ B::iniSet('html_errors', '1', false);
 assert(1 <= B::$maxLogParamNestingLevel && B::$maxLogParamNestingLevel <= 100);
 assert(1 <= B::$maxLogElementNumber && B::$maxLogElementNumber <= 100);
 assert(1 <= B::$maxLogStringSize);
+
 ?>

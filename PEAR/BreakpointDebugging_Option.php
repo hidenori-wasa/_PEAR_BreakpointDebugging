@@ -62,8 +62,7 @@ use \BreakpointDebugging as B;
  */
 final class BreakpointDebugging extends BreakpointDebugging_InAllCase
 {
-
-    private $_onceFlag = array();
+    private $_onceFlag = array ();
 
     /**
      * This constructer create object only one time.
@@ -114,7 +113,7 @@ final class BreakpointDebugging extends BreakpointDebugging_InAllCase
 
         // In case of local.
         if ($_BreakpointDebugging_EXE_MODE & (self::LOCAL_DEBUG | self::LOCAL_DEBUG_OF_RELEASE)) {
-            $displayMbStringArray = array();
+            $displayMbStringArray = array ();
             $count = 0;
             foreach ($mbParamArray as $mbString) {
                 if (is_array($mbString)) {
@@ -186,7 +185,8 @@ final class BreakpointDebugging extends BreakpointDebugging_InAllCase
         if ($setValue !== $getValue) {
             // In case of remote.
             if ($doCheck === true && $_BreakpointDebugging_EXE_MODE & self::REMOTE_DEBUG) {
-                $backTrace = debug_backtrace(true);
+                //$backTrace = debug_backtrace(true);
+                $backTrace = debug_backtrace();
                 $baseName = basename($backTrace[0]['file']);
                 $cmpName = '_MySetting_Option.php';
                 $cmpNameLength = strlen($cmpName);
@@ -258,6 +258,7 @@ EOD;
 
     /**
      * Get property for test.
+     * But, this doesn't exist in case of release.
      *
      * @param mixed  $objectOrClassName A object or class name.
      * @param string $propertyName      Property name or constant name.
@@ -298,6 +299,80 @@ EOD;
         assert(false);
     }
 
+    /**
+     * Set property for test.
+     * But, this doesn't exist in case of release.
+     *
+     * @param mixed  $objectOrClassName A object or class name.
+     * @param string $propertyName      Property name or constant name.
+     * @param mixed  $value             A value to set.
+     *
+     * @return void
+     *
+     * @example $propertyValue = BreakpointDebugging::setPropertyForTest($object, '$_privateName', $value);
+     */
+    final static function setPropertyForTest($objectOrClassName, $propertyName, $value)
+    {
+        assert(is_object($objectOrClassName));
+        $className = get_class($objectOrClassName);
+        $classReflection = new ReflectionClass($className);
+        $propertyReflections = $classReflection->getProperties();
+        foreach ($propertyReflections as $propertyReflection) {
+            $propertyReflection->setAccessible(true);
+            $paramName = '$' . $propertyReflection->getName();
+            if ($paramName !== $propertyName) {
+                continue;
+            }
+            if ($propertyReflection->isStatic()) {
+                $propertyReflection->setValue($propertyReflection, $value);
+                return;
+            } else {
+                $propertyReflection->setValue($objectOrClassName, $value);
+                return;
+            }
+        }
+    }
+
+//    /**
+//     * Callback which is called failing in assertion.
+//     *
+//     * @return     void
+//     */
+//    static function assertionHandler()
+//    {
+//        echo '<br/>### Assertion error ###<br/>';
+//        BreakpointDebugging_makeUnitTestException();
+//    }
+
+    /**
+     * Make php unit test exception.
+     *
+     * @throws BreakpointDebugging_Error_Exception
+     */
+    static function makeUnitTestException()
+    {
+        global $_BreakpointDebugging_EXE_MODE;
+        //static $onceFlag = true;
+
+        //if ($_BreakpointDebugging_EXE_MODE & B::UNIT_TEST && $onceFlag) {
+        if ($_BreakpointDebugging_EXE_MODE & B::UNIT_TEST) {
+            //$onceFlag = false;
+            //$errorFile = '';
+            //$errorLine = '';
+            //$callStackInfo = debug_backtrace();
+            //array_pop($callStackInfo);
+            //$call = array_pop($callStackInfo);
+            //if (array_key_exists('file', $call)) {
+            //    $errorFile = $call['file'];
+            //}
+            //if (array_key_exists('line', $call)) {
+            //    $errorLine = $call['line'];
+            //}
+            //throw new BreakpointDebugging_Error_Exception($errorFile, $errorLine);
+            throw new BreakpointDebugging_Error_Exception('');
+        }
+    }
+
 }
 
 // ### Assertion setting. ###
@@ -313,9 +388,15 @@ if (assert_options(ASSERT_BAIL, 0) === false) { // In case of failing in asserti
 if (assert_options(ASSERT_QUIET_EVAL, 0) === false) { // As for assertion expression, this doesn't make error_reporting invalid.
     throw new BreakpointDebugging_Error_Exception('');
 }
+//if ($_BreakpointDebugging_EXE_MODE & B::UNIT_TEST) {
+if (assert_options(ASSERT_CALLBACK, 'BreakpointDebugging::makeUnitTestException') === false) { // Register callback which is called failing in assertion.
+    throw new BreakpointDebugging_Error_Exception('');
+}
+//}
 // ### usage ###
 //   assert(<judgment expression>);
 //   It is possible to assert that <judgment expression> is "This must be". Especially, this uses to verify a function's argument.
 //   For example: assert(3 <= $value && $value <= 5); // $value should be 3-5.
 //   Caution: Don't change the value of variable in "assert()" function because there isn't executed in case of release.
+
 ?>

@@ -238,7 +238,7 @@ final class BreakpointDebugging_Error
      */
     private function _reflectArray(&$pTmpLog, $paramName, $array, $tabNumber = 1)
     {
-        B::internalAssert(func_num_args() <= 3);
+        B::internalAssert(func_num_args() <= 4);
         B::internalAssert(is_string($paramName) || is_int($paramName));
         B::internalAssert(is_array($array));
         B::internalAssert(is_int($tabNumber));
@@ -293,7 +293,7 @@ final class BreakpointDebugging_Error
     {
         $className = get_class($object);
 
-        B::internalAssert(func_num_args() <= 3);
+        B::internalAssert(func_num_args() <= 4);
         B::internalAssert(is_string($paramName) || is_int($paramName));
         B::internalAssert(is_string($className));
         B::internalAssert(is_object($object));
@@ -378,6 +378,13 @@ final class BreakpointDebugging_Error
 
         $errorMessage = $this->_convertMbString($errorMessage);
         $prependLog = $this->_convertMbString($prependLog);
+
+        //$this->callStackInfo = debug_backtrace(true);
+        $this->callStackInfo = debug_backtrace();
+        unset($this->callStackInfo[0], $this->callStackInfo[1]);
+        // Add scope of start page file.
+        $this->callStackInfo[] = array ();
+
         // This creates error log.
         switch ($errorNumber) {
             case E_USER_DEPRECATED:
@@ -427,13 +434,14 @@ final class BreakpointDebugging_Error
                 break;
             default:
                 $errorKind = 'E_UNKNOWN';
-                BreakpointDebugging_breakpoint($errorMessage);
+                //BreakpointDebugging_breakpoint($errorMessage);
+                BreakpointDebugging_breakpoint($errorMessage, $this->callStackInfo);
                 break;
         }
-        $this->callStackInfo = debug_backtrace(true);
-        unset($this->callStackInfo[0], $this->callStackInfo[1]);
-        // Add scope of start page file.
-        $this->callStackInfo[] = array ();
+//        $this->callStackInfo = debug_backtrace(true);
+//        unset($this->callStackInfo[0], $this->callStackInfo[1]);
+//        // Add scope of start page file.
+//        $this->callStackInfo[] = array ();
         if ($this->outputErrorCallStackLog2($errorKind, $errorMessage, $prependLog)) {
             BreakpointDebugging_breakpoint($errorMessage, $this->callStackInfo);
             return true;
@@ -523,6 +531,9 @@ final class BreakpointDebugging_Error
     {
         global $_BreakpointDebugging_EXE_MODE;
 
+        if ($_BreakpointDebugging_EXE_MODE & B::UNIT_TEST) {
+            return false;
+        }
         B::internalAssert(func_num_args() <= 6);
         B::internalAssert(is_string($errorKind));
         B::internalAssert(is_string($errorMessage));
@@ -547,10 +558,9 @@ final class BreakpointDebugging_Error
             fclose($pLog);
         }
         // Lock error log file.
-        // $lockByFileExisting = new \BreakpointDebugging_LockByFileExisting($this->_phpErrorLogFilePath);
-        //$lockByFileExisting = new \BreakpointDebugging_LockByFileExisting($this->_phpErrorLogFilePath, 60, 5);
-        //$lockByFileExisting = \BreakpointDebugging_LockByFileExisting::singletonPerFile($this->_phpErrorLogFilePath, 60, 5);
-        $lockByFileExisting = \BreakpointDebugging_LockByFileExisting::singleton($this->_phpErrorLogFilePath, 60, 5);
+        //$lockByFileExisting = \BreakpointDebugging_LockByFileExisting::singleton($this->_phpErrorLogFilePath, 60, 5);
+        //$lockByFileExisting = &\BreakpointDebugging_LockByFileExisting::singleton(60, 5);
+        $lockByFileExisting = &\BreakpointDebugging_LockByFileExisting::internalSingleton();
         $lockByFileExisting->lock();
         $tmp = date('[Y-m-d H:i:s]') . PHP_EOL;
         $dummy = null;
@@ -666,7 +676,7 @@ final class BreakpointDebugging_Error
      */
     private function _searchDebugBacktraceArgsToString(&$pTmpLog, $backtraceParams, $tabNumber = 1)
     {
-        B::internalAssert(func_num_args() <= 2);
+        B::internalAssert(func_num_args() <= 3);
 
         $isFirst = true;
         $paramCount = 0;
@@ -735,7 +745,7 @@ final class BreakpointDebugging_Error
 
         global $_BreakpointDebugging_EXE_MODE;
 
-        switch ($_BreakpointDebugging_EXE_MODE) {
+        switch ($_BreakpointDebugging_EXE_MODE & ~B::UNIT_TEST) {
             case B::RELEASE:
                 $pLog = fopen($this->_phpErrorLogFilePath, 'a');
                 rewind($pTmpLog);
@@ -787,7 +797,7 @@ final class BreakpointDebugging_Error
 
         global $_BreakpointDebugging_EXE_MODE;
 
-        switch ($_BreakpointDebugging_EXE_MODE) {
+        switch ($_BreakpointDebugging_EXE_MODE & ~B::UNIT_TEST) {
             case B::RELEASE:
                 if ($pLogBuffer === null) {
                     $pLog = fopen($this->_phpErrorLogFilePath, 'a');
@@ -838,7 +848,7 @@ final class BreakpointDebugging_Error
     {
         global $_BreakpointDebugging_EXE_MODE;
 
-        switch ($_BreakpointDebugging_EXE_MODE) {
+        switch ($_BreakpointDebugging_EXE_MODE & ~B::UNIT_TEST) {
             case B::RELEASE:
                 rewind($pTmpLog2);
                 if ($pTmpLog === null) {

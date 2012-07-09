@@ -6,7 +6,7 @@
  * ### Environment which can do breakpoint debugging. ###
  * Debugger which can use breakpoint.
  * The present recommendation debugging environment is
- * "WindowsXP" + "NetBeans IDE 7.1.2" + "XAMPP 1.7.3" or
+ * "WindowsXP Professional" + "NetBeans IDE 7.1.2" + "XAMPP 1.7.3" or
  * "Ubuntu desktop" + "NetBeans IDE 7.1.2" + "XAMPP for Linux 1.7.3a".
  * Do not use version greater than "XAMPP 1.7.3" for "NetBeans IDE 7.1.2"
  * because MySQL version causes discordance.
@@ -87,6 +87,17 @@
  * with local window of debugger, and this returns it.
  * But, this doesn't exist in case of release.
  *      BreakpointDebugging::convertMbStringForDebug($params)
+ * This is ini_set() with validation except for release mode.
+ * I set with "ini_set()" because "php.ini" file and ".htaccess" file isn't sometimes possible to be set on sharing server.
+ *      BreakpointDebugging::iniSet($phpIniVariable, $setValue, $doCheck = true)
+ * This checks php.ini setting.
+ *      BreakpointDebugging::iniCheck($phpIniVariable, $cmpValue, $errorMessage)
+ * Get property for test.
+ * But, this doesn't exist in case of release.
+ *      BreakpointDebugging::getPropertyForTest($objectOrClassName, $propertyName)
+ * Set property for test.
+ * But, this doesn't exist in case of release.
+ *      BreakpointDebugging::setPropertyForTest($objectOrClassName, $propertyName, $value)
  *
  * ### Useful class index. ###
  * This class override a class without inheritance, but only public member can be inherited.
@@ -171,17 +182,24 @@ class BreakpointDebugging_Exception extends PEAR_Exception
     function __construct($message, $code = null, $previous = null)
     {
         global $_BreakpointDebugging_EXE_MODE;
-        assert(func_num_args() <= 3);
-        assert(is_string($message));
-        assert(is_int($code) || $code === null);
-        assert($previous instanceof Exception || $previous === null);
-        assert(mb_detect_encoding($message, 'utf8', true) !== false);
 
-        parent::__construct($message, $previous, $code);
-        // In case of local-debug. "BreakpointDebugging_breakpoint()" is called. Therefore we do the step execution to error place, and we can see condition of variables.
-        if ($_BreakpointDebugging_EXE_MODE & (B::LOCAL_DEBUG | B::LOCAL_DEBUG_OF_RELEASE)) { // In case of local.
-            \BreakpointDebugging_breakpoint($message);
+        B::internalAssert(func_num_args() <= 3);
+        B::internalAssert(is_string($message));
+        B::internalAssert(is_int($code) || $code === null);
+        B::internalAssert($previous instanceof Exception || $previous === null);
+        B::internalAssert(mb_detect_encoding($message, 'utf8', true) !== false);
+
+        if ($previous === null) {
+            parent::__construct($message, $code);
+        } else {
+            parent::__construct($message, $previous, $code);
         }
+//        //// In case of local-debug. "BreakpointDebugging_breakpoint()" is called. Therefore we do the step execution to error place, and we can see condition of variables.
+//        // In case of not release. "BreakpointDebugging_breakpoint()" is called. Therefore we do the step execution to error place, and we can see condition of variables.
+//        //if ($_BreakpointDebugging_EXE_MODE & (B::LOCAL_DEBUG | B::LOCAL_DEBUG_OF_RELEASE)) { // In case of local.
+//        if (!($_BreakpointDebugging_EXE_MODE & B::RELEASE)) { // In case of not release.
+//            BreakpointDebugging_breakpoint($message);
+//        }
     }
 
 }
@@ -236,6 +254,12 @@ class BreakpointDebugging_InAllCase
     const RELEASE = 8;
 
     /**
+     * @const int Tests by "phpunit". This flag is used with "LOCAL_DEBUG_OF_RELEASE" flag.
+     * @example $_BreakpointDebugging_EXE_MODE = B::LOCAL_DEBUG_OF_RELEASE | B::UNIT_TEST;
+     */
+    const UNIT_TEST = 16;
+
+    /**
      * @var string Error log path.
      *             When you use existing log, it is destroyed if it is not "UTF-8". It is necessary to be a single character sets.
      */
@@ -274,7 +298,7 @@ class BreakpointDebugging_InAllCase
     /**
      * @var array Locations to be not Fixed.
      */
-    public $notFixedLocations;
+    public $notFixedLocations = array ();
 
     /**
      * @var array Values to trace.
@@ -310,7 +334,8 @@ class BreakpointDebugging_InAllCase
 
         global $_BreakpointDebugging;
 
-        $backTrace = debug_backtrace(true);
+        //$backTrace = debug_backtrace(true);
+        $backTrace = debug_backtrace();
         // In case of scope of method or function or included file.
         if (array_key_exists(1, $backTrace)) {
             $backTrace2 = &$backTrace[1];
@@ -333,7 +358,8 @@ class BreakpointDebugging_InAllCase
     {
         global $_BreakpointDebugging;
 
-        $backTrace = debug_backtrace(true);
+        //$backTrace = debug_backtrace(true);
+        $backTrace = debug_backtrace();
         $callInfo = &$backTrace[0];
         if (array_key_exists('file', $callInfo)) {
             // The file name to call.
@@ -383,7 +409,9 @@ class BreakpointDebugging_InAllCase
     final static function outputErrorCallStackLog($errorKind, $errorMessage)
     {
         $error = new BreakpointDebugging_Error();
-        $error->callStackInfo = debug_backtrace(true);
+        //$error->callStackInfo = debug_backtrace(true);
+        $error->callStackInfo = debug_backtrace();
+        unset($error->callStackInfo[0]);
         // Add scope of start page file.
         $error->callStackInfo[] = array ();
         if ($error->outputErrorCallStackLog2($errorKind, $errorMessage)) {
@@ -513,6 +541,29 @@ class BreakpointDebugging_InAllCase
         throw new BreakpointDebugging_Error_Exception($message);
     }
 
+    /**
+     * We must call "__destructor()" of other object for debug by keeping "$_BreakpointDebugging".
+     *
+     * @return void
+     */
+    static function shutdown()
+    {
+        global $_BreakpointDebugging;
+
+        foreach ($GLOBALS as &$variable) {
+            if (is_object($variable)) {
+                // Excludes this object.
+                if ($variable === $_BreakpointDebugging) {
+                    continue;
+                }
+                if (is_callable(array ($variable, '__destruct'))) {
+                    // Destructs instance.
+                    $variable = null;
+                }
+            }
+        }
+    }
+
 }
 
 if ($_BreakpointDebugging_EXE_MODE & BreakpointDebugging_InAllCase::RELEASE) { // In case of release.
@@ -569,5 +620,6 @@ set_exception_handler('BreakpointDebugging::exceptionHandler');
 set_error_handler('BreakpointDebugging::errorHandler', -1);
 $_BreakpointDebugging = new BreakpointDebugging();
 spl_autoload_register('BreakpointDebugging::autoload', true, true);
+register_shutdown_function('BreakpointDebugging::shutdown');
 
 ?>

@@ -9,6 +9,11 @@ require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
 // therefore "use" keyword alias does not be affected by other files.
 use \BreakpointDebugging as B;
 
+require_once './PEAR/BreakpointDebugging/tests/PEAR/BreakpointDebugging/LockByFlockMultiprocessTest/Initialization.php';
+require_once './PEAR/BreakpointDebugging/tests/PEAR/BreakpointDebugging/LockByFlockMultiprocessTest/Test.php';
+exit;
+
+
 require_once './PEAR/BreakpointDebugging/tests/PEAR/BreakpointDebugging/LockByFileExistingMultiprocessTest/Initialization.php';
 require_once './PEAR/BreakpointDebugging/tests/PEAR/BreakpointDebugging/LockByFileExistingMultiprocessTest/Test.php';
 exit;
