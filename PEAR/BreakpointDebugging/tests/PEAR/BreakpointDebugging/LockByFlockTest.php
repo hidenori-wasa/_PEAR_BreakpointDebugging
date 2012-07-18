@@ -13,17 +13,17 @@ class LockByFlockTest extends PHPUnit_Framework_TestCase
     {
         // Constructs instance.
         $this->lockByFlock = &\BreakpointDebugging_LockByFlock::singleton(5, 10);
-//        // Deletes locking flag file.
-//        $path = B::getPropertyForTest($this->lockByFlock, '$lockFilePath');
-//        if (is_file($path)) {
-//            unlink($path);
-//        }
     }
 
     protected function tearDown()
     {
-        // Destructs instance.
-        $this->lockByFlock = null;
+        // When we execute unit test, we must catch exception of "__destruct()" because exception is thrown.
+        try {
+            // Destructs instance.
+            $this->lockByFlock = null;
+        } catch (\BreakpointDebugging_Error_Exception $exception) {
+            return;
+        }
     }
 
     function testLockByFlock1()
@@ -154,6 +154,7 @@ class LockByFlockTest extends PHPUnit_Framework_TestCase
         }
         $this->assertTrue(false);
     }
+
 }
 
 ?>

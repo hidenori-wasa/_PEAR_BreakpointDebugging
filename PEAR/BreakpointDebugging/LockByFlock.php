@@ -69,8 +69,6 @@ final class BreakpointDebugging_LockByFlock extends \BreakpointDebugging_Lock
     static function &singleton($timeout = 60, $sleepMicroSeconds = 100000)
     {
         return parent::singletonBase('\\' . __CLASS__, B::$workDir . '/LockByFlock.txt', $timeout, 0, $sleepMicroSeconds);
-        //$object = &parent::singletonBase('\\' . __CLASS__, B::$workDir . '/LockByFlock.txt', $timeout, 0, $sleepMicroSeconds);
-        //return $object;
     }
 
     /**
@@ -87,14 +85,9 @@ final class BreakpointDebugging_LockByFlock extends \BreakpointDebugging_Lock
 
         $this->pFile = fopen($lockFilePath, 'a+b');
         chmod($lockFilePath, 0600);
-        B::internalAssert(stream_supports_lock($this->pFile));
+        assert(stream_supports_lock($this->pFile));
     }
 
-//    function __destruct()
-//    {
-//        fclose($this->pFile);
-//        parent::__destruct();
-//    }
     /**
      * Locking loop.
      *

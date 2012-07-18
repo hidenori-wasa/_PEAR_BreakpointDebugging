@@ -3,6 +3,9 @@
 /**
  * Class which locks php-code by shared memory operation.
  *
+ * This class requires "shmop" extension.
+ * We can synchronize applications by setting the same directory to "B::$workDir" of "BreakpointDebugging_MySetting.php".
+ *
  * This class is same as BreakpointDebugging_LockByFileExisting.
  * However, hard disk is not accessed when "lock()" and "unlock()" is called.
  * Shared memory size is "self::MEMORY_BLOCK_SIZE".
@@ -83,7 +86,6 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
     /**
      * @var object The object for lock.
      */
-    //private $_lockingObject;
     private static $_lockingObject;
 
     /**
@@ -94,13 +96,11 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
     /**
      * @var int Shared memory ID.
      */
-    //private $_sharedMemoryID;
     private static $_sharedMemoryID;
 
     /**
      * @var int This process number.
      */
-    //private $_processNumber;
     private static $_processNumber;
 
     /**
@@ -129,24 +129,16 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
      */
     static function &singleton($timeout = 60, $expire = 300, $sleepMicroSeconds = 100000)
     {
+//        if (!extension_loaded('shmop')) {
+//            $this->_throwException('"Shmop" extension has been not loaded.');
+//        }
+        assert(extension_loaded('shmop'));
         return parent::singletonBase('\\' . __CLASS__, B::$workDir . '/LockByShmop.txt', $timeout, $expire, $sleepMicroSeconds);
-        //$object = &parent::singletonBase('\\' . __CLASS__, B::$workDir . '/LockByShmop.txt', $timeout, $expire, $sleepMicroSeconds);
-        //return $object;
     }
 
-//    /**
-//     * Prevents duplicating an instance.
-//     *
-//     * @return void
-//     */
-//    function __clone()
-//    {
-//        $this->_throwErrorException('Clone is not allowed.');
-//    }
     /**
      * Construct the lock system.
      *
-     * @//param string $fullLockFilePath   Full lock flag file path.
      * @param string $lockFilePath       Lock-flag-file path.
      * @param int    $timeout            The timeout.
      * @param int    $sharedMemoryExpire The number of seconds which shared memory expires.
@@ -156,7 +148,6 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
     {
         parent::__construct($lockFilePath, $timeout, $sleepMicroSeconds);
 
-        //self::$_lockingObject = &BreakpointDebugging_LockByFileExisting::singleton();
         self::$_lockingObject = &BreakpointDebugging_LockByFileExisting::internalSingleton();
         // Lock php code.
         self::$_lockingObject->lock();

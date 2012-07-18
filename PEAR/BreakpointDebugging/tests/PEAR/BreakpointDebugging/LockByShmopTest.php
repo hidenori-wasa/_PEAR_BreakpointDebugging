@@ -22,8 +22,13 @@ class LockByShmopTest extends PHPUnit_Framework_TestCase
 
     protected function tearDown()
     {
-        // Destructs instance.
-        $this->LockByShmop = null;
+        // When we execute unit test, we must catch exception of "__destruct()" because exception is thrown.
+        try {
+            // Destructs instance.
+            $this->LockByShmop = null;
+        } catch (\BreakpointDebugging_Error_Exception $exception) {
+            return;
+        }
     }
 
     function testLockByShmop1()

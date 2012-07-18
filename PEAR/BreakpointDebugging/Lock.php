@@ -3,6 +3,11 @@
 /**
  * The abstract base class which lock php-code.
  *
+ * A synchronous object must be singleton because dead-lock occurs.
+ * And, if you use derived class of this class, don't do other synchronous-process ( flock() and so on ) because dead-lock occurs.
+ * Example:Process A locks file A, and process B locks file B.
+ *         Then, process A is waiting for file B, and process B is waiting for file A.
+ *
  * PHP version 5.3
  *
  * LICENSE OVERVIEW:
@@ -93,9 +98,7 @@ abstract class BreakpointDebugging_Lock
     protected $sleepMicroSeconds;
 
     /**
-     * A synchronous object must be singleton because dead-lock occurs.
-     * Example:Process A locks file A, and process B locks file B.
-     *         Then, process A is waiting for file B, and process B is waiting for file A.
+     * Base of all synchronous singleton method.
      *
      * @param string $className          Object class name.
      * @param string $lockFilePath       The file path which wants the lock.
@@ -138,7 +141,7 @@ abstract class BreakpointDebugging_Lock
     }
 
     /**
-     * Construct the lock system.
+     * Constructs the lock system.
      *
      * @param string $lockFilePath      Lock-flag-file path.
      * @param int    $timeout           Seconds number of timeout.
@@ -155,6 +158,9 @@ abstract class BreakpointDebugging_Lock
         $this->pFile = null;
     }
 
+    /**
+     * Destructs the lock system.
+     */
     function __destruct()
     {
         if (is_resource($this->pFile)) {
@@ -163,20 +169,7 @@ abstract class BreakpointDebugging_Lock
         if (B::$onceErrorDispFlag) {
             return;
         }
-        $this->_checkLockCount();
-    }
-
-    /**
-     * Check lock count.
-     */
-    private function _checkLockCount()
-    {
-        if ($this->_lockCount !== 0) {
-            $tmp = $this->_lockCount;
-            $this->_lockCount = 0;
-            B::internalAssert(false);
-            $this->_lockCount = $tmp;
-        }
+        B::internalAssert($this->_lockCount === 0);
     }
 
     /**
@@ -204,7 +197,7 @@ abstract class BreakpointDebugging_Lock
         $this->lockingLoop();
         set_error_handler('BreakpointDebugging::errorHandler', -1);
 
-        $this->_checkLockCount();
+        B::internalAssert($this->_lockCount === 0);
         $this->_lockCount++;
     }
 
@@ -227,7 +220,7 @@ abstract class BreakpointDebugging_Lock
             return;
         }
         $this->_lockCount--;
-        $this->_checkLockCount();
+        B::internalAssert($this->_lockCount === 0);
 
         restore_error_handler();
         $this->unlockingLoop();

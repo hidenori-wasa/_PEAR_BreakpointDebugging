@@ -53,7 +53,7 @@ use \BreakpointDebugging as B;
 
 /**
  * This is function to set breakpoint. You must define this function outside namespace, and you must not change function name.
- * If you don't have breakpoint, you can debug to set '$_BreakpointDebugging_EXE_MODE = B::REMOTE_DEBUG;'.
+ * If you don't have breakpoint environment, you can debug by setting '$_BreakpointDebugging_EXE_MODE = B::REMOTE_DEBUG;'.
  *
  * @param string $message        Message.
  * @param array  &$callStackInfo A call stack info.
@@ -63,30 +63,11 @@ use \BreakpointDebugging as B;
 function BreakpointDebugging_breakpoint($message, &$callStackInfo)
 {
     global $_BreakpointDebugging_EXE_MODE;
-    //static $onceFlag = true;
-    //$errorFile = '';
-    //$errorLine = '';
 
-    assert(func_num_args() <= 2);
-    assert(is_string($message));
-    assert(is_array($callStackInfo));
+    B::internalAssert(func_num_args() <= 2);
+    B::internalAssert(is_string($message));
+    B::internalAssert(is_array($callStackInfo));
 
-//    if ($_BreakpointDebugging_EXE_MODE & B::UNIT_TEST && $onceFlag) {
-//        $onceFlag = false;
-//        //$callStack = debug_backtrace();
-//        array_reverse($callStackInfo);
-//        reset($callStackInfo);
-//        $call = each($callStackInfo);
-//        $call = $call['value'];
-//        if (array_key_exists('file', $call)) {
-//            $errorFile = $call['file'];
-//        }
-//        if (array_key_exists('line', $call)) {
-//            $errorLine = $call['line'];
-//        }
-//        restore_exception_handler();
-//        throw new BreakpointDebugging_Error_Exception($errorFile, $errorLine);
-//    }
     B::makeUnitTestException();
 
     reset($callStackInfo);
@@ -99,51 +80,90 @@ function BreakpointDebugging_breakpoint($message, &$callStackInfo)
         $errorLine = $call['line'];
     }
 
-    echo ''; // Please, set here breakpoint.
+    $return = xdebug_break(); // Breakpoint. See local variable value by doing step execution here.
+    B::internalAssert($return);
 
     if ($_BreakpointDebugging_EXE_MODE & B::REMOTE_DEBUG) {
         exit(-1); // This exits immediately to avoid not ending.
     }
 }
 
-// ### Item setting. ===>
+// ### Item-setting for debugging. ===>
+$xdebugManualUrl = 'http://www.php.net/manual/ja/';
+$xdebugVarDisplayMaxChildren = '50';
+$xdebugVarDisplayMaxData = '3000';
+$xdebugVarDisplayMaxDepth = '20';
+// xdebug.dump.*    * = COOKIE, FILES, GET, POST, REQUEST, SERVER, SESSION.
+//      Shows the specified superglobal value. Example is shown below.
+//      B::iniSet('xdebug.dump.SERVER', 'REMOTE_ADDR,REQUEST_METHOD');
+// ### <=== Item-setting for debugging.
+//
+// PHP It limits directory which opens a file.
+B::iniSet('open_basedir', $openBasedir);
 // "B::RELEASE" is needed to copy.
 if ($_BreakpointDebugging_EXE_MODE & (B::REMOTE_DEBUG | B::RELEASE)) { // In case of remote.
-    //B::iniSet('open_basedir', 'C:\xampp\;.\\');
     // Windows e-mail sending server setting.
-    B::iniSet('SMTP', 'smtp.example.com'); // 'smtp.???.com'
+    B::iniSet('SMTP', $SMTP); // 'smtp.???.com'
     // Windows mail address setting.
-    B::iniSet('sendmail_from', '?@example.com'); // '???@???.com'
+    B::iniSet('sendmail_from', $sendmailFrom); // '???@???.com'
     // ### [XDebug] setting in "php.ini" file. ###
-    B::iniCheck('xdebug.remote_host', array ('127.0.0.1', 'localhost'), 'Set "xdebug.remote_host = "&lt;Remote host name or ip seeing from server&gt;"" of "php.ini" file because this is needed to do breakpoint debugging.');
+    B::iniCheck('xdebug.remote_host', array ('127.0.0.1', 'localhost'), 'Sets the \'xdebug.remote_host = "&lt;Remote IDE host of server&gt;"\' of "php.ini file", in other words remote IDE host of server is "&lt;Your host name or IP&gt;".');
 } else { // In case of local.
-    //B::iniSet('open_basedir', 'C:\xampp\;.\\');
-    //B::iniSet('open_basedir', '/opt/lampp/:./');
-    B::iniSet('SMTP', 'smtp.example.com');
-    B::iniSet('sendmail_from', '?@example.com');
+    B::iniSet('SMTP', $SMTP);
+    B::iniSet('sendmail_from', $sendmailFrom);
     // ### [XDebug] setting in "php.ini" file. ###
-    B::iniCheck('xdebug.remote_host', '127.0.0.1', 'Set "xdebug.remote_host = "127.0.0.1"" of "php.ini" file because this is needed to do breakpoint debugging.');
-}
-// PHP It limits directory which opens a file.
-if (substr(PHP_OS, 0, 3) === 'WIN') { // In case of Windows.
-    B::iniSet('open_basedir', 'C:\xampp\;.\\');
-} else if (PHP_OS === 'Linux') { // In case of Linux.
-    B::iniSet('open_basedir', '/opt/lampp/:./');
-} else { // In case of other.
-    assert(false);
+    B::iniCheck('xdebug.remote_host', '127.0.0.1', 'Set \'xdebug.remote_host = "127.0.0.1"\' of "php.ini" file because remote IDE host of server is "127.0.0.1".');
 }
 // ### [XDebug] setting in "php.ini" file. ###
-B::iniCheck('xdebug.remote_handler', 'dbgp', 'Set "xdebug.remote_handler = "dbgp"" of "php.ini" file because this is needed to do breakpoint debugging.');
-B::iniCheck('xdebug.remote_port', '9000', 'Set "xdebug.remote_port = 9000" of "php.ini" file because this is needed to do breakpoint debugging.');
+// First is DBGP_IDEKEY, and next is USER, and last is USERNAME.
+// B::iniSet('xdebug.idekey', ?????);
+// Manual base url for links from function traces or error messages.
+B::iniSet('xdebug.manual_url', $xdebugManualUrl, false);
+// Limits the number of object properties or array elements for display of var_dump(), local variables or Function Traces.
+B::iniSet('xdebug.var_display_max_children', $xdebugVarDisplayMaxChildren, false);
+// Limits character string type byte-count for display of var_dump(), local variables or Function Traces.
+B::iniSet('xdebug.var_display_max_data', $xdebugVarDisplayMaxData, false);
+// Controls how many nested levels of array elements and object properties.
+// Display by var_dump(), local variables or Function Traces.
+B::iniSet('xdebug.var_display_max_depth', $xdebugVarDisplayMaxDepth, false);
+// Shows function call parameters name and value.
+B::iniSet('xdebug.collect_params', '4', false);
+// Does not gather local variables information for "xdebug_get_declared_vars()".
+B::iniSet('xdebug.collect_vars', '0', false);
+// Shows stack-traces.
+B::iniSet('xdebug.default_enable', '1', false);
+// Shows values of superglobals defined by "xdebug.dump.*".
+B::iniSet('xdebug.dump_globals', '1', false);
+// Dumps superglobals on first error situation.
+B::iniSet('xdebug.dump_once', '1', false);
+// Does not dump undefined values from superglobals.
+B::iniSet('xdebug.dump_undefined', '0', false);
+// Necessary for remote breakpoint debugging execution.
+B::iniSet('xdebug.extended_info', '1', false);
+// Max nesting level of function call.
+B::iniSet('xdebug.max_nesting_level', '100', false);
+// Overloads var_dump() with its own improved version for displaying variables.
+B::iniSet('xdebug.overload_var_dump', '1', false);
+// Connects automatically. Therefore, does not use because other human can debug.
+B::iniSet('xdebug.remote_autostart', '0', false);
+// Ignores "xdebug.remote_host", then connects by sending client IP. Therefore, does not use because other human can debug.
+B::iniSet('xdebug.remote_connect_back', '0', false);
+// Deadline of remote debug by session cookie.
+B::iniSet('xdebug.remote_cookie_expire_time', '3600', false);
 B::iniCheck('xdebug.remote_enable', '1', 'Set "xdebug.remote_enable = 1" of "php.ini" file because this is needed to do breakpoint debugging.');
-// ### <=== Item setting.
+B::iniCheck('xdebug.remote_handler', 'dbgp', 'Set \'xdebug.remote_handler = "dbgp"\' of "php.ini" file because this is needed to do remote debugging.');
+// Connects when remote debug begins.
+B::iniSet('xdebug.remote_mode', 'req', false);
+B::iniCheck('xdebug.remote_port', '9000', 'Set "xdebug.remote_port = 9000" of "php.ini" file. This is "NetBeans IDE" port number of own terminal. Also, we use default value because it is the default of "NetBeans IDE".');
+// Enables '@' operator.
+B::iniSet('xdebug.scream', '0', false);
+// Shows local variables.
+B::iniSet('xdebug.show_local_vars', '1', false);
 ////////////////////////////////////////////////////////////////////////////////
-// On local.
 if ($_BreakpointDebugging_EXE_MODE & B::LOCAL_DEBUG) {
     // "mbstring.func_overload" do coding with 0 for plainness, but release environment is any possibly.
     B::iniCheck('mbstring.func_overload', '0', 'To make coding plain must be set "mbstring.func_overload = 0" of "php.ini" file.');
 }
-
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // ### [mbstring] setting in "php.ini" file. ###
 // The default character sets of PHP.
@@ -202,7 +222,6 @@ B::iniSet('memory_limit', '128M');
 // This changes "php.ini" file setting into "implicit_flush = Off" because it is purpose to prevent a remarkable degradation.
 B::iniSet('implicit_flush', '');
 B::iniCheck('scream.enabled', '', 'This should change "php.ini" file setting into "scream.enabled = false" because it does not make "@" error display control operator invalid.');
-//B::iniCheck('post_max_size', '128M', 'We recommends to set "post_max_size = 128M" of "php.ini" file because maximum size which is permitted to a POST data is different from the default.');
 if (substr(PHP_OS, 0, 3) === 'WIN') { // In case of Windows.
     B::iniCheck('post_max_size', '128M', 'We recommend to set "post_max_size = 128M" of "php.ini" file because maximum size which is permitted to a POST data is different from the default.');
     B::iniCheck('upload_max_filesize', '128M', 'We recommend to set "upload_max_filesize = 128M" of "php.ini" file because it is "XAMPP" value.');
@@ -215,7 +234,6 @@ if (substr(PHP_OS, 0, 3) === 'WIN') { // In case of Windows.
 // The SMTP port setting of Windows.
 B::iniSet('smtp_port', '25');
 B::iniCheck('mail.add_x_header', '', 'We recommend to set "mail.add_x_header = Off" of "php.ini" file because does not write that header continue "UID" behind the file name.');
-//B::iniCheck('upload_max_filesize', '128M', 'We recommend to set "upload_max_filesize = 128M" of "php.ini" file because it is "XAMPP" value.');
 ////////////////////////////////////////////////////////////////////////////////
 // ### This uses "false" because this setting doesn't have relation with release. ###
 // This makes all errors, warnings and note a stop at breakpoint or a display.

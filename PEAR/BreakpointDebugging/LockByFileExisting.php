@@ -70,8 +70,6 @@ final class BreakpointDebugging_LockByFileExisting extends \BreakpointDebugging_
     static function &singleton($timeout = 60, $expire = 300, $sleepMicroSeconds = 100000)
     {
         return parent::singletonBase('\\' . __CLASS__, B::$workDir . '/LockByFileExisting.txt', $timeout, $expire, $sleepMicroSeconds);
-        //$object = &parent::singletonBase('\\' . __CLASS__, B::$workDir . '/LockByFileExisting.txt', $timeout, $expire, $sleepMicroSeconds);
-        //return $object;
     }
 
     /**
@@ -81,15 +79,12 @@ final class BreakpointDebugging_LockByFileExisting extends \BreakpointDebugging_
      */
     static function &internalSingleton()
     {
-        //$object = &parent::singletonBase('\\' . __CLASS__, B::$workDir . '/LockByFileExisting.txt', 60, 300, 100000, false);
-        //return $object;
         return parent::singletonBase('\\' . __CLASS__, B::$workDir . '/LockByFileExisting.txt', 60, 300, 100000, true);
     }
 
     /**
      * Construct the lock system.
      *
-     * @//param string $fullLockFilePath  Full lock flag file path.
      * @param string $lockFilePath      Lock-flag-file path.
      * @param int    $timeout           Seconds number of timeout.
      * @param int    $flagFileExpire    Seconds number which flag-file expires.

@@ -31,18 +31,19 @@
  *      "<name or ip of host which debugger exists>"" into "php.ini" file.
  * Procedure 3: Please, set *.php file format to utf8, but we should create backup of
  *      php files because multibyte strings may be destroyed.
- * Procedure 4: Please, copy *_MySetting*.php as your project php file.
- * Procedure 5: Please, edit *_MySetting*.php for customize.
+ * Procedure 4: Please, copy BreakpointDebugging_MySetting*.php to "./PEAR_Setting/"
+ *      of your project directory.
+ * Procedure 5: Please, edit BreakpointDebugging_MySetting*.php for customize.
  *      Then, it fixes part setting about all debugging modes.
  * Procedure 6: Please, copy following in your project php file.
  *      "require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';"
  * Procedure 7: Please, Throw a exception inside of "<YourClass>::throwException()"
  *      because this needs for call stack.
- * Procedure 8: Please, set a breakpoint into BreakpointDebugging_breakpoint() of
- *      "./PEAR_Setting/BreakpointDebugging_MySetting_Option.php".
- * Procedure 9: Please, set debugging mode to $_BreakpointDebugging_EXE_MODE.
- * Procedure 10: Do not execute "ini_set('error_log')"
- *      because this package cannot use system log.
+ * Procedure 8: Please, set debugging mode to "$_BreakpointDebugging_EXE_MODE" inside
+ *      "./PEAR_Setting/BreakpointDebugging_MySetting.php".
+ *
+ * Caution: Do not execute "ini_set('error_log')"
+ *      because this package uses local log instead of system log.
  *
  * Option procedure: Please, register at top of the function or method or file
  *      which has been not fixed. Please, copy following.
@@ -64,6 +65,7 @@
  * Last "RELEASE" mode is log debugging with remote personal computer,
  *      and we must set on last for security.
  *      On release
+ * "UNIT_TEST" mode tests by "phpunit".
  *
  *  ### Exception hierarchical structure ###
  *  PEAR_Exception
@@ -106,6 +108,8 @@
  *      class BreakpointDebugging_LockByFileExisting
  * Class which locks php-code by shared memory operation.
  *      class BreakpointDebugging_LockByShmop
+ * Class which locks php-code by "flock()".
+ *      class BreakpointDebugging_LockByFlock
  *
  * PHP version 5.3
  *
@@ -194,12 +198,6 @@ class BreakpointDebugging_Exception extends PEAR_Exception
         } else {
             parent::__construct($message, $previous, $code);
         }
-//        //// In case of local-debug. "BreakpointDebugging_breakpoint()" is called. Therefore we do the step execution to error place, and we can see condition of variables.
-//        // In case of not release. "BreakpointDebugging_breakpoint()" is called. Therefore we do the step execution to error place, and we can see condition of variables.
-//        //if ($_BreakpointDebugging_EXE_MODE & (B::LOCAL_DEBUG | B::LOCAL_DEBUG_OF_RELEASE)) { // In case of local.
-//        if (!($_BreakpointDebugging_EXE_MODE & B::RELEASE)) { // In case of not release.
-//            BreakpointDebugging_breakpoint($message);
-//        }
     }
 
 }
@@ -254,16 +252,10 @@ class BreakpointDebugging_InAllCase
     const RELEASE = 8;
 
     /**
-     * @const int Tests by "phpunit". This flag is used with "LOCAL_DEBUG_OF_RELEASE" flag.
-     * @example $_BreakpointDebugging_EXE_MODE = B::LOCAL_DEBUG_OF_RELEASE | B::UNIT_TEST;
+     * @const int Tests by "phpunit". This flag is used with "LOCAL_DEBUG" flag.
+     * @example $_BreakpointDebugging_EXE_MODE = B::LOCAL_DEBUG | B::UNIT_TEST;
      */
     const UNIT_TEST = 16;
-
-    /**
-     * @var string Error log path.
-     *             When you use existing log, it is destroyed if it is not "UTF-8". It is necessary to be a single character sets.
-     */
-    static $phpErrorLogFilePath;
 
     /**
      * @var string This prepend to logging when self::exceptionHandler() is called.
@@ -305,11 +297,6 @@ class BreakpointDebugging_InAllCase
      */
     public $valuesToTrace = array ();
 
-//    /**
-//     * @var array "BreakpointDebugging_LockByFileExisting" class-objects.
-//     */
-//    public $lockByFileExistingObjects = array();
-
     /**
      * @var bool Once error display flag.
      */
@@ -334,7 +321,6 @@ class BreakpointDebugging_InAllCase
 
         global $_BreakpointDebugging;
 
-        //$backTrace = debug_backtrace(true);
         $backTrace = debug_backtrace();
         // In case of scope of method or function or included file.
         if (array_key_exists(1, $backTrace)) {
@@ -358,7 +344,6 @@ class BreakpointDebugging_InAllCase
     {
         global $_BreakpointDebugging;
 
-        //$backTrace = debug_backtrace(true);
         $backTrace = debug_backtrace();
         $callInfo = &$backTrace[0];
         if (array_key_exists('file', $callInfo)) {
@@ -409,7 +394,6 @@ class BreakpointDebugging_InAllCase
     final static function outputErrorCallStackLog($errorKind, $errorMessage)
     {
         $error = new BreakpointDebugging_Error();
-        //$error->callStackInfo = debug_backtrace(true);
         $error->callStackInfo = debug_backtrace();
         unset($error->callStackInfo[0]);
         // Add scope of start page file.
@@ -495,7 +479,6 @@ class BreakpointDebugging_InAllCase
                     if (array_key_exists('class', $call) && $call['class'] === 'BreakpointDebugging_Error') {
                         self::$onceErrorDispFlag = true;
                         if ($_BreakpointDebugging_EXE_MODE & self::REMOTE_DEBUG) { // In case of remote debug.
-                            //var_dump($callStack);
                             var_dump(array_reverse($callStack));
                             echo '//////////////////////////////// CALL STACK END ////////////////////////////////' . PHP_EOL . PHP_EOL;
                             exit(-1);
@@ -529,7 +512,6 @@ class BreakpointDebugging_InAllCase
                 if ($_BreakpointDebugging_EXE_MODE & self::RELEASE) { // In case of release.
                     exit(-1);
                 } else if ($_BreakpointDebugging_EXE_MODE & self::REMOTE_DEBUG) { // In case of remote debug.
-                    //var_dump(debug_backtrace());
                     var_dump(array_reverse($callStack));
                     echo '//////////////////////////////// CALL STACK END ////////////////////////////////' . PHP_EOL . PHP_EOL;
                     exit(-1);

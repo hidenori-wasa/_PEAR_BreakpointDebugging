@@ -165,13 +165,7 @@ final class BreakpointDebugging_Error
             return $string;
         } else if ($charSet === false) {
             $message = 'This isn\'t single character sets.';
-            if ($onceFlag) {
-                $onceFlag = false;
-                if ($this->outputErrorCallStackLog2('E_USER_ERROR', $message)) {
-                    BreakpointDebugging_breakpoint($message, $this->callStackInfo);
-                }
-                exit(-1);
-            }
+            B::internalException($message);
             return "### ERROR: {$message} ###";
         }
         return mb_convert_encoding($string, 'UTF-8', $charSet);
@@ -379,7 +373,6 @@ final class BreakpointDebugging_Error
         $errorMessage = $this->_convertMbString($errorMessage);
         $prependLog = $this->_convertMbString($prependLog);
 
-        //$this->callStackInfo = debug_backtrace(true);
         $this->callStackInfo = debug_backtrace();
         unset($this->callStackInfo[0], $this->callStackInfo[1]);
         // Add scope of start page file.
@@ -434,14 +427,9 @@ final class BreakpointDebugging_Error
                 break;
             default:
                 $errorKind = 'E_UNKNOWN';
-                //BreakpointDebugging_breakpoint($errorMessage);
                 BreakpointDebugging_breakpoint($errorMessage, $this->callStackInfo);
                 break;
         }
-//        $this->callStackInfo = debug_backtrace(true);
-//        unset($this->callStackInfo[0], $this->callStackInfo[1]);
-//        // Add scope of start page file.
-//        $this->callStackInfo[] = array ();
         if ($this->outputErrorCallStackLog2($errorKind, $errorMessage, $prependLog)) {
             BreakpointDebugging_breakpoint($errorMessage, $this->callStackInfo);
             return true;
@@ -548,8 +536,8 @@ final class BreakpointDebugging_Error
         // Also, we are possible to skip "E_NOTICE" which is generated while debugging execution is stopping.
         // Moreover, those "E_NOTICE" doesn't stop at breakpoint.
         if ($errorKind === 'E_NOTICE') {
-            //return;
-            return false;
+            //return false;
+            return true;
         }
         if (!is_file($this->_phpErrorLogFilePath)) {
             // Make error log file.
@@ -558,8 +546,6 @@ final class BreakpointDebugging_Error
             fclose($pLog);
         }
         // Lock error log file.
-        //$lockByFileExisting = \BreakpointDebugging_LockByFileExisting::singleton($this->_phpErrorLogFilePath, 60, 5);
-        //$lockByFileExisting = &\BreakpointDebugging_LockByFileExisting::singleton(60, 5);
         $lockByFileExisting = &\BreakpointDebugging_LockByFileExisting::internalSingleton();
         $lockByFileExisting->lock();
         $tmp = date('[Y-m-d H:i:s]') . PHP_EOL;
