@@ -53,8 +53,8 @@ use \BreakpointDebugging as B;
 if (substr(PHP_OS, 0, 3) === 'WIN') { // In case of Windows.
     ini_set('include_path', '.;./PEAR;C:\xampp\php\PEAR'); // In case of local.
 } else if (PHP_OS === 'Linux') { // In case of Linux.
-    ini_set('include_path', '.:./PEAR:/opt/lampp/lib/php/PEAR'); // In case of local.
-// ini_set('include_path', '.:/opt/lampp/lib/php/PEAR'); // In case of remote.
+    ini_set('include_path', '.:./PEAR:/opt/lampp/lib/php:/opt/lampp/lib/php/PEAR'); // In case of local.
+// ini_set('include_path', '.:/opt/lampp/lib/php:/opt/lampp/lib/php/PEAR'); // In case of remote.
 } else { // In case of other.
     assert(false);
 }
@@ -66,15 +66,16 @@ require_once 'BreakpointDebugging.php'; // 'BreakpointDebugging.php' must requir
  *       B::LOCAL_DEBUG
  *       B::LOCAL_DEBUG_OF_RELEASE
  *       B::REMOTE_DEBUG
- *       B::RELEASE                               // We must execute "REMOTE_DEBUG" before this.
- *       B::LOCAL_DEBUG | B::UNIT_TEST            // Tests by "phpunit".
- *       B::LOCAL_DEBUG_OF_RELEASE | B::UNIT_TEST // Same as "B::LOCAL_DEBUG | B::UNIT_TEST".
+ *       B::RELEASE                     // We must execute "REMOTE_DEBUG" before this.
+ *       B::LOCAL_DEBUG | B::UNIT_TEST  // Tests by "phpunit" on local.
+ *       B::REMOTE_DEBUG | B::UNIT_TEST // Tests by "phpunit" on remote.
  */
 $_BreakpointDebugging_EXE_MODE = B::LOCAL_DEBUG;
 // $_BreakpointDebugging_EXE_MODE = B::LOCAL_DEBUG_OF_RELEASE;
 // $_BreakpointDebugging_EXE_MODE = B::REMOTE_DEBUG;
 // $_BreakpointDebugging_EXE_MODE = B::RELEASE;
 // $_BreakpointDebugging_EXE_MODE = B::LOCAL_DEBUG | B::UNIT_TEST;
+// $_BreakpointDebugging_EXE_MODE = B::REMOTE_DEBUG | B::UNIT_TEST;
 // ### <=== Execution mode setting.
 /**
  *
@@ -111,7 +112,9 @@ function BreakpointDebugging_mySetting()
     // Warning: When you use existing log, it is destroyed if it is not "UTF-8". It is necessary to be a single character sets.
     B::$workDir = './Work';
     if (!is_dir(B::$workDir)) {
-        mkdir(B::$workDir, 0700);
+        mkdir(B::$workDir);
+        // Changes permission without umask.
+        chmod(B::$workDir, 0700);
     }
     B::$workDir = realpath(B::$workDir);
     assert(B::$workDir !== false);

@@ -5,6 +5,8 @@ require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
 
 use \BreakpointDebugging as B;
 
+B::checkUnitTestExeMode();
+
 class LockByFileExistingTest extends PHPUnit_Framework_TestCase
 {
     protected $lockByFileExisting;
@@ -196,6 +198,7 @@ class LockByFileExistingTest extends PHPUnit_Framework_TestCase
         }
         $this->assertTrue(false);
     }
+
 }
 
 ?>

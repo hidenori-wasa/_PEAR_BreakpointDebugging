@@ -5,6 +5,8 @@ require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
 
 use \BreakpointDebugging as B;
 
+B::checkUnitTestExeMode();
+
 class LockByShmopTest extends PHPUnit_Framework_TestCase
 {
     protected $LockByShmop;

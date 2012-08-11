@@ -68,8 +68,6 @@ function BreakpointDebugging_breakpoint($message, &$callStackInfo)
     B::internalAssert(is_string($message));
     B::internalAssert(is_array($callStackInfo));
 
-    B::makeUnitTestException();
-
     reset($callStackInfo);
     $call = each($callStackInfo);
     $call = $call['value'];
@@ -84,15 +82,17 @@ function BreakpointDebugging_breakpoint($message, &$callStackInfo)
     B::internalAssert($return);
 
     if ($_BreakpointDebugging_EXE_MODE & B::REMOTE_DEBUG) {
-        exit(-1); // This exits immediately to avoid not ending.
+//        exit(-1); // This exits immediately to avoid not ending.
+        // If error object is locking, this unlocks, and this exits.
+        B::$error->lockByFileExisting->unlockAllAndExit();
     }
 }
 
 // ### Item-setting for debugging. ===>
-$xdebugManualUrl = 'http://www.php.net/manual/ja/';
+// $xdebugManualUrl = 'http://www.php.net/manual/ja/';
 $xdebugVarDisplayMaxChildren = '50';
 $xdebugVarDisplayMaxData = '3000';
-$xdebugVarDisplayMaxDepth = '20';
+$xdebugVarDisplayMaxDepth = '3';
 // xdebug.dump.*    * = COOKIE, FILES, GET, POST, REQUEST, SERVER, SESSION.
 //      Shows the specified superglobal value. Example is shown below.
 //      B::iniSet('xdebug.dump.SERVER', 'REMOTE_ADDR,REQUEST_METHOD');
@@ -117,8 +117,8 @@ if ($_BreakpointDebugging_EXE_MODE & (B::REMOTE_DEBUG | B::RELEASE)) { // In cas
 // ### [XDebug] setting in "php.ini" file. ###
 // First is DBGP_IDEKEY, and next is USER, and last is USERNAME.
 // B::iniSet('xdebug.idekey', ?????);
-// Manual base url for links from function traces or error messages.
-B::iniSet('xdebug.manual_url', $xdebugManualUrl, false);
+//// Manual base url for links from function traces or error messages.
+// B::iniSet('xdebug.manual_url', $xdebugManualUrl, false);
 // Limits the number of object properties or array elements for display of var_dump(), local variables or Function Traces.
 B::iniSet('xdebug.var_display_max_children', $xdebugVarDisplayMaxChildren, false);
 // Limits character string type byte-count for display of var_dump(), local variables or Function Traces.

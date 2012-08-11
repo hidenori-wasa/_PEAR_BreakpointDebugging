@@ -1,8 +1,9 @@
 <?php
 
 /**
- * There is this file to increase speed when does not do error or exception handling.
+ * This class does error or exception handling.
  *
+ * There is this file to increase speed when does not do error or exception handling.
  * In other words, this file does not cause "__autoload()" because does not read except for error or exception handling.
  *
  * PHP version 5.3
@@ -68,6 +69,11 @@ final class BreakpointDebugging_Error
     private $_phpErrorLogFilePath;
 
     /**
+     * @var resource Error log file pointer.
+     */
+    private $_pLog;
+
+    /**
      * @var array Call stack information.
      */
     public $callStackInfo;
@@ -86,6 +92,11 @@ final class BreakpointDebugging_Error
      * @var array HTML tags.
      */
     public $tag;
+
+    /**
+     * @var object Locking object.
+     */
+    public $lockByFileExisting;
 
     /**
      * This method makes HTML tags.
@@ -165,7 +176,10 @@ final class BreakpointDebugging_Error
             return $string;
         } else if ($charSet === false) {
             $message = 'This isn\'t single character sets.';
-            B::internalException($message);
+            if ($onceFlag) {
+                $onceFlag = false;
+                B::internalException($message);
+            }
             return "### ERROR: {$message} ###";
         }
         return mb_convert_encoding($string, 'UTF-8', $charSet);
@@ -246,7 +260,8 @@ final class BreakpointDebugging_Error
         $onceFlag2 = false;
         $pTmpLog2 = $this->_logPointerOpening();
         // For "Exception::$trace".
-        $this->_outputFixedFunctionToLogging($array, $pTmpLog2, $onceFlag2, $func, $class, '', "\t" . $tabs);
+        //$this->_outputFixedFunctionToLogging($array, $pTmpLog2, $onceFlag2, $func, $class, '', "\t" . $tabs);
+        $this->_outputFixedFunctionToLogging($array, $pTmpLog2, $onceFlag2, $func, $class, '', '', "\t" . $tabs);
         $this->_addFunctionValuesToLog($pTmpLog2, $pTmpLog, $onceFlag2, $func, $class, '', "\t" . $tabs);
 
         $this->_logBufferWriting($pTmpLog, PHP_EOL . $tabs . $paramName . $this->tag['font']['=>'] . ' => ' . $this->tag['/font'] . $this->tag['b'] . 'array' . $this->tag['/b'] . ' (');
@@ -345,6 +360,8 @@ final class BreakpointDebugging_Error
         $prependLog = $this->_convertMbString($prependLog);
 
         $this->callStackInfo = $pException->getTrace();
+        $this->callStackInfo[] = array ('file' => $pException->getFile(), 'line' => $pException->getLine());
+        $this->callStackInfo = array_reverse($this->callStackInfo);
         // Add scope of start page file.
         $this->callStackInfo[] = array ();
         if ($this->outputErrorCallStackLog2(get_class($pException), $errorMessage, $prependLog)) {
@@ -477,7 +494,8 @@ final class BreakpointDebugging_Error
      *
      * @return void
      */
-    private function _outputFixedFunctionToLogging($backTrace, &$pTmpLog, &$onceFlag2, &$func, &$class, $line, $tabs = '')
+    //private function _outputFixedFunctionToLogging($backTrace, &$pTmpLog, &$onceFlag2, &$func, &$class, $line, $tabs = '')
+    private function _outputFixedFunctionToLogging($backTrace, &$pTmpLog, &$onceFlag2, &$func, &$class, $file, $line, $tabs = '')
     {
         global $_BreakpointDebugging;
         $paramNumber = func_num_args();
@@ -488,16 +506,19 @@ final class BreakpointDebugging_Error
             foreach ($_BreakpointDebugging->notFixedLocations as $notFixedLocation) {
                 array_key_exists('function', $notFixedLocation) ? $noFixFunc = $notFixedLocation['function'] : $noFixFunc = '';
                 array_key_exists('class', $notFixedLocation) ? $noFixClass = $notFixedLocation['class'] : $noFixClass = '';
+                array_key_exists('file', $notFixedLocation) ? $noFixFile = $notFixedLocation['file'] : $noFixFile = '';
                 // $notFixedLocation of file scope is "$noFixFunc === '' && $noFixClass === '' && $paramNumber === 6".
-                if ($noFixFunc === '' && $noFixClass === '' && $paramNumber === 7) {
+                //if ($noFixFunc === '' && $noFixClass === '' && $paramNumber === 7) {
+                if ($noFixFunc === '' && $noFixClass === '' && $paramNumber === 8) {
                     continue;
                 }
-                if ($func === $noFixFunc && $class === $noFixClass) {
+                //if ($func === $noFixFunc && $class === $noFixClass) {
+                if ($func === $noFixFunc && $class === $noFixClass && $file === $noFixFile) {
                     $marks = str_repeat($this->_mark, 10);
                     $this->_logBufferWriting($pTmpLog, PHP_EOL . $tabs . $this->tag['font']['caution'] . $marks . $this->tag['b'] . ' This function has been not fixed. ' . $this->tag['/b'] . $marks . $this->tag['/font']);
                     if ($onceFlag2) {
                         $onceFlag2 = false;
-                        array_key_exists('file', $notFixedLocation) ? $noFixFile = $notFixedLocation['file'] : $noFixFile = '';
+                        //array_key_exists('file', $notFixedLocation) ? $noFixFile = $notFixedLocation['file'] : $noFixFile = '';
                         $this->_addParameterHeaderToLog($pTmpLog, $noFixFile, $line, $func, $class);
                     }
                     break;
@@ -519,9 +540,6 @@ final class BreakpointDebugging_Error
     {
         global $_BreakpointDebugging_EXE_MODE;
 
-        if ($_BreakpointDebugging_EXE_MODE & B::UNIT_TEST) {
-            return false;
-        }
         B::internalAssert(func_num_args() <= 6);
         B::internalAssert(is_string($errorKind));
         B::internalAssert(is_string($errorMessage));
@@ -532,22 +550,35 @@ final class BreakpointDebugging_Error
             $errorMessage = htmlspecialchars($errorMessage, ENT_QUOTES, 'UTF-8');
             $prependLog = htmlspecialchars($prependLog, ENT_QUOTES, 'UTF-8');
         }
-        // We had better debug by breakpoint than the display screen in case of "E_NOTICE".
-        // Also, we are possible to skip "E_NOTICE" which is generated while debugging execution is stopping.
-        // Moreover, those "E_NOTICE" doesn't stop at breakpoint.
+        //// We had better debug by breakpoint than the display screen in case of "E_NOTICE".
+        //// Also, we are possible to skip "E_NOTICE" which is generated while debugging execution is stopping.
+        //// Moreover, those "E_NOTICE" doesn't stop at breakpoint.
         if ($errorKind === 'E_NOTICE') {
-            //return false;
-            return true;
-        }
-        if (!is_file($this->_phpErrorLogFilePath)) {
-            // Make error log file.
-            $pLog = fopen($this->_phpErrorLogFilePath, 'wb');
-            chmod($this->_phpErrorLogFilePath, 0600);
-            fclose($pLog);
+            // Should skip "E_NOTICE" in case of "B::RELEASE" mode.
+            // Moreover, those "E_NOTICE" Should not stop at breakpoint.
+            if ($_BreakpointDebugging_EXE_MODE & B::RELEASE) {
+                return false;
+            } else { // We had better debug by breakpoint than the display screen in case of "E_NOTICE".
+                return true;
+            }
         }
         // Lock error log file.
-        $lockByFileExisting = &\BreakpointDebugging_LockByFileExisting::internalSingleton();
-        $lockByFileExisting->lock();
+        //$lockByFileExisting = &\BreakpointDebugging_LockByFileExisting::internalSingleton();
+        $this->lockByFileExisting = &\BreakpointDebugging_LockByFileExisting::internalSingleton();
+        //$lockByFileExisting->lock();
+        $this->lockByFileExisting->lock();
+        if (!is_file($this->_phpErrorLogFilePath)) {
+            // Make error log file.
+            //$pLog = fopen($this->_phpErrorLogFilePath, 'wb');
+            $this->_pLog = fopen($this->_phpErrorLogFilePath, 'wb');
+            chmod($this->_phpErrorLogFilePath, 0600);
+            //fclose($pLog);
+        } else {
+            $this->_pLog = fopen($this->_phpErrorLogFilePath, 'ab');
+        }
+//        // Lock error log file.
+//        $lockByFileExisting = &\BreakpointDebugging_LockByFileExisting::internalSingleton();
+//        $lockByFileExisting->lock();
         $tmp = date('[Y-m-d H:i:s]') . PHP_EOL;
         $dummy = null;
         $this->_logBufferWriting($dummy, $this->tag['pre'] . $prependLog);
@@ -563,7 +594,8 @@ final class BreakpointDebugging_Error
             $pTmpLog2 = $this->_logPointerOpening();
             array_key_exists('file', $backtraceArrays) ? $file = $backtraceArrays['file'] : $file = '';
             array_key_exists('line', $backtraceArrays) ? $line = $backtraceArrays['line'] : $line = '';
-            $this->_outputFixedFunctionToLogging($backtraceArrays, $dummy, $onceFlag2, $func, $class, $line);
+            //$this->_outputFixedFunctionToLogging($backtraceArrays, $dummy, $onceFlag2, $func, $class, $line);
+            $this->_outputFixedFunctionToLogging($backtraceArrays, $dummy, $onceFlag2, $func, $class, $file, $line);
             if (array_key_exists('args', $backtraceArrays)) {
                 // Analyze parameters part of trace array, and return character string.
                 $this->_searchDebugBacktraceArgsToString($pTmpLog2, $backtraceArrays['args']);
@@ -579,7 +611,8 @@ final class BreakpointDebugging_Error
         $this->_logBufferWriting($dummy, '//////////////////////////////// CALL STACK END ////////////////////////////////');
         $this->_logBufferWriting($dummy, $this->tag['/pre']);
         // Unlock error log file.
-        $lockByFileExisting->unlock();
+        //$lockByFileExisting->unlock();
+        $this->lockByFileExisting->unlock();
         if ($_BreakpointDebugging_EXE_MODE & B::RELEASE) {
             return false;
         }
@@ -733,12 +766,13 @@ final class BreakpointDebugging_Error
 
         switch ($_BreakpointDebugging_EXE_MODE & ~B::UNIT_TEST) {
             case B::RELEASE:
-                $pLog = fopen($this->_phpErrorLogFilePath, 'a');
+                //$pLog = fopen($this->_phpErrorLogFilePath, 'a');
                 rewind($pTmpLog);
                 while (!feof($pTmpLog)) {
-                    fwrite($pLog, fread($pTmpLog, 4096));
+                    //fwrite($pLog, fread($pTmpLog, 4096));
+                    fwrite($this->_pLog, fread($pTmpLog, 4096));
                 }
-                fclose($pLog);
+                //fclose($pLog);
                 // Delete temporary file.
                 fclose($pTmpLog);
                 break;
@@ -756,11 +790,12 @@ final class BreakpointDebugging_Error
                 fclose($pTmpLog);
                 break;
             case B::LOCAL_DEBUG_OF_RELEASE:
-                $pLog = fopen($this->_phpErrorLogFilePath, 'a');
+                //$pLog = fopen($this->_phpErrorLogFilePath, 'a');
                 foreach ($pTmpLog as $log) {
-                    fwrite($pLog, $log);
+                    //fwrite($pLog, $log);
+                    fwrite($this->_pLog, $log);
                 }
-                fclose($pLog);
+                //fclose($pLog);
                 break;
             default:
                 B::internalAssert(false);
@@ -786,9 +821,10 @@ final class BreakpointDebugging_Error
         switch ($_BreakpointDebugging_EXE_MODE & ~B::UNIT_TEST) {
             case B::RELEASE:
                 if ($pLogBuffer === null) {
-                    $pLog = fopen($this->_phpErrorLogFilePath, 'a');
-                    fwrite($pLog, $log);
-                    fclose($pLog);
+                    //$pLog = fopen($this->_phpErrorLogFilePath, 'a');
+                    //fwrite($pLog, $log);
+                    fwrite($this->_pLog, $log);
+                    //fclose($pLog);
                 } else {
                     fwrite($pLogBuffer, $log);
                 }
@@ -809,9 +845,10 @@ final class BreakpointDebugging_Error
                 break;
             case B::LOCAL_DEBUG_OF_RELEASE:
                 if ($pLogBuffer === null) {
-                    $pLog = fopen($this->_phpErrorLogFilePath, 'a');
-                    fwrite($pLog, $log);
-                    fclose($pLog);
+                    //$pLog = fopen($this->_phpErrorLogFilePath, 'a');
+                    //fwrite($pLog, $log);
+                    fwrite($this->_pLog, $log);
+                    //fclose($pLog);
                 } else {
                     $pLogBuffer[] = $log;
                 }
@@ -838,11 +875,12 @@ final class BreakpointDebugging_Error
             case B::RELEASE:
                 rewind($pTmpLog2);
                 if ($pTmpLog === null) {
-                    $pLog = fopen($this->_phpErrorLogFilePath, 'a');
+                    //$pLog = fopen($this->_phpErrorLogFilePath, 'a');
                     while (!feof($pTmpLog2)) {
-                        fwrite($pLog, fread($pTmpLog2, 4096));
+                        //fwrite($pLog, fread($pTmpLog2, 4096));
+                        fwrite($this->_pLog, fread($pTmpLog2, 4096));
                     }
-                    fclose($pLog);
+                    //fclose($pLog);
                 } else {
                     while (!feof($pTmpLog2)) {
                         fwrite($pTmpLog, fread($pTmpLog2, 4096));
@@ -874,11 +912,12 @@ final class BreakpointDebugging_Error
                 break;
             case B::LOCAL_DEBUG_OF_RELEASE:
                 if ($pTmpLog === null) {
-                    $pLog = fopen($this->_phpErrorLogFilePath, 'a');
+                    //$pLog = fopen($this->_phpErrorLogFilePath, 'a');
                     foreach ($pTmpLog2 as $log) {
-                        fwrite($pLog, $log);
+                        //fwrite($pLog, $log);
+                        fwrite($this->_pLog, $log);
                     }
-                    fclose($pLog);
+                    //fclose($pLog);
                 } else if (count($pTmpLog) === 0) {
                     if (count($pTmpLog2) !== 0) {
                         $pTmpLog = $pTmpLog2;

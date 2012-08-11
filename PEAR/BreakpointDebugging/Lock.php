@@ -5,8 +5,9 @@
  *
  * A synchronous object must be singleton because dead-lock occurs.
  * And, if you use derived class of this class, don't do other synchronous-process ( flock() and so on ) because dead-lock occurs.
- * Example:Process A locks file A, and process B locks file B.
- *         Then, process A is waiting for file B, and process B is waiting for file A.
+ * @example of dead-lock.
+ *      Process A locks file A, and process B locks file B.
+ *      Then, process A is waiting for file B, and process B is waiting for file A.
  *
  * PHP version 5.3
  *
@@ -225,6 +226,29 @@ abstract class BreakpointDebugging_Lock
         restore_error_handler();
         $this->unlockingLoop();
         set_error_handler('BreakpointDebugging::errorHandler', -1);
+    }
+
+    /**
+     * //Returns locking status of this object.
+     * If error object is locking, this unlocks, and this exits.
+     *
+     * @param mixed $message Exit-message or code.
+     *
+     * @//return bool Is this object locking?
+     */
+    //function isLocking()
+    function unlockAllAndExit($message = '')
+    {
+//        if($this->_lockCount === 0){
+//            return false;
+//        }
+//        return true;
+        // Unlocks all.
+        while ($this->_lockCount > 0) {
+            $this->unlock();
+        }
+        // And exits.
+        exit($message);
     }
 
 }

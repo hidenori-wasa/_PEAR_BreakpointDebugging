@@ -333,9 +333,9 @@ EOD;
     }
 
     /**
-     * Make php unit test exception.
+     * Makes php unit test exception.
      *
-     * @throws BreakpointDebugging_Error_Exception
+     * @return void
      */
     static function makeUnitTestException()
     {
@@ -343,27 +343,73 @@ EOD;
 
         if ($_BreakpointDebugging_EXE_MODE & B::UNIT_TEST) {
             // Throws exception for unit test.
-           throw new BreakpointDebugging_Error_Exception('');
+            throw new \BreakpointDebugging_Error_Exception('Unit test exception was thrown.');
         }
+    }
+
+    /**
+     * Checks unit-test-execution-mode.
+     */
+    static function checkUnitTestExeMode()
+    {
+        global $_BreakpointDebugging_EXE_MODE;
+
+        if (!($_BreakpointDebugging_EXE_MODE & B::UNIT_TEST)) {
+            exit('You must set "$_BreakpointDebugging_EXE_MODE = B::????? | B::UNIT_TEST" inside "./PEAR_Setting/BreakpointDebugging_MySetting.php" in case of unit test.');
+        }
+    }
+
+    /**
+     * Executes unit test.
+     *
+     * ### Execution procedure ###
+     * Procedure 1: Please, start a apache.
+     * Procedure 2: Please, drop php unit test file which calls this method to web browser.
+     * Procedure 3: Please, rewrite web browser URL prefix to "localhost", and push return.
+     *
+     * @param array  $testFileNames Unit test file names.
+     * @param string $currentDir    Unit test current directory.
+     *
+     * @return void
+     *
+     * @example BreakpointDebugging::executeUnitTest(array('unitTestFile.php'), __DIR__);
+     */
+    static function executeUnitTest($testFileNames, $currentDir)
+    {
+        if (substr(PHP_OS, 0, 3) === 'WIN') { // In case of Windows.
+            $phpunit = 'phpunit';
+        } else if (PHP_OS === 'Linux') { // In case of Linux.
+            // Command execution path by "bash" differs because "Apache" is root user in case of default, therefore uses full path for command.
+            $phpunit = '/opt/lampp/bin/phpunit';
+        } else { // In case of other.
+            assert(false);
+        }
+        echo '<pre>';
+        foreach ($testFileNames as $testFileName) {
+            echo $testFileName . PHP_EOL;
+            echo `$phpunit $currentDir/$testFileName`;
+            echo '//////////////////////////////////////////////////////////////////////////' . PHP_EOL;
+        }
+        echo '</pre>';
     }
 
 }
 
 // ### Assertion setting. ###
 if (assert_options(ASSERT_ACTIVE, 1) === false) { // This makes the evaluation of assert() effective.
-    throw new BreakpointDebugging_Error_Exception('');
+    throw new \BreakpointDebugging_Error_Exception('');
 }
 if (assert_options(ASSERT_WARNING, 1) === false) { // In case of failing in assertion, this generates a warning.
-    throw new BreakpointDebugging_Error_Exception('');
+    throw new \BreakpointDebugging_Error_Exception('');
 }
 if (assert_options(ASSERT_BAIL, 0) === false) { // In case of failing in assertion, this doesn't end execution.
-    throw new BreakpointDebugging_Error_Exception('');
+    throw new \BreakpointDebugging_Error_Exception('');
 }
 if (assert_options(ASSERT_QUIET_EVAL, 0) === false) { // As for assertion expression, this doesn't make error_reporting invalid.
-    throw new BreakpointDebugging_Error_Exception('');
+    throw new \BreakpointDebugging_Error_Exception('');
 }
 if (assert_options(ASSERT_CALLBACK, 'BreakpointDebugging::makeUnitTestException') === false) { // Register callback which is called failing in assertion.
-    throw new BreakpointDebugging_Error_Exception('');
+    throw new \BreakpointDebugging_Error_Exception('');
 }
 // ### usage ###
 //   assert(<judgment expression>);

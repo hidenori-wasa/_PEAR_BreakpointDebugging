@@ -5,6 +5,15 @@
  *
  * This class requires "shmop" extension.
  * We can synchronize applications by setting the same directory to "B::$workDir" of "BreakpointDebugging_MySetting.php".
+ * @example of usage.
+ *      $lockByShmop = &\BreakpointDebugging_LockByShmop::singleton(); // Creates a lock instance.
+ *      $lockByShmop->lock(); // Locks php-code.
+ *      $pFile = fopen('file.txt', 'w+b'); // Truncates data.
+ *      $data = fread($pFile, 1); // Reads data.
+ *      $data++; // Changes data.
+ *      fwrite($pFile, $data); // Writes data.
+ *      fclose($pFile); // Flushes data.
+ *      $lockByShmop->unlock(); // Unlocks php-code.
  *
  * This class is same as BreakpointDebugging_LockByFileExisting.
  * However, hard disk is not accessed when "lock()" and "unlock()" is called.
@@ -148,7 +157,7 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
     {
         parent::__construct($lockFilePath, $timeout, $sleepMicroSeconds);
 
-        self::$_lockingObject = &BreakpointDebugging_LockByFileExisting::internalSingleton();
+        self::$_lockingObject = &\BreakpointDebugging_LockByFileExisting::internalSingleton();
         // Lock php code.
         self::$_lockingObject->lock();
 

@@ -5,6 +5,15 @@
  *
  * This class has to be environment which can use "flock()".
  * We can synchronize applications by setting the same directory to "B::$workDir" of "BreakpointDebugging_MySetting.php".
+ * @example of usage.
+ *      $lockByFlock = &\BreakpointDebugging_LockByFlock::singleton(); // Creates a lock instance.
+ *      $lockByFlock->lock(); // Locks php-code.
+ *      $pFile = fopen('file.txt', 'w+b'); // Truncates data.
+ *      $data = fread($pFile, 1); // Reads data.
+ *      $data++; // Changes data.
+ *      fwrite($pFile, $data); // Writes data.
+ *      fclose($pFile); // Flushes data.
+ *      $lockByFlock->unlock(); // Unlocks php-code.
  *
  * PHP version 5.3
  *
