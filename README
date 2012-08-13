@@ -2,7 +2,7 @@ The basic concept
     This package is for breakpoint debugging.
 
 The features list
-    Please, read the file level document block of "PEAR/BreakpointDebugging.php".
+    Please, read the file level document block of "PEAR/BreakpointDebugging_Option.php".
 
 The dependences
     Linux or Windows.
@@ -15,4 +15,3 @@ Notice
 
 Warning
     This package version is development.
-	I am developing error log max size limitation.

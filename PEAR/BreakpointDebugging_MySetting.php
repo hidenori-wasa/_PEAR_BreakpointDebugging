@@ -3,7 +3,7 @@
 /**
  * This is file for various setting.
  *
- * As for procedure, please, refer to the file level document block of BreakpointDebugging.php.
+ * As for procedure, please, refer to the file level document block of BreakpointDebugging_Option.php.
  *
  * PHP version 5.3
  *
@@ -70,8 +70,8 @@ require_once 'BreakpointDebugging.php'; // 'BreakpointDebugging.php' must requir
  *       B::LOCAL_DEBUG | B::UNIT_TEST  // Tests by "phpunit" on local.
  *       B::REMOTE_DEBUG | B::UNIT_TEST // Tests by "phpunit" on remote.
  */
-$_BreakpointDebugging_EXE_MODE = B::LOCAL_DEBUG;
-// $_BreakpointDebugging_EXE_MODE = B::LOCAL_DEBUG_OF_RELEASE;
+// $_BreakpointDebugging_EXE_MODE = B::LOCAL_DEBUG;
+$_BreakpointDebugging_EXE_MODE = B::LOCAL_DEBUG_OF_RELEASE;
 // $_BreakpointDebugging_EXE_MODE = B::REMOTE_DEBUG;
 // $_BreakpointDebugging_EXE_MODE = B::RELEASE;
 // $_BreakpointDebugging_EXE_MODE = B::LOCAL_DEBUG | B::UNIT_TEST;
@@ -97,6 +97,12 @@ function BreakpointDebugging_mySetting()
     } else { // In case of other.
         assert(false);
     }
+    // Maximum log file mega byte size. Recommendation size is 32 MB.
+    // Maximum file-capacity secures 16 K margin but it may exceed with low probability.
+    $maxLogMBSize = 1;
+    // This code has been fixed.
+    B::$maxLogFileByteSize = ($maxLogMBSize << 17) - 2048;
+    assert((B::$maxLogFileByteSize + 2048) % 4096 === 0);
     // Maximum log parameter nesting level. Default is 20. (1-100)
     // B::$maxLogParamNestingLevel = 20;
     // Maximum count of elements in log. ( Count of parameter or array elements ) Default is 50. (1-100)
@@ -186,13 +192,6 @@ function BreakpointDebugging_mySetting()
         // This changes "php.ini" file setting into "html_errors=Off" for security because this does not make output link to page which explains function which HTML error occurred.
         B::iniSet('html_errors', '', false);
     }
-////////////////////////////////////////////////////////////////////////////////
-//    unset($openBasedir);
-//    unset($sendmailFrom);
-//    unset($SMTP);
-//    unset($result);
-//    unset($timezone);
-//    unset($language);
 }
 
 BreakpointDebugging_mySetting();

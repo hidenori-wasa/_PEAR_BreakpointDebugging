@@ -3,7 +3,7 @@
 /**
  * This is file for various setting except for release.
  *
- * As for procedure, please, refer to the file level document block of BreakpointDebugging.php.
+ * As for procedure, please, refer to the file level document block of BreakpointDebugging_Option.php.
  * "*_Option.php" file does not use on release. Therefore, response time is zero on release.
  * These file names put "_" to become error when we do autoload.
  *
@@ -82,14 +82,13 @@ function BreakpointDebugging_breakpoint($message, &$callStackInfo)
     B::internalAssert($return);
 
     if ($_BreakpointDebugging_EXE_MODE & B::REMOTE_DEBUG) {
-//        exit(-1); // This exits immediately to avoid not ending.
         // If error object is locking, this unlocks, and this exits.
         B::$error->lockByFileExisting->unlockAllAndExit();
     }
 }
 
 // ### Item-setting for debugging. ===>
-// $xdebugManualUrl = 'http://www.php.net/manual/ja/';
+//$xdebugManualUrl = 'http://www.php.net/manual/ja/';
 $xdebugVarDisplayMaxChildren = '50';
 $xdebugVarDisplayMaxData = '3000';
 $xdebugVarDisplayMaxDepth = '3';
@@ -118,7 +117,7 @@ if ($_BreakpointDebugging_EXE_MODE & (B::REMOTE_DEBUG | B::RELEASE)) { // In cas
 // First is DBGP_IDEKEY, and next is USER, and last is USERNAME.
 // B::iniSet('xdebug.idekey', ?????);
 //// Manual base url for links from function traces or error messages.
-// B::iniSet('xdebug.manual_url', $xdebugManualUrl, false);
+//B::iniSet('xdebug.manual_url', $xdebugManualUrl, false);
 // Limits the number of object properties or array elements for display of var_dump(), local variables or Function Traces.
 B::iniSet('xdebug.var_display_max_children', $xdebugVarDisplayMaxChildren, false);
 // Limits character string type byte-count for display of var_dump(), local variables or Function Traces.

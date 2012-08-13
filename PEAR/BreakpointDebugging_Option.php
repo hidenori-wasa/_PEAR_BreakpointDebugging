@@ -6,6 +6,119 @@
  * "*_Option.php" file does not use on release. Therefore, response time is zero on release.
  * These file names put "_" to become error when we do autoload.
  *
+ * ### Environment which can do breakpoint debugging. ###
+ * Debugger which can use breakpoint.
+ * The present recommendation debugging environment is
+ * "WindowsXP Professional" + "NetBeans IDE 7.1.2" + "XAMPP 1.7.3" or
+ * "Ubuntu desktop" + "NetBeans IDE 7.1.2" + "XAMPP for Linux 1.7.3a".
+ * Do not use version greater than "XAMPP 1.7.3" for "NetBeans IDE 7.1.2"
+ * because MySQL version causes discordance.
+ * Notice: Use "phpMyAdmin" to see database and to execute "MySQL" command.
+ *
+ * ### The advantage of breakpoint debugging. ###
+ * it is to be able to find a position of a bug immediately.
+ * In addition to it, condition of variable can be examined.
+ * Therefore, it is possible to do debugging quickly.
+ *
+ * ### How to do breakpoint debugging coding. ###
+ * We have to do coding as follows to process in "BreakpointDebugging" class.
+ * We have to verify a impossible return value of function or method with "assert()".
+ * We have to verify a impossible value in code.
+ * Also, an error and an exception which wasn't caught are processed in
+ * "BreakpointDebugging" class.
+ *
+ * ### The execution procedure. ###
+ * Procedure 1: Please, install "XDebug" by seeing "http://xdebug.org/docs/install".
+ *      This is required to stop at breakpoint.
+ * Procedure 2: If you execute "REMOTE_DEBUG", please set "xdebug.remote_host =
+ *      "<name or ip of host which debugger exists>"" into "php.ini" file.
+ * Procedure 3: Please, set *.php file format to utf8, but we should create backup of
+ *      php files because multibyte strings may be destroyed.
+ * Procedure 4: Please, copy BreakpointDebugging_MySetting*.php to "./PEAR_Setting/"
+ *      of your project directory.
+ * Procedure 5: Please, edit BreakpointDebugging_MySetting*.php for customize.
+ *      Then, it fixes part setting about all debugging modes.
+ * Procedure 6: Please, copy following in your project php code.
+ *      "require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';"
+ * Procedure 7: Please, set debugging mode to "$_BreakpointDebugging_EXE_MODE" inside
+ *      "./PEAR_Setting/BreakpointDebugging_MySetting.php".
+ * Procedure 8: Please, if you use "Linux", register your username as
+ *      "User" and "Group" inside "lampp/apache/conf/httpd.conf".
+ *      And, register "export PATH=$PATH:/opt/lampp/bin" inside "~/.profile".
+ *
+ * Caution: Do not execute "ini_set('error_log')"
+ *      because this package uses local log instead of system log.
+ *
+ * Option procedure: Please, register at top of the function or method or file
+ *      which has been not fixed. Please, copy following.
+ *      "static $isRegister; BreakpointDebugging::registerNotFixedLocation($isRegister);"
+ *      Then, we can discern function or method or file
+ *      which has been not fixed with browser screen or log.
+ * Option procedure: Please, register local variable or global variable
+ *      which you want to see with BreakpointDebugging::addValuesToTrace().
+ *
+ * ### The debugging mode which we can use. ###
+ * First "LOCAL_DEBUG" mode is breakpoint debugging with local personal computer.
+ *      Debugger which can use breakpoint.
+ * Second "LOCAL_DEBUG_OF_RELEASE" mode is breakpoint debugging to emulate release
+ *      with local personal computer.
+ *      Debugger which can use breakpoint.
+ * Third "REMOTE_DEBUG" mode is browser display debugging with remote personal computer.
+ *      And it is remote debugging by debugger.
+ *      Debugger which can use breakpoint.
+ * Last "RELEASE" mode is log debugging with remote personal computer,
+ *      and we must set on last for security.
+ *      On release
+ * "UNIT_TEST" mode tests by "phpunit" command.
+ *
+ *  ### Exception hierarchical structure ###
+ *  PEAR_Exception
+ *      BreakpointDebugging_Exception
+ *          BreakpointDebugging_Error_Exception
+ *
+ * ### Useful function index. ###
+ * This outputs function call stack log.
+ *      BreakpointDebugging::outputErrorCallStackLog($errorKind, $errorMessage)
+ * This registers as function or method being not fixed.
+ *      BreakpointDebugging::registerNotFixedLocation(&$isRegister)
+ * Add values to trace.
+ *      BreakpointDebugging::addValuesToTrace($values)
+ * This writes inside of "catch()", then display logging or log.
+ *      BreakpointDebugging::$prependExceptionLog
+ *      BreakpointDebugging::exceptionHandler($exception)
+ * This changes to unify multibyte character strings such as system-output in UTF8,
+ * and this returns.
+ *      BreakpointDebugging::convertMbString($string)
+ * This changes a character sets to display a multibyte character string
+ * with local window of debugger, and this returns it.
+ * But, this doesn't exist in case of release.
+ *      BreakpointDebugging::convertMbStringForDebug($params)
+ * This is ini_set() with validation except for release mode.
+ * I set with "ini_set()" because "php.ini" file and ".htaccess" file isn't sometimes possible to be set on sharing server.
+ *      BreakpointDebugging::iniSet($phpIniVariable, $setValue, $doCheck = true)
+ * This checks php.ini setting.
+ *      BreakpointDebugging::iniCheck($phpIniVariable, $cmpValue, $errorMessage)
+ * Get property for test.
+ * But, this doesn't exist in case of release.
+ *      BreakpointDebugging::getPropertyForTest($objectOrClassName, $propertyName)
+ * Set property for test.
+ * But, this doesn't exist in case of release.
+ *      BreakpointDebugging::setPropertyForTest($objectOrClassName, $propertyName, $value)
+ * Checks unit-test-execution-mode.
+ *      BreakpointDebugging::checkUnitTestExeMode()
+ * Executes unit test.
+ *      BreakpointDebugging::executeUnitTest($testFileNames, $currentDir)
+ *
+ * ### Useful class index. ###
+ * This class override a class without inheritance, but only public member can be inherited.
+ *      class BreakpointDebugging_OverrideClass
+ * Class which locks php-code by file existing.
+ *      class BreakpointDebugging_LockByFileExisting
+ * Class which locks php-code by shared memory operation.
+ *      class BreakpointDebugging_LockByShmop
+ * Class which locks php-code by "flock()".
+ *      class BreakpointDebugging_LockByFlock
+ *
  * PHP version 5.3
  *
  * LICENSE OVERVIEW:
@@ -349,6 +462,16 @@ EOD;
 
     /**
      * Checks unit-test-execution-mode.
+     *
+     * @return void
+     *
+     * @example
+     *      <?php
+     *      chdir(__DIR__ . '/../../../../../');
+     *      require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
+     *      use \BreakpointDebugging as B;
+     *      B::checkUnitTestExeMode();
+     *      class LockByFileExistingTest extends PHPUnit_Framework_TestCase
      */
     static function checkUnitTestExeMode()
     {
@@ -366,13 +489,26 @@ EOD;
      * Procedure 1: Please, start a apache.
      * Procedure 2: Please, drop php unit test file which calls this method to web browser.
      * Procedure 3: Please, rewrite web browser URL prefix to "localhost", and push return.
+     * If you want step execution, please, set composition of project of "NetBeans IDE".
+     * If you want remote execution, please, upload unit test files, and execute from browser.
      *
      * @param array  $testFileNames Unit test file names.
      * @param string $currentDir    Unit test current directory.
      *
      * @return void
      *
-     * @example BreakpointDebugging::executeUnitTest(array('unitTestFile.php'), __DIR__);
+     * @example
+     *      <?php
+     *      chdir(__DIR__ . '/../../../../../');
+     *      require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
+     *      use \BreakpointDebugging as B;
+     *      // Please, choose unit tests files by customizing.
+     *      $testFileNames = array (
+     *          'Something1Test.php',
+     *          'Something2Test.php');
+     *          // Executes unit tests.
+     *          B::executeUnitTest($testFileNames, __DIR__);
+     *      ?>
      */
     static function executeUnitTest($testFileNames, $currentDir)
     {

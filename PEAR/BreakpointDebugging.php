@@ -3,115 +3,6 @@
 /**
  * Class which is for breakpoint debugging.
  *
- * ### Environment which can do breakpoint debugging. ###
- * Debugger which can use breakpoint.
- * The present recommendation debugging environment is
- * "WindowsXP Professional" + "NetBeans IDE 7.1.2" + "XAMPP 1.7.3" or
- * "Ubuntu desktop" + "NetBeans IDE 7.1.2" + "XAMPP for Linux 1.7.3a".
- * Do not use version greater than "XAMPP 1.7.3" for "NetBeans IDE 7.1.2"
- * because MySQL version causes discordance.
- * Notice: Use "phpMyAdmin" to see database and to execute "MySQL" command.
- *
- * ### The advantage of breakpoint debugging. ###
- * it is to be able to find a position of a bug immediately.
- * In addition to it, condition of variable can be examined.
- * Therefore, it is possible to do debugging quickly.
- *
- * ### How to do breakpoint debugging coding. ###
- * We have to do coding as follows to process in "BreakpointDebugging" class.
- * We have to verify a impossible return value of function or method with "assert()".
- * We have to verify a impossible value in code.
- * Also, an error and an exception which wasn't caught are processed in
- * "BreakpointDebugging" class.
- *
- * ### The execution procedure. ###
- * Procedure 1: Please, install "XDebug" by seeing "http://xdebug.org/docs/install".
- *      This is required to stop at breakpoint.
- * Procedure 2: If you execute "REMOTE_DEBUG", please set "xdebug.remote_host =
- *      "<name or ip of host which debugger exists>"" into "php.ini" file.
- * Procedure 3: Please, set *.php file format to utf8, but we should create backup of
- *      php files because multibyte strings may be destroyed.
- * Procedure 4: Please, copy BreakpointDebugging_MySetting*.php to "./PEAR_Setting/"
- *      of your project directory.
- * Procedure 5: Please, edit BreakpointDebugging_MySetting*.php for customize.
- *      Then, it fixes part setting about all debugging modes.
- * Procedure 6: Please, copy following in your project php file.
- *      "require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';"
- * Procedure 7: Please, set debugging mode to "$_BreakpointDebugging_EXE_MODE" inside
- *      "./PEAR_Setting/BreakpointDebugging_MySetting.php".
- * Procedure 8: Please, if you use "Linux", register your username as
- *      "User" and "Group" inside "lampp/apache/conf/httpd.conf".
- *      And, register "export PATH=$PATH:/opt/lampp/bin" inside "~/.profile".
- *
- * Caution: Do not execute "ini_set('error_log')"
- *      because this package uses local log instead of system log.
- *
- * Option procedure: Please, register at top of the function or method or file
- *      which has been not fixed. Please, copy following.
- *      "static $isRegister; BreakpointDebugging::registerNotFixedLocation($isRegister);"
- *      Then, we can discern function or method or file
- *      which has been not fixed with browser screen or log.
- * Option procedure: Please, register local variable or global variable
- *      which you want to see with BreakpointDebugging::addValuesToTrace().
- *
- * ### The debugging mode which we can use. ###
- * First "LOCAL_DEBUG" mode is breakpoint debugging with local personal computer.
- *      Debugger which can use breakpoint.
- * Second "LOCAL_DEBUG_OF_RELEASE" mode is breakpoint debugging to emulate release
- *      with local personal computer.
- *      Debugger which can use breakpoint.
- * Third "REMOTE_DEBUG" mode is browser display debugging with remote personal computer.
- *      And it is remote debugging by debugger.
- *      Debugger which can use breakpoint.
- * Last "RELEASE" mode is log debugging with remote personal computer,
- *      and we must set on last for security.
- *      On release
- * "UNIT_TEST" mode tests by "phpunit".
- *
- *  ### Exception hierarchical structure ###
- *  PEAR_Exception
- *      BreakpointDebugging_Exception
- *          BreakpointDebugging_Error_Exception
- *
- * ### Useful function index. ###
- * This outputs function call stack log.
- *      BreakpointDebugging::outputErrorCallStackLog($errorKind, $errorMessage)
- * This registers as function or method being not fixed.
- *      BreakpointDebugging::registerNotFixedLocation(&$isRegister)
- * Add values to trace.
- *      BreakpointDebugging::addValuesToTrace($values)
- * This writes inside of "catch()", then display logging or log.
- *      BreakpointDebugging::$prependExceptionLog
- *      BreakpointDebugging::exceptionHandler($exception)
- * This changes to unify multibyte character strings such as system-output in UTF8,
- * and this returns.
- *      BreakpointDebugging::convertMbString($string)
- * This changes a character sets to display a multibyte character string
- * with local window of debugger, and this returns it.
- * But, this doesn't exist in case of release.
- *      BreakpointDebugging::convertMbStringForDebug($params)
- * This is ini_set() with validation except for release mode.
- * I set with "ini_set()" because "php.ini" file and ".htaccess" file isn't sometimes possible to be set on sharing server.
- *      BreakpointDebugging::iniSet($phpIniVariable, $setValue, $doCheck = true)
- * This checks php.ini setting.
- *      BreakpointDebugging::iniCheck($phpIniVariable, $cmpValue, $errorMessage)
- * Get property for test.
- * But, this doesn't exist in case of release.
- *      BreakpointDebugging::getPropertyForTest($objectOrClassName, $propertyName)
- * Set property for test.
- * But, this doesn't exist in case of release.
- *      BreakpointDebugging::setPropertyForTest($objectOrClassName, $propertyName, $value)
- *
- * ### Useful class index. ###
- * This class override a class without inheritance, but only public member can be inherited.
- *      class BreakpointDebugging_OverrideClass
- * Class which locks php-code by file existing.
- *      class BreakpointDebugging_LockByFileExisting
- * Class which locks php-code by shared memory operation.
- *      class BreakpointDebugging_LockByShmop
- * Class which locks php-code by "flock()".
- *      class BreakpointDebugging_LockByFlock
- *
  * PHP version 5.3
  *
  * LICENSE OVERVIEW:
@@ -269,6 +160,11 @@ class BreakpointDebugging_InAllCase
     static $prependErrorLog = '';
 
     /**
+     * @var int Maximum log file byte size.
+     */
+    static $maxLogFileByteSize;
+
+    /**
      * @var int Max log parameter nesting level.
      */
     static $maxLogParamNestingLevel = 20;
@@ -383,9 +279,7 @@ class BreakpointDebugging_InAllCase
      */
     final static function exceptionHandler($pException)
     {
-        //$error = new BreakpointDebugging_Error();
         self::$error = new BreakpointDebugging_Error();
-        //$error->exceptionHandler2($pException, B::$prependExceptionLog);
         self::$error->exceptionHandler2($pException, B::$prependExceptionLog);
         self::$error = null;
     }
@@ -402,18 +296,12 @@ class BreakpointDebugging_InAllCase
      */
     final static function outputErrorCallStackLog($errorKind, $errorMessage)
     {
-        //$error = new BreakpointDebugging_Error();
         self::$error = new BreakpointDebugging_Error();
-        //$error->callStackInfo = debug_backtrace();
         self::$error->callStackInfo = debug_backtrace();
-        //unset($error->callStackInfo[0]);
         unset(self::$error->callStackInfo[0]);
         // Add scope of start page file.
-        //$error->callStackInfo[] = array ();
         self::$error->callStackInfo[] = array ();
-        //if ($error->outputErrorCallStackLog2($errorKind, $errorMessage)) {
         if (self::$error->outputErrorCallStackLog2($errorKind, $errorMessage)) {
-            //BreakpointDebugging_breakpoint($errorMessage, $error->callStackInfo);
             BreakpointDebugging_breakpoint($errorMessage, self::$error->callStackInfo);
         }
         self::$error = null;
@@ -439,7 +327,6 @@ class BreakpointDebugging_InAllCase
             return $string;
         } else if ($charSet === false) {
             throw new BreakpointDebugging_Error_Exception('This is not single character sets.');
-            //return '### This is not single character sets. ###';
         }
         return mb_convert_encoding($string, 'UTF-8', $charSet);
     }
@@ -470,9 +357,7 @@ class BreakpointDebugging_InAllCase
     final static function errorHandler($errorNumber, $errorMessage)
     {
         BreakpointDebugging::makeUnitTestException();
-        //$error = new BreakpointDebugging_Error();
         self::$error = new BreakpointDebugging_Error();
-        //return $error->errorHandler2($errorNumber, $errorMessage, B::$prependErrorLog);
         $return = self::$error->errorHandler2($errorNumber, $errorMessage, B::$prependErrorLog);
         self::$error = null;
         return $return;
@@ -504,12 +389,6 @@ class BreakpointDebugging_InAllCase
                             //var_dump(array_reverse($callStack));
                             var_dump($callStack);
                             echo '//////////////////////////////// CALL STACK END ////////////////////////////////' . PHP_EOL . PHP_EOL;
-//                            // If error object is locking, this unlocks.
-//                            if(self::$error->lockByFileExisting->isLocking()){
-//                                self::$error->lockByFileExisting->unlock();
-//                            }
-//                            exit(-1);
-//                          // If error object is unlocking
                             if (!is_object(self::$error->lockByFileExisting)) {
                                 exit();
                             }
@@ -542,22 +421,12 @@ class BreakpointDebugging_InAllCase
             // In case of internal exception.
             if (array_key_exists('class', $call) && $call['class'] === 'BreakpointDebugging_Error') {
                 self::$onceErrorDispFlag = true;
-//                if ($_BreakpointDebugging_EXE_MODE & self::RELEASE) { // In case of release.
-//                    // If error object is locking, this unlocks.
-//                    if(self::$error->isLocking()){
-//                        self::$error->unlock();
-//                    }
-//                    exit(-1);
-//                } else
                 if ($_BreakpointDebugging_EXE_MODE & self::REMOTE_DEBUG) { // In case of remote debug.
-                    //var_dump(array_reverse($callStack));
                     var_dump($callStack);
                     echo '//////////////////////////////// CALL STACK END ////////////////////////////////' . PHP_EOL . PHP_EOL;
-//                    // If error object is locking, this unlocks.
-//                    if(self::$error->isLocking()){
-//                        self::$error->unlock();
-//                    }
-//                    exit(-1);
+                    if (!is_object(self::$error->lockByFileExisting)) {
+                        exit();
+                    }
                     // If error object is locking, this unlocks, and this exits.
                     self::$error->lockByFileExisting->unlockAllAndExit();
                 }
