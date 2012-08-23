@@ -1,0 +1,2 @@
+"C:\Program Files\Internet Explorer\iexplore.exe" localhost/Pear-Package/tests/PEAR/BreakpointDebugging/LockByShmopMultiprocessTest/ShmopTest1.php
+"C:\Program Files\Internet Explorer\iexplore.exe" localhost/Pear-Package/tests/PEAR/BreakpointDebugging/LockByShmopMultiprocessTest/ShmopTest2.php

@@ -51,42 +51,6 @@
 // therefore "use" keyword alias does not be affected by other files.
 use \BreakpointDebugging as B;
 
-/**
- * This is function to set breakpoint. You must define this function outside namespace, and you must not change function name.
- * If you don't have breakpoint environment, you can debug by setting '$_BreakpointDebugging_EXE_MODE = B::REMOTE_DEBUG;'.
- *
- * @param string $message        Message.
- * @param array  &$callStackInfo A call stack info.
- *
- * @return void
- */
-function BreakpointDebugging_breakpoint($message, &$callStackInfo)
-{
-    global $_BreakpointDebugging_EXE_MODE;
-
-    B::internalAssert(func_num_args() <= 2);
-    B::internalAssert(is_string($message));
-    B::internalAssert(is_array($callStackInfo));
-
-    reset($callStackInfo);
-    $call = each($callStackInfo);
-    $call = $call['value'];
-    if (array_key_exists('file', $call)) {
-        $errorFile = $call['file'];
-    }
-    if (array_key_exists('line', $call)) {
-        $errorLine = $call['line'];
-    }
-
-    $return = xdebug_break(); // Breakpoint. See local variable value by doing step execution here.
-    B::internalAssert($return);
-
-    if ($_BreakpointDebugging_EXE_MODE & B::REMOTE_DEBUG) {
-        // If error object is locking, this unlocks, and this exits.
-        B::$error->lockByFileExisting->unlockAllAndExit();
-    }
-}
-
 // ### Item-setting for debugging. ===>
 //$xdebugManualUrl = 'http://www.php.net/manual/ja/';
 $xdebugVarDisplayMaxChildren = '50';
@@ -225,6 +189,9 @@ if (substr(PHP_OS, 0, 3) === 'WIN') { // In case of Windows.
     B::iniCheck('post_max_size', '128M', 'We recommend to set "post_max_size = 128M" of "php.ini" file because maximum size which is permitted to a POST data is different from the default.');
     B::iniCheck('upload_max_filesize', '128M', 'We recommend to set "upload_max_filesize = 128M" of "php.ini" file because it is "XAMPP" value.');
 } else if (PHP_OS === 'Linux') { // In case of Linux.
+//    if (rtrim(`echo \$USER`, "\n") === 'root') {
+//        echo 'Security warning: Recommends to change to "Apache HTTP Server" which Supported "suEXEC" because this "Apache HTTP Server" is executed by "root" user.<br/>';
+//    }
     B::iniCheck('post_max_size', '8M', 'We recommend to set "post_max_size = 8M" of "php.ini" file because maximum size which is permitted to a POST data is different from the default.');
     B::iniCheck('upload_max_filesize', '2M', 'We recommend to set "upload_max_filesize = 2M" of "php.ini" file because it is "XAMPP" value.');
 } else { // In case of other.
@@ -251,5 +218,43 @@ B::iniSet('html_errors', '1', false);
 assert(1 <= B::$maxLogParamNestingLevel && B::$maxLogParamNestingLevel <= 100);
 assert(1 <= B::$maxLogElementNumber && B::$maxLogElementNumber <= 100);
 assert(1 <= B::$maxLogStringSize);
+
+/**
+ * This is function to set breakpoint. You must define this function outside namespace, and you must not change function name.
+ * If you don't have breakpoint environment, you can debug by setting '$_BreakpointDebugging_EXE_MODE = B::REMOTE_DEBUG;'.
+ *
+ * @param string $message        Message.
+ * @param array  &$callStackInfo A call stack info.
+ *
+ * @return void
+ */
+function BreakpointDebugging_breakpoint($message, &$callStackInfo)
+{
+    global $_BreakpointDebugging_EXE_MODE;
+
+    B::internalAssert(func_num_args() <= 2);
+    B::internalAssert(is_string($message));
+    B::internalAssert(is_array($callStackInfo));
+
+    reset($callStackInfo);
+    $call = each($callStackInfo);
+    $call = $call['value'];
+    if (array_key_exists('file', $call)) {
+        $errorFile = $call['file'];
+    }
+    if (array_key_exists('line', $call)) {
+        $errorLine = $call['line'];
+    }
+
+    $return = xdebug_break(); // Breakpoint. See local variable value by doing step execution here.
+    B::internalAssert($return);
+
+    if ($_BreakpointDebugging_EXE_MODE & B::REMOTE_DEBUG) {
+        // If error object is locking, this unlocks, and this exits.
+        //B::$error->lockByFileExisting->unlockAllAndExit();
+        // Remote debug must end immediately to avoid eternal execution.
+        exit;
+    }
+}
 
 ?>

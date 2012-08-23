@@ -228,29 +228,20 @@ abstract class BreakpointDebugging_Lock
         set_error_handler('BreakpointDebugging::errorHandler', -1);
     }
 
-    /**
-     * //Returns locking status of this object.
-     * If error object is locking, this unlocks, and this exits.
-     *
-     * @param mixed $message Exit-message or code.
-     *
-     * @//return bool Is this object locking?
-     */
-    //function isLocking()
-    function unlockAllAndExit($message = '')
-    {
-//        if($this->_lockCount === 0){
-//            return false;
+//    /**
+//     * If error object is locking, this unlocks, and this exits.
+//     *
+//     * @param mixed $message Exit-message or code.
+//     */
+//    function unlockAllAndExit($message = '')
+//    {
+//        // Unlocks all.
+//        while ($this->_lockCount > 0) {
+//            $this->unlock();
 //        }
-//        return true;
-        // Unlocks all.
-        while ($this->_lockCount > 0) {
-            $this->unlock();
-        }
-        // And exits.
-        exit($message);
-    }
-
+//        // And exits.
+//        exit($message);
+//    }
 }
 
 ?>

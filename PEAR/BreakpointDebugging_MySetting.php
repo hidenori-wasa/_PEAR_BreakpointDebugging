@@ -89,6 +89,8 @@ function BreakpointDebugging_mySetting()
     $timezone = 'Asia/Tokyo';
     $SMTP = '<Your SMTP server>';
     $sendmailFrom = '<Your Windows mail address>';
+    // My username.
+    B::$_userName = 'hidenori';
     // PHP It limits directory which opens a file.
     if (substr(PHP_OS, 0, 3) === 'WIN') { // In case of Windows.
         $openBasedir = 'C:\xampp\;.\\';
@@ -118,9 +120,10 @@ function BreakpointDebugging_mySetting()
     // Warning: When you use existing log, it is destroyed if it is not "UTF-8". It is necessary to be a single character sets.
     B::$workDir = './Work';
     if (!is_dir(B::$workDir)) {
-        mkdir(B::$workDir);
-        // Changes permission without umask.
-        chmod(B::$workDir, 0700);
+        //mkdir(B::$workDir);
+        //// Changes permission without umask.
+        //chmod(B::$workDir, 0700);
+        B::mkdir(B::$workDir, 0700);
     }
     B::$workDir = realpath(B::$workDir);
     assert(B::$workDir !== false);

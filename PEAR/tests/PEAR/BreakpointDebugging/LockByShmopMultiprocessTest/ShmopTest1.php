@@ -1,11 +1,11 @@
 <?php
 
-chdir(__DIR__ . '/../../../../../../');
+//chdir(__DIR__ . '/../../../../../../');
+chdir(__DIR__ . '/../../../../');
 require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
 
-class ShmopTest2
+class ShmopTest1
 {
-
     private $shmopId;
 
     function __construct()
@@ -37,13 +37,13 @@ class ShmopTest2
                 $sharedMemoryID = shmop_open(333, 'w', 0, 0);
                 for ($count = 0; $count < 5000; $count++) {
                     while (true) {
-                        shmop_write($sharedMemoryID, '1', 1);
-                        if (shmop_read($sharedMemoryID, 0, 1) === '1') {
-                            shmop_write($sharedMemoryID, '0', 1);
+                        shmop_write($sharedMemoryID, '1', 0);
+                        if (shmop_read($sharedMemoryID, 1, 1) === '1') {
+                            shmop_write($sharedMemoryID, '0', 0);
                             continue;
                         }
                         $this->_incrementSheredMemory();
-                        shmop_write($sharedMemoryID, '0', 1);
+                        shmop_write($sharedMemoryID, '0', 0);
                         break;
                     }
                 }
@@ -54,9 +54,9 @@ class ShmopTest2
         }
         var_dump(shmop_read($this->shmopId, 0, 10) + 0, microtime(true) - $start);
     }
-
 }
 
-$ShmopTest2 = new ShmopTest2();
-$ShmopTest2->testLock();
+$ShmopTest1 = new ShmopTest1();
+$ShmopTest1->testLock();
+
 ?>

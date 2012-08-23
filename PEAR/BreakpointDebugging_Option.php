@@ -46,6 +46,8 @@
  *      "User" and "Group" inside "lampp/apache/conf/httpd.conf".
  *      And, register "export PATH=$PATH:/opt/lampp/bin" inside "~/.profile".
  *
+ * Caution: Please, throw error exception at error location.
+ *          Do not throw inside method for throwing because its location is registered in log.
  * Caution: Do not execute "ini_set('error_log')"
  *      because this package uses local log instead of system log.
  *
@@ -108,6 +110,10 @@
  *      BreakpointDebugging::checkUnitTestExeMode()
  * Executes unit test.
  *      BreakpointDebugging::executeUnitTest($testFileNames, $currentDir)
+ * "mkdir" method which sets permission and sets own user to owner.
+ *      BreakpointDebugging::mkdir($dirName, $permission = 0777)
+ * "fopen" method which sets the file mode, permission and sets own user to owner.
+ *      BreakpointDebugging::fopen($fileName, $mode, $permission)
  *
  * ### Useful class index. ###
  * This class override a class without inheritance, but only public member can be inherited.
@@ -188,6 +194,24 @@ final class BreakpointDebugging extends BreakpointDebugging_InAllCase
 
         assert($createOnlyOneTime === false);
         $createOnlyOneTime = true;
+    }
+
+    /**
+     * If "Apache HTTP Server" does not support "suEXEC", this method displays security warning.
+     */
+    function __destruct()
+    {
+        global $_BreakpointDebugging_EXE_MODE;
+
+        //if ($_BreakpointDebugging_EXE_MODE & B::UNIT_TEST) {
+        // If this is not remote debug.
+        if ($_BreakpointDebugging_EXE_MODE & ~B::REMOTE_DEBUG) {
+            return;
+        }
+        //if (rtrim(`echo \$USER`, "\n") === 'root') {
+        if (trim(`echo \$USER`) === 'root') {
+            echo 'Security warning: Recommends to change to "Apache HTTP Server" which Supported "suEXEC" because this "Apache HTTP Server" is executed by "root" user.<br/>';
+        }
     }
 
     /**
@@ -478,7 +502,7 @@ EOD;
         global $_BreakpointDebugging_EXE_MODE;
 
         if (!($_BreakpointDebugging_EXE_MODE & B::UNIT_TEST)) {
-            exit('You must set "$_BreakpointDebugging_EXE_MODE = B::????? | B::UNIT_TEST" inside "./PEAR_Setting/BreakpointDebugging_MySetting.php" in case of unit test.');
+            exit('You must set "$_BreakpointDebugging_EXE_MODE = B::????? | B::UNIT_TEST" inside "./PEAR_Setting/BreakpointDebugging_MySetting.php" in case of unit test.' . PHP_EOL);
         }
     }
 
@@ -490,7 +514,7 @@ EOD;
      * Procedure 2: Please, drop php unit test file which calls this method to web browser.
      * Procedure 3: Please, rewrite web browser URL prefix to "localhost", and push return.
      * If you want step execution, please, set composition of project of "NetBeans IDE".
-     * If you want remote execution, please, upload unit test files, and execute from browser.
+     * If you want remote execution, please, upload unit test files, and execute with browser.
      *
      * @param array  $testFileNames Unit test file names.
      * @param string $currentDir    Unit test current directory.
@@ -512,11 +536,29 @@ EOD;
      */
     static function executeUnitTest($testFileNames, $currentDir)
     {
-        if (substr(PHP_OS, 0, 3) === 'WIN') { // In case of Windows.
-            $phpunit = 'phpunit';
+        //if (substr(PHP_OS, 0, 3) === 'WIN') { // In case of Windows.
+        if (strncmp(PHP_OS, 'WIN', 3) === 0) { // In case of Windows.
+            $phpunit = 'phpunit.bat';
         } else if (PHP_OS === 'Linux') { // In case of Linux.
             // Command execution path by "bash" differs because "Apache" is root user in case of default, therefore uses full path for command.
-            $phpunit = '/opt/lampp/bin/phpunit';
+            while (true) {
+                $phpunit = `which phpunit`;
+                //$phpunit = trim($phpunit);
+                $phpunit = rtrim($phpunit, "\n");
+                if ($phpunit) {
+                    break;
+                }
+                $phpunit = `export PATH=/opt/lampp/bin:/opt/local/bin:/usr/bin:/usr/bin/X11:/usr/share/php;which phpunit`;
+                $phpunit = trim($phpunit);
+                //$phpunit = rtrim($phpunit, "\n");
+                if ($phpunit) {
+                    break;
+                }
+                exit('"phpunit" command does not exist.');
+            }
+            if (!is_executable($phpunit)) {
+                exit('"phpunit" command is not executable. (' . $phpunit . ')');
+            }
         } else { // In case of other.
             assert(false);
         }

@@ -9,18 +9,24 @@ require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
 // therefore "use" keyword alias does not be affected by other files.
 use \BreakpointDebugging as B;
 
-require_once './PEAR/BreakpointDebugging/tests/PEAR/BreakpointDebugging/LockByFlockMultiprocessTest/Initialization.php';
-require_once './PEAR/BreakpointDebugging/tests/PEAR/BreakpointDebugging/LockByFlockMultiprocessTest/Test.php';
+//require_once './PEAR/BreakpointDebugging/tests/PEAR/BreakpointDebugging/LockByFlockMultiprocessTest/Initialization.php';
+require_once './tests/PEAR/BreakpointDebugging/LockByFlockMultiprocessTest/Initialization.php';
+//require_once './PEAR/BreakpointDebugging/tests/PEAR/BreakpointDebugging/LockByFlockMultiprocessTest/Test.php';
+require_once './tests/PEAR/BreakpointDebugging/LockByFlockMultiprocessTest/Test.php';
 exit;
 
 
-require_once './PEAR/BreakpointDebugging/tests/PEAR/BreakpointDebugging/LockByFileExistingMultiprocessTest/Initialization.php';
-require_once './PEAR/BreakpointDebugging/tests/PEAR/BreakpointDebugging/LockByFileExistingMultiprocessTest/Test.php';
+//require_once './PEAR/BreakpointDebugging/tests/PEAR/BreakpointDebugging/LockByFileExistingMultiprocessTest/Initialization.php';
+require_once './tests/PEAR/BreakpointDebugging/LockByFileExistingMultiprocessTest/Initialization.php';
+//require_once './PEAR/BreakpointDebugging/tests/PEAR/BreakpointDebugging/LockByFileExistingMultiprocessTest/Test.php';
+require_once './tests/PEAR/BreakpointDebugging/LockByFileExistingMultiprocessTest/Test.php';
 exit;
 
 
-require_once './PEAR/BreakpointDebugging/tests/PEAR/BreakpointDebugging/LockByShmopMultiprocessTest/Initialization.php';
-require_once './PEAR/BreakpointDebugging/tests/PEAR/BreakpointDebugging/LockByShmopMultiprocessTest/Test.php';
+//require_once './PEAR/BreakpointDebugging/tests/PEAR/BreakpointDebugging/LockByShmopMultiprocessTest/Initialization.php';
+require_once './tests/PEAR/BreakpointDebugging/LockByShmopMultiprocessTest/Initialization.php';
+//require_once './PEAR/BreakpointDebugging/tests/PEAR/BreakpointDebugging/LockByShmopMultiprocessTest/Test.php';
+require_once './tests/PEAR/BreakpointDebugging/LockByShmopMultiprocessTest/Test.php';
 exit;
 
 
@@ -80,4 +86,5 @@ echo microtime(true) - $start;
 fclose($pFile);
 set_error_handler('BreakpointDebugging::errorHandler', -1);
 exit;
+
 ?>

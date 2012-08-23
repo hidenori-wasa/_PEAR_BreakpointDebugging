@@ -1,6 +1,7 @@
 <?php
 
-chdir(__DIR__ . '/../../../../../../');
+//chdir(__DIR__ . '/../../../../../../');
+chdir(__DIR__ . '/../../../../');
 require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
 
 class Test
@@ -9,7 +10,7 @@ class Test
 
     function __construct()
     {
-        $this->shmopId = shmop_open(1234, 'w', 0600, 10);
+        $this->shmopId = shmop_open(1234, 'c', 0600, 10);
     }
 
     function __destruct()
@@ -31,15 +32,14 @@ class Test
         // Extend maximum execution time.
         set_time_limit(300);
         $start = microtime(true);
-        $lockByFlock1 = &\BreakpointDebugging_LockByFlock::singleton(60, 1000);
+        $lockByShmop1 = &\BreakpointDebugging_LockByShmop::singleton(60, 300, 1000);
         for ($count = 0; $count < 125; $count++) {
-            $lockByFlock1->lock();
+            $lockByShmop1->lock();
             $this->_incrementSheredMemory();
-            $lockByFlock1->unlock();
+            $lockByShmop1->unlock();
         }
         var_dump(shmop_read($this->shmopId, 0, 10) + 0, microtime(true) - $start);
     }
-
 }
 
 $Test = new Test();

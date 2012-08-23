@@ -150,6 +150,11 @@ class BreakpointDebugging_InAllCase
     const UNIT_TEST = 16;
 
     /**
+     * @var stirng My username.
+     */
+    static $_userName = '';
+
+    /**
      * @var string This prepend to logging when self::exceptionHandler() is called.
      */
     static $prependExceptionLog = '';
@@ -331,6 +336,60 @@ class BreakpointDebugging_InAllCase
         return mb_convert_encoding($string, 'UTF-8', $charSet);
     }
 
+    /**
+     * If "Apache" is root user, this method changes the file or directory user to my user. And sets permission.
+     *
+     * @param string $name       The file or directory name.
+     * @param int    $permission The file or directory permission.
+     *
+     * @return void
+     */
+    private static function _setOwner($name, $permission)
+    {
+        if (strncmp(PHP_OS, 'WIN', 3) === 0) {
+            return;
+        } else if (PHP_OS === 'Linux') {
+            chmod($name, $permission);
+            if (trim(`echo \$USER`) === 'root') {
+                //$user = get_currnet_user();
+                $user = self::$_userName;
+                `chown \$user.\$user \$name`;
+            }
+        } else {
+            assert(false);
+        }
+    }
+
+    /**
+     * "mkdir" method which sets permission and sets own user to owner.
+     *
+     * @param stirng $dirName    Directory name.
+     * @param int    $permission Directory permission.
+     *
+     * @return void
+     */
+    static function mkdir($dirName, $permission = 0777)
+    {
+        mkdir($dirName);
+        self::_setOwner($dirName, $permission);
+    }
+
+    /**
+     * "fopen" method which sets the file mode, permission and sets own user to owner.
+     *
+     * @param stirng $fileName   The file name.
+     * @param int    $mode       The file mode.
+     * @param int    $permission The file permission.
+     *
+     * @return resource The file pointer.
+     */
+    static function fopen($fileName, $mode, $permission)
+    {
+        $pFile = fopen($fileName, $mode);
+        self::_setOwner($fileName, $permission);
+        return $pFile;
+    }
+
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /**
      * This does autoload with word which was divided by name space separator and underscore separator as directory.
@@ -392,8 +451,10 @@ class BreakpointDebugging_InAllCase
                             if (!is_object(self::$error->lockByFileExisting)) {
                                 exit();
                             }
-                            // If error object is locking, this unlocks, and this exits.
-                            self::$error->lockByFileExisting->unlockAllAndExit();
+                            //// If error object is locking, this unlocks, and this exits.
+                            //self::$error->lockByFileExisting->unlockAllAndExit();
+                            // Remote debug must end immediately to avoid eternal execution.
+                            exit;
                         }
                         BreakpointDebugging_breakpoint('Assertion failed.', $callStack);
                         return;
@@ -427,8 +488,10 @@ class BreakpointDebugging_InAllCase
                     if (!is_object(self::$error->lockByFileExisting)) {
                         exit();
                     }
-                    // If error object is locking, this unlocks, and this exits.
-                    self::$error->lockByFileExisting->unlockAllAndExit();
+                    //// If error object is locking, this unlocks, and this exits.
+                    //self::$error->lockByFileExisting->unlockAllAndExit();
+                    // Remote debug must end immediately to avoid eternal execution.
+                    exit;
                 }
                 new BreakpointDebugging_Error_Exception($message);
                 return;

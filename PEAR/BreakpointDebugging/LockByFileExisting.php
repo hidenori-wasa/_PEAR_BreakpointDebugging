@@ -125,7 +125,8 @@ final class BreakpointDebugging_LockByFileExisting extends \BreakpointDebugging_
     protected function lockingLoop()
     {
         $startTime = time();
-        while (($this->pFile = @fopen($this->lockFilePath, 'x+b')) === false) {
+        //while (($this->pFile = @fopen($this->lockFilePath, 'x+b')) === false) {
+        while (($this->pFile = @B::fopen($this->lockFilePath, 'x+b', 0600)) === false) {
             if (time() - $startTime > $this->timeout) {
                 B::internalException('This process has been timeouted.');
                 // We do not delete locking flag file here because we cannot lock php code.

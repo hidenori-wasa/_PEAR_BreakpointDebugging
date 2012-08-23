@@ -1,20 +1,26 @@
 <?php
 
-chdir(__DIR__ . '/../../../../../');
+//chdir(__DIR__ . '/../../../../../');
+chdir(__DIR__ . '/../../../');
 require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
 
 use \BreakpointDebugging as B;
 
 B::checkUnitTestExeMode();
 
-class LockByFlockTest extends PHPUnit_Framework_TestCase
+class LockByShmopTest extends PHPUnit_Framework_TestCase
 {
-    protected $lockByFlock;
+    protected $LockByShmop;
 
     protected function setUp()
     {
         // Constructs instance.
-        $this->lockByFlock = &\BreakpointDebugging_LockByFlock::singleton(5, 10);
+        $this->LockByShmop = &\BreakpointDebugging_LockByShmop::singleton(5, 10);
+        // Deletes locking flag file.
+        $path = B::getPropertyForTest($this->LockByShmop, '$lockFilePath');
+        if (is_file($path)) {
+            unlink($path);
+        }
     }
 
     protected function tearDown()
@@ -22,17 +28,17 @@ class LockByFlockTest extends PHPUnit_Framework_TestCase
         // When we execute unit test, we must catch exception of "__destruct()" because exception is thrown.
         try {
             // Destructs instance.
-            $this->lockByFlock = null;
+            $this->LockByShmop = null;
         } catch (\BreakpointDebugging_Error_Exception $exception) {
             return;
         }
     }
 
-    function testLockByFlock1()
+    function testLockByShmop1()
     {
         try {
-            $this->lockByFlock->lock();
-            $this->lockByFlock->unlock();
+            $this->LockByShmop->lock();
+            $this->LockByShmop->unlock();
         } catch (\Exception $exception) {
             $this->assertTrue(false);
             return;
@@ -40,13 +46,13 @@ class LockByFlockTest extends PHPUnit_Framework_TestCase
         $this->assertTrue(true);
     }
 
-    function testLockByFlock2()
+    function testLockByShmop2()
     {
         try {
-            $this->lockByFlock->lock();
-            $this->lockByFlock->lock();
-            $this->lockByFlock->unlock();
-            $this->lockByFlock->unlock();
+            $this->LockByShmop->lock();
+            $this->LockByShmop->lock();
+            $this->LockByShmop->unlock();
+            $this->LockByShmop->unlock();
         } catch (\Exception $exception) {
             $this->assertTrue(false);
             return;
@@ -54,22 +60,22 @@ class LockByFlockTest extends PHPUnit_Framework_TestCase
         $this->assertTrue(true);
     }
 
-    function testLockByFlock3()
+    function testLockByShmop3()
     {
         try {
-            $lockByFlock1 = &\BreakpointDebugging_LockByFlock::singleton(5, 10);
-            $lockByFlock2 = &\BreakpointDebugging_LockByFlock::singleton(5, 10); // Same object.
+            $LockByShmop1 = &\BreakpointDebugging_LockByShmop::singleton(5, 10);
+            $LockByShmop2 = &\BreakpointDebugging_LockByShmop::singleton(5, 10); // Same object.
         } catch (\Exception $exception) {
             $this->assertTrue(false);
             return;
         }
-        $this->assertTrue($lockByFlock1 === $lockByFlock2);
+        $this->assertTrue($LockByShmop1 === $LockByShmop2);
     }
 
-    function testLockByFlock4()
+    function testLockByShmop4()
     {
         try {
-            $this->lockByFlock->unlock(); // Error.
+            $this->LockByShmop->unlock(); // Error.
         } catch (\BreakpointDebugging_Error_Exception $exception) {
             $this->assertTrue(true);
             return;
@@ -77,17 +83,17 @@ class LockByFlockTest extends PHPUnit_Framework_TestCase
         $this->assertTrue(false);
     }
 
-    function testLockByFlock5()
+    function testLockByShmop5()
     {
         try {
-            $this->lockByFlock->lock();
-            $this->lockByFlock->unlock();
+            $this->LockByShmop->lock();
+            $this->LockByShmop->unlock();
         } catch (\Exception $exception) {
             $this->assertTrue(false);
             return;
         }
         try {
-            $this->lockByFlock->unlock(); // Error.
+            $this->LockByShmop->unlock(); // Error.
         } catch (\BreakpointDebugging_Error_Exception $exception) {
             $this->assertTrue(true);
             return;
@@ -95,17 +101,17 @@ class LockByFlockTest extends PHPUnit_Framework_TestCase
         $this->assertTrue(false);
     }
 
-    function testLockByFlock6()
+    function testLockByShmop6()
     {
         try {
-            $this->lockByFlock->lock();
+            $this->LockByShmop->lock();
         } catch (\Exception $exception) {
             $this->assertTrue(false);
             return;
         }
         try {
             // Calls "__destruct()".
-            $this->lockByFlock = null; // Error.
+            $this->LockByShmop = null; // Error.
         } catch (\BreakpointDebugging_Error_Exception $exception) {
             $this->assertTrue(true);
             return;
@@ -113,19 +119,19 @@ class LockByFlockTest extends PHPUnit_Framework_TestCase
         $this->assertTrue(false);
     }
 
-    function testLockByFlock7()
+    function testLockByShmop7()
     {
         try {
-            $this->lockByFlock->lock();
-            $this->lockByFlock->lock();
-            $this->lockByFlock->unlock();
+            $this->LockByShmop->lock();
+            $this->LockByShmop->lock();
+            $this->LockByShmop->unlock();
         } catch (\Exception $exception) {
             $this->assertTrue(false);
             return;
         }
         try {
             // Calls "__destruct()".
-            $this->lockByFlock = null; // Error.
+            $this->LockByShmop = null; // Error.
         } catch (\BreakpointDebugging_Error_Exception $exception) {
             $this->assertTrue(true);
             return;
@@ -149,14 +155,13 @@ class LockByFlockTest extends PHPUnit_Framework_TestCase
     {
         try {
             // Constructs instance of other class.
-            $LockByShmop = &\BreakpointDebugging_LockByShmop::singleton(5, 10); // Error.
+            $lockByFlock = &\BreakpointDebugging_LockByFlock::singleton(5, 10); // Error.
         } catch (\BreakpointDebugging_Error_Exception $exception) {
             $this->assertTrue(true);
             return;
         }
         $this->assertTrue(false);
     }
-
 }
 
 ?>

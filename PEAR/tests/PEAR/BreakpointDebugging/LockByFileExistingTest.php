@@ -1,6 +1,7 @@
 <?php
 
-chdir(__DIR__ . '/../../../../../');
+//chdir(__DIR__ . '/../../../../../');
+chdir(__DIR__ . '/../../../');
 require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
 
 use \BreakpointDebugging as B;
@@ -57,7 +58,8 @@ class LockByFileExistingTest extends PHPUnit_Framework_TestCase
             restore_error_handler();
             @unlink(BreakpointDebugging::$workDir . '/LockFlag.file');
             for ($count = 0; $count < 10; $count++) {
-                while (!($pFile = @fopen(BreakpointDebugging::$workDir . '/LockFlag.file', 'x+b')));
+                //while (!($pFile = @fopen(BreakpointDebugging::$workDir . '/LockFlag.file', 'x+b')));
+                while (!($pFile = @B::fopen(BreakpointDebugging::$workDir . '/LockFlag.file', 'x+b', 0600)));
                 chmod(BreakpointDebugging::$workDir . '/LockFlag.file', 0600);
                 fclose($pFile);
                 while (!@unlink(BreakpointDebugging::$workDir . '/LockFlag.file'));

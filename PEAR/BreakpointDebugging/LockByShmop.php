@@ -138,9 +138,6 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
      */
     static function &singleton($timeout = 60, $expire = 300, $sleepMicroSeconds = 100000)
     {
-//        if (!extension_loaded('shmop')) {
-//            $this->_throwException('"Shmop" extension has been not loaded.');
-//        }
         assert(extension_loaded('shmop'));
         return parent::singletonBase('\\' . __CLASS__, B::$workDir . '/LockByShmop.txt', $timeout, $expire, $sleepMicroSeconds);
     }
@@ -162,7 +159,8 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
         self::$_lockingObject->lock();
 
         restore_error_handler();
-        $this->pFile = @fopen($lockFilePath, 'x+b');
+        //$this->pFile = @fopen($lockFilePath, 'x+b');
+        $this->pFile = @B::fopen($lockFilePath, 'x+b', 0600);
         set_error_handler('BreakpointDebugging::errorHandler', -1);
         while (true) {
             // In case of existing file.
@@ -192,8 +190,9 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
                 if ($isContinue) {
                     fclose($this->pFile);
                     // Delete locking flag file.
-                    $this->pFile = fopen($lockFilePath, 'w+b');
-                    chmod($lockFilePath, 0600);
+                    //$this->pFile = fopen($lockFilePath, 'w+b');
+                    //chmod($lockFilePath, 0600);
+                    $this->pFile = B::fopen($lockFilePath, 'w+b', 0600);
                     continue;
                 }
             } else { // In case of not existing file.

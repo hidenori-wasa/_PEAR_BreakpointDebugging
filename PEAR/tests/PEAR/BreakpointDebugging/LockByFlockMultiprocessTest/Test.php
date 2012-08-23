@@ -1,6 +1,7 @@
 <?php
 
-chdir(__DIR__ . '/../../../../../../');
+//chdir(__DIR__ . '/../../../../../../');
+chdir(__DIR__ . '/../../../../');
 require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
 
 class Test
@@ -31,15 +32,14 @@ class Test
         // Extend maximum execution time.
         set_time_limit(300);
         $start = microtime(true);
-        $lockByFileExisting1 = &\BreakpointDebugging_LockByFileExisting::singleton(60, 300, 10000);
+        $lockByFlock1 = &\BreakpointDebugging_LockByFlock::singleton(60, 1000);
         for ($count = 0; $count < 125; $count++) {
-            $lockByFileExisting1->lock();
+            $lockByFlock1->lock();
             $this->_incrementSheredMemory();
-            $lockByFileExisting1->unlock();
+            $lockByFlock1->unlock();
         }
         var_dump(shmop_read($this->shmopId, 0, 10) + 0, microtime(true) - $start);
     }
-
 }
 
 $Test = new Test();
