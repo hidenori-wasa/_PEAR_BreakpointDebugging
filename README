@@ -5,13 +5,14 @@ The features list
     Please, read the file level document block of "PEAR/BreakpointDebugging_Option.php".
 
 The dependences
-    Linux or Windows.
-    PHP >= 5.3.0
-    You require "shmop" extension if you use "BreakpointDebugging_LockByShmop" class. (optional)
-    You require environment which flock() enables if you use "BreakpointDebugging_LockByFlock" class. (optional)
+    OS requires "Linux" or "Windows".
+    PHP version >= 5.3.0
+    Requires "Xdebug" extension.
+    Requires "shmop" extension if you use "BreakpointDebugging_LockByShmop" class. (optional)
+    Requires environment which "flock()" enables if you use "BreakpointDebugging_LockByFlock" class. (optional)
 
 Notice
-	I will do execution check of remote debug by rental server.
+    I will do execution check of remote debug by rental server.
 
 Warning
     This package version is development.

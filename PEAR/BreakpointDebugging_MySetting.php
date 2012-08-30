@@ -59,24 +59,68 @@ if (substr(PHP_OS, 0, 3) === 'WIN') { // In case of Windows.
     assert(false);
 }
 
-require_once 'BreakpointDebugging.php'; // 'BreakpointDebugging.php' must require_once because it is base of all class, and it sets php.ini, and it sets autoload.
-// ### Execution mode setting. ===>
+//require_once 'BreakpointDebugging.php'; // 'BreakpointDebugging.php' must require_once because it is base of all class, and it sets php.ini, and it sets autoload.
 /**
- * @see '### Debug mode constant number ###' of class BreakpointDebugging_InAllCase in BreakpointDebugging.php.
- *       B::LOCAL_DEBUG
- *       B::LOCAL_DEBUG_OF_RELEASE
- *       B::REMOTE_DEBUG
- *       B::RELEASE                     // We must execute "REMOTE_DEBUG" before this.
- *       B::LOCAL_DEBUG | B::UNIT_TEST  // Tests by "phpunit" on local.
- *       B::REMOTE_DEBUG | B::UNIT_TEST // Tests by "phpunit" on remote.
+ * @const int $_BreakpointDebugging_EXE_MODE Debug mode constant.
  */
-// $_BreakpointDebugging_EXE_MODE = B::LOCAL_DEBUG;
-$_BreakpointDebugging_EXE_MODE = B::LOCAL_DEBUG_OF_RELEASE;
-// $_BreakpointDebugging_EXE_MODE = B::REMOTE_DEBUG;
-// $_BreakpointDebugging_EXE_MODE = B::RELEASE;
-// $_BreakpointDebugging_EXE_MODE = B::LOCAL_DEBUG | B::UNIT_TEST;
-// $_BreakpointDebugging_EXE_MODE = B::REMOTE_DEBUG | B::UNIT_TEST;
-// ### <=== Execution mode setting.
+global $_BreakpointDebugging_EXE_MODE;
+/**
+ * Sets execution mode.
+ *
+ * @return void
+ */
+function BreakpointDebugging_setExecutionMode()
+{
+    global $_BreakpointDebugging_EXE_MODE;
+
+    // ### Debug mode constant number ###
+    /**
+     * @var int First mode is breakpoint debug with your personal computer.
+     */
+    $LOCAL_DEBUG = 1;
+
+    /**
+     * @var int Next mode is breakpoint debug to emulate release mode with your personal computer.
+     */
+    $LOCAL_DEBUG_OF_RELEASE = 2;
+
+    /**
+     * @var int Next mode is browser display debug with remote personal computer.
+     */
+    $REMOTE_DEBUG = 4;
+
+    /**
+     * @var int Next mode is log debug with remote personal computer. That is, this is a release mode.
+     */
+    $RELEASE = 8;
+
+    /**
+     * @var int Tests by "phpunit". This flag is used with "LOCAL_DEBUG" flag.
+     */
+    $UNIT_TEST = 16;
+
+    // ### Execution mode setting. ===>
+    /**
+     * @see '### Debug mode constant number ###' of class BreakpointDebugging_InAllCase in BreakpointDebugging.php.
+     *       B::LOCAL_DEBUG                 // Local debug by breakpoint.
+     *       B::LOCAL_DEBUG_OF_RELEASE      // Local debug by logging.
+     *       B::REMOTE_DEBUG                // Remote debug by browser diplay.
+     *       B::RELEASE                     // Remote release by logging. We must execute "REMOTE_DEBUG" before this.
+     *       B::LOCAL_DEBUG | B::UNIT_TEST  // Tests by "phpunit" on local.
+     *       B::REMOTE_DEBUG | B::UNIT_TEST // Tests by "phpunit" on remote.
+     */
+    $_BreakpointDebugging_EXE_MODE = $LOCAL_DEBUG;
+    // $_BreakpointDebugging_EXE_MODE = $LOCAL_DEBUG_OF_RELEASE;
+    // $_BreakpointDebugging_EXE_MODE = $REMOTE_DEBUG;
+    // $_BreakpointDebugging_EXE_MODE = $RELEASE;
+    // $_BreakpointDebugging_EXE_MODE = $LOCAL_DEBUG | $UNIT_TEST;
+    // $_BreakpointDebugging_EXE_MODE = $REMOTE_DEBUG | $UNIT_TEST;
+    // ### <=== Execution mode setting.
+}
+
+BreakpointDebugging_setExecutionMode();
+
+require_once 'BreakpointDebugging.php'; // 'BreakpointDebugging.php' must require_once because it is base of all class, and it sets php.ini, and it sets autoload.
 /**
  *
  */

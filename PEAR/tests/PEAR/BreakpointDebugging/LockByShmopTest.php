@@ -16,11 +16,11 @@ class LockByShmopTest extends PHPUnit_Framework_TestCase
     {
         // Constructs instance.
         $this->LockByShmop = &\BreakpointDebugging_LockByShmop::singleton(5, 10);
-        // Deletes locking flag file.
-        $path = B::getPropertyForTest($this->LockByShmop, '$lockFilePath');
-        if (is_file($path)) {
-            unlink($path);
-        }
+        //// Deletes locking flag file.
+        //$path = B::getPropertyForTest($this->LockByShmop, '$lockFilePath');
+        //if (is_file($path)) {
+        //    unlink($path);
+        //}
     }
 
     protected function tearDown()
@@ -162,6 +162,7 @@ class LockByShmopTest extends PHPUnit_Framework_TestCase
         }
         $this->assertTrue(false);
     }
+
 }
 
 ?>

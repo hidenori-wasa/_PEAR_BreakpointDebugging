@@ -16,11 +16,11 @@ class LockByFileExistingTest extends PHPUnit_Framework_TestCase
     {
         // Constructs instance.
         $this->lockByFileExisting = &\BreakpointDebugging_LockByFileExisting::singleton(5, 10);
-        // Deletes locking flag file.
-        $path = B::getPropertyForTest($this->lockByFileExisting, '$lockFilePath');
-        if (is_file($path)) {
-            unlink($path);
-        }
+        //// Deletes locking flag file.
+        //$path = B::getPropertyForTest($this->lockByFileExisting, '$lockFilePath');
+        //if (is_file($path)) {
+        //    unlink($path);
+        //}
     }
 
     protected function tearDown()

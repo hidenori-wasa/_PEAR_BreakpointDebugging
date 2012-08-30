@@ -164,13 +164,19 @@ abstract class BreakpointDebugging_Lock
      */
     function __destruct()
     {
-        if (is_resource($this->pFile)) {
-            fclose($this->pFile);
+        //if (is_resource($this->pFile)) {
+        //    fclose($this->pFile);
+        //}
+        //if (B::$onceErrorDispFlag) {
+        //    return;
+        //}
+        $_lockCount = $this->_lockCount;
+        // Unlocks all. We must unlock before "B::internalAssert" because if we execute unit test, it throws exception.
+        while ($this->_lockCount > 0) {
+            $this->unlock();
         }
-        if (B::$onceErrorDispFlag) {
-            return;
-        }
-        B::internalAssert($this->_lockCount === 0);
+        //B::internalAssert($this->_lockCount === 0);
+        B::internalAssert($_lockCount === 0);
     }
 
     /**
@@ -242,6 +248,25 @@ abstract class BreakpointDebugging_Lock
 //        // And exits.
 //        exit($message);
 //    }
+    /**
+     * Forces the unlocking for ...
+     *
+     * @return void
+     */
+    static function forceUnlock()
+    {
+        if (is_object(self::$_internalInstance)) {
+            while (self::$_internalInstance->_lockCount > 0) {
+                self::$_internalInstance->unlock();
+            }
+        }
+        if (is_object(self::$_instance)) {
+            while (self::$_instance->_lockCount > 0) {
+                self::$_instance->unlock();
+            }
+        }
+    }
+
 }
 
 ?>

@@ -370,6 +370,8 @@ final class BreakpointDebugging_Error
         B::internalAssert($pException instanceof Exception);
         B::internalAssert(is_string($prependLog));
 
+        \BreakpointDebugging_Lock::forceUnlock();
+
         $errorMessage = $this->_convertMbString($pException->getMessage());
         $prependLog = $this->_convertMbString($prependLog);
 
@@ -390,7 +392,8 @@ final class BreakpointDebugging_Error
      * @param string $errorMessage Error message.
      * @param string $prependLog   This prepend this parameter logging.
      *
-     * @return bool Did the error handling end?
+     * @//return bool Did the error handling end?
+     * @return bool Without system log (true).
      */
     function errorHandler2($errorNumber, $errorMessage, $prependLog)
     {
@@ -400,14 +403,6 @@ final class BreakpointDebugging_Error
         B::internalAssert(is_string($prependLog));
 
         global $_BreakpointDebugging_EXE_MODE;
-
-        $errorMessage = $this->_convertMbString($errorMessage);
-        $prependLog = $this->_convertMbString($prependLog);
-
-        $this->callStackInfo = debug_backtrace();
-        unset($this->callStackInfo[0], $this->callStackInfo[1]);
-        // Add scope of start page file.
-        $this->callStackInfo[] = array ();
 
         // This creates error log.
         switch ($errorNumber) {
@@ -422,9 +417,11 @@ final class BreakpointDebugging_Error
                 break;
             case E_USER_ERROR:
                 $errorKind = 'E_USER_ERROR';
+                $endFlag = true;
                 break;
             case E_ERROR:
                 $errorKind = 'E_ERROR';
+                $endFlag = true;
                 break;
             case E_WARNING:
                 $errorKind = 'E_WARNING';
@@ -437,12 +434,14 @@ final class BreakpointDebugging_Error
                 break;
             case E_CORE_ERROR:
                 $errorKind = 'E_CORE_ERROR';
+                $endFlag = true;
                 break;
             case E_CORE_WARNING:
                 $errorKind = 'E_CORE_WARNING';
                 break;
             case E_COMPILE_ERROR:
                 $errorKind = 'E_COMPILE_ERROR';
+                $endFlag = true;
                 break;
             case E_COMPILE_WARNING:
                 $errorKind = 'E_COMPILE_WARNING';
@@ -457,15 +456,33 @@ final class BreakpointDebugging_Error
                 $errorKind = 'E_DEPRECATED';
                 break;
             default:
-                $errorKind = 'E_UNKNOWN';
-                BreakpointDebugging_breakpoint($errorMessage, $this->callStackInfo);
+                //$errorKind = 'E_UNKNOWN';
+                //BreakpointDebugging_breakpoint($errorMessage, $this->callStackInfo);
+                B::internalAssert(false);
                 break;
         }
+//        if (isset($endFlag)) {
+//            \BreakpointDebugging_Lock::forceUnlock();
+//        }
+
+        $errorMessage = $this->_convertMbString($errorMessage);
+        $prependLog = $this->_convertMbString($prependLog);
+
+        $this->callStackInfo = debug_backtrace();
+        unset($this->callStackInfo[0], $this->callStackInfo[1]);
+        // Add scope of start page file.
+        $this->callStackInfo[] = array ();
         if ($this->outputErrorCallStackLog2($errorKind, $errorMessage, $prependLog)) {
             BreakpointDebugging_breakpoint($errorMessage, $this->callStackInfo);
-            return true;
+            //    return true;
+            //}
+            //return false; // With system log.
+        } else { // In case of "B::RELEASE" mode.
+            if (isset($endFlag)) {
+                exit;
+            }
         }
-        return false; // With system log.
+        return true;
     }
 
     /**
@@ -571,7 +588,7 @@ final class BreakpointDebugging_Error
 
         // If this does a log.
         if ($_BreakpointDebugging_EXE_MODE & (B::RELEASE | B::LOCAL_DEBUG_OF_RELEASE)) {
-            // Locks php-code.
+            // Locks the error log files.
             $this->lockByFileExisting = &\BreakpointDebugging_LockByFileExisting::internalSingleton();
             $this->lockByFileExisting->lock();
             // When "ErrorLog" directory does not exist.
@@ -740,7 +757,7 @@ final class BreakpointDebugging_Error
             fclose($this->_pErrorLogFile);
             // Closes variable configuring file.
             fclose($pVarConfFile);
-            // Unlocks php-code.
+            // Unlocks the error log files.
             $this->lockByFileExisting->unlock();
             if ($exceptionMessage) {
                 B::internalException($exceptionMessage);

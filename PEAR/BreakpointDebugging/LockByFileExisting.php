@@ -88,7 +88,7 @@ final class BreakpointDebugging_LockByFileExisting extends \BreakpointDebugging_
      */
     static function &internalSingleton()
     {
-        return parent::singletonBase('\\' . __CLASS__, B::$workDir . '/LockByFileExisting.txt', 60, 300, 100000, true);
+        return parent::singletonBase('\\' . __CLASS__, B::$workDir . '/LockByFileExistingOfInternal.txt', 60, 300, 100000, true);
     }
 
     /**
@@ -135,7 +135,7 @@ final class BreakpointDebugging_LockByFileExisting extends \BreakpointDebugging_
             // Wait micro seconds.
             usleep($this->sleepMicroSeconds);
         }
-        chmod($this->lockFilePath, 0600);
+        //chmod($this->lockFilePath, 0600);
     }
 
     /**

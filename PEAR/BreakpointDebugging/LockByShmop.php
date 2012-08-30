@@ -447,9 +447,14 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
         // Lock for a process which is locked by file existing.
         $this->_lockOn2Processes(self::HEXADECIMAL_SIZE * 4 + 1, self::HEXADECIMAL_SIZE * 4);
 
-        // Register next current process number as current process number.
-        shmop_write(self::$_sharedMemoryID, sprintf('0x%08X', $this->_getNextCurrentProcessNumber()), 0);
-        // Is it registered that this process is not between "lock()" and "unlock()".
+        //// Register next current process number as current process number.
+        //shmop_write(self::$_sharedMemoryID, sprintf('0x%08X', $this->_getNextCurrentProcessNumber()), 0);
+        // If next current process number exists.
+        if ($this->_getNextCurrentProcessNumber() !== false) {
+            // Register next current process number as current process number.
+            shmop_write(self::$_sharedMemoryID, sprintf('0x%08X', $this->_getNextCurrentProcessNumber()), 0);
+        }
+        // It is registered that this process is not between "lock()" and "unlock()".
         shmop_write(self::$_sharedMemoryID, '1', self::$_processNumber);
 
         // Unlock for a process which is locked by file existing.

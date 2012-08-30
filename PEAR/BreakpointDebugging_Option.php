@@ -586,13 +586,24 @@ if (assert_options(ASSERT_BAIL, 0) === false) { // In case of failing in asserti
 if (assert_options(ASSERT_QUIET_EVAL, 0) === false) { // As for assertion expression, this doesn't make error_reporting invalid.
     throw new \BreakpointDebugging_Error_Exception('');
 }
-if (assert_options(ASSERT_CALLBACK, 'BreakpointDebugging::makeUnitTestException') === false) { // Register callback which is called failing in assertion.
-    throw new \BreakpointDebugging_Error_Exception('');
-}
+//if (assert_options(ASSERT_CALLBACK, 'BreakpointDebugging::makeUnitTestException') === false) { // Register callback which is called failing in assertion.
+//    throw new \BreakpointDebugging_Error_Exception('');
+//}
+//
 // ### usage ###
 //   assert(<judgment expression>);
 //   It is possible to assert that <judgment expression> is "This must be". Especially, this uses to verify a function's argument.
 //   For example: assert(3 <= $value && $value <= 5); // $value should be 3-5.
 //   Caution: Don't change the value of variable in "assert()" function because there isn't executed in case of release.
+
+if (!extension_loaded('xdebug')) {
+    exit(
+        '### ERROR ###<br/>' . PHP_EOL .
+        'FILE: ' . __FILE__ . ' LINE: ' . __LINE__ . '<br/>' . PHP_EOL .
+        '"Xdebug" extension has been not loaded.<br/>' . PHP_EOL .
+        '"Xdebug" extension is required because avoids infinity recursive function call.<br/>' . PHP_EOL .
+        'Also, this package requires "Xdebug" extension.<br/>'
+    );
+}
 
 ?>

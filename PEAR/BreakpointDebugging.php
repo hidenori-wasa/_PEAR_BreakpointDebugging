@@ -47,10 +47,10 @@
 // therefore "use" keyword alias does not be affected by other files.
 use \BreakpointDebugging as B;
 
-/**
- * @const int $_BreakpointDebugging_EXE_MODE Debug mode constant.
- */
-global $_BreakpointDebugging_EXE_MODE;
+///**
+// * @const int $_BreakpointDebugging_EXE_MODE Debug mode constant.
+// */
+//global $_BreakpointDebugging_EXE_MODE;
 
 require_once __DIR__ . '/PEAR/Exception.php';
 
@@ -326,7 +326,7 @@ class BreakpointDebugging_InAllCase
     {
         assert(func_num_args() === 1);
         assert(is_string($string));
-        // It analyzes character sets of character string head.
+        // Analyzes character sets of character string.
         $charSet = mb_detect_encoding($string);
         if ($charSet === 'UTF-8' || $charSet === 'ASCII') {
             return $string;
@@ -356,7 +356,8 @@ class BreakpointDebugging_InAllCase
                 `chown \$user.\$user \$name`;
             }
         } else {
-            assert(false);
+            //assert(false);
+            self::internalAssert(false);
         }
     }
 
@@ -370,8 +371,9 @@ class BreakpointDebugging_InAllCase
      */
     static function mkdir($dirName, $permission = 0777)
     {
-        mkdir($dirName);
-        self::_setOwner($dirName, $permission);
+        if (mkdir($dirName)) {
+            self::_setOwner($dirName, $permission);
+        }
     }
 
     /**
@@ -386,7 +388,9 @@ class BreakpointDebugging_InAllCase
     static function fopen($fileName, $mode, $permission)
     {
         $pFile = fopen($fileName, $mode);
-        self::_setOwner($fileName, $permission);
+        if ($pFile) {
+            self::_setOwner($fileName, $permission);
+        }
         return $pFile;
     }
 
@@ -415,7 +419,11 @@ class BreakpointDebugging_InAllCase
      */
     final static function errorHandler($errorNumber, $errorMessage)
     {
-        BreakpointDebugging::makeUnitTestException();
+        global $_BreakpointDebugging_EXE_MODE;
+
+        if (!($_BreakpointDebugging_EXE_MODE & B::RELEASE)) { // In case of not release.
+            BreakpointDebugging::makeUnitTestException();
+        }
         self::$error = new BreakpointDebugging_Error();
         $return = self::$error->errorHandler2($errorNumber, $errorMessage, B::$prependErrorLog);
         self::$error = null;
@@ -521,6 +529,7 @@ class BreakpointDebugging_InAllCase
                 }
             }
         }
+        //\BreakpointDebugging_Lock::forceUnlock();
     }
 
 }
@@ -567,7 +576,7 @@ if ($_BreakpointDebugging_EXE_MODE & BreakpointDebugging_InAllCase::RELEASE) { /
     }
 
     if (assert_options(ASSERT_ACTIVE, 0) === false) { // Ignore assert().
-        throw new BreakpointDebugging_Error_Exception('');
+        throw new \BreakpointDebugging_Error_Exception('');
     }
 } else { // In case of not release.
     include_once __DIR__ . '/BreakpointDebugging_Option.php';
@@ -577,8 +586,18 @@ if ($_BreakpointDebugging_EXE_MODE & BreakpointDebugging_InAllCase::RELEASE) { /
 set_exception_handler('BreakpointDebugging::exceptionHandler');
 // This sets error handler.( -1 sets all bits on 1. Therefore, this specifies error, warning and note of all kinds and so on.)
 set_error_handler('BreakpointDebugging::errorHandler', -1);
-$_BreakpointDebugging = new BreakpointDebugging();
+$_BreakpointDebugging = new \BreakpointDebugging();
 spl_autoload_register('BreakpointDebugging::autoload', true, true);
 register_shutdown_function('BreakpointDebugging::shutdown');
+
+//if (!extension_loaded('xdebug')) {
+//    exit(
+//        '### ERROR ###<br/>' . PHP_EOL .
+//        'FILE: ' . __FILE__ . ' LINE: ' . __LINE__ . '<br/>' . PHP_EOL .
+//        '"Xdebug" extension has been not loaded.<br/>' . PHP_EOL .
+//        '"Xdebug" extension is required because avoids infinity recursive function call.<br/>' . PHP_EOL .
+//        'Also, this package requires "Xdebug" extension.<br/>'
+//    );
+//}
 
 ?>
