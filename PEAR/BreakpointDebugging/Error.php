@@ -181,8 +181,12 @@ final class BreakpointDebugging_Error
      */
     private function _convertMbString($string)
     {
-        B::internalAssert(func_num_args() === 1);
-        B::internalAssert(is_string($string));
+        if (B::internalAssert(func_num_args() === 1)) {
+            assert(false);
+        }
+        if (B::internalAssert(is_string($string))) {
+            assert(false);
+        }
 
         static $onceFlag = true;
 
@@ -193,7 +197,9 @@ final class BreakpointDebugging_Error
             $message = 'This isn\'t single character sets.';
             if ($onceFlag) {
                 $onceFlag = false;
-                B::internalException($message);
+                if (B::internalException()) {
+                    throw new \BreakpointDebugging_Error_Exception($message);
+                }
             }
             return "### ERROR: {$message} ###";
         }
@@ -261,10 +267,18 @@ final class BreakpointDebugging_Error
      */
     private function _reflectArray(&$pTmpLog, $paramName, $array, $tabNumber = 1)
     {
-        B::internalAssert(func_num_args() <= 4);
-        B::internalAssert(is_string($paramName) || is_int($paramName));
-        B::internalAssert(is_array($array));
-        B::internalAssert(is_int($tabNumber));
+        if (B::internalAssert(func_num_args() <= 4)) {
+            assert(false);
+        }
+        if (B::internalAssert(is_string($paramName) || is_int($paramName))) {
+            assert(false);
+        }
+        if (B::internalAssert(is_array($array))) {
+            assert(false);
+        }
+        if (B::internalAssert(is_int($tabNumber))) {
+            assert(false);
+        }
 
         $isOverMaxLogElementNumber = false;
         if (count($array) > B::$maxLogElementNumber) {
@@ -298,7 +312,9 @@ final class BreakpointDebugging_Error
             }
         }
         $this->_logBufferWriting($pTmpLog2, PHP_EOL . $tabs . ')');
-        B::internalAssert($pTmpLog2 !== null);
+        if (B::internalAssert($pTmpLog2 !== null)) {
+            assert(false);
+        }
         $this->_logCombination($pTmpLog, $pTmpLog2);
     }
 
@@ -316,11 +332,21 @@ final class BreakpointDebugging_Error
     {
         $className = get_class($object);
 
-        B::internalAssert(func_num_args() <= 4);
-        B::internalAssert(is_string($paramName) || is_int($paramName));
-        B::internalAssert(is_string($className));
-        B::internalAssert(is_object($object));
-        B::internalAssert(is_int($tabNumber));
+        if (B::internalAssert(func_num_args() <= 4)) {
+            assert(false);
+        }
+        if (B::internalAssert(is_string($paramName) || is_int($paramName))) {
+            assert(false);
+        }
+        if (B::internalAssert(is_string($className))) {
+            assert(false);
+        }
+        if (B::internalAssert(is_object($object))) {
+            assert(false);
+        }
+        if (B::internalAssert(is_int($tabNumber))) {
+            assert(false);
+        }
 
         $tabs = str_repeat("\t", $tabNumber);
         $classReflection = new ReflectionClass($className);
@@ -366,11 +392,18 @@ final class BreakpointDebugging_Error
      */
     function exceptionHandler2($pException, $prependLog)
     {
-        B::internalAssert(func_num_args() === 2);
-        B::internalAssert($pException instanceof Exception);
-        B::internalAssert(is_string($prependLog));
+        if (B::internalAssert(func_num_args() === 2)) {
+            assert(false);
+        }
+        if (B::internalAssert($pException instanceof \Exception)) {
+            assert(false);
+        }
+        if (B::internalAssert(is_string($prependLog))) {
+            assert(false);
+        }
 
-        \BreakpointDebugging_Lock::forceUnlock();
+        // Forces unlocking to avoid lock-count assertion error if forces a exit.
+        \BreakpointDebugging_Lock::forceUnlocking();
 
         $errorMessage = $this->_convertMbString($pException->getMessage());
         $prependLog = $this->_convertMbString($prependLog);
@@ -392,15 +425,22 @@ final class BreakpointDebugging_Error
      * @param string $errorMessage Error message.
      * @param string $prependLog   This prepend this parameter logging.
      *
-     * @//return bool Did the error handling end?
      * @return bool Without system log (true).
      */
     function errorHandler2($errorNumber, $errorMessage, $prependLog)
     {
-        B::internalAssert(func_num_args() === 3);
-        B::internalAssert(is_int($errorNumber));
-        B::internalAssert(is_string($errorMessage));
-        B::internalAssert(is_string($prependLog));
+        if (B::internalAssert(func_num_args() === 3)) {
+            assert(false);
+        }
+        if (B::internalAssert(is_int($errorNumber))) {
+            assert(false);
+        }
+        if (B::internalAssert(is_string($errorMessage))) {
+            assert(false);
+        }
+        if (B::internalAssert(is_string($prependLog))) {
+            assert(false);
+        }
 
         global $_BreakpointDebugging_EXE_MODE;
 
@@ -456,14 +496,11 @@ final class BreakpointDebugging_Error
                 $errorKind = 'E_DEPRECATED';
                 break;
             default:
-                //$errorKind = 'E_UNKNOWN';
-                //BreakpointDebugging_breakpoint($errorMessage, $this->callStackInfo);
-                B::internalAssert(false);
+                if (B::internalAssert(false)) {
+                    assert(false);
+                }
                 break;
         }
-//        if (isset($endFlag)) {
-//            \BreakpointDebugging_Lock::forceUnlock();
-//        }
 
         $errorMessage = $this->_convertMbString($errorMessage);
         $prependLog = $this->_convertMbString($prependLog);
@@ -474,9 +511,6 @@ final class BreakpointDebugging_Error
         $this->callStackInfo[] = array ();
         if ($this->outputErrorCallStackLog2($errorKind, $errorMessage, $prependLog)) {
             BreakpointDebugging_breakpoint($errorMessage, $this->callStackInfo);
-            //    return true;
-            //}
-            //return false; // With system log.
         } else { // In case of "B::RELEASE" mode.
             if (isset($endFlag)) {
                 exit;
@@ -520,6 +554,7 @@ final class BreakpointDebugging_Error
      * @param bool   &$onceFlag2 False means logging parameter header.
      * @param string &$func      Function name of call stack.
      * @param string &$class     Class name of call stack.
+     * @param string $file       File name of call stack.
      * @param string $line       Line number of call stack.
      * @param string $tabs       Tabs to indent.
      *
@@ -567,11 +602,21 @@ final class BreakpointDebugging_Error
     {
         global $_BreakpointDebugging_EXE_MODE;
 
-        B::internalAssert(func_num_args() <= 3);
-        B::internalAssert(is_string($errorKind));
-        B::internalAssert(is_string($errorMessage));
-        B::internalAssert(is_array($this->callStackInfo));
-        B::internalAssert(is_string($prependLog));
+        if (B::internalAssert(func_num_args() <= 3)) {
+            assert(false);
+        }
+        if (B::internalAssert(is_string($errorKind))) {
+            assert(false);
+        }
+        if (B::internalAssert(is_string($errorMessage))) {
+            assert(false);
+        }
+        if (B::internalAssert(is_array($this->callStackInfo))) {
+            assert(false);
+        }
+        if (B::internalAssert(is_string($prependLog))) {
+            assert(false);
+        }
 
         if (!$this->_isLogging) {
             $errorMessage = htmlspecialchars($errorMessage, ENT_QUOTES, 'UTF-8');
@@ -627,7 +672,7 @@ final class BreakpointDebugging_Error
             $maxErrorFileNumber = 0;
             while ($varConfLineString = fgets($pVarConfFile)) {
                 $varConfLineString = trim($varConfLineString);
-                if (strncmp($varConfLineString, $file . ':', $fileCmpLen) === 0) { // Searches the error file name.
+                if (strncmp($varConfLineString, $file . '>', $fileCmpLen) === 0) { // Searches the error file name.
                     $tmpErrorFileNumber = substr($varConfLineString, -4);
                     if ($tmpErrorFileNumber > $maxErrorFileNumber) {
                         $maxErrorFileNumber = $tmpErrorFileNumber;
@@ -666,7 +711,7 @@ final class BreakpointDebugging_Error
                 $errorLocationFilePath = $errorLogDirectory . $file . '.' . $errorFile4Number . '.txt';
                 fseek($pVarConfFile, 0, SEEK_END);
                 // Sets the error file path.
-                fwrite($pVarConfFile, $file . ':' . $filePath . $errorFile4Number . PHP_EOL);
+                fwrite($pVarConfFile, $file . '>' . $filePath . $errorFile4Number . PHP_EOL);
                 // Creates the error location file.
                 $pErrorLocationFile = B::fopen($errorLocationFilePath, 'x+b', 0600);
             }
@@ -760,7 +805,9 @@ final class BreakpointDebugging_Error
             // Unlocks the error log files.
             $this->lockByFileExisting->unlock();
             if ($exceptionMessage) {
-                B::internalException($exceptionMessage);
+                if (B::internalException()) {
+                    throw new \BreakpointDebugging_Error_Exception($exceptionMessage);
+                }
             }
         }
         if ($_BreakpointDebugging_EXE_MODE & B::RELEASE) {
@@ -781,7 +828,10 @@ final class BreakpointDebugging_Error
      */
     private function _getTypeAndValue(&$pTmpLog, $paramName, $paramValue, $tabNumber)
     {
-        B::internalAssert(func_num_args() === 4);
+        if (B::internalAssert(func_num_args() === 4)) {
+            assert(false);
+        }
+
 
         if (is_array($paramValue)) {
             if ($paramName === 'GLOBALS') {
@@ -830,7 +880,9 @@ final class BreakpointDebugging_Error
                 $this->tags['font']['resource'] . $paramValue . $this->tags['/font'];
             $this->_logBufferWriting($pTmpLog, $tmp);
         } else {
-            B::internalAssert(false);
+            if (B::internalAssert(false)) {
+                assert(false);
+            }
         }
     }
 
@@ -845,7 +897,9 @@ final class BreakpointDebugging_Error
      */
     private function _searchDebugBacktraceArgsToString(&$pTmpLog, $backtraceParams, $tabNumber = 1)
     {
-        B::internalAssert(func_num_args() <= 3);
+        if (B::internalAssert(func_num_args() <= 3)) {
+            assert(false);
+        }
 
         $isFirst = true;
         $paramCount = 0;
@@ -910,7 +964,9 @@ final class BreakpointDebugging_Error
      */
     private function _logWriting(&$pTmpLog)
     {
-        B::internalAssert(func_num_args() === 1);
+        if (B::internalAssert(func_num_args() === 1)) {
+            assert(false);
+        }
 
         global $_BreakpointDebugging_EXE_MODE;
 
@@ -942,7 +998,9 @@ final class BreakpointDebugging_Error
                 }
                 break;
             default:
-                B::internalAssert(false);
+                if (B::internalAssert(false)) {
+                    assert(false);
+                }
         }
         $pTmpLog = null;
     }
@@ -958,7 +1016,9 @@ final class BreakpointDebugging_Error
      */
     private function _logBufferWriting(&$pLogBuffer, $log)
     {
-        B::internalAssert(is_array($pLogBuffer) || is_resource($pLogBuffer) || $pLogBuffer === null);
+        if (B::internalAssert(is_array($pLogBuffer) || is_resource($pLogBuffer) || $pLogBuffer === null)) {
+            assert(false);
+        }
 
         global $_BreakpointDebugging_EXE_MODE;
 
@@ -993,6 +1053,9 @@ final class BreakpointDebugging_Error
                 break;
             default:
                 B::internalAssert(false);
+                if (B::internalAssert(false)) {
+                    assert(false);
+                }
         }
     }
 
@@ -1059,7 +1122,9 @@ final class BreakpointDebugging_Error
                 }
                 break;
             default:
-                B::internalAssert(false);
+                if (B::internalAssert(false)) {
+                    assert(false);
+                }
         }
         $this->_logPointerClosing($pTmpLog2);
     }

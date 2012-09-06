@@ -56,6 +56,7 @@ class BaseNativeClass
     {
         var_dump('Called basePublicStaticFunction.');
     }
+
 }
 
 class NativeClass extends BaseNativeClass
@@ -89,6 +90,7 @@ class NativeClass extends BaseNativeClass
     {
         var_dump('Called publicStaticFunction.');
     }
+
 }
 
 class OtherClass
@@ -102,6 +104,7 @@ class OtherClass
     private static $privateStatic = 'PrivateStatic';
     protected static $protectedStatic = 'ProtectedStatic';
     public static $publicStatic = 'PublicStatic';
+
 }
 
 $baseArray = array (' baseArrayElement1', 'baseArrayElement2 ');

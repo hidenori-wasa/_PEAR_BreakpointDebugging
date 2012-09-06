@@ -6,10 +6,12 @@
  * Procedure1: Please, register your IP address to "$myIPAddress".
  * Procedure2: Please, upload this page to the project current directory.
  * Procedure3: Please, call this page from browser.
- * Procedure4: Please, click "Download error log files" button, then delete this page for security.
- * Procedure5: Please, debug php code by downloaded error log files, then upload php code.
- * Procedure6: Please, execute procedure1-3.
- * Procedure7: Please, click "Reset error log files" button, then delete this page for security.
+ * Procedure4: Please, download by clicking all "Download error log file" button.
+ * Procedure5: Please, click "Delete all error log files" button.
+ * Procedure6: Please, debug php code by downloaded error log files.
+ * Procedure7: Please, go to "Procedure4" if "Download error log file" button exists.
+ * Procedure8: Please, upload repaired php code.
+ * Procedure9: Please, click "Reset error log files" button.
  *
  * PHP version 5.3
  *
@@ -77,7 +79,7 @@ if (isset($_GET['download'])) {
     /**
      * Downloads a file.
      *
-     * @param string $filepath  A file path.
+     * @param string $filepath A file path.
      *
      * @return void
      */
@@ -113,6 +115,20 @@ if (isset($_GET['download'])) {
         break;
     }
     assert($doneDownload);
+} else if (isset($_GET['deleteErrorLogs'])) { // When you pushed "Delete all error log files" button.
+    // Searches the files which should delete.
+    foreach ($errorLogDirElements as $errorLogDirElement) {
+        if (!preg_match('`^php_error_[1-8]\.log$`xXu', $errorLogDirElement)) {
+            continue;
+        }
+        $errorLogDirElementPath = $errorLogDirectory . $errorLogDirElement;
+        if (!is_file($errorLogDirElementPath)) {
+            continue;
+        }
+        // Deletes the error log file, variable configuring file or the error location file.
+        unlink($errorLogDirElementPath);
+    }
+    echo '<H1>You must delete this page for security.</H1>';
 } else if (isset($_GET['reset'])) { // When you pushed "Reset error log files" button.
     // Searches the files which should delete.
     foreach ($errorLogDirElements as $errorLogDirElement) {
@@ -133,16 +149,20 @@ if (isset($_GET['download'])) {
         }
         echo <<<EOD
 <form method="post" action="{$thisFileName}?download={$errorLogDirElement}">
-    <input type="submit" value="Download error log files ({$errorLogDirElement})"/>
+    <input type="submit" value="Download error log file ({$errorLogDirElement})"/>
 </form>
 EOD;
     }
     echo <<<EOD
-<form method="post" action="{$thisFileName}?reset">
-    <input type="submit" value="Reset error log files"/>
+<form method="post" action="{$thisFileName}?deleteErrorLogs">
+    <input type="submit" value="Delete all error log files"> You must download all error log files before you push this button.</input>
 </form>
 EOD;
-    echo '<H1>You must delete this page for security.</H1>';
+    echo <<<EOD
+<form method="post" action="{$thisFileName}?reset">
+    <input type="submit" value="Reset error log files"> You must debug and upload all error code before you push this button.</input>
+</form>
+EOD;
 }
 
 END_LABEL:

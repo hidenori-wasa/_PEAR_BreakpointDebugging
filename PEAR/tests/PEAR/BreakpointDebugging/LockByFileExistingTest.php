@@ -1,6 +1,5 @@
 <?php
 
-//chdir(__DIR__ . '/../../../../../');
 chdir(__DIR__ . '/../../../');
 require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
 
@@ -16,11 +15,6 @@ class LockByFileExistingTest extends PHPUnit_Framework_TestCase
     {
         // Constructs instance.
         $this->lockByFileExisting = &\BreakpointDebugging_LockByFileExisting::singleton(5, 10);
-        //// Deletes locking flag file.
-        //$path = B::getPropertyForTest($this->lockByFileExisting, '$lockFilePath');
-        //if (is_file($path)) {
-        //    unlink($path);
-        //}
     }
 
     protected function tearDown()
@@ -56,15 +50,14 @@ class LockByFileExistingTest extends PHPUnit_Framework_TestCase
             // Extend maximum execution time.
             set_time_limit(300);
             restore_error_handler();
-            @unlink(BreakpointDebugging::$workDir . '/LockFlag.file');
+            @unlink(B::$workDir . '/LockFlag.file');
             for ($count = 0; $count < 10; $count++) {
-                //while (!($pFile = @fopen(BreakpointDebugging::$workDir . '/LockFlag.file', 'x+b')));
-                while (!($pFile = @B::fopen(BreakpointDebugging::$workDir . '/LockFlag.file', 'x+b', 0600)));
-                chmod(BreakpointDebugging::$workDir . '/LockFlag.file', 0600);
+                while (!($pFile = @B::fopen(B::$workDir . '/LockFlag.file', 'x+b', 0600)));
+                chmod(B::$workDir . '/LockFlag.file', 0600);
                 fclose($pFile);
-                while (!@unlink(BreakpointDebugging::$workDir . '/LockFlag.file'));
+                while (!@unlink(B::$workDir . '/LockFlag.file'));
             }
-            set_error_handler('BreakpointDebugging::errorHandler', -1);
+            set_error_handler('\BreakpointDebugging::errorHandler', -1);
         } catch (\Exception $exception) {
             $this->assertTrue(false);
             return;

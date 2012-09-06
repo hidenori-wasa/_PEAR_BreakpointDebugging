@@ -126,7 +126,6 @@ require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
  */
 class BreakpointDebugging_OverrideClass
 {
-
     /**
      * @var object Native class object.
      */
@@ -190,7 +189,7 @@ class BreakpointDebugging_OverrideClass
         //          Then, in case of the variable length parameter, method must be changed signature.
         //          For example, How to call MySQLi_STMT::bind_param().
         //              bind_param(array ($format, &$variable1, &$variable2));
-        return call_user_func_array(array($this->pr_pNativeClass, $methodName), $params);
+        return call_user_func_array(array ($this->pr_pNativeClass, $methodName), $params);
     }
 
     /**
@@ -229,7 +228,7 @@ class BreakpointDebugging_OverrideClass
 
         self::$tmpParams = $params;
         $paramNumber = count($params);
-        $paramString = array();
+        $paramString = array ();
         $propertyNameToSend = 'BreakpointDebugging_OverrideClass::$tmpParams';
         for ($count = 0; $count < $paramNumber; $count++) {
             $paramString[] = $propertyNameToSend . '[' . $count . ']';

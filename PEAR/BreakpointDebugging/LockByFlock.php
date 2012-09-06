@@ -5,6 +5,7 @@
  *
  * This class has to be environment which can use "flock()".
  * We can synchronize applications by setting the same directory to "B::$workDir" of "BreakpointDebugging_MySetting.php".
+ *
  * @example of usage.
  *      $lockByFlock = &\BreakpointDebugging_LockByFlock::singleton(); // Creates a lock instance.
  *      $lockByFlock->lock(); // Locks php-code.
@@ -53,7 +54,7 @@
  * @version  SVN: $Id$
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-use BreakpointDebugging as B;
+use \BreakpointDebugging as B;
 
 /**
  * Class which locks php-code by "flock()".
@@ -70,8 +71,8 @@ final class BreakpointDebugging_LockByFlock extends \BreakpointDebugging_Lock
     /**
      * Singleton method.
      *
-     * @param int    $timeout            The timeout.
-     * @param int    $sleepMicroSeconds  Micro seconds to sleep.
+     * @param int $timeout           The timeout.
+     * @param int $sleepMicroSeconds Micro seconds to sleep.
      *
      * @return object Instance of this class.
      */
@@ -92,8 +93,6 @@ final class BreakpointDebugging_LockByFlock extends \BreakpointDebugging_Lock
     {
         parent::__construct($lockFilePath, $timeout, $sleepMicroSeconds);
 
-        //$this->pFile = fopen($lockFilePath, 'a+b');
-        //chmod($lockFilePath, 0600);
         $this->pFile = B::fopen($lockFilePath, 'ab', 0600);
         assert(stream_supports_lock($this->pFile));
     }

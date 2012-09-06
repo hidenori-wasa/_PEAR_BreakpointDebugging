@@ -1,6 +1,5 @@
 <?php
 
-//chdir(__DIR__ . '/../../../../../');
 chdir(__DIR__ . '/../../../');
 require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
 
@@ -10,7 +9,8 @@ use \BreakpointDebugging as B;
 $testFileNames = array (
     'LockByFileExistingTest.php',
     'LockByFlockTest.php',
-    'LockByShmopTest.php');
+    'LockByShmopTest.php'
+);
 // Executes unit tests.
 B::executeUnitTest($testFileNames, __DIR__);
 

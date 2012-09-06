@@ -5,6 +5,7 @@
  *
  * This class requires "shmop" extension.
  * We can synchronize applications by setting the same directory to "B::$workDir" of "BreakpointDebugging_MySetting.php".
+ *
  * @example of usage.
  *      $lockByShmop = &\BreakpointDebugging_LockByShmop::singleton(); // Creates a lock instance.
  *      $lockByShmop->lock(); // Locks php-code.
@@ -78,7 +79,7 @@
  */
 require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
 
-use BreakpointDebugging as B;
+use \BreakpointDebugging as B;
 
 /**
  * Class which locks php-code by shared memory operation.
@@ -103,11 +104,6 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
     const HEXADECIMAL_SIZE = 10;
 
     /**
-     * @var int Shared memory ID.
-     */
-    private static $_sharedMemoryID;
-
-    /**
      * @var int This process number.
      */
     private static $_processNumber;
@@ -118,21 +114,11 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
     const MEMORY_BLOCK_SIZE = 4096;
 
     /**
-     * This throws "\BreakpointDebugging_Error_Exception".
-     *
-     * @return void
-     */
-    private function _throwErrorException($message)
-    {
-        throw new \BreakpointDebugging_Error_Exception(B::convertMbString($message));
-    }
-
-    /**
      * Singleton method.
      *
-     * @param int    $timeout            The timeout.
-     * @param int    $expire             The number of seconds which lock-flag-file expires.
-     * @param int    $sleepMicroSeconds  Micro seconds to sleep.
+     * @param int $timeout           The timeout.
+     * @param int $expire            The number of seconds which lock-flag-file expires.
+     * @param int $sleepMicroSeconds Micro seconds to sleep.
      *
      * @return object Instance of this class.
      */
@@ -159,9 +145,8 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
         self::$_lockingObject->lock();
 
         restore_error_handler();
-        //$this->pFile = @fopen($lockFilePath, 'x+b');
         $this->pFile = @B::fopen($lockFilePath, 'x+b', 0600);
-        set_error_handler('BreakpointDebugging::errorHandler', -1);
+        set_error_handler('\BreakpointDebugging::errorHandler', -1);
         while (true) {
             // In case of existing file.
             if ($this->pFile === false) {
@@ -176,27 +161,24 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
                     $isContinue = true;
                 } else {
                     // Shared memory is too old.
-                    $sharedMemoryAccessTime = shmop_read(self::$_sharedMemoryID, self::HEXADECIMAL_SIZE * 3, self::HEXADECIMAL_SIZE) + 0;
+                    $sharedMemoryAccessTime = shmop_read(self::$sharedMemoryID, self::HEXADECIMAL_SIZE * 3, self::HEXADECIMAL_SIZE) + 0;
                     if (time() - $sharedMemoryAccessTime > $sharedMemoryExpire) {
                         // var_dump('Shared memory expired.'); // For debug.
                         // Delete shared memory.
-                        if (shmop_delete(self::$_sharedMemoryID) === false) {
-                            $this->_throwErrorException('This process failed to delete shared memory.');
+                        if (shmop_delete(self::$sharedMemoryID) === false) {
+                            throw new \BreakpointDebugging_Error_Exception('This process failed to delete shared memory.');
                         }
-                        shmop_close(self::$_sharedMemoryID);
+                        shmop_close(self::$sharedMemoryID);
                         $isContinue = true;
                     }
                 }
                 if ($isContinue) {
                     fclose($this->pFile);
                     // Delete locking flag file.
-                    //$this->pFile = fopen($lockFilePath, 'w+b');
-                    //chmod($lockFilePath, 0600);
                     $this->pFile = B::fopen($lockFilePath, 'w+b', 0600);
                     continue;
                 }
             } else { // In case of not existing file.
-                chmod($lockFilePath, 0600);
                 // Does not use writing and reading buffer.
                 stream_set_write_buffer($this->pFile, 0);
 
@@ -212,22 +194,22 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
         $this->_lockOn2Processes(self::HEXADECIMAL_SIZE * 4, self::HEXADECIMAL_SIZE * 4 + 1);
 
         // Get minimum empty process number.
-        $minimumEmptyProcessNumber = shmop_read(self::$_sharedMemoryID, self::HEXADECIMAL_SIZE, self::HEXADECIMAL_SIZE) + 0;
+        $minimumEmptyProcessNumber = shmop_read(self::$sharedMemoryID, self::HEXADECIMAL_SIZE, self::HEXADECIMAL_SIZE) + 0;
         // Register this process.
-        shmop_write(self::$_sharedMemoryID, '1', $minimumEmptyProcessNumber);
+        shmop_write(self::$sharedMemoryID, '1', $minimumEmptyProcessNumber);
         // Register this process number.
         self::$_processNumber = $minimumEmptyProcessNumber;
         // Get maximum process number.
-        $maximumProcessNumber = shmop_read(self::$_sharedMemoryID, self::HEXADECIMAL_SIZE * 2, self::HEXADECIMAL_SIZE) + 0;
+        $maximumProcessNumber = shmop_read(self::$sharedMemoryID, self::HEXADECIMAL_SIZE * 2, self::HEXADECIMAL_SIZE) + 0;
         if ($maximumProcessNumber < self::$_processNumber) {
             // Register maximum process number.
-            shmop_write(self::$_sharedMemoryID, sprintf('0x%08X', self::$_processNumber), self::HEXADECIMAL_SIZE * 2);
+            shmop_write(self::$sharedMemoryID, sprintf('0x%08X', self::$_processNumber), self::HEXADECIMAL_SIZE * 2);
         }
 
         // Search minimum empty process number.
         while (true) {
             for ($searchLocation = $minimumEmptyProcessNumber; $searchLocation < self::MEMORY_BLOCK_SIZE; $searchLocation++) {
-                if (shmop_read(self::$_sharedMemoryID, $searchLocation, 1) === '0') {
+                if (shmop_read(self::$sharedMemoryID, $searchLocation, 1) === '0') {
                     break 2;
                 }
             }
@@ -243,7 +225,7 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
             $this->_lockOn2Processes(self::HEXADECIMAL_SIZE * 4, self::HEXADECIMAL_SIZE * 4 + 1);
         }
         // Register minimum empty process number.
-        shmop_write(self::$_sharedMemoryID, sprintf('0x%08X', $searchLocation), self::HEXADECIMAL_SIZE);
+        shmop_write(self::$sharedMemoryID, sprintf('0x%08X', $searchLocation), self::HEXADECIMAL_SIZE);
 
         // Unlock for current process.
         $this->_unlockOn2Processes(self::HEXADECIMAL_SIZE * 4);
@@ -252,6 +234,9 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
         self::$_lockingObject->unlock();
     }
 
+    /**
+     * Destructs this instance.
+     */
     function __destruct()
     {
         // Lock php code.
@@ -261,29 +246,29 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
         $this->_lockOn2Processes(self::HEXADECIMAL_SIZE * 4, self::HEXADECIMAL_SIZE * 4 + 1);
 
         // When current process number is this process.
-        if (shmop_read(self::$_sharedMemoryID, 0, self::HEXADECIMAL_SIZE) + 0 === self::$_processNumber) {
+        if (shmop_read(self::$sharedMemoryID, 0, self::HEXADECIMAL_SIZE) + 0 === self::$_processNumber) {
             // Get next current process number.
             $nextCurrentProcessNumber = $this->_getNextCurrentProcessNumber();
             // When other process has been created.
             if ($nextCurrentProcessNumber !== false) {
                 // var_dump('Other process has been created.'); // For debug.
                 // Register next current process number as current process number.
-                shmop_write(self::$_sharedMemoryID, sprintf('0x%08X', $nextCurrentProcessNumber), 0);
+                shmop_write(self::$sharedMemoryID, sprintf('0x%08X', $nextCurrentProcessNumber), 0);
             } else { // When all processes run out.
                 // Initialilze shared memory.
-                shmop_write(self::$_sharedMemoryID, str_repeat('0', self::MEMORY_BLOCK_SIZE), 0);
+                shmop_write(self::$sharedMemoryID, str_repeat('0', self::MEMORY_BLOCK_SIZE), 0);
                 // Register current process number, minimum empty process number, maximum process number, access time to shared memory, lock-process-valid-flag and current-process-valid-flag.
                 $location = self::HEXADECIMAL_SIZE * 4 + 2;
-                shmop_write(self::$_sharedMemoryID, sprintf('0x%08X0x%08X0x%08X0x%08X', $location, $location, $location, time()), 0);
+                shmop_write(self::$sharedMemoryID, sprintf('0x%08X0x%08X0x%08X0x%08X', $location, $location, $location, time()), 0);
             }
         }
         // Delete process flag.
-        shmop_write(self::$_sharedMemoryID, '0', self::$_processNumber);
+        shmop_write(self::$sharedMemoryID, '0', self::$_processNumber);
         // Get minimum empty process number.
-        $minimumEmptyProcessNumber = shmop_read(self::$_sharedMemoryID, self::HEXADECIMAL_SIZE, self::HEXADECIMAL_SIZE) + 0;
+        $minimumEmptyProcessNumber = shmop_read(self::$sharedMemoryID, self::HEXADECIMAL_SIZE, self::HEXADECIMAL_SIZE) + 0;
         if (self::$_processNumber < $minimumEmptyProcessNumber) {
             // Register minimum empty process number.
-            shmop_write(self::$_sharedMemoryID, sprintf('0x%08X', self::$_processNumber), self::HEXADECIMAL_SIZE);
+            shmop_write(self::$sharedMemoryID, sprintf('0x%08X', self::$_processNumber), self::HEXADECIMAL_SIZE);
         }
         // Unlock for current process.
         $this->_unlockOn2Processes(self::HEXADECIMAL_SIZE * 4);
@@ -314,11 +299,11 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
             }
             break;
         }
-        set_error_handler('BreakpointDebugging::errorHandler', -1);
+        set_error_handler('\BreakpointDebugging::errorHandler', -1);
         if ($sharedMemoryID === false || $sharedMemoryKey === '') {
             return false;
         }
-        self::$_sharedMemoryID = $sharedMemoryID;
+        self::$sharedMemoryID = $sharedMemoryID;
         return true;
     }
 
@@ -336,24 +321,24 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
                 continue;
             }
             // It allocates shared memory area as current process number and minimum process number.
-            self::$_sharedMemoryID = @shmop_open($sharedMemoryKey, 'n', 0600, self::MEMORY_BLOCK_SIZE);
-            if (self::$_sharedMemoryID === false) {
+            self::$sharedMemoryID = @shmop_open($sharedMemoryKey, 'n', 0600, self::MEMORY_BLOCK_SIZE);
+            if (self::$sharedMemoryID === false) {
                 continue;
             }
             break;
         }
-        set_error_handler('BreakpointDebugging::errorHandler', -1);
-        if (self::$_sharedMemoryID === false) {
-            $this->_throwErrorException('New shared memory operation opening failed.');
+        set_error_handler('\BreakpointDebugging::errorHandler', -1);
+        if (self::$sharedMemoryID === false) {
+            throw new \BreakpointDebugging_Error_Exception('New shared memory operation opening failed.');
         }
         // Register shared memory key.
         rewind($this->pFile);
         fwrite($this->pFile, sprintf('0x%08X', $sharedMemoryKey));
         // Initialilze shared memory.
-        shmop_write(self::$_sharedMemoryID, str_repeat('0', self::MEMORY_BLOCK_SIZE), 0);
+        shmop_write(self::$sharedMemoryID, str_repeat('0', self::MEMORY_BLOCK_SIZE), 0);
         // Register current process number, minimum empty process number, maximum process number, access time to shared memory, lock-process-valid-flag and current-process-valid-flag.
         $location = self::HEXADECIMAL_SIZE * 4 + 2;
-        shmop_write(self::$_sharedMemoryID, sprintf('0x%08X0x%08X0x%08X0x%08X', $location, $location, $location, time()), 0);
+        shmop_write(self::$sharedMemoryID, sprintf('0x%08X0x%08X0x%08X0x%08X', $location, $location, $location, time()), 0);
     }
 
     /**
@@ -364,8 +349,8 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
     private function _getNextCurrentProcessNumber()
     {
         $startProcessNumber = self::$_processNumber + 1;
-        $maxProcessNumber = shmop_read(self::$_sharedMemoryID, self::HEXADECIMAL_SIZE * 2, self::HEXADECIMAL_SIZE) + 0;
-        $searchProcessNumbers = shmop_read(self::$_sharedMemoryID, 0, $maxProcessNumber + 1);
+        $maxProcessNumber = shmop_read(self::$sharedMemoryID, self::HEXADECIMAL_SIZE * 2, self::HEXADECIMAL_SIZE) + 0;
+        $searchProcessNumbers = shmop_read(self::$sharedMemoryID, 0, $maxProcessNumber + 1);
         for ($searchProcessNumber = $startProcessNumber; $searchProcessNumber <= $maxProcessNumber; $searchProcessNumber++) {
             if ($searchProcessNumbers[$searchProcessNumber] !== '2') {
                 continue;
@@ -386,16 +371,18 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
      *
      * @param int $lockFlagLocationOfItself  The lock flag location of itself.
      * @param int $lockFlagLocationOfpartner The lock flag location of partner.
+     *
+     * @return void
      */
     private function _lockOn2Processes($lockFlagLocationOfItself, $lockFlagLocationOfpartner)
     {
         $startTime = time();
         while (true) {
-            shmop_write(self::$_sharedMemoryID, '1', $lockFlagLocationOfItself);
-            if (shmop_read(self::$_sharedMemoryID, $lockFlagLocationOfpartner, 1) === '1') {
-                shmop_write(self::$_sharedMemoryID, '0', $lockFlagLocationOfItself);
+            shmop_write(self::$sharedMemoryID, '1', $lockFlagLocationOfItself);
+            if (shmop_read(self::$sharedMemoryID, $lockFlagLocationOfpartner, 1) === '1') {
+                shmop_write(self::$sharedMemoryID, '0', $lockFlagLocationOfItself);
                 if (time() - $startTime > $this->timeout) {
-                    $this->_throwErrorException('This process has been timeouted.');
+                    throw new \BreakpointDebugging_Error_Exception('This process has been timeouted.');
                 }
                 // Wait micro seconds.
                 usleep($this->sleepMicroSeconds);
@@ -408,11 +395,13 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
     /**
      * Unlock on 2 processes.
      *
-     * @param int $lockFlagLocationOfItself  The lock flag location of itself.
+     * @param int $lockFlagLocationOfItself The lock flag location of itself.
+     *
+     * @return void
      */
     private function _unlockOn2Processes($lockFlagLocationOfItself)
     {
-        shmop_write(self::$_sharedMemoryID, '0', $lockFlagLocationOfItself);
+        shmop_write(self::$sharedMemoryID, '0', $lockFlagLocationOfItself);
     }
 
     /**
@@ -423,14 +412,14 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
     protected function lockingLoop()
     {
         // Update shared memory access time.
-        shmop_write(self::$_sharedMemoryID, sprintf('0x%08X', time()), self::HEXADECIMAL_SIZE * 3);
+        shmop_write(self::$sharedMemoryID, sprintf('0x%08X', time()), self::HEXADECIMAL_SIZE * 3);
         // Is it registered as current process that this process is between "lock()" and "unlock()".
-        shmop_write(self::$_sharedMemoryID, '2', self::$_processNumber);
+        shmop_write(self::$sharedMemoryID, '2', self::$_processNumber);
         $startTime = time();
-        while (($isSuccess = shmop_read(self::$_sharedMemoryID, 0, self::HEXADECIMAL_SIZE) + 0) !== self::$_processNumber) {
+        while (($isSuccess = shmop_read(self::$sharedMemoryID, 0, self::HEXADECIMAL_SIZE) + 0) !== self::$_processNumber) {
             assert($isSuccess !== false);
             if (time() - $startTime > $this->timeout) {
-                $this->_throwErrorException('This process has been timeouted.');
+                throw new \BreakpointDebugging_Error_Exception('This process has been timeouted.');
             }
             // Wait micro seconds.
             usleep($this->sleepMicroSeconds);
@@ -447,15 +436,14 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
         // Lock for a process which is locked by file existing.
         $this->_lockOn2Processes(self::HEXADECIMAL_SIZE * 4 + 1, self::HEXADECIMAL_SIZE * 4);
 
-        //// Register next current process number as current process number.
-        //shmop_write(self::$_sharedMemoryID, sprintf('0x%08X', $this->_getNextCurrentProcessNumber()), 0);
+        $nextCurrentProcessNumber = $this->_getNextCurrentProcessNumber();
         // If next current process number exists.
-        if ($this->_getNextCurrentProcessNumber() !== false) {
+        if ($nextCurrentProcessNumber !== false) {
             // Register next current process number as current process number.
-            shmop_write(self::$_sharedMemoryID, sprintf('0x%08X', $this->_getNextCurrentProcessNumber()), 0);
+            shmop_write(self::$sharedMemoryID, sprintf('0x%08X', $nextCurrentProcessNumber), 0);
         }
         // It is registered that this process is not between "lock()" and "unlock()".
-        shmop_write(self::$_sharedMemoryID, '1', self::$_processNumber);
+        shmop_write(self::$sharedMemoryID, '1', self::$_processNumber);
 
         // Unlock for a process which is locked by file existing.
         $this->_unlockOn2Processes(self::HEXADECIMAL_SIZE * 4 + 1);

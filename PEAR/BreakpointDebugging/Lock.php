@@ -5,6 +5,7 @@
  *
  * A synchronous object must be singleton because dead-lock occurs.
  * And, if you use derived class of this class, don't do other synchronous-process ( flock() and so on ) because dead-lock occurs.
+ *
  * @example of dead-lock.
  *      Process A locks file A, and process B locks file B.
  *      Then, process A is waiting for file B, and process B is waiting for file A.
@@ -49,7 +50,7 @@
  */
 require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
 
-use BreakpointDebugging as B;
+use \BreakpointDebugging as B;
 
 /**
  * The abstract base class which lock php-code.
@@ -99,15 +100,20 @@ abstract class BreakpointDebugging_Lock
     protected $sleepMicroSeconds;
 
     /**
+     * @var int Shared memory ID.
+     */
+    protected static $sharedMemoryID;
+
+    /**
      * Base of all synchronous singleton method.
      *
-     * @param string $className          Object class name.
-     * @param string $lockFilePath       The file path which wants the lock.
-     *                                   This file must have reading permission.
-     * @param int    $timeout            The timeout.
-     * @param int    $expire             The number of seconds which lock-flag-file expires.
-     * @param int    $sleepMicroSeconds  Micro seconds to sleep.
-     * @param bool   $isInternal         Is it internal call?
+     * @param string $className         Object class name.
+     * @param string $lockFilePath      The file path which wants the lock.
+     *                                  This file must have reading permission.
+     * @param int    $timeout           The timeout.
+     * @param int    $expire            The number of seconds which lock-flag-file expires.
+     * @param int    $sleepMicroSeconds Micro seconds to sleep.
+     * @param bool   $isInternal        Is it internal call?
      *
      * @return object Instance of this class.
      */
@@ -122,7 +128,9 @@ abstract class BreakpointDebugging_Lock
             return self::$_internalInstance;
         } else {
             // Synchronous class has to be any one of derived classes because dead-lock occurs.
-            B::internalAssert($currentClassName === null || $currentClassName === $className);
+            if (B::internalAssert($currentClassName === null || $currentClassName === $className)) {
+                assert(false);
+            }
             $currentClassName = $className;
             if (self::$_instance === null) {
                 self::$_instance = new $className($lockFilePath, $timeout, $expire, $sleepMicroSeconds);
@@ -164,19 +172,20 @@ abstract class BreakpointDebugging_Lock
      */
     function __destruct()
     {
-        //if (is_resource($this->pFile)) {
-        //    fclose($this->pFile);
-        //}
-        //if (B::$onceErrorDispFlag) {
-        //    return;
-        //}
         $_lockCount = $this->_lockCount;
         // Unlocks all. We must unlock before "B::internalAssert" because if we execute unit test, it throws exception.
         while ($this->_lockCount > 0) {
             $this->unlock();
         }
-        //B::internalAssert($this->_lockCount === 0);
-        B::internalAssert($_lockCount === 0);
+        // In case of lock by shared memory operation.
+        if ($this instanceof \BreakpointDebugging_LockByShmop) {
+            // Closes the shared memory.
+            shmop_close(self::$sharedMemoryID);
+        }
+
+        if (B::internalAssert($_lockCount === 0)) {
+            assert(false);
+        }
     }
 
     /**
@@ -202,9 +211,11 @@ abstract class BreakpointDebugging_Lock
 
         restore_error_handler();
         $this->lockingLoop();
-        set_error_handler('BreakpointDebugging::errorHandler', -1);
+        set_error_handler('\BreakpointDebugging::errorHandler', -1);
 
-        B::internalAssert($this->_lockCount === 0);
+        if (B::internalAssert($this->_lockCount === 0)) {
+            assert(false);
+        }
         $this->_lockCount++;
     }
 
@@ -227,33 +238,21 @@ abstract class BreakpointDebugging_Lock
             return;
         }
         $this->_lockCount--;
-        B::internalAssert($this->_lockCount === 0);
+        if (B::internalAssert($this->_lockCount === 0)) {
+            assert(false);
+        }
 
         restore_error_handler();
         $this->unlockingLoop();
-        set_error_handler('BreakpointDebugging::errorHandler', -1);
+        set_error_handler('\BreakpointDebugging::errorHandler', -1);
     }
 
-//    /**
-//     * If error object is locking, this unlocks, and this exits.
-//     *
-//     * @param mixed $message Exit-message or code.
-//     */
-//    function unlockAllAndExit($message = '')
-//    {
-//        // Unlocks all.
-//        while ($this->_lockCount > 0) {
-//            $this->unlock();
-//        }
-//        // And exits.
-//        exit($message);
-//    }
     /**
-     * Forces the unlocking for ...
+     * Forces unlocking to avoid lock-count assertion error if forces a exit.
      *
      * @return void
      */
-    static function forceUnlock()
+    static function forceUnlocking()
     {
         if (is_object(self::$_internalInstance)) {
             while (self::$_internalInstance->_lockCount > 0) {

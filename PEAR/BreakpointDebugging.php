@@ -41,16 +41,7 @@
  * @version  SVN: $Id$
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-// File to have "use" keyword does not inherit scope into a file including itself,
-// also it does not inherit scope into a file including,
-// and moreover "use" keyword alias has priority over class definition,
-// therefore "use" keyword alias does not be affected by other files.
 use \BreakpointDebugging as B;
-
-///**
-// * @const int $_BreakpointDebugging_EXE_MODE Debug mode constant.
-// */
-//global $_BreakpointDebugging_EXE_MODE;
 
 require_once __DIR__ . '/PEAR/Exception.php';
 
@@ -79,11 +70,21 @@ class BreakpointDebugging_Exception extends PEAR_Exception
     {
         global $_BreakpointDebugging_EXE_MODE;
 
-        B::internalAssert(func_num_args() <= 3);
-        B::internalAssert(is_string($message));
-        B::internalAssert(is_int($code) || $code === null);
-        B::internalAssert($previous instanceof Exception || $previous === null);
-        B::internalAssert(mb_detect_encoding($message, 'utf8', true) !== false);
+        if (B::internalAssert(func_num_args() <= 3)) {
+            assert(false);
+        }
+        if (B::internalAssert(is_string($message))) {
+            assert(false);
+        }
+        if (B::internalAssert(is_int($code) || $code === null)) {
+            assert(false);
+        }
+        if (B::internalAssert($previous instanceof \Exception || $previous === null)) {
+            assert(false);
+        }
+        if (B::internalAssert(mb_detect_encoding($message, 'utf8', true) !== false)) {
+            assert(false);
+        }
 
         if ($previous === null) {
             parent::__construct($message, $code);
@@ -216,7 +217,7 @@ class BreakpointDebugging_InAllCase
      *
      * @return void
      *
-     * @example static $isRegister; BreakpointDebugging::registerNotFixedLocation( $isRegister);
+     * @example static $isRegister; \BreakpointDebugging::registerNotFixedLocation( $isRegister);
      */
     final static function registerNotFixedLocation(&$isRegister)
     {
@@ -245,7 +246,7 @@ class BreakpointDebugging_InAllCase
      *
      * @return void
      *
-     * @example BreakpointDebugging::addValuesToTrace(array('TEST_CONST' => TEST_CONST, '$testString' => $testString, '$varietyObject' => $varietyObject));
+     * @example \BreakpointDebugging::addValuesToTrace(array('TEST_CONST' => TEST_CONST, '$testString' => $testString, '$varietyObject' => $varietyObject));
      */
     final static function addValuesToTrace($values)
     {
@@ -297,7 +298,7 @@ class BreakpointDebugging_InAllCase
      *
      * @return void
      *
-     * @example BreakpointDebugging::outputErrorCallStackLog('EXCEPTION', 'Description of exception.');
+     * @example \BreakpointDebugging::outputErrorCallStackLog('EXCEPTION', 'Description of exception.');
      */
     final static function outputErrorCallStackLog($errorKind, $errorMessage)
     {
@@ -320,7 +321,7 @@ class BreakpointDebugging_InAllCase
      *
      * @return string UTF8 character string.
      *
-     * @example BreakpointDebugging::convertMbString($warning['Message']);
+     * @example \BreakpointDebugging::convertMbString($warning['Message']);
      */
     final static function convertMbString($string)
     {
@@ -351,13 +352,13 @@ class BreakpointDebugging_InAllCase
         } else if (PHP_OS === 'Linux') {
             chmod($name, $permission);
             if (trim(`echo \$USER`) === 'root') {
-                //$user = get_currnet_user();
                 $user = self::$_userName;
                 `chown \$user.\$user \$name`;
             }
         } else {
-            //assert(false);
-            self::internalAssert(false);
+            if (self::internalAssert(false)) {
+                assert(false);
+            }
         }
     }
 
@@ -422,7 +423,7 @@ class BreakpointDebugging_InAllCase
         global $_BreakpointDebugging_EXE_MODE;
 
         if (!($_BreakpointDebugging_EXE_MODE & B::RELEASE)) { // In case of not release.
-            BreakpointDebugging::makeUnitTestException();
+            B::makeUnitTestException();
         }
         self::$error = new BreakpointDebugging_Error();
         $return = self::$error->errorHandler2($errorNumber, $errorMessage, B::$prependErrorLog);
@@ -436,14 +437,17 @@ class BreakpointDebugging_InAllCase
      *
      * @param bool $expression Judgment expression.
      *
-     * @return void
+     * @return bool Is assertion failure?
+     * @example if (B::internalAssert($expression)) {
+     *              assert(false);
+     *          }
      */
     final static function internalAssert($expression)
     {
         global $_BreakpointDebugging_EXE_MODE;
 
         if (self::$onceErrorDispFlag) {
-            return;
+            return false;
         }
         if (!($_BreakpointDebugging_EXE_MODE & B::RELEASE)) { // In case of not release.
             if (func_num_args() !== 1 || !is_bool($expression) || $expression === false) {
@@ -453,22 +457,18 @@ class BreakpointDebugging_InAllCase
                     if (array_key_exists('class', $call) && $call['class'] === 'BreakpointDebugging_Error') {
                         self::$onceErrorDispFlag = true;
                         if ($_BreakpointDebugging_EXE_MODE & self::REMOTE_DEBUG) { // In case of remote debug.
-                            //var_dump(array_reverse($callStack));
                             var_dump($callStack);
                             echo '//////////////////////////////// CALL STACK END ////////////////////////////////' . PHP_EOL . PHP_EOL;
                             if (!is_object(self::$error->lockByFileExisting)) {
                                 exit();
                             }
-                            //// If error object is locking, this unlocks, and this exits.
-                            //self::$error->lockByFileExisting->unlockAllAndExit();
                             // Remote debug must end immediately to avoid eternal execution.
                             exit;
                         }
-                        BreakpointDebugging_breakpoint('Assertion failed.', $callStack);
-                        return;
+                        break;
                     }
                 }
-                assert($expression);
+                return true;
             }
         }
     }
@@ -476,14 +476,17 @@ class BreakpointDebugging_InAllCase
     /**
      * Method which throw exception inside exception handler. (For this package developer)
      *
-     * @param string $message Exception message.
+     * @return bool Does throw?
+     * @example if (\BreakpointDebugging::internalException()) {
+     *              throw new \BreakpointDebugging_Error_Exception('Error message.');
+     *          }
      */
-    final static function internalException($message)
+    final static function internalException()
     {
         global $_BreakpointDebugging_EXE_MODE;
 
         if (self::$onceErrorDispFlag) {
-            return;
+            return false;
         }
         $callStack = debug_backtrace();
         foreach ($callStack as $call) {
@@ -496,16 +499,13 @@ class BreakpointDebugging_InAllCase
                     if (!is_object(self::$error->lockByFileExisting)) {
                         exit();
                     }
-                    //// If error object is locking, this unlocks, and this exits.
-                    //self::$error->lockByFileExisting->unlockAllAndExit();
                     // Remote debug must end immediately to avoid eternal execution.
                     exit;
                 }
-                new BreakpointDebugging_Error_Exception($message);
-                return;
+                break;
             }
         }
-        throw new BreakpointDebugging_Error_Exception($message);
+        return true;
     }
 
     /**
@@ -529,7 +529,6 @@ class BreakpointDebugging_InAllCase
                 }
             }
         }
-        //\BreakpointDebugging_Lock::forceUnlock();
     }
 
 }
@@ -583,21 +582,11 @@ if ($_BreakpointDebugging_EXE_MODE & BreakpointDebugging_InAllCase::RELEASE) { /
 }
 
 // This sets global exception handler.
-set_exception_handler('BreakpointDebugging::exceptionHandler');
+set_exception_handler('\BreakpointDebugging::exceptionHandler');
 // This sets error handler.( -1 sets all bits on 1. Therefore, this specifies error, warning and note of all kinds and so on.)
-set_error_handler('BreakpointDebugging::errorHandler', -1);
+set_error_handler('\BreakpointDebugging::errorHandler', -1);
 $_BreakpointDebugging = new \BreakpointDebugging();
-spl_autoload_register('BreakpointDebugging::autoload', true, true);
-register_shutdown_function('BreakpointDebugging::shutdown');
-
-//if (!extension_loaded('xdebug')) {
-//    exit(
-//        '### ERROR ###<br/>' . PHP_EOL .
-//        'FILE: ' . __FILE__ . ' LINE: ' . __LINE__ . '<br/>' . PHP_EOL .
-//        '"Xdebug" extension has been not loaded.<br/>' . PHP_EOL .
-//        '"Xdebug" extension is required because avoids infinity recursive function call.<br/>' . PHP_EOL .
-//        'Also, this package requires "Xdebug" extension.<br/>'
-//    );
-//}
+spl_autoload_register('\BreakpointDebugging::autoload', true, true);
+register_shutdown_function('\BreakpointDebugging::shutdown');
 
 ?>

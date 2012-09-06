@@ -40,11 +40,11 @@
  *      Then, it fixes part setting about all debugging modes.
  * Procedure 6: Please, copy following in your project php code.
  *      "require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';"
- * Procedure 7: Please, set debugging mode to "$_BreakpointDebugging_EXE_MODE" inside
+ * Procedure 7: Please, set debugging mode to "$_BreakpointDebugging_EXE_MODE" into
  *      "./PEAR_Setting/BreakpointDebugging_MySetting.php".
  * Procedure 8: Please, if you use "Linux", register your username as
- *      "User" and "Group" inside "lampp/apache/conf/httpd.conf".
- *      And, register "export PATH=$PATH:/opt/lampp/bin" inside "~/.profile".
+ *      "User" and "Group" into "lampp/apache/conf/httpd.conf".
+ *      And, register "export PATH=$PATH:/opt/lampp/bin" into "~/.profile".
  *
  * Caution: Please, throw error exception at error location.
  *          Do not throw inside method for throwing because its location is registered in log.
@@ -53,11 +53,11 @@
  *
  * Option procedure: Please, register at top of the function or method or file
  *      which has been not fixed. Please, copy following.
- *      "static $isRegister; BreakpointDebugging::registerNotFixedLocation($isRegister);"
+ *      "static $isRegister; \BreakpointDebugging::registerNotFixedLocation($isRegister);"
  *      Then, we can discern function or method or file
  *      which has been not fixed with browser screen or log.
  * Option procedure: Please, register local variable or global variable
- *      which you want to see with BreakpointDebugging::addValuesToTrace().
+ *      which you want to see with \BreakpointDebugging::addValuesToTrace().
  *
  * ### The debugging mode which we can use. ###
  * First "LOCAL_DEBUG" mode is breakpoint debugging with local personal computer.
@@ -80,40 +80,40 @@
  *
  * ### Useful function index. ###
  * This outputs function call stack log.
- *      BreakpointDebugging::outputErrorCallStackLog($errorKind, $errorMessage)
+ *      \BreakpointDebugging::outputErrorCallStackLog($errorKind, $errorMessage)
  * This registers as function or method being not fixed.
- *      BreakpointDebugging::registerNotFixedLocation(&$isRegister)
+ *      \BreakpointDebugging::registerNotFixedLocation(&$isRegister)
  * Add values to trace.
- *      BreakpointDebugging::addValuesToTrace($values)
+ *      \BreakpointDebugging::addValuesToTrace($values)
  * This writes inside of "catch()", then display logging or log.
- *      BreakpointDebugging::$prependExceptionLog
- *      BreakpointDebugging::exceptionHandler($exception)
+ *      \BreakpointDebugging::$prependExceptionLog
+ *      \BreakpointDebugging::exceptionHandler($exception)
  * This changes to unify multibyte character strings such as system-output in UTF8,
  * and this returns.
- *      BreakpointDebugging::convertMbString($string)
+ *      \BreakpointDebugging::convertMbString($string)
  * This changes a character sets to display a multibyte character string
  * with local window of debugger, and this returns it.
  * But, this doesn't exist in case of release.
- *      BreakpointDebugging::convertMbStringForDebug($params)
+ *      \BreakpointDebugging::convertMbStringForDebug($params)
  * This is ini_set() with validation except for release mode.
  * I set with "ini_set()" because "php.ini" file and ".htaccess" file isn't sometimes possible to be set on sharing server.
- *      BreakpointDebugging::iniSet($phpIniVariable, $setValue, $doCheck = true)
+ *      \BreakpointDebugging::iniSet($phpIniVariable, $setValue, $doCheck = true)
  * This checks php.ini setting.
- *      BreakpointDebugging::iniCheck($phpIniVariable, $cmpValue, $errorMessage)
+ *      \BreakpointDebugging::iniCheck($phpIniVariable, $cmpValue, $errorMessage)
  * Get property for test.
  * But, this doesn't exist in case of release.
- *      BreakpointDebugging::getPropertyForTest($objectOrClassName, $propertyName)
+ *      \BreakpointDebugging::getPropertyForTest($objectOrClassName, $propertyName)
  * Set property for test.
  * But, this doesn't exist in case of release.
- *      BreakpointDebugging::setPropertyForTest($objectOrClassName, $propertyName, $value)
+ *      \BreakpointDebugging::setPropertyForTest($objectOrClassName, $propertyName, $value)
  * Checks unit-test-execution-mode.
- *      BreakpointDebugging::checkUnitTestExeMode()
+ *      \BreakpointDebugging::checkUnitTestExeMode()
  * Executes unit test.
- *      BreakpointDebugging::executeUnitTest($testFileNames, $currentDir)
+ *      \BreakpointDebugging::executeUnitTest($testFileNames, $currentDir)
  * "mkdir" method which sets permission and sets own user to owner.
- *      BreakpointDebugging::mkdir($dirName, $permission = 0777)
+ *      \BreakpointDebugging::mkdir($dirName, $permission = 0777)
  * "fopen" method which sets the file mode, permission and sets own user to owner.
- *      BreakpointDebugging::fopen($fileName, $mode, $permission)
+ *      \BreakpointDebugging::fopen($fileName, $mode, $permission)
  *
  * ### Useful class index. ###
  * This class override a class without inheritance, but only public member can be inherited.
@@ -203,12 +203,10 @@ final class BreakpointDebugging extends BreakpointDebugging_InAllCase
     {
         global $_BreakpointDebugging_EXE_MODE;
 
-        //if ($_BreakpointDebugging_EXE_MODE & B::UNIT_TEST) {
         // If this is not remote debug.
         if ($_BreakpointDebugging_EXE_MODE & ~B::REMOTE_DEBUG) {
             return;
         }
-        //if (rtrim(`echo \$USER`, "\n") === 'root') {
         if (trim(`echo \$USER`) === 'root') {
             echo 'Security warning: Recommends to change to "Apache HTTP Server" which Supported "suEXEC" because this "Apache HTTP Server" is executed by "root" user.<br/>';
         }
@@ -222,7 +220,7 @@ final class BreakpointDebugging extends BreakpointDebugging_InAllCase
      *
      * @return array Some changed variables.
      *
-     * @example $gDebugValue = BreakpointDebugging::convertMbStringForDebug('SJIS', $scalar1, $array2, $scalar2);
+     * @example $gDebugValue = \BreakpointDebugging::convertMbStringForDebug('SJIS', $scalar1, $array2, $scalar2);
      */
     static function convertMbStringForDebug($params)
     {
@@ -321,7 +319,7 @@ final class BreakpointDebugging extends BreakpointDebugging_InAllCase
         assert(self::_isSameType($setValue, $getValue));
         if ($setValue !== $getValue) {
             // In case of remote.
-            if ($doCheck === true && $_BreakpointDebugging_EXE_MODE & self::REMOTE_DEBUG) {
+            if ($doCheck === true && ($_BreakpointDebugging_EXE_MODE & self::REMOTE_DEBUG)) {
                 $backTrace = debug_backtrace();
                 $baseName = basename($backTrace[0]['file']);
                 $cmpName = '_MySetting_Option.php';
@@ -339,7 +337,7 @@ final class BreakpointDebugging extends BreakpointDebugging_InAllCase
                         $packageName = substr($baseName, 0, 0 - $cmpNameLength);
                         echo <<<EOD
 <pre>
-### "BreakpointDebugging::iniSet()": You must copy from "./{$packageName}_MySetting_Option.php" to user place folder of "./{$packageName}_MySetting.php" for release because set value and value of php.ini differ.
+### "\BreakpointDebugging::iniSet()": You must copy from "./{$packageName}_MySetting_Option.php" to user place folder of "./{$packageName}_MySetting.php" for release because set value and value of php.ini differ.
 ### But, When remote "php.ini" is changed, you must redo remote debug.<pre/>
 EOD;
                     }
@@ -401,8 +399,8 @@ EOD;
      *
      * @return mixed Property value.
      *
-     * @example $propertyValue = BreakpointDebugging::getPropertyForTest('ClassName', 'CONST_NAME');
-     *           $propertyValue = BreakpointDebugging::getPropertyForTest($object, '$_privateName');
+     * @example $propertyValue = \BreakpointDebugging::getPropertyForTest('ClassName', 'CONST_NAME');
+     *           $propertyValue = \BreakpointDebugging::getPropertyForTest($object, '$_privateName');
      */
     final static function getPropertyForTest($objectOrClassName, $propertyName)
     {
@@ -445,7 +443,7 @@ EOD;
      *
      * @return void
      *
-     * @example $propertyValue = BreakpointDebugging::setPropertyForTest($object, '$_privateName', $value);
+     * @example $propertyValue = \BreakpointDebugging::setPropertyForTest($object, '$_privateName', $value);
      */
     final static function setPropertyForTest($objectOrClassName, $propertyName, $value)
     {
@@ -502,7 +500,7 @@ EOD;
         global $_BreakpointDebugging_EXE_MODE;
 
         if (!($_BreakpointDebugging_EXE_MODE & B::UNIT_TEST)) {
-            exit('You must set "$_BreakpointDebugging_EXE_MODE = B::????? | B::UNIT_TEST" inside "./PEAR_Setting/BreakpointDebugging_MySetting.php" in case of unit test.' . PHP_EOL);
+            exit('You must set "$_BreakpointDebugging_EXE_MODE = B::????? | B::UNIT_TEST" into "./PEAR_Setting/BreakpointDebugging_MySetting.php" in case of unit test.' . PHP_EOL);
         }
     }
 
@@ -536,21 +534,18 @@ EOD;
      */
     static function executeUnitTest($testFileNames, $currentDir)
     {
-        //if (substr(PHP_OS, 0, 3) === 'WIN') { // In case of Windows.
         if (strncmp(PHP_OS, 'WIN', 3) === 0) { // In case of Windows.
             $phpunit = 'phpunit.bat';
         } else if (PHP_OS === 'Linux') { // In case of Linux.
             // Command execution path by "bash" differs because "Apache" is root user in case of default, therefore uses full path for command.
             while (true) {
                 $phpunit = `which phpunit`;
-                //$phpunit = trim($phpunit);
-                $phpunit = rtrim($phpunit, "\n");
+                $phpunit = trim($phpunit);
                 if ($phpunit) {
                     break;
                 }
                 $phpunit = `export PATH=/opt/lampp/bin:/opt/local/bin:/usr/bin:/usr/bin/X11:/usr/share/php;which phpunit`;
                 $phpunit = trim($phpunit);
-                //$phpunit = rtrim($phpunit, "\n");
                 if ($phpunit) {
                     break;
                 }
@@ -586,10 +581,6 @@ if (assert_options(ASSERT_BAIL, 0) === false) { // In case of failing in asserti
 if (assert_options(ASSERT_QUIET_EVAL, 0) === false) { // As for assertion expression, this doesn't make error_reporting invalid.
     throw new \BreakpointDebugging_Error_Exception('');
 }
-//if (assert_options(ASSERT_CALLBACK, 'BreakpointDebugging::makeUnitTestException') === false) { // Register callback which is called failing in assertion.
-//    throw new \BreakpointDebugging_Error_Exception('');
-//}
-//
 // ### usage ###
 //   assert(<judgment expression>);
 //   It is possible to assert that <judgment expression> is "This must be". Especially, this uses to verify a function's argument.

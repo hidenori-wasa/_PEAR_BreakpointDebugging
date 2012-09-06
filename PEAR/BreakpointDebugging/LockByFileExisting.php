@@ -5,6 +5,7 @@
  *
  * This class is required for environment where "flock()" doesn't exist.
  * We can synchronize applications by setting the same directory to "B::$workDir" of "BreakpointDebugging_MySetting.php".
+ *
  * @example of usage.
  *      $lockByFileExisting = &\BreakpointDebugging_LockByFileExisting::singleton(); // Creates a lock instance.
  *      $lockByFileExisting->lock(); // Locks php-code.
@@ -53,7 +54,7 @@
  * @version  SVN: $Id$
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-use BreakpointDebugging as B;
+use \BreakpointDebugging as B;
 
 /**
  * Class which locks php-code by file existing.
@@ -70,9 +71,9 @@ final class BreakpointDebugging_LockByFileExisting extends \BreakpointDebugging_
     /**
      * Singleton method.
      *
-     * @param int    $timeout            The timeout.
-     * @param int    $expire             The number of seconds which lock-flag-file expires.
-     * @param int    $sleepMicroSeconds  Micro seconds to sleep.
+     * @param int $timeout           The timeout.
+     * @param int $expire            The number of seconds which lock-flag-file expires.
+     * @param int $sleepMicroSeconds Micro seconds to sleep.
      *
      * @return object Instance of this class.
      */
@@ -113,7 +114,7 @@ final class BreakpointDebugging_LockByFileExisting extends \BreakpointDebugging_
             restore_error_handler();
             // Delete locking flag file.
             @unlink($lockFilePath);
-            set_error_handler('BreakpointDebugging::errorHandler', -1);
+            set_error_handler('\BreakpointDebugging::errorHandler', -1);
         }
     }
 
@@ -125,17 +126,17 @@ final class BreakpointDebugging_LockByFileExisting extends \BreakpointDebugging_
     protected function lockingLoop()
     {
         $startTime = time();
-        //while (($this->pFile = @fopen($this->lockFilePath, 'x+b')) === false) {
         while (($this->pFile = @B::fopen($this->lockFilePath, 'x+b', 0600)) === false) {
             if (time() - $startTime > $this->timeout) {
-                B::internalException('This process has been timeouted.');
+                if (B::internalException()) {
+                    throw new \BreakpointDebugging_Error_Exception('This process has been timeouted.');
+                }
                 // We do not delete locking flag file here because we cannot lock php code.
                 break;
             }
             // Wait micro seconds.
             usleep($this->sleepMicroSeconds);
         }
-        //chmod($this->lockFilePath, 0600);
     }
 
     /**

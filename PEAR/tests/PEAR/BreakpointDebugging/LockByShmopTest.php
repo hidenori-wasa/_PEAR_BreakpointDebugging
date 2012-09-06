@@ -1,6 +1,5 @@
 <?php
 
-//chdir(__DIR__ . '/../../../../../');
 chdir(__DIR__ . '/../../../');
 require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
 
@@ -16,11 +15,6 @@ class LockByShmopTest extends PHPUnit_Framework_TestCase
     {
         // Constructs instance.
         $this->LockByShmop = &\BreakpointDebugging_LockByShmop::singleton(5, 10);
-        //// Deletes locking flag file.
-        //$path = B::getPropertyForTest($this->LockByShmop, '$lockFilePath');
-        //if (is_file($path)) {
-        //    unlink($path);
-        //}
     }
 
     protected function tearDown()

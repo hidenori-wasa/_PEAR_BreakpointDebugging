@@ -1,6 +1,5 @@
 <?php
 
-//chdir(__DIR__ . '/../../../../../../');
 chdir(__DIR__ . '/../../../../');
 require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
 
@@ -10,7 +9,7 @@ class ShmopTest1
 
     function __construct()
     {
-        $this->shmopId = shmop_open(1234, 'c', 0600, 10);
+        $this->shmopId = shmop_open(1234, 'w', 0, 0);
     }
 
     function __destruct()
@@ -54,6 +53,7 @@ class ShmopTest1
         }
         var_dump(shmop_read($this->shmopId, 0, 10) + 0, microtime(true) - $start);
     }
+
 }
 
 $ShmopTest1 = new ShmopTest1();

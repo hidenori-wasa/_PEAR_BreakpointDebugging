@@ -43,10 +43,6 @@
  * @version  SVN: $Id$
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-// File to have "use" keyword does not inherit scope into a file including itself,
-// also it does not inherit scope into a file including,
-// and moreover "use" keyword alias has priority over class definition,
-// therefore "use" keyword alias does not be affected by other files.
 use \BreakpointDebugging as B;
 
 // Reference path setting.
@@ -54,12 +50,11 @@ if (substr(PHP_OS, 0, 3) === 'WIN') { // In case of Windows.
     ini_set('include_path', '.;./PEAR;C:\xampp\php\PEAR'); // In case of local.
 } else if (PHP_OS === 'Linux') { // In case of Linux.
     ini_set('include_path', '.:./PEAR:/opt/lampp/lib/php:/opt/lampp/lib/php/PEAR'); // In case of local.
-// ini_set('include_path', '.:/opt/lampp/lib/php:/opt/lampp/lib/php/PEAR'); // In case of remote.
+    // ini_set('include_path', '.:/opt/lampp/lib/php:/opt/lampp/lib/php/PEAR'); // In case of remote.
 } else { // In case of other.
     assert(false);
 }
 
-//require_once 'BreakpointDebugging.php'; // 'BreakpointDebugging.php' must require_once because it is base of all class, and it sets php.ini, and it sets autoload.
 /**
  * @const int $_BreakpointDebugging_EXE_MODE Debug mode constant.
  */
@@ -73,38 +68,19 @@ function BreakpointDebugging_setExecutionMode()
 {
     global $_BreakpointDebugging_EXE_MODE;
 
-    // ### Debug mode constant number ###
-    /**
-     * @var int First mode is breakpoint debug with your personal computer.
-     */
+    // ### Debug mode number ###
     $LOCAL_DEBUG = 1;
-
-    /**
-     * @var int Next mode is breakpoint debug to emulate release mode with your personal computer.
-     */
     $LOCAL_DEBUG_OF_RELEASE = 2;
-
-    /**
-     * @var int Next mode is browser display debug with remote personal computer.
-     */
     $REMOTE_DEBUG = 4;
-
-    /**
-     * @var int Next mode is log debug with remote personal computer. That is, this is a release mode.
-     */
     $RELEASE = 8;
-
-    /**
-     * @var int Tests by "phpunit". This flag is used with "LOCAL_DEBUG" flag.
-     */
     $UNIT_TEST = 16;
 
     // ### Execution mode setting. ===>
     /**
-     * @see '### Debug mode constant number ###' of class BreakpointDebugging_InAllCase in BreakpointDebugging.php.
+     * @see "### Debug mode constant number ###" of class "BreakpointDebugging_InAllCase" in "BreakpointDebugging.php".
      *       B::LOCAL_DEBUG                 // Local debug by breakpoint.
      *       B::LOCAL_DEBUG_OF_RELEASE      // Local debug by logging.
-     *       B::REMOTE_DEBUG                // Remote debug by browser diplay.
+     *       B::REMOTE_DEBUG                // Remote debug by browser display.
      *       B::RELEASE                     // Remote release by logging. We must execute "REMOTE_DEBUG" before this.
      *       B::LOCAL_DEBUG | B::UNIT_TEST  // Tests by "phpunit" on local.
      *       B::REMOTE_DEBUG | B::UNIT_TEST // Tests by "phpunit" on remote.
@@ -122,7 +98,9 @@ BreakpointDebugging_setExecutionMode();
 
 require_once 'BreakpointDebugging.php'; // 'BreakpointDebugging.php' must require_once because it is base of all class, and it sets php.ini, and it sets autoload.
 /**
+ * Sets global variables and "php.ini" variables.
  *
+ * @return void
  */
 function BreakpointDebugging_mySetting()
 {
@@ -133,8 +111,8 @@ function BreakpointDebugging_mySetting()
     $timezone = 'Asia/Tokyo';
     $SMTP = '<Your SMTP server>';
     $sendmailFrom = '<Your Windows mail address>';
-    // My username.
-    B::$_userName = 'hidenori';
+    // Please, set your username.
+    B::$_userName = 'root'; // Example: 'hidenori'
     // PHP It limits directory which opens a file.
     if (substr(PHP_OS, 0, 3) === 'WIN') { // In case of Windows.
         $openBasedir = 'C:\xampp\;.\\';
@@ -143,7 +121,8 @@ function BreakpointDebugging_mySetting()
     } else { // In case of other.
         assert(false);
     }
-    // Maximum log file mega byte size. Recommendation size is 32 MB.
+    // Maximum log file sum mega byte size. Recommendation size is 1 MB.
+    // Log file rotation is from "php_error_1.log" file to "php_error_8.log" file.
     // Maximum file-capacity secures 16 K margin but it may exceed with low probability.
     $maxLogMBSize = 1;
     // This code has been fixed.
@@ -160,13 +139,10 @@ function BreakpointDebugging_mySetting()
     // Set "mbstring.detect_order = UTF-8, UTF-7, ASCII, EUC-JP,SJIS, eucJP-win, SJIS-win, JIS, ISO-2022-JP" of "php.ini" file because this is purpose to define default value of character code detection.
     $result = mb_detect_order('UTF-8, UTF-7, ASCII, EUC-JP,SJIS, eucJP-win, SJIS-win, JIS, ISO-2022-JP');
     assert($result);
-    // This is work directory. "php_error.log" file is created in this directory.
+    // This is work directory. "php_error_*.log" file is created in this directory.
     // Warning: When you use existing log, it is destroyed if it is not "UTF-8". It is necessary to be a single character sets.
     B::$workDir = './Work';
     if (!is_dir(B::$workDir)) {
-        //mkdir(B::$workDir);
-        //// Changes permission without umask.
-        //chmod(B::$workDir, 0700);
         B::mkdir(B::$workDir, 0700);
     }
     B::$workDir = realpath(B::$workDir);
@@ -182,7 +158,7 @@ function BreakpointDebugging_mySetting()
     //
     //
     //
-    ///* ### Example. ===>
+    // /* ### Example. ===>
     if ($_BreakpointDebugging_EXE_MODE & (B::REMOTE_DEBUG | B::RELEASE)) { // In case of remote.
         if (substr(PHP_OS, 0, 3) === 'WIN') { // In case of Windows.
             // PHP It limits directory which opens a file.
@@ -221,7 +197,7 @@ function BreakpointDebugging_mySetting()
     B::iniSet('SMTP', $SMTP); // 'smtp.???.com'
     // Windows mail address setting.
     B::iniSet('sendmail_from', $sendmailFrom); // '???@???.com'
-    //*/ ### <=== Example.
+    // */ ### <=== Example.
     if (!($_BreakpointDebugging_EXE_MODE & B::RELEASE)) { // In case of not release.
         include_once './PEAR_Setting/BreakpointDebugging_MySetting_Option.php';
     }

@@ -2,30 +2,23 @@
 
 require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
 
-//require_once './PEAR/BreakpointDebugging/tests/PEAR/BreakpointDebugging/lockByShmopTest.php';
 // File to have "use" keyword does not inherit scope into a file including itself,
 // also it does not inherit scope into a file including,
 // and moreover "use" keyword alias has priority over class definition,
 // therefore "use" keyword alias does not be affected by other files.
 use \BreakpointDebugging as B;
 
-//require_once './PEAR/BreakpointDebugging/tests/PEAR/BreakpointDebugging/LockByFlockMultiprocessTest/Initialization.php';
 require_once './tests/PEAR/BreakpointDebugging/LockByFlockMultiprocessTest/Initialization.php';
-//require_once './PEAR/BreakpointDebugging/tests/PEAR/BreakpointDebugging/LockByFlockMultiprocessTest/Test.php';
 require_once './tests/PEAR/BreakpointDebugging/LockByFlockMultiprocessTest/Test.php';
 exit;
 
 
-//require_once './PEAR/BreakpointDebugging/tests/PEAR/BreakpointDebugging/LockByFileExistingMultiprocessTest/Initialization.php';
 require_once './tests/PEAR/BreakpointDebugging/LockByFileExistingMultiprocessTest/Initialization.php';
-//require_once './PEAR/BreakpointDebugging/tests/PEAR/BreakpointDebugging/LockByFileExistingMultiprocessTest/Test.php';
 require_once './tests/PEAR/BreakpointDebugging/LockByFileExistingMultiprocessTest/Test.php';
 exit;
 
 
-//require_once './PEAR/BreakpointDebugging/tests/PEAR/BreakpointDebugging/LockByShmopMultiprocessTest/Initialization.php';
 require_once './tests/PEAR/BreakpointDebugging/LockByShmopMultiprocessTest/Initialization.php';
-//require_once './PEAR/BreakpointDebugging/tests/PEAR/BreakpointDebugging/LockByShmopMultiprocessTest/Test.php';
 require_once './tests/PEAR/BreakpointDebugging/LockByShmopMultiprocessTest/Test.php';
 exit;
 
@@ -73,7 +66,6 @@ for ($count = 0; $count < 100000; $count++) {
     fwrite($pFile, sprintf('0x%08X', $count));
     fseek($pFile, 0);
     $return = hexdec(fread($pFile, 10));
-    //$return = (int) fread($pFile, 10);
     assert($return === $count);
 }
 echo microtime(true) - $start;
@@ -84,7 +76,7 @@ echo microtime(true) - $start;
 // shmop_read   0.5166440010070 0.55775690078735
 
 fclose($pFile);
-set_error_handler('BreakpointDebugging::errorHandler', -1);
+set_error_handler('\BreakpointDebugging::errorHandler', -1);
 exit;
 
 ?>

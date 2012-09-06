@@ -52,7 +52,7 @@
 use \BreakpointDebugging as B;
 
 // ### Item-setting for debugging. ===>
-//$xdebugManualUrl = 'http://www.php.net/manual/ja/';
+// $xdebugManualUrl = 'http://www.php.net/manual/ja/';
 $xdebugVarDisplayMaxChildren = '50';
 $xdebugVarDisplayMaxData = '3000';
 $xdebugVarDisplayMaxDepth = '3';
@@ -63,7 +63,7 @@ $xdebugVarDisplayMaxDepth = '3';
 //
 // PHP It limits directory which opens a file.
 B::iniSet('open_basedir', $openBasedir);
-// "B::RELEASE" is needed to copy.
+// "if" statement is needed to copy in case of "B::RELEASE" if copies a code inside "if".
 if ($_BreakpointDebugging_EXE_MODE & (B::REMOTE_DEBUG | B::RELEASE)) { // In case of remote.
     // Windows e-mail sending server setting.
     B::iniSet('SMTP', $SMTP); // 'smtp.???.com'
@@ -80,8 +80,8 @@ if ($_BreakpointDebugging_EXE_MODE & (B::REMOTE_DEBUG | B::RELEASE)) { // In cas
 // ### [XDebug] setting in "php.ini" file. ###
 // First is DBGP_IDEKEY, and next is USER, and last is USERNAME.
 // B::iniSet('xdebug.idekey', ?????);
-//// Manual base url for links from function traces or error messages.
-//B::iniSet('xdebug.manual_url', $xdebugManualUrl, false);
+//  // Manual base url for links from function traces or error messages.
+//  B::iniSet('xdebug.manual_url', $xdebugManualUrl, false);
 // Limits the number of object properties or array elements for display of var_dump(), local variables or Function Traces.
 B::iniSet('xdebug.var_display_max_children', $xdebugVarDisplayMaxChildren, false);
 // Limits character string type byte-count for display of var_dump(), local variables or Function Traces.
@@ -189,9 +189,6 @@ if (substr(PHP_OS, 0, 3) === 'WIN') { // In case of Windows.
     B::iniCheck('post_max_size', '128M', 'We recommend to set "post_max_size = 128M" of "php.ini" file because maximum size which is permitted to a POST data is different from the default.');
     B::iniCheck('upload_max_filesize', '128M', 'We recommend to set "upload_max_filesize = 128M" of "php.ini" file because it is "XAMPP" value.');
 } else if (PHP_OS === 'Linux') { // In case of Linux.
-//    if (rtrim(`echo \$USER`, "\n") === 'root') {
-//        echo 'Security warning: Recommends to change to "Apache HTTP Server" which Supported "suEXEC" because this "Apache HTTP Server" is executed by "root" user.<br/>';
-//    }
     B::iniCheck('post_max_size', '8M', 'We recommend to set "post_max_size = 8M" of "php.ini" file because maximum size which is permitted to a POST data is different from the default.');
     B::iniCheck('upload_max_filesize', '2M', 'We recommend to set "upload_max_filesize = 2M" of "php.ini" file because it is "XAMPP" value.');
 } else { // In case of other.
@@ -218,7 +215,6 @@ B::iniSet('html_errors', '1', false);
 assert(1 <= B::$maxLogParamNestingLevel && B::$maxLogParamNestingLevel <= 100);
 assert(1 <= B::$maxLogElementNumber && B::$maxLogElementNumber <= 100);
 assert(1 <= B::$maxLogStringSize);
-
 /**
  * This is function to set breakpoint. You must define this function outside namespace, and you must not change function name.
  * If you don't have breakpoint environment, you can debug by setting '$_BreakpointDebugging_EXE_MODE = B::REMOTE_DEBUG;'.
@@ -232,9 +228,15 @@ function BreakpointDebugging_breakpoint($message, &$callStackInfo)
 {
     global $_BreakpointDebugging_EXE_MODE;
 
-    B::internalAssert(func_num_args() <= 2);
-    B::internalAssert(is_string($message));
-    B::internalAssert(is_array($callStackInfo));
+    if (B::internalAssert(func_num_args() <= 2)) {
+        assert(false);
+    }
+    if (B::internalAssert(is_string($message))) {
+        assert(false);
+    }
+    if (B::internalAssert(is_array($callStackInfo))) {
+        assert(false);
+    }
 
     reset($callStackInfo);
     $call = each($callStackInfo);
@@ -247,11 +249,11 @@ function BreakpointDebugging_breakpoint($message, &$callStackInfo)
     }
 
     $return = xdebug_break(); // Breakpoint. See local variable value by doing step execution here.
-    B::internalAssert($return);
+    if (B::internalAssert($return)) {
+        assert(false);
+    }
 
     if ($_BreakpointDebugging_EXE_MODE & B::REMOTE_DEBUG) {
-        // If error object is locking, this unlocks, and this exits.
-        //B::$error->lockByFileExisting->unlockAllAndExit();
         // Remote debug must end immediately to avoid eternal execution.
         exit;
     }

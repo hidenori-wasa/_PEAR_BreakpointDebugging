@@ -1,12 +1,10 @@
 <?php
 
-//chdir(__DIR__ . '/../../../../../../');
 chdir(__DIR__ . '/../../../../');
 require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
 
 class Initialization
 {
-
     function __construct()
     {
         assert(extension_loaded('shmop'));
@@ -22,6 +20,7 @@ class Initialization
 
         echo 'Initialization is OK.';
     }
+
 }
 
 new Initialization();
