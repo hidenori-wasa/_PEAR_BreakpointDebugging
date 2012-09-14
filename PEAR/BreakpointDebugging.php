@@ -70,21 +70,11 @@ class BreakpointDebugging_Exception extends PEAR_Exception
     {
         global $_BreakpointDebugging_EXE_MODE;
 
-        if (B::internalAssert(func_num_args() <= 3)) {
-            assert(false);
-        }
-        if (B::internalAssert(is_string($message))) {
-            assert(false);
-        }
-        if (B::internalAssert(is_int($code) || $code === null)) {
-            assert(false);
-        }
-        if (B::internalAssert($previous instanceof \Exception || $previous === null)) {
-            assert(false);
-        }
-        if (B::internalAssert(mb_detect_encoding($message, 'utf8', true) !== false)) {
-            assert(false);
-        }
+        B::internalAssert(func_num_args() <= 3);
+        B::internalAssert(is_string($message));
+        B::internalAssert(is_int($code) || $code === null);
+        B::internalAssert($previous instanceof \Exception || $previous === null);
+        B::internalAssert(mb_detect_encoding($message, 'utf8', true) !== false);
 
         if ($previous === null) {
             parent::__construct($message, $code);
@@ -145,8 +135,7 @@ class BreakpointDebugging_InAllCase
     const RELEASE = 8;
 
     /**
-     * @const int Tests by "phpunit". This flag is used with "LOCAL_DEBUG" flag.
-     * @example $_BreakpointDebugging_EXE_MODE = B::LOCAL_DEBUG | B::UNIT_TEST;
+     * @const int Tests by "phpunit". This flag is used with other flag.
      */
     const UNIT_TEST = 16;
 
@@ -206,9 +195,14 @@ class BreakpointDebugging_InAllCase
     static $onceErrorDispFlag = false;
 
     /**
-     * @var object Error class object.
+     * @var bool Is it internal method?
      */
-    static $error;
+    static $isInternal = false;
+
+    /**
+     * @var string Which handler of "none" or "error" or "exception"?
+     */
+    static $handlerOf = 'none';
 
     /**
      * This registers as function or method being not fixed.
@@ -285,9 +279,10 @@ class BreakpointDebugging_InAllCase
      */
     final static function exceptionHandler($pException)
     {
-        self::$error = new BreakpointDebugging_Error();
-        self::$error->exceptionHandler2($pException, B::$prependExceptionLog);
-        self::$error = null;
+        self::$handlerOf = 'exception'; // This registers as exception handler.
+        $error = new BreakpointDebugging_Error();
+        $error->exceptionHandler2($pException, self::$prependExceptionLog);
+        self::$handlerOf = 'none'; // This registers as none handler.
     }
 
     /**
@@ -302,15 +297,14 @@ class BreakpointDebugging_InAllCase
      */
     final static function outputErrorCallStackLog($errorKind, $errorMessage)
     {
-        self::$error = new BreakpointDebugging_Error();
-        self::$error->callStackInfo = debug_backtrace();
-        unset(self::$error->callStackInfo[0]);
+        $error = new BreakpointDebugging_Error();
+        $error->callStackInfo = debug_backtrace();
+        unset($error->callStackInfo[0]);
         // Add scope of start page file.
-        self::$error->callStackInfo[] = array ();
-        if (self::$error->outputErrorCallStackLog2($errorKind, $errorMessage)) {
-            BreakpointDebugging_breakpoint($errorMessage, self::$error->callStackInfo);
+        $error->callStackInfo[] = array ();
+        if ($error->outputErrorCallStackLog2($errorKind, $errorMessage)) {
+            BreakpointDebugging_breakpoint($errorMessage, $error->callStackInfo);
         }
-        self::$error = null;
     }
 
     /**
@@ -356,9 +350,7 @@ class BreakpointDebugging_InAllCase
                 `chown \$user.\$user \$name`;
             }
         } else {
-            if (self::internalAssert(false)) {
-                assert(false);
-            }
+            self::internalAssert(false);
         }
     }
 
@@ -416,59 +408,67 @@ class BreakpointDebugging_InAllCase
      * @param int    $errorNumber  Error number.
      * @param string $errorMessage Error message.
      *
-     * @return bool Did the error handling end?
+     * @return bool Without system log (true).
      */
     final static function errorHandler($errorNumber, $errorMessage)
     {
         global $_BreakpointDebugging_EXE_MODE;
 
-        if (!($_BreakpointDebugging_EXE_MODE & B::RELEASE)) { // In case of not release.
+        $handlerStore = self::$handlerOf; // Stores the handler.
+        self::$handlerOf = 'error'; // This registers as error handler.
+        if (!($_BreakpointDebugging_EXE_MODE & self::RELEASE)) { // In case of not release.
             B::makeUnitTestException();
         }
-        self::$error = new BreakpointDebugging_Error();
-        $return = self::$error->errorHandler2($errorNumber, $errorMessage, B::$prependErrorLog);
-        self::$error = null;
-        return $return;
+        $error = new BreakpointDebugging_Error();
+        $error->errorHandler2($errorNumber, $errorMessage, self::$prependErrorLog);
+        self::$handlerOf = $handlerStore; // Restores handler.
+        return true;
     }
 
     /**
      * This is avoiding recursive method call inside error handling or exception handling.
      * And this is possible assertion inside error handling.
      *
-     * @param bool $expression Judgment expression.
+     * @param bool   $expression Judgment expression.
      *
-     * @return bool Is assertion failure?
-     * @example if (B::internalAssert($expression)) {
-     *              assert(false);
-     *          }
+     * @return void
+     * @example \BreakpointDebugging::internalAssert($expression);
      */
     final static function internalAssert($expression)
     {
         global $_BreakpointDebugging_EXE_MODE;
 
-        if (self::$onceErrorDispFlag) {
-            return false;
-        }
-        if (!($_BreakpointDebugging_EXE_MODE & B::RELEASE)) { // In case of not release.
+        if (!($_BreakpointDebugging_EXE_MODE & self::RELEASE)) { // In case of not release.
+            if (self::$onceErrorDispFlag) {
+                return;
+            }
             if (func_num_args() !== 1 || !is_bool($expression) || $expression === false) {
                 $callStack = debug_backtrace();
-                foreach ($callStack as $call) {
-                    // In case of internal assertion.
-                    if (array_key_exists('class', $call) && $call['class'] === 'BreakpointDebugging_Error') {
+                // Is internal method.
+                self::$isInternal = true;
+                switch (self::$handlerOf) {
+                    case 'exception': // Is inside exception handler.
                         self::$onceErrorDispFlag = true;
+                    case 'none': // Is outer of handler.
+                        // Triggers error because exception handler cannot throw error.
+                        assert(false);
                         if ($_BreakpointDebugging_EXE_MODE & self::REMOTE_DEBUG) { // In case of remote debug.
-                            var_dump($callStack);
-                            echo '//////////////////////////////// CALL STACK END ////////////////////////////////' . PHP_EOL . PHP_EOL;
-                            if (!is_object(self::$error->lockByFileExisting)) {
-                                exit();
-                            }
-                            // Remote debug must end immediately to avoid eternal execution.
-                            exit;
+                            exit; // Remote debug must end immediately to avoid eternal execution.
                         }
                         break;
-                    }
+                    case 'error': // Is inside error handler.
+                        self::$onceErrorDispFlag = true;
+                        if ($_BreakpointDebugging_EXE_MODE & self::REMOTE_DEBUG) { // In case of remote debug.
+                            // Remote debug must end immediately to avoid eternal execution.
+                            // Throws error because error handler can not trigger error.
+                            throw new BreakpointDebugging_Error_Exception('Assertion failed.');
+                        }
+                        BreakpointDebugging_breakpoint('Assertion failed.', $callStack);
+                        break;
+                    default:
+                        BreakpointDebugging_breakpoint('"\BreakpointDebugging::$handlerOf" is wrong value.', $callStack);
                 }
-                return true;
+                self::$isInternal = false;
             }
         }
     }
@@ -476,36 +476,36 @@ class BreakpointDebugging_InAllCase
     /**
      * Method which throw exception inside exception handler. (For this package developer)
      *
-     * @return bool Does throw?
-     * @example if (\BreakpointDebugging::internalException()) {
-     *              throw new \BreakpointDebugging_Error_Exception('Error message.');
-     *          }
+     * @param string $message Exception message.
+     *
+     * @return void
+     * @example \BreakpointDebugging::internalException($message);
      */
-    final static function internalException()
+    final static function internalException($message)
     {
         global $_BreakpointDebugging_EXE_MODE;
 
         if (self::$onceErrorDispFlag) {
-            return false;
+            return;
         }
-        $callStack = debug_backtrace();
-        foreach ($callStack as $call) {
-            // In case of internal exception.
-            if (array_key_exists('class', $call) && $call['class'] === 'BreakpointDebugging_Error') {
+        // Is internal method.
+        self::$isInternal = true;
+        switch (self::$handlerOf) {
+            case 'exception': // Is inside exception handler.
                 self::$onceErrorDispFlag = true;
-                if ($_BreakpointDebugging_EXE_MODE & self::REMOTE_DEBUG) { // In case of remote debug.
-                    var_dump($callStack);
-                    echo '//////////////////////////////// CALL STACK END ////////////////////////////////' . PHP_EOL . PHP_EOL;
-                    if (!is_object(self::$error->lockByFileExisting)) {
-                        exit();
-                    }
-                    // Remote debug must end immediately to avoid eternal execution.
-                    exit;
+                // Triggers error because exception handler cannot throw error.
+                trigger_error($message, E_USER_ERROR);
+                exit; // Is needed except for release mode.
+            case 'error': // Is inside error handler.
+                self::$onceErrorDispFlag = true;
+            case 'none': // Is outer of handler.
+                // Throws error because error handler can not trigger error.
+                throw new BreakpointDebugging_Error_Exception($message);
+            default:
+                if (!($_BreakpointDebugging_EXE_MODE & self::RELEASE)) { // In case of not release.
+                    BreakpointDebugging_breakpoint('"\BreakpointDebugging::$handlerOf" is wrong value.', debug_backtrace());
                 }
-                break;
-            }
         }
-        return true;
     }
 
     /**

@@ -53,7 +53,7 @@ class LockByFileExistingTest extends PHPUnit_Framework_TestCase
             @unlink(B::$workDir . '/LockFlag.file');
             for ($count = 0; $count < 10; $count++) {
                 while (!($pFile = @B::fopen(B::$workDir . '/LockFlag.file', 'x+b', 0600)));
-                chmod(B::$workDir . '/LockFlag.file', 0600);
+                //chmod(B::$workDir . '/LockFlag.file', 0600);
                 fclose($pFile);
                 while (!@unlink(B::$workDir . '/LockFlag.file'));
             }

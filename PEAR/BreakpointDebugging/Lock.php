@@ -128,9 +128,7 @@ abstract class BreakpointDebugging_Lock
             return self::$_internalInstance;
         } else {
             // Synchronous class has to be any one of derived classes because dead-lock occurs.
-            if (B::internalAssert($currentClassName === null || $currentClassName === $className)) {
-                assert(false);
-            }
+            B::internalAssert($currentClassName === null || $currentClassName === $className);
             $currentClassName = $className;
             if (self::$_instance === null) {
                 self::$_instance = new $className($lockFilePath, $timeout, $expire, $sleepMicroSeconds);
@@ -183,9 +181,7 @@ abstract class BreakpointDebugging_Lock
             shmop_close(self::$sharedMemoryID);
         }
 
-        if (B::internalAssert($_lockCount === 0)) {
-            assert(false);
-        }
+        B::internalAssert($_lockCount === 0);
     }
 
     /**
@@ -213,9 +209,7 @@ abstract class BreakpointDebugging_Lock
         $this->lockingLoop();
         set_error_handler('\BreakpointDebugging::errorHandler', -1);
 
-        if (B::internalAssert($this->_lockCount === 0)) {
-            assert(false);
-        }
+        B::internalAssert($this->_lockCount === 0);
         $this->_lockCount++;
     }
 
@@ -238,9 +232,7 @@ abstract class BreakpointDebugging_Lock
             return;
         }
         $this->_lockCount--;
-        if (B::internalAssert($this->_lockCount === 0)) {
-            assert(false);
-        }
+        B::internalAssert($this->_lockCount === 0);
 
         restore_error_handler();
         $this->unlockingLoop();

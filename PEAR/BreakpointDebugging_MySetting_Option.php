@@ -228,15 +228,9 @@ function BreakpointDebugging_breakpoint($message, &$callStackInfo)
 {
     global $_BreakpointDebugging_EXE_MODE;
 
-    if (B::internalAssert(func_num_args() <= 2)) {
-        assert(false);
-    }
-    if (B::internalAssert(is_string($message))) {
-        assert(false);
-    }
-    if (B::internalAssert(is_array($callStackInfo))) {
-        assert(false);
-    }
+    B::internalAssert(func_num_args() <= 2);
+    B::internalAssert(is_string($message));
+    B::internalAssert(is_array($callStackInfo));
 
     reset($callStackInfo);
     $call = each($callStackInfo);
@@ -249,9 +243,7 @@ function BreakpointDebugging_breakpoint($message, &$callStackInfo)
     }
 
     $return = xdebug_break(); // Breakpoint. See local variable value by doing step execution here.
-    if (B::internalAssert($return)) {
-        assert(false);
-    }
+    B::internalAssert($return);
 
     if ($_BreakpointDebugging_EXE_MODE & B::REMOTE_DEBUG) {
         // Remote debug must end immediately to avoid eternal execution.
