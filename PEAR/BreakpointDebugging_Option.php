@@ -114,6 +114,8 @@
  *      \BreakpointDebugging::mkdir($dirName, $permission = 0777)
  * "fopen" method which sets the file mode, permission and sets own user to owner.
  *      \BreakpointDebugging::fopen($fileName, $mode, $permission)
+ * Executes function by parameter array, then displays executed function line, file, parameters and results.
+ *      \BreakpointDebugging::displayVerification($functionName, $params)
  *
  * ### Useful class index. ###
  * This class override a class without inheritance, but only public member can be inherited.
@@ -181,7 +183,15 @@ use \BreakpointDebugging as B;
  */
 final class BreakpointDebugging extends BreakpointDebugging_InAllCase
 {
+    /**
+     * @var array Setting option filenames.
+     */
     private $_onceFlag = array ();
+
+    /**
+     * @var array Temporary parameter array.
+     */
+    public $tmpParams;
 
     /**
      * This constructer create object only one time.
@@ -521,15 +531,16 @@ EOD;
      *
      * @example
      *      <?php
-     *      chdir(__DIR__ . '/../../../../../');
+     *      chdir(__DIR__ . '/../../../');
      *      require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
      *      use \BreakpointDebugging as B;
      *      // Please, choose unit tests files by customizing.
      *      $testFileNames = array (
      *          'Something1Test.php',
-     *          'Something2Test.php');
-     *          // Executes unit tests.
-     *          B::executeUnitTest($testFileNames, __DIR__);
+     *          'Something2Test.php'
+     *      );
+     *      // Executes unit tests.
+     *      B::executeUnitTest($testFileNames, __DIR__);
      *      ?>
      */
     static function executeUnitTest($testFileNames, $currentDir)
@@ -564,6 +575,40 @@ EOD;
             echo '//////////////////////////////////////////////////////////////////////////' . PHP_EOL;
         }
         echo '</pre>';
+    }
+
+    /**
+     * Executes function by parameter array, then displays executed function line, file, parameters and results.
+     * Does not exist in case of release because this method uses for a function verification display.
+     *
+     * @param string $functionName Function name.
+     * @param array  $params       Parameter array.
+     *
+     * @return Executed function result.
+     *
+     * @example $return = $_BreakpointDebugging->displayVerification('function_name', func_get_args());
+     *          $return = $_BreakpointDebugging->displayVerification('function_name', array($object, $resource, &$reference));
+     */
+    function displayVerification($functionName, $params)
+    {
+        assert(is_string($functionName));
+        assert(is_array($params));
+
+        $this->tmpParams = $params;
+        $paramNumber = count($params);
+        $propertyNameToSend = '$_BreakpointDebugging->tmpParams';
+        $callStackInfo = debug_backtrace();
+        echo "<pre>Executed function LINE: {$callStackInfo[0]['line']}    FILE: {$callStackInfo[0]['file']}</pre>";
+        echo 'NAME = ' . $functionName . '(';
+        $paramString = array ();
+        for ($count = 0; $count < $paramNumber; $count++) {
+            $paramString[] = $propertyNameToSend . '[' . $count . ']';
+            var_dump($params[$count]);
+        }
+        echo ')';
+        $code = $functionName . '(' . implode(',', $paramString) . ')';
+        $return = eval('global $_BreakpointDebugging; $return = ' . $code . '; echo "<br/><br/>RETURN = "; var_dump($return); echo "<br/>"; return $return;');
+        return $return;
     }
 
 }

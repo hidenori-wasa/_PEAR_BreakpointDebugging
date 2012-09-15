@@ -180,8 +180,7 @@ abstract class BreakpointDebugging_Lock
             // Closes the shared memory.
             shmop_close(self::$sharedMemoryID);
         }
-
-        B::internalAssert($_lockCount === 0);
+        B::internalAssert($_lockCount <= 0);
     }
 
     /**

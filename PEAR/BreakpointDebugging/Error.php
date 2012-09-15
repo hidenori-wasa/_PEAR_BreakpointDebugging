@@ -377,16 +377,18 @@ final class BreakpointDebugging_Error
         $prependLog = $this->_convertMbString($prependLog);
 
         $this->callStackInfo = $pException->getTrace();
-        if (B::$isInternal) { // Is internal method.
+        if (B::$isInternal) { // Has been called from internal method.
             B::$isInternal = false;
-            // Does not add location which throws exception because this handler must not log this location.
+            // Array top is set to location which "self::internalException()" is called  because this location is registered to logging.
+            unset($this->callStackInfo[0]);
         } else {
-            // Adds location which throws exception to top of call stack array because this handler must log this location.
+            // Array top is set to location which throws exception because this location is registered to logging.
             array_unshift($this->callStackInfo, array ('file' => $pException->getFile(), 'line' => $pException->getLine()));
         }
         // Add scope of start page file.
         $this->callStackInfo[] = array ();
-        if ($this->outputErrorCallStackLog2(get_class($pException), $errorMessage, $prependLog)) {
+        $this->outputErrorCallStackLog2(get_class($pException), $errorMessage, $prependLog);
+        if (function_exists('BreakpointDebugging_breakpoint')) {
             BreakpointDebugging_breakpoint($pException->getMessage(), $this->callStackInfo);
         }
     }
@@ -479,10 +481,13 @@ final class BreakpointDebugging_Error
         }
         // Add scope of start page file.
         $this->callStackInfo[] = array ();
-        if ($this->outputErrorCallStackLog2($errorKind, $errorMessage, $prependLog)) {
+        $this->outputErrorCallStackLog2($errorKind, $errorMessage, $prependLog);
+        if (function_exists('BreakpointDebugging_breakpoint')) {
             BreakpointDebugging_breakpoint($errorMessage, $this->callStackInfo);
-        } else { // In case of "B::RELEASE" mode.
+            // We can do step execution to error location to see variable value even though kind is error.
+        } else {
             if (isset($endFlag)) {
+                // In case of release mode, we must exit this process when kind is error.
                 exit;
             }
         }
@@ -565,7 +570,7 @@ final class BreakpointDebugging_Error
      * @param string $errorMessage Error message.
      * @param string $prependLog   This prepend this parameter logging.
      *
-     * @return bool Is break?
+     * @return void
      */
     function outputErrorCallStackLog2($errorKind, $errorMessage, $prependLog = '')
     {
@@ -582,12 +587,9 @@ final class BreakpointDebugging_Error
             $prependLog = htmlspecialchars($prependLog, ENT_QUOTES, 'UTF-8');
         }
         if ($errorKind === 'E_NOTICE') {
-            // Should skip "E_NOTICE" in case of "B::RELEASE" mode.
-            if ($_BreakpointDebugging_EXE_MODE & B::RELEASE) {
-                return false;
-            } else { // We had better debug by breakpoint than the display screen in case of "E_NOTICE".
-                return true;
-            }
+            // We had better debug by breakpoint than the display screen in case of "E_NOTICE".
+            // Also, breakpoint does not exist in case of release mode.
+            return;
         }
 
         // If this does a log.
@@ -767,10 +769,6 @@ final class BreakpointDebugging_Error
                 B::internalException($exceptionMessage);
             }
         }
-        if ($_BreakpointDebugging_EXE_MODE & B::RELEASE) {
-            return false;
-        }
-        return true;
     }
 
     /**

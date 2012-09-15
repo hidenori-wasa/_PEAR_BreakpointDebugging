@@ -80,8 +80,8 @@ if ($_BreakpointDebugging_EXE_MODE & (B::REMOTE_DEBUG | B::RELEASE)) { // In cas
 // ### [XDebug] setting in "php.ini" file. ###
 // First is DBGP_IDEKEY, and next is USER, and last is USERNAME.
 // B::iniSet('xdebug.idekey', ?????);
-//  // Manual base url for links from function traces or error messages.
-//  B::iniSet('xdebug.manual_url', $xdebugManualUrl, false);
+// // Manual base url for links from function traces or error messages.
+// B::iniSet('xdebug.manual_url', $xdebugManualUrl, false);
 // Limits the number of object properties or array elements for display of var_dump(), local variables or Function Traces.
 B::iniSet('xdebug.var_display_max_children', $xdebugVarDisplayMaxChildren, false);
 // Limits character string type byte-count for display of var_dump(), local variables or Function Traces.
@@ -90,7 +90,8 @@ B::iniSet('xdebug.var_display_max_data', $xdebugVarDisplayMaxData, false);
 // Display by var_dump(), local variables or Function Traces.
 B::iniSet('xdebug.var_display_max_depth', $xdebugVarDisplayMaxDepth, false);
 // Shows function call parameters name and value.
-B::iniSet('xdebug.collect_params', '4', false);
+// B::iniSet('xdebug.collect_params', '4', false);
+B::iniSet('xdebug.collect_params', '2', false);
 // Does not gather local variables information for "xdebug_get_declared_vars()".
 B::iniSet('xdebug.collect_vars', '0', false);
 // Shows stack-traces.
@@ -217,12 +218,14 @@ assert(1 <= B::$maxLogElementNumber && B::$maxLogElementNumber <= 100);
 assert(1 <= B::$maxLogStringSize);
 /**
  * This is function to set breakpoint. You must define this function outside namespace, and you must not change function name.
- * If you don't have breakpoint environment, you can debug by setting '$_BreakpointDebugging_EXE_MODE = B::REMOTE_DEBUG;'.
  *
  * @param string $message        Message.
  * @param array  &$callStackInfo A call stack info.
  *
  * @return void
+ * @example if (function_exists('BreakpointDebugging_breakpoint')) {
+ *              BreakpointDebugging_breakpoint('Error message.', debug_backtrace());
+ *          }
  */
 function BreakpointDebugging_breakpoint($message, &$callStackInfo)
 {

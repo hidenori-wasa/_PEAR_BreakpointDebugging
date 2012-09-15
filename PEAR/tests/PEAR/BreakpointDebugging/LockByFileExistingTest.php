@@ -19,13 +19,8 @@ class LockByFileExistingTest extends PHPUnit_Framework_TestCase
 
     protected function tearDown()
     {
-        // When we execute unit test, we must catch exception of "__destruct()" because exception is thrown.
-        try {
-            // Destructs instance.
-            $this->lockByFileExisting = null;
-        } catch (\BreakpointDebugging_Error_Exception $exception) {
-            return;
-        }
+        // Destructs instance.
+        $this->lockByFileExisting = null;
     }
 
     function testWhole1()
@@ -53,7 +48,6 @@ class LockByFileExistingTest extends PHPUnit_Framework_TestCase
             @unlink(B::$workDir . '/LockFlag.file');
             for ($count = 0; $count < 10; $count++) {
                 while (!($pFile = @B::fopen(B::$workDir . '/LockFlag.file', 'x+b', 0600)));
-                //chmod(B::$workDir . '/LockFlag.file', 0600);
                 fclose($pFile);
                 while (!@unlink(B::$workDir . '/LockFlag.file'));
             }
@@ -114,24 +108,6 @@ class LockByFileExistingTest extends PHPUnit_Framework_TestCase
         $this->assertTrue(false);
     }
 
-    function testLockByFileExisting5()
-    {
-        try {
-            $this->lockByFileExisting->lock();
-            $this->lockByFileExisting->unlock();
-        } catch (\Exception $exception) {
-            $this->assertTrue(false);
-            return;
-        }
-        try {
-            $this->lockByFileExisting->unlock(); // Error.
-        } catch (\BreakpointDebugging_Error_Exception $exception) {
-            $this->assertTrue(true);
-            return;
-        }
-        $this->assertTrue(false);
-    }
-
     function testLockByFileExisting6()
     {
         try {
@@ -143,6 +119,24 @@ class LockByFileExistingTest extends PHPUnit_Framework_TestCase
         try {
             // Calls "__destruct()".
             $this->lockByFileExisting = null; // Error.
+        } catch (\BreakpointDebugging_Error_Exception $exception) {
+            $this->assertTrue(true);
+            return;
+        }
+        $this->assertTrue(false);
+    }
+
+    function testLockByFileExisting5()
+    {
+        try {
+            $this->lockByFileExisting->lock();
+            $this->lockByFileExisting->unlock();
+        } catch (\Exception $exception) {
+            $this->assertTrue(false);
+            return;
+        }
+        try {
+            $this->lockByFileExisting->unlock(); // Error.
         } catch (\BreakpointDebugging_Error_Exception $exception) {
             $this->assertTrue(true);
             return;
