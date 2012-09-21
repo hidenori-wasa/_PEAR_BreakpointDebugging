@@ -12,35 +12,79 @@ use \BreakpointDebugging as B;
 
 require_once './NativeClass.php'; // Test class.
 
-$testNumber = 2;
+$testNumber = 4;
 
 if ($testNumber === 1) {
-    // Register the function being not fixed.
-    static $isRegister;
-    B::registerNotFixedLocation($isRegister);
-    // SJIS + UTF-8
-    var_dump(B::convertMbString("\x95\xB6\x8E\x9A \xE6\x96\x87\xE5\xAD\x97 "));
-    exit('END');
+    try {
+        trigger_error('trigger_error', E_USER_WARNING); // Continues because this error kind is "warning".
+        B::internalAssert(true); // Continues and does not exist in "B::RELEASE" because this is assertion.
+        B::internalAssert(false); // Continues and does not exist in "B::RELEASE" because this is assertion.
+        B::internalException('internalException'); // Continues except for "B::RELEASE" because we want step execution for seeing variable value.
+        throw new \PEAR_Exception('PEAR Exception.'); // Ends at this location.
+        echo 'Is not displayed.';
+    } catch (\Exception $exception) {
+        // Must catch all php code and throw exception because needs to log call-stack.
+        throw $exception;
+    }
 } else if ($testNumber === 2) {
-    // Register the function being not fixed.
+    function test2()
+    {
+        trigger_error('trigger_error', E_USER_WARNING); // Continues because this error kind is "warning".
+        B::internalAssert(true); // Continues and does not exist in "B::RELEASE" because this is assertion.
+        B::internalAssert(false); // Continues and does not exist in "B::RELEASE" because this is assertion.
+        B::internalException('internalException'); // Continues except for "B::RELEASE" because we want step execution for seeing variable value.
+        throw new \PEAR_Exception('PEAR Exception.'); // Ends at this location.
+        echo 'Is not displayed.';
+    }
+
+    function test1()
+    {
+        test2();
+    }
+
+    try {
+        test1();
+    } catch (\Exception $exception) {
+        // Must catch all php code and throw exception because needs to log call-stack.
+        throw $exception;
+    }
+} else if ($testNumber === 3) {
+    try {
+        // Registers the function being not fixed.
+        static $isRegister;
+        B::registerNotFixedLocation($isRegister);
+        // SJIS + UTF-8
+        var_dump(B::convertMbString("\x95\xB6\x8E\x9A \xE6\x96\x87\xE5\xAD\x97 "));
+        echo 'Is not displayed.';
+    } catch (\Exception $exception) {
+        // Must catch all php code and throw exception because needs to log call-stack.
+        throw $exception;
+    }
+} else if ($testNumber === 4) {
+    // Registers the function being not fixed.
     static $isRegister;
     B::registerNotFixedLocation($isRegister);
+    function fnThrow()
+    {
+        throw new \PEAR_Exception('test exception.');
+    }
+
     function fnTestC()
     {
         // assert(false); // This is error location.
-        throw new \Exception('test exception 1.'); // This is exception location.
+        fnThrow(); // This is exception location.
     }
 
     function fnTestB()
     {
-        // Register the function being not fixed.
+        // Registers the function being not fixed.
         static $isRegister;
         B::registerNotFixedLocation($isRegister);
         global $object, $array, $varietyObject;
         define('TEST_CONST', '<TEST CONST>');
 
         $testString = '<TEST STRING>';
-        // Add value to trace.
+        // Adds a value to trace.
         B::addValuesToTrace(array ('TEST_CONST' => TEST_CONST, '$testString' => $testString, '$varietyObject' => $varietyObject));
         for ($count = 0; $count <= 10; $count++) {
             B::addValuesToTrace(array ('$count' => $count));
@@ -48,13 +92,18 @@ if ($testNumber === 1) {
 
         try {
             fnTestC(true, false, 1, 1.1, "\x95\xB6\x8E\x9A ", $object, $array, tmpfile(), null, $varietyObject);
-        } catch (\Exception $exception) {
-            // A tag inside of the "<pre class='xdebug-var-dump' dir='ltr'>" tag isn't changed because the prepend logging is executed "htmlspecialchars()".
-            B::$prependExceptionLog = '<i>This exception caused in fnTestB().</i> αβ∞' . PHP_EOL;
-            // This writes inside of "catch()", then display logging or log.
-            B::exceptionHandler($exception);
-            // This doesn't specify previous exception because "B::exceptionHandler()" logged.
-            throw new \Exception('test exception 2.');
+        } catch (\Exception $prevException) {
+            // Something error repair.
+            //      .
+            //      .
+            //      .
+            // If repair failed.
+            if (true) {
+                // Does not parse HTML tag because it is changed with "htmlspecialchars()" for internal tag.
+                B::$prependExceptionLog = '<i>Repair failed.</i> αβ∞' . PHP_EOL;
+                // Must throw together previous exception when code catches exception for error repair.
+                throw new \Exception('Repair failed.', 0, $prevException);
+            }
         }
     }
 
@@ -63,22 +112,18 @@ if ($testNumber === 1) {
         fnTestB();
     }
 
-    // A tag inside of the "<pre class='xdebug-var-dump' dir='ltr'>" tag isn't changed because the prepend logging is executed "htmlspecialchars()".
-    B::$prependErrorLog = '<i>Some error happened.</i> αβ∞' . PHP_EOL;
-
-    for ($globalCount = 0; $globalCount <= 20; $globalCount++) {
-        B::addValuesToTrace(array ('$globalCount' => $globalCount));
-    }
-
     try {
+        // A tag inside of the "<pre class='xdebug-var-dump' dir='ltr'>" tag isn't changed because the prepend logging is executed "htmlspecialchars()".
+        B::$prependErrorLog = '<i>Some error happened.</i> αβ∞' . PHP_EOL;
+        for ($globalCount = 0; $globalCount <= 20; $globalCount++) {
+            B::addValuesToTrace(array ('$globalCount' => $globalCount));
+        }
         fnTestA();
+        echo 'END.';
     } catch (\Exception $exception) {
-        B::$prependExceptionLog = '<i>Some global exception happened.</i> αβ∞' . PHP_EOL;
-        // This specifies previous exception, and global exception handler will process.
-        throw new \Exception('test exception 3.', 3, $exception);
+        // Must catch all php code and throw exception because needs to log call-stack.
+        throw $exception;
     }
-
-    echo 'END';
 }
 
 ?>

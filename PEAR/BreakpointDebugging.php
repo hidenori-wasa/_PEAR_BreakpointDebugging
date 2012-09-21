@@ -300,7 +300,6 @@ class BreakpointDebugging_InAllCase
      * @param string $string Character string which may be not UTF8.
      *
      * @return string UTF8 character string.
-     *
      * @example \BreakpointDebugging::convertMbString($warning['Message']);
      */
     final static function convertMbString($string)
@@ -312,6 +311,7 @@ class BreakpointDebugging_InAllCase
         if ($charSet === 'UTF-8' || $charSet === 'ASCII') {
             return $string;
         } else if ($charSet === false) {
+            self::$_onceErrorDispFlag = true;
             throw new BreakpointDebugging_Error_Exception('This is not single character sets.');
         }
         return mb_convert_encoding($string, 'UTF-8', $charSet);

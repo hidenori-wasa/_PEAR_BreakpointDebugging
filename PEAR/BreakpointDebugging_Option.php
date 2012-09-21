@@ -46,8 +46,6 @@
  *      "User" and "Group" into "lampp/apache/conf/httpd.conf".
  *      And, register "export PATH=$PATH:/opt/lampp/bin" into "~/.profile".
  *
- * Caution: Please, throw error exception at error location.
- *          Do not throw inside method for throwing because its location is registered in log.
  * Caution: Do not execute "ini_set('error_log')"
  *      because this package uses local log instead of system log.
  *
@@ -634,11 +632,11 @@ if (assert_options(ASSERT_QUIET_EVAL, 0) === false) { // As for assertion expres
 
 if (!extension_loaded('xdebug')) {
     exit(
-        '### ERROR ###<br/>' . PHP_EOL .
-        'FILE: ' . __FILE__ . ' LINE: ' . __LINE__ . '<br/>' . PHP_EOL .
-        '"Xdebug" extension has been not loaded.<br/>' . PHP_EOL .
-        '"Xdebug" extension is required because avoids infinity recursive function call.<br/>' . PHP_EOL .
-        'Also, this package requires "Xdebug" extension.<br/>'
+    '### ERROR ###<br/>' . PHP_EOL .
+    'FILE: ' . __FILE__ . ' LINE: ' . __LINE__ . '<br/>' . PHP_EOL .
+    '"Xdebug" extension has been not loaded.<br/>' . PHP_EOL .
+    '"Xdebug" extension is required because avoids infinity recursive function call.<br/>' . PHP_EOL .
+    'Also, this package requires "Xdebug" extension.<br/>'
     );
 }
 

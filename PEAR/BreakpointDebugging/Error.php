@@ -373,23 +373,48 @@ final class BreakpointDebugging_Error
         // Forces unlocking to avoid lock-count assertion error if forces a exit.
         \BreakpointDebugging_Lock::forceUnlocking();
 
-        $errorMessage = $this->_convertMbString($pException->getMessage());
         $prependLog = $this->_convertMbString($prependLog);
 
-        $this->callStackInfo = $pException->getTrace();
-        if (B::$isInternal) { // Has been called from internal method.
-            B::$isInternal = false;
-            // Array top is set to location which "self::internalException()" is called  because this location is registered to logging.
-            unset($this->callStackInfo[0]);
-        } else {
-            // Array top is set to location which throws exception because this location is registered to logging.
-            array_unshift($this->callStackInfo, array ('file' => $pException->getFile(), 'line' => $pException->getLine()));
+        for ($pCurrentException = $pException; $pCurrentException; $pCurrentException = $pCurrentException->getPrevious()) {
+            $pExceptions[] = $pCurrentException;
         }
-        // Add scope of start page file.
-        $this->callStackInfo[] = array ();
-        $this->outputErrorCallStackLog2(get_class($pException), $errorMessage, $prependLog);
+        $pExceptions = array_reverse($pExceptions);
+
+        $elementNumber = count($pExceptions);
+        for ($count = 0; $count < $elementNumber; $count++) {
+            $pCurrentException = $pExceptions[$count];
+            $callStackInfo = $pCurrentException->getTrace();
+            if (array_key_exists($count + 1, $pExceptions)) {
+                $nextCallStackInfo = $pExceptions[$count + 1]->getTrace();
+                $nextCallInfo = $nextCallStackInfo[0];
+                $deleteFlag = false;
+                foreach ($callStackInfo as $callKey => $callInfo) {
+                    if ($callInfo['line'] === $nextCallInfo['line'] && $callInfo['file'] === $nextCallInfo['file']) {
+                        $deleteFlag = true;
+                    }
+                    if ($deleteFlag) {
+                        unset($callStackInfo[$callKey]);
+                    }
+                }
+            }
+
+            if (B::$isInternal) { // Has been called from internal method.
+                B::$isInternal = false;
+                // Array top is set to location which "self::internalException()" is called  because this location is registered to logging.
+                unset($callStackInfo[0]);
+            } else {
+                // Array top is set to location which throws exception because this location is registered to logging.
+                array_unshift($callStackInfo, array ('file' => $pCurrentException->getFile(), 'line' => $pCurrentException->getLine()));
+            }
+            $this->callStackInfo = $callStackInfo;
+            // Add scope of start page file.
+            $this->callStackInfo[] = array ();
+            $errorMessage = $this->_convertMbString($pCurrentException->getMessage());
+            $this->outputErrorCallStackLog2(get_class($pCurrentException), $errorMessage, $prependLog);
+        }
+
         if (function_exists('BreakpointDebugging_breakpoint')) {
-            BreakpointDebugging_breakpoint($pException->getMessage(), $this->callStackInfo);
+            BreakpointDebugging_breakpoint($errorMessage, $this->callStackInfo);
         }
     }
 
@@ -617,37 +642,17 @@ final class BreakpointDebugging_Error
                 fflush($pVarConfFile);
                 rewind($pVarConfFile);
             }
-            reset($this->callStackInfo);
-            $call = each($this->callStackInfo);
-            if (substr(PHP_OS, 0, 3) === 'WIN') {
-                $filePath = strtolower($call['value']['file']);
-            } else {
-                $filePath = $call['value']['file'];
-            }
-            $file = basename($filePath);
-            $fileCmpLen = strlen($file) + 1;
-            $filePath .= '?';
-            $line = $call['value']['line'];
+
             // Gets current error log file name.
             $currentErrorLogFileName = substr(trim(fgets($pVarConfFile)), strlen($this->_keyOfCurrentErrorLogFileName));
-            $maxErrorFileNumber = 0;
-            while ($varConfLineString = fgets($pVarConfFile)) {
-                $varConfLineString = trim($varConfLineString);
-                if (strncmp($varConfLineString, $file . '>', $fileCmpLen) === 0) { // Searches the error file name.
-                    $tmpErrorFileNumber = substr($varConfLineString, -4);
-                    if ($tmpErrorFileNumber > $maxErrorFileNumber) {
-                        $maxErrorFileNumber = $tmpErrorFileNumber;
-                    }
-                    if (substr_compare($varConfLineString, $filePath, $fileCmpLen, strlen($filePath)) === 0) { // Searches the error file path.
-                        $errorFileNumber = $tmpErrorFileNumber;
-                        break;
-                    }
-                }
-            }
             if (substr(PHP_OS, 0, 3) === 'WIN') {
                 $this->_errorLogFilePath = strtolower($errorLogDirectory . $currentErrorLogFileName);
             } else {
                 $this->_errorLogFilePath = $errorLogDirectory . $currentErrorLogFileName;
+            }
+            if (!is_string($currentErrorLogFileName)) {
+                $exceptionMessage = 'Current error log file name should be string.';
+                goto END_LABEL;
             }
             // When current error log file does not exist.
             if (!is_file($this->_errorLogFilePath)) {
@@ -657,51 +662,74 @@ final class BreakpointDebugging_Error
                 // Opens current error log file.
                 $this->_pErrorLogFile = fopen($this->_errorLogFilePath, 'ab');
             }
-            // If error location file exists.
-            if (isset($errorFileNumber)) {
-                $errorLocationFilePath = $errorLogDirectory . $file . sprintf('.%04d', $errorFileNumber) . '.txt';
-                if (!is_file($errorLocationFilePath)) {
-                    $exceptionMessage = '"' . $errorLocationFilePath . '" which should exist does not exist.' . PHP_EOL
-                        . 'Please, repair "' . $varConfFilePath . '" file.';
-                    goto END_LABEL;
+
+            // Reads native call stack paths and its number.
+            $nativeCallStackArray = array ();
+            while ($varConfLineString = fgets($pVarConfFile)) {
+                $varConfLineString = trim($varConfLineString);
+                list($key, $value) = explode('?', $varConfLineString);
+                $nativeCallStackArray[$key] = $value;
+            }
+            // The call stack loop.
+            $callStackInfoString = '';
+            foreach ($this->callStackInfo as $call) {
+                if (empty($call)) {
+                    continue;
                 }
+                if (substr(PHP_OS, 0, 3) === 'WIN') {
+                    $path = strtolower($call['file']);
+                } else {
+                    $path = $call['file'];
+                }
+                $line = base_convert($call['line'], 10, 36);
+                // Searches the error file path.
+                if (array_key_exists($path, $nativeCallStackArray)) {
+                    $pathNumber = $nativeCallStackArray[$path];
+                } else {
+                    $count = count($nativeCallStackArray);
+                    if ($count) {
+                        $pathNumber = base_convert($count + 1, 10, 36);
+                    } else {
+                        $pathNumber = 1;
+                    }
+                    $nativeCallStackArray[$path] = $pathNumber;
+                    // Sets the error path and its number.
+                    fwrite($pVarConfFile, $path . '?' . $pathNumber . PHP_EOL);
+                }
+                // Creates the call stack information character string.
+                $callStackInfoString .= $pathNumber . ',' . $line . ',';
+                if (!isset($errorPath)) {
+                    // Sets the error file path.
+                    $errorPath = $path;
+                    // Sets the error location file number.
+                    $errorPathNumber = $pathNumber;
+                }
+            }
+
+            $errorLocationFilePath = $errorLogDirectory . $errorPathNumber . '.txt';
+            // If error location file exists.
+            if (is_file($errorLocationFilePath)) {
                 // Opens the error location file.
                 $pErrorLocationFile = fopen($errorLocationFilePath, 'r+b');
             } else {
-                $errorFile4Number = sprintf('%04d', $maxErrorFileNumber + 1);
-                $errorLocationFilePath = $errorLogDirectory . $file . '.' . $errorFile4Number . '.txt';
-                fseek($pVarConfFile, 0, SEEK_END);
-                // Sets the error file path.
-                fwrite($pVarConfFile, $file . '>' . $filePath . $errorFile4Number . PHP_EOL);
                 // Creates the error location file.
                 $pErrorLocationFile = B::fopen($errorLocationFilePath, 'x+b', 0600);
             }
-            // Searches error line.
-            $fstat = fstat($pErrorLocationFile);
-            $fsize = $fstat['size'];
-            if ($line > $fsize) {
-                // Marks the error line.
-                fseek($pErrorLocationFile, 0, SEEK_END);
-                $repeatNumber = $line - $fsize - 1;
-                fwrite($pErrorLocationFile, str_repeat('-', $repeatNumber));
-                fwrite($pErrorLocationFile, '*');
-            } else {
-                fseek($pErrorLocationFile, $line - 1);
-                $errorLineMark = fread($pErrorLocationFile, 1);
-                if ($errorLineMark === '*') {
-                    // Skips same error.
-                    goto END_LABEL;
-                } else if ($errorLineMark !== '-') {
-                    $exceptionMessage = '"' . $errorLocationFilePath . '" file must be composed with "*" or "-".';
-                    goto END_LABEL;
+            $isExisting = false;
+            while ($callStackInfoStringLine = fgets($pErrorLocationFile)) {
+                $callStackInfoStringLine = trim($callStackInfoStringLine);
+                if ($callStackInfoStringLine === $callStackInfoString) {
+                    $isExisting = true;
+                    break;
                 }
-                // Marks the error line.
-                fseek($pErrorLocationFile, $line - 1);
-                fwrite($pErrorLocationFile, '*');
             }
-            if (!is_string($currentErrorLogFileName)) {
-                $exceptionMessage = 'Current error log file name should be string.';
+            if ($isExisting) {
+                // Skips same error.
                 goto END_LABEL;
+            } else {
+                // Registers the call stack information character string.
+                fseek($pErrorLocationFile, 0, SEEK_END);
+                fwrite($pErrorLocationFile, $callStackInfoString . PHP_EOL);
             }
         }
 
@@ -710,8 +738,8 @@ final class BreakpointDebugging_Error
         $this->_logBufferWriting($dummy, $this->tags['pre'] . $prependLog);
         // Create error log from the argument.
         $tmp .= '/////////////////////////////// CALL STACK BEGIN ///////////////////////////////' .
-            PHP_EOL . $this->_mark . 'Error kind =======>' . $this->tags['font']['string'] . '\'' . $errorKind . '\'' . $this->tags['/font'] .
-            PHP_EOL . $this->_mark . 'Error message ====>' . $this->tags['font']['string'] . '\'' . $errorMessage . '\'' . $this->tags['/font'];
+        PHP_EOL . $this->_mark . 'Error kind =======>' . $this->tags['font']['string'] . '\'' . $errorKind . '\'' . $this->tags['/font'] .
+        PHP_EOL . $this->_mark . 'Error message ====>' . $this->tags['font']['string'] . '\'' . $errorMessage . '\'' . $this->tags['/font'];
         $this->_logBufferWriting($dummy, $tmp);
         // Search array which debug_backtrace() or getTrace() returns, and add a parametric information.
         foreach ($this->callStackInfo as $backtraceArrays) {
@@ -734,6 +762,7 @@ final class BreakpointDebugging_Error
         }
         $this->_logBufferWriting($dummy, '//////////////////////////////// CALL STACK END ////////////////////////////////');
         $this->_logBufferWriting($dummy, $this->tags['/pre']);
+
         // If this does a log.
         if ($_BreakpointDebugging_EXE_MODE & (B::RELEASE | B::LOCAL_DEBUG_OF_RELEASE)) {
             // When log file size exceeds.
@@ -742,6 +771,7 @@ final class BreakpointDebugging_Error
                 // Gets next error log file name.
                 $nextNumber = substr($currentErrorLogFileName, strlen($this->_prefixOfErrorLogFileName), 1) + 1;
                 if ($nextNumber > 8) {
+                    // Error log file rotation.
                     $nextNumber = 1;
                 }
                 $nextErrorLogFilePath = $errorLogDirectory . $this->_prefixOfErrorLogFileName . $nextNumber . $this->_errorLogFileExt;
@@ -757,10 +787,14 @@ final class BreakpointDebugging_Error
             }
 
             END_LABEL:
-            // Closes the error location file.
-            fclose($pErrorLocationFile);
-            // Closes current error log file.
-            fclose($this->_pErrorLogFile);
+            if (is_resource($pErrorLocationFile)) {
+                // Closes the error location file.
+                fclose($pErrorLocationFile);
+            }
+            if (is_resource($this->_pErrorLogFile)) {
+                // Closes current error log file.
+                fclose($this->_pErrorLogFile);
+            }
             // Closes variable configuring file.
             fclose($pVarConfFile);
             // Unlocks the error log files.
@@ -799,8 +833,8 @@ final class BreakpointDebugging_Error
         $prefix = PHP_EOL . str_repeat("\t", $tabNumber);
         $this->_logBufferWriting($pTmpLog, $prefix . $paramName . $this->tags['font']['=>'] . ' => ' . $this->tags['/font']);
         $tag = function ($self, $type, $paramValue) {
-                return $self->tags['small'] . $type . $self->tags['/small'] . ' ' . $self->tags['font'][$type] . $paramValue . $self->tags['/font'];
-            };
+            return $self->tags['small'] . $type . $self->tags['/small'] . ' ' . $self->tags['font'][$type] . $paramValue . $self->tags['/font'];
+        };
         if (is_null($paramValue)) {
             $this->_logBufferWriting($pTmpLog, $tag($this, 'null', 'null'));
         } else if (is_bool($paramValue)) {
@@ -828,8 +862,8 @@ final class BreakpointDebugging_Error
             }
         } else if (is_resource($paramValue)) {
             $tmp = $this->tags['b'] . 'resource' . $this->tags['/b'] . ' ' .
-                $this->tags['i'] . get_resource_type($paramValue) . $this->tags['/i'] . ' ' .
-                $this->tags['font']['resource'] . $paramValue . $this->tags['/font'];
+            $this->tags['i'] . get_resource_type($paramValue) . $this->tags['/i'] . ' ' .
+            $this->tags['font']['resource'] . $paramValue . $this->tags['/font'];
             $this->_logBufferWriting($pTmpLog, $tmp);
         } else {
             B::internalAssert(false);
