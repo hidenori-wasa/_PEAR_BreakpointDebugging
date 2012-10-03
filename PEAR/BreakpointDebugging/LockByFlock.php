@@ -13,7 +13,7 @@
  *      $data = fread($pFile, 1); // Reads data.
  *      $data++; // Changes data.
  *      fwrite($pFile, $data); // Writes data.
- *      fclose($pFile); // Flushes data.
+ *      fclose($pFile); // Flushes data, and releases file pointer resource.
  *      $lockByFlock->unlock(); // Unlocks php-code.
  *
  * PHP version 5.3

@@ -221,6 +221,45 @@ final class BreakpointDebugging extends BreakpointDebugging_InAllCase
     }
 
     /**
+     * This is function to debug with breakpoint.
+     * We must define this function outside namespace, and we must not change method name when we call this method.
+     *
+     * @param string $message       Message.
+     * @param array  $callStackInfo A call stack info.
+     *
+     * @return void
+     * @example B::breakpoint('Error message.', debug_backtrace());
+     */
+    static function breakpoint($message, $callStackInfo)
+    {
+        global $_BreakpointDebugging_EXE_MODE;
+
+        B::internalAssert(func_num_args() === 2);
+        B::internalAssert(is_string($message));
+        B::internalAssert(is_array($callStackInfo));
+
+        reset($callStackInfo);
+        if (!empty($callStackInfo)) {
+            $call = each($callStackInfo);
+            $call = $call['value'];
+            if (array_key_exists('file', $call)) {
+                $errorFile = $call['file'];
+            }
+            if (array_key_exists('line', $call)) {
+                $errorLine = $call['line'];
+            }
+        }
+
+        $return = xdebug_break(); // Breakpoint. See local variable value by doing step execution here.
+        self::internalAssert($return);
+
+        if ($_BreakpointDebugging_EXE_MODE & self::REMOTE_DEBUG) {
+            // Remote debug must end immediately to avoid eternal execution.
+            exit;
+        }
+    }
+
+    /**
      * This changes a character sets to display a multibyte character string with local window of debugger, and this returns it.
      * But, this doesn't exist in case of release.
      *
@@ -497,11 +536,11 @@ EOD;
      *
      * @example
      *      <?php
-     *      chdir(__DIR__ . '/../../../../../');
+     *      chdir(__DIR__ . '/../../');
      *      require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
      *      use \BreakpointDebugging as B;
      *      B::checkUnitTestExeMode();
-     *      class LockByFileExistingTest extends PHPUnit_Framework_TestCase
+     *      class BreakpointDebuggingTest extends PHPUnit_Framework_TestCase
      */
     static function checkUnitTestExeMode()
     {
@@ -528,21 +567,22 @@ EOD;
      * @return void
      *
      * @example
-     *      <?php
-     *      chdir(__DIR__ . '/../../../');
-     *      require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
-     *      use \BreakpointDebugging as B;
-     *      // Please, choose unit tests files by customizing.
-     *      $testFileNames = array (
-     *          'Something1Test.php',
-     *          'Something2Test.php'
-     *      );
-     *      // Executes unit tests.
-     *      B::executeUnitTest($testFileNames, __DIR__);
-     *      ?>
+     * <?php
+     * chdir(__DIR__ . '/../../');
+     * require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
+     * use \BreakpointDebugging as B;
+     * // Please, choose unit tests files by customizing.
+     * $testFileNames = array (
+     *     'BreakpointDebuggingTest',
+     *     'BreakpointDebugging/LockTest.php',
+     * );
+     * // Executes unit tests.
+     * B::executeUnitTest($testFileNames, __DIR__);
+     * ?>
      */
     static function executeUnitTest($testFileNames, $currentDir)
     {
+        self::checkUnitTestExeMode();
         if (strncmp(PHP_OS, 'WIN', 3) === 0) { // In case of Windows.
             $phpunit = 'phpunit.bat';
         } else if (PHP_OS === 'Linux') { // In case of Linux.
@@ -568,6 +608,12 @@ EOD;
         }
         echo '<pre>';
         foreach ($testFileNames as $testFileName) {
+            // If test file name contains '_'.
+            if (strpos($testFileName, '_') !== false) {
+                echo "You must change its array element and its file name into '-' because '$testFileName' contains '_'." . PHP_EOL;
+                xdebug_break();
+                return;
+            }
             echo $testFileName . PHP_EOL;
             echo `$phpunit $currentDir/$testFileName`;
             echo '//////////////////////////////////////////////////////////////////////////' . PHP_EOL;

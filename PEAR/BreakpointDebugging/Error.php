@@ -413,9 +413,7 @@ final class BreakpointDebugging_Error
             $this->outputErrorCallStackLog2(get_class($pCurrentException), $errorMessage, $prependLog);
         }
 
-        if (function_exists('BreakpointDebugging_breakpoint')) {
-            BreakpointDebugging_breakpoint($errorMessage, $this->callStackInfo);
-        }
+        B::breakpoint($errorMessage, $this->callStackInfo);
     }
 
     /**
@@ -507,15 +505,14 @@ final class BreakpointDebugging_Error
         // Add scope of start page file.
         $this->callStackInfo[] = array ();
         $this->outputErrorCallStackLog2($errorKind, $errorMessage, $prependLog);
-        if (function_exists('BreakpointDebugging_breakpoint')) {
-            BreakpointDebugging_breakpoint($errorMessage, $this->callStackInfo);
-            // We can do step execution to error location to see variable value even though kind is error.
-        } else {
+        if ($_BreakpointDebugging_EXE_MODE & B::RELEASE) { // In case of release.
             if (isset($endFlag)) {
                 // In case of release mode, we must exit this process when kind is error.
                 exit;
             }
         }
+        B::breakpoint($errorMessage, $this->callStackInfo);
+        // We can do step execution to error location to see variable value even though kind is error.
     }
 
     /**
@@ -671,9 +668,9 @@ final class BreakpointDebugging_Error
                 $nativeCallStackArray[$key] = $value;
             }
             // The call stack loop.
-            $callStackInfoString = '';
+            $callStackInfoArray = array ();
             foreach ($this->callStackInfo as $call) {
-                if (empty($call)) {
+                if (empty($call) || !array_key_exists('file', $call) || !array_key_exists('line', $call)) {
                     continue;
                 }
                 if (substr(PHP_OS, 0, 3) === 'WIN') {
@@ -681,7 +678,6 @@ final class BreakpointDebugging_Error
                 } else {
                     $path = $call['file'];
                 }
-                $line = base_convert($call['line'], 10, 36);
                 // Searches the error file path.
                 if (array_key_exists($path, $nativeCallStackArray)) {
                     $pathNumber = $nativeCallStackArray[$path];
@@ -694,19 +690,23 @@ final class BreakpointDebugging_Error
                     }
                     $nativeCallStackArray[$path] = $pathNumber;
                     // Sets the error path and its number.
+                    // Disk access is executed per sector.
+                    // Therefore, compresses from error path to sequential number because it is purpose to decrease disk access.
                     fwrite($pVarConfFile, $path . '?' . $pathNumber . PHP_EOL);
                 }
                 // Creates the call stack information character string.
-                $callStackInfoString .= $pathNumber . ',' . $line . ',';
+                $callStackInfoArray[] = base_convert($pathNumber, 36, 10);
+                $callStackInfoArray[] = $call['line'];
                 if (!isset($errorPath)) {
-                    // Sets the error file path.
-                    $errorPath = $path;
                     // Sets the error location file number.
                     $errorPathNumber = $pathNumber;
                 }
             }
-
-            $errorLocationFilePath = $errorLogDirectory . $errorPathNumber . '.txt';
+            // Compresses integer array.
+            $callStackInfoString = B::compressIntArray($callStackInfoArray);
+            // Disk access is executed per sector.
+            // Therefore, partitions out error locations to error location files because it is purpose to decrease disk access.
+            $errorLocationFilePath = $errorLogDirectory . $errorPathNumber . '.bin';
             // If error location file exists.
             if (is_file($errorLocationFilePath)) {
                 // Opens the error location file.
@@ -717,7 +717,8 @@ final class BreakpointDebugging_Error
             }
             $isExisting = false;
             while ($callStackInfoStringLine = fgets($pErrorLocationFile)) {
-                $callStackInfoStringLine = trim($callStackInfoStringLine);
+                // Trims "\r\n" For Windows and Unix and Mac.
+                $callStackInfoStringLine = trim($callStackInfoStringLine, "\r\n");
                 if ($callStackInfoStringLine === $callStackInfoString) {
                     $isExisting = true;
                     break;
@@ -729,7 +730,8 @@ final class BreakpointDebugging_Error
             } else {
                 // Registers the call stack information character string.
                 fseek($pErrorLocationFile, 0, SEEK_END);
-                fwrite($pErrorLocationFile, $callStackInfoString . PHP_EOL);
+                // Adds "\r\n" For data reading by "fgets()" in Windows and Unix and Mac.
+                fwrite($pErrorLocationFile, $callStackInfoString . "\r\n");
             }
         }
 

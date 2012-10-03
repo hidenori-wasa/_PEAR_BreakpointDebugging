@@ -15,17 +15,12 @@ require_once './NativeClass.php'; // Test class.
 $testNumber = 4;
 
 if ($testNumber === 1) {
-    try {
-        trigger_error('trigger_error', E_USER_WARNING); // Continues because this error kind is "warning".
-        B::internalAssert(true); // Continues and does not exist in "B::RELEASE" because this is assertion.
-        B::internalAssert(false); // Continues and does not exist in "B::RELEASE" because this is assertion.
-        B::internalException('internalException'); // Continues except for "B::RELEASE" because we want step execution for seeing variable value.
-        throw new \PEAR_Exception('PEAR Exception.'); // Ends at this location.
-        echo 'Is not displayed.';
-    } catch (\Exception $exception) {
-        // Must catch all php code and throw exception because needs to log call-stack.
-        throw $exception;
-    }
+    trigger_error('trigger_error', E_USER_WARNING); // Continues because this error kind is "warning".
+    B::internalAssert(true); // Continues and does not exist in "B::RELEASE" because this is assertion.
+    B::internalAssert(false); // Continues and does not exist in "B::RELEASE" because this is assertion.
+    B::internalException('internalException'); // Continues except for "B::RELEASE" because we want step execution for seeing variable value.
+    throw new \PEAR_Exception('PEAR Exception.'); // Ends at this location.
+    echo 'Is not displayed.';
 } else if ($testNumber === 2) {
     function test2()
     {
@@ -42,24 +37,14 @@ if ($testNumber === 1) {
         test2();
     }
 
-    try {
-        test1();
-    } catch (\Exception $exception) {
-        // Must catch all php code and throw exception because needs to log call-stack.
-        throw $exception;
-    }
+    test1();
 } else if ($testNumber === 3) {
-    try {
-        // Registers the function being not fixed.
-        static $isRegister;
-        B::registerNotFixedLocation($isRegister);
-        // SJIS + UTF-8
-        var_dump(B::convertMbString("\x95\xB6\x8E\x9A \xE6\x96\x87\xE5\xAD\x97 "));
-        echo 'Is not displayed.';
-    } catch (\Exception $exception) {
-        // Must catch all php code and throw exception because needs to log call-stack.
-        throw $exception;
-    }
+    // Registers the function being not fixed.
+    static $isRegister;
+    B::registerNotFixedLocation($isRegister);
+    // SJIS + UTF-8
+    var_dump(B::convertMbString("\x95\xB6\x8E\x9A \xE6\x96\x87\xE5\xAD\x97 "));
+    echo 'Is not displayed.';
 } else if ($testNumber === 4) {
     // Registers the function being not fixed.
     static $isRegister;
@@ -112,18 +97,13 @@ if ($testNumber === 1) {
         fnTestB();
     }
 
-    try {
-        // A tag inside of the "<pre class='xdebug-var-dump' dir='ltr'>" tag isn't changed because the prepend logging is executed "htmlspecialchars()".
-        B::$prependErrorLog = '<i>Some error happened.</i> αβ∞' . PHP_EOL;
-        for ($globalCount = 0; $globalCount <= 20; $globalCount++) {
-            B::addValuesToTrace(array ('$globalCount' => $globalCount));
-        }
-        fnTestA();
-        echo 'END.';
-    } catch (\Exception $exception) {
-        // Must catch all php code and throw exception because needs to log call-stack.
-        throw $exception;
+    // A tag inside of the "<pre class='xdebug-var-dump' dir='ltr'>" tag isn't changed because the prepend logging is executed "htmlspecialchars()".
+    B::$prependErrorLog = '<i>Some error happened.</i> αβ∞' . PHP_EOL;
+    for ($globalCount = 0; $globalCount <= 20; $globalCount++) {
+        B::addValuesToTrace(array ('$globalCount' => $globalCount));
     }
+    fnTestA();
+    echo 'END.';
 }
 
 ?>

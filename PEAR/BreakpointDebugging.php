@@ -288,9 +288,7 @@ class BreakpointDebugging_InAllCase
         // Add scope of start page file.
         $error->callStackInfo[] = array ();
         $error->outputErrorCallStackLog2($errorKind, $errorMessage);
-        if (function_exists('BreakpointDebugging_breakpoint')) { // In case of not release.
-            BreakpointDebugging_breakpoint($errorMessage, $error->callStackInfo);
-        }
+        B::breakpoint($errorMessage, $error->callStackInfo);
     }
 
     /**
@@ -371,6 +369,76 @@ class BreakpointDebugging_InAllCase
             self::_setOwner($fileName, $permission);
         }
         return $pFile;
+    }
+
+    /**
+     * Compresses integer array.
+     *
+     * @param array $intArray Integer array.
+     *
+     * @return string Compression character string.
+     * @example // Adds "\r\n" For data reading by "fgets()" in Windows and Unix and Mac.
+     *          fwrite($pFile, \BreakpointDebugging::compressIntArray(array(0xFFFFFFFF, 0x7C, 0x7D, 0x7E, 0x0A, 0x0D)) . "\r\n");
+     */
+    static function compressIntArray($intArray)
+    {
+        $compressBytes = '';
+        foreach ($intArray as $int) {
+            self::internalAssert(preg_match('`^[0-9]$ | ^[1-9][0-9]+$`xX', $int) === 1);
+            for ($diff = 1, $delimiter = 0x80, $tmpBytes = ''; $diff; $int = $diff / 0x7D) {
+                // This changes from decimal number to 126 number.
+                $diff = 0x7D * (int) ($int / 0x7D);
+                $byte = $int - $diff;
+                // Changes end of line character.
+                if ($byte === 0x0A) { // For data reading by "fgets()" in Windows and Unix.
+                    $tmpBytes .= chr(0x7E | $delimiter);
+                } else if ($byte === 0x0D) { // For data reading by "fgets()" in Mac.
+                    $tmpBytes .= chr(0x7F | $delimiter);
+                } else {
+                    $tmpBytes .= chr($byte | $delimiter);
+                }
+                $delimiter = 0;
+            }
+            $compressBytes .= strrev($tmpBytes);
+        }
+        return $compressBytes;
+    }
+
+    /**
+     * Decompresses to integer array.
+     *
+     * @param string $compressBytes Compression character string by "\BreakpointDebugging::compressIntArray()".
+     *
+     * @return array Integer array.
+     * @example while ($intArray = \BreakpointDebugging::decompressIntArray(fgets($pFile))) {
+     */
+    static function decompressIntArray($compressBytes)
+    {
+        // Trims "\r\n" For Windows and Unix and Mac.
+        $compressBytes = trim($compressBytes, "\r\n");
+        $intArray = array ();
+        $int = 0;
+        $strlen = strlen($compressBytes);
+        for ($count = 0; $count < $strlen; $count++) {
+            // Gets compression byte.
+            $compressByte = ord($compressBytes[$count]);
+            // Trims delimiter-bit.
+            $tmpByte = $compressByte & 0x7F;
+            // Changes to end of line character.
+            if ($tmpByte === 0x7E) {
+                $tmpByte = 0x0A;
+            } else if ($tmpByte === 0x7F) {
+                $tmpByte = 0x0D;
+            }
+            // This changes from 126 number to decimal number.
+            $int = $int * 0x7D + $tmpByte;
+            // If this is delimiter bit.
+            if ($compressByte & 0x80) {
+                $intArray[] = $int;
+                $int = 0;
+            }
+        }
+        return $intArray;
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -462,15 +530,11 @@ class BreakpointDebugging_InAllCase
                         self::errorHandler(E_USER_ERROR, $message);
                         break;
                     default:
-                        if (function_exists('BreakpointDebugging_breakpoint')) { // In case of not release.
-                            BreakpointDebugging_breakpoint('"$handlerKind" is wrong value.', debug_backtrace());
-                        }
+                        B::breakpoint('"$handlerKind" is wrong value.', debug_backtrace());
                 }
                 break;
             default:
-                if (function_exists('BreakpointDebugging_breakpoint')) { // In case of not release.
-                    BreakpointDebugging_breakpoint('"\BreakpointDebugging::$_handlerOf" is wrong value.', debug_backtrace());
-                }
+                B::breakpoint('"\BreakpointDebugging::$_handlerOf" is wrong value.', debug_backtrace());
         }
         if ($_BreakpointDebugging_EXE_MODE & self::REMOTE_DEBUG) { // In case of remote debug.
             // Remote debug must end immediately to avoid eternal execution.
@@ -556,6 +620,19 @@ if ($_BreakpointDebugging_EXE_MODE & BreakpointDebugging_InAllCase::RELEASE) { /
 
     final class BreakpointDebugging extends BreakpointDebugging_InAllCase
     {
+        /**
+         * This is empty in case of release mode.
+         *
+         * @param string $message       Dummy.
+         * @param array  $callStackInfo Dummy.
+         *
+         * @return void
+         */
+        static function breakpoint($message, $callStackInfo)
+        {
+
+        }
+
         /**
          * This is ini_set() without validation in case of release mode.
          * I set with "ini_set()" because "php.ini" file and ".htaccess" file isn't sometimes possible to be set on sharing server.

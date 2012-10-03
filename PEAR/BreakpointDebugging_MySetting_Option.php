@@ -53,7 +53,7 @@ use \BreakpointDebugging as B;
 
 // ### Item-setting for debugging. ===>
 // $xdebugManualUrl = 'http://www.php.net/manual/ja/';
-$xdebugVarDisplayMaxChildren = '50';
+$xdebugVarDisplayMaxChildren = '501'; // '50';
 $xdebugVarDisplayMaxData = '3000';
 $xdebugVarDisplayMaxDepth = '3';
 // xdebug.dump.*    * = COOKIE, FILES, GET, POST, REQUEST, SERVER, SESSION.
@@ -216,42 +216,5 @@ B::iniSet('html_errors', '1', false);
 assert(1 <= B::$maxLogParamNestingLevel && B::$maxLogParamNestingLevel <= 100);
 assert(1 <= B::$maxLogElementNumber && B::$maxLogElementNumber <= 100);
 assert(1 <= B::$maxLogStringSize);
-/**
- * This is function to set breakpoint. You must define this function outside namespace, and you must not change function name.
- *
- * @param string $message        Message.
- * @param array  &$callStackInfo A call stack info.
- *
- * @return void
- * @example if (function_exists('BreakpointDebugging_breakpoint')) {
- *              BreakpointDebugging_breakpoint('Error message.', debug_backtrace());
- *          }
- */
-function BreakpointDebugging_breakpoint($message, &$callStackInfo)
-{
-    global $_BreakpointDebugging_EXE_MODE;
-
-    B::internalAssert(func_num_args() <= 2);
-    B::internalAssert(is_string($message));
-    B::internalAssert(is_array($callStackInfo));
-
-    reset($callStackInfo);
-    $call = each($callStackInfo);
-    $call = $call['value'];
-    if (array_key_exists('file', $call)) {
-        $errorFile = $call['file'];
-    }
-    if (array_key_exists('line', $call)) {
-        $errorLine = $call['line'];
-    }
-
-    $return = xdebug_break(); // Breakpoint. See local variable value by doing step execution here.
-    B::internalAssert($return);
-
-    if ($_BreakpointDebugging_EXE_MODE & B::REMOTE_DEBUG) {
-        // Remote debug must end immediately to avoid eternal execution.
-        exit;
-    }
-}
 
 ?>
