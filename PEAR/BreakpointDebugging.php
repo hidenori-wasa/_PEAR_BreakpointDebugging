@@ -377,8 +377,7 @@ class BreakpointDebugging_InAllCase
      * @param array $intArray Integer array.
      *
      * @return string Compression character string.
-     * @example // Adds "\r\n" For data reading by "fgets()" in Windows and Unix and Mac.
-     *          fwrite($pFile, \BreakpointDebugging::compressIntArray(array(0xFFFFFFFF, 0x7C, 0x7D, 0x7E, 0x0A, 0x0D)) . "\r\n");
+     * @example fwrite($pFile, \BreakpointDebugging::compressIntArray(array(0xFFFFFFFF, 0x7C, 0x7D, 0x7E, 0x0A, 0x0D)));
      */
     static function compressIntArray($intArray)
     {
@@ -401,7 +400,8 @@ class BreakpointDebugging_InAllCase
             }
             $compressBytes .= strrev($tmpBytes);
         }
-        return $compressBytes;
+        // Adds "\r\n" For data reading by "fgets()" in Windows and Unix and Mac.
+        return $compressBytes . "\r\n";
     }
 
     /**

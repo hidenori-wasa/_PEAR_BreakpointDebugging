@@ -717,8 +717,6 @@ final class BreakpointDebugging_Error
             }
             $isExisting = false;
             while ($callStackInfoStringLine = fgets($pErrorLocationFile)) {
-                // Trims "\r\n" For Windows and Unix and Mac.
-                $callStackInfoStringLine = trim($callStackInfoStringLine, "\r\n");
                 if ($callStackInfoStringLine === $callStackInfoString) {
                     $isExisting = true;
                     break;
@@ -730,8 +728,7 @@ final class BreakpointDebugging_Error
             } else {
                 // Registers the call stack information character string.
                 fseek($pErrorLocationFile, 0, SEEK_END);
-                // Adds "\r\n" For data reading by "fgets()" in Windows and Unix and Mac.
-                fwrite($pErrorLocationFile, $callStackInfoString . "\r\n");
+                fwrite($pErrorLocationFile, $callStackInfoString);
             }
         }
 

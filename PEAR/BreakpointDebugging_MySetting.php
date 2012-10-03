@@ -86,10 +86,10 @@ function BreakpointDebugging_setExecutionMode()
      *       B::REMOTE_DEBUG | B::UNIT_TEST // Tests by "phpunit" on remote.
      */
     // $_BreakpointDebugging_EXE_MODE = $LOCAL_DEBUG;
-    $_BreakpointDebugging_EXE_MODE = $LOCAL_DEBUG_OF_RELEASE;
+    // $_BreakpointDebugging_EXE_MODE = $LOCAL_DEBUG_OF_RELEASE;
     // $_BreakpointDebugging_EXE_MODE = $REMOTE_DEBUG;
     // $_BreakpointDebugging_EXE_MODE = $RELEASE;
-    // $_BreakpointDebugging_EXE_MODE = $LOCAL_DEBUG | $UNIT_TEST;
+    $_BreakpointDebugging_EXE_MODE = $LOCAL_DEBUG | $UNIT_TEST;
     // $_BreakpointDebugging_EXE_MODE = $REMOTE_DEBUG | $UNIT_TEST;
     // ### <=== Execution mode setting.
 }
