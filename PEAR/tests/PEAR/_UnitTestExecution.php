@@ -8,8 +8,8 @@ use \BreakpointDebugging as B;
 // Please, choose unit tests files by customizing.
 $testFileNames = array (
     'BreakpointDebugging-InAllCaseTest.php',
-    'BreakpointDebuggingTest',
-    'BreakpointDebugging-ExceptionTest',
+    'BreakpointDebuggingTest.php',
+    'BreakpointDebugging-ExceptionTest.php',
     'BreakpointDebugging/LockByFileExistingTest.php',
     'BreakpointDebugging/LockByFlockTest.php',
     'BreakpointDebugging/LockByShmopTest.php',

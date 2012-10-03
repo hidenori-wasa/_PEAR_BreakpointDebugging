@@ -53,7 +53,7 @@ use \BreakpointDebugging as B;
 
 // ### Item-setting for debugging. ===>
 // $xdebugManualUrl = 'http://www.php.net/manual/ja/';
-$xdebugVarDisplayMaxChildren = '501'; // '50';
+$xdebugVarDisplayMaxChildren = '50';
 $xdebugVarDisplayMaxData = '3000';
 $xdebugVarDisplayMaxDepth = '3';
 // xdebug.dump.*    * = COOKIE, FILES, GET, POST, REQUEST, SERVER, SESSION.

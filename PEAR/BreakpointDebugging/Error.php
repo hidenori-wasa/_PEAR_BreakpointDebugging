@@ -697,7 +697,7 @@ final class BreakpointDebugging_Error
                 // Creates the call stack information character string.
                 $callStackInfoArray[] = base_convert($pathNumber, 36, 10);
                 $callStackInfoArray[] = $call['line'];
-                if (!isset($errorPath)) {
+                if (!isset($errorPathNumber)) {
                     // Sets the error location file number.
                     $errorPathNumber = $pathNumber;
                 }

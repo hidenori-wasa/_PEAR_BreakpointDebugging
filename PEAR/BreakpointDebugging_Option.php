@@ -573,7 +573,7 @@ EOD;
      * use \BreakpointDebugging as B;
      * // Please, choose unit tests files by customizing.
      * $testFileNames = array (
-     *     'BreakpointDebuggingTest',
+     *     'BreakpointDebuggingTest.php',
      *     'BreakpointDebugging/LockTest.php',
      * );
      * // Executes unit tests.
