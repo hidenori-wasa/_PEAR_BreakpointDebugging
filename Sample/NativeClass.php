@@ -108,8 +108,8 @@ class OtherClass
 }
 
 $baseArray = array (' baseArrayElement1', 'baseArrayElement2 ');
-$object = new OtherClass();
+$object = new \OtherClass();
 $array = array (true, 'bool' => false, 222 => 2, 2.2, 'DEF', $object, $baseArray, tmpfile(), null);
-$varietyObject = new NativeClass();
+$varietyObject = new \NativeClass();
 
 ?>

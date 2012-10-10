@@ -10,6 +10,7 @@ $testFileNames = array (
     'BreakpointDebugging-InAllCaseTest.php',
     'BreakpointDebuggingTest.php',
     'BreakpointDebugging-ExceptionTest.php',
+    'BreakpointDebugging/ErrorTest.php',
     'BreakpointDebugging/LockByFileExistingTest.php',
     'BreakpointDebugging/LockByFlockTest.php',
     'BreakpointDebugging/LockByShmopTest.php',

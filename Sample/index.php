@@ -4,48 +4,20 @@
 
 namespace Your_Name;
 
-// File to have "use" keyword does not inherit scope into a file including itself,
-// also it does not inherit scope into a file including,
-// and moreover "use" keyword alias has priority over class definition,
-// therefore "use" keyword alias does not be affected by other files.
 use \BreakpointDebugging as B;
 
 require_once './NativeClass.php'; // Test class.
 
-$testNumber = 4;
+$testNumber = 2;
 
 if ($testNumber === 1) {
-    trigger_error('trigger_error', E_USER_WARNING); // Continues because this error kind is "warning".
-    B::internalAssert(true); // Continues and does not exist in "B::RELEASE" because this is assertion.
-    B::internalAssert(false); // Continues and does not exist in "B::RELEASE" because this is assertion.
-    B::internalException('internalException'); // Continues except for "B::RELEASE" because we want step execution for seeing variable value.
-    throw new \PEAR_Exception('PEAR Exception.'); // Ends at this location.
-    echo 'Is not displayed.';
-} else if ($testNumber === 2) {
-    function test2()
-    {
-        trigger_error('trigger_error', E_USER_WARNING); // Continues because this error kind is "warning".
-        B::internalAssert(true); // Continues and does not exist in "B::RELEASE" because this is assertion.
-        B::internalAssert(false); // Continues and does not exist in "B::RELEASE" because this is assertion.
-        B::internalException('internalException'); // Continues except for "B::RELEASE" because we want step execution for seeing variable value.
-        throw new \PEAR_Exception('PEAR Exception.'); // Ends at this location.
-        echo 'Is not displayed.';
-    }
-
-    function test1()
-    {
-        test2();
-    }
-
-    test1();
-} else if ($testNumber === 3) {
     // Registers the function being not fixed.
     static $isRegister;
     B::registerNotFixedLocation($isRegister);
     // SJIS + UTF-8
     var_dump(B::convertMbString("\x95\xB6\x8E\x9A \xE6\x96\x87\xE5\xAD\x97 "));
     echo 'Is not displayed.';
-} else if ($testNumber === 4) {
+} else if ($testNumber === 2) {
     // Registers the function being not fixed.
     static $isRegister;
     B::registerNotFixedLocation($isRegister);

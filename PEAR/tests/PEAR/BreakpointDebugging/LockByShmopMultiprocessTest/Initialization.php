@@ -23,6 +23,6 @@ class Initialization
 
 }
 
-new Initialization();
+new \Initialization();
 
 ?>

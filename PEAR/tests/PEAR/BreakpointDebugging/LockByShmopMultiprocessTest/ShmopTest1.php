@@ -56,7 +56,7 @@ class ShmopTest1
 
 }
 
-$ShmopTest1 = new ShmopTest1();
+$ShmopTest1 = new \ShmopTest1();
 $ShmopTest1->testLock();
 
 ?>

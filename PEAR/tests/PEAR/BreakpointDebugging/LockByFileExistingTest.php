@@ -11,13 +11,13 @@ class LockByFileExistingTest extends PHPUnit_Framework_TestCase
 {
     protected $lockByFileExisting;
 
-    protected function setUp()
+    function setUp()
     {
         // Constructs instance.
         $this->lockByFileExisting = &\BreakpointDebugging_LockByFileExisting::singleton(5, 10);
     }
 
-    protected function tearDown()
+    function tearDown()
     {
         // Destructs instance.
         $this->lockByFileExisting = null;

@@ -81,26 +81,41 @@ class BreakpointDebuggingTest extends PHPUnit_Framework_TestCase
 
     /**
      * @covers BreakpointDebugging::getPropertyForTest
-     * @todo Implement testGetPropertyForTest().
      */
     public function testGetPropertyForTest()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-        'This test has not been implemented yet.'
-        );
+        global $_BreakpointDebugging;
+
+        $this->assertTrue(B::getPropertyForTest('BreakpointDebugging_InAllCase', 'LOCAL_DEBUG') === 1); // Constant property.
+        $this->assertTrue(B::getPropertyForTest('BreakpointDebugging_InAllCase', '$_handlerOf') === 'none'); // Private static property.
+        $this->assertTrue(B::getPropertyForTest($_BreakpointDebugging, '$_onceFlag') === array ()); // Private auto property.
+        try {
+            B::getPropertyForTest($_BreakpointDebugging, '$_handlerOf'); // Private static property of base class.
+        } catch (\Exception $e) {
+            $this->assertTrue(true);
+            return;
+        }
+        $this->assertTrue(false);
     }
 
     /**
      * @covers BreakpointDebugging::setPropertyForTest
-     * @todo Implement testSetPropertyForTest().
      */
     public function testSetPropertyForTest()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-        'This test has not been implemented yet.'
-        );
+        global $_BreakpointDebugging;
+
+        B::setPropertyForTest('BreakpointDebugging_InAllCase', '$_handlerOf', 'change'); // Private static property.
+        $this->assertTrue(B::getPropertyForTest('BreakpointDebugging_InAllCase', '$_handlerOf') === 'change');
+        B::setPropertyForTest($_BreakpointDebugging, '$_onceFlag', array ('change')); // Private auto property.
+        $this->assertTrue(B::getPropertyForTest($_BreakpointDebugging, '$_onceFlag') === array ('change'));
+        try {
+            B::setPropertyForTest($_BreakpointDebugging, '$_handlerOf', 'change'); // Private static property of base class.
+        } catch (\Exception $e) {
+            $this->assertTrue(true);
+            return;
+        }
+        $this->assertTrue(false);
     }
 
     /**

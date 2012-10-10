@@ -140,6 +140,11 @@ class BreakpointDebugging_InAllCase
     const UNIT_TEST = 16;
 
     /**
+     * @var string Upper case 3 character prefix of operating system name.
+     */
+    static $os = '';
+
+    /**
      * @var stirng My username.
      */
     static $_userName = '';
@@ -203,6 +208,13 @@ class BreakpointDebugging_InAllCase
      * @var string Which handler of "none" or "error" or "exception"?
      */
     private static $_handlerOf = 'none';
+
+    // protected static $_handlerOf = 'none';
+
+    function __construct()
+    {
+        self::$os = strtoupper(substr(PHP_OS, 0, 3));
+    }
 
     /**
      * This registers as function or method being not fixed.
@@ -282,7 +294,7 @@ class BreakpointDebugging_InAllCase
      */
     final static function outputErrorCallStackLog($errorKind, $errorMessage)
     {
-        $error = new BreakpointDebugging_Error();
+        $error = new \BreakpointDebugging_Error();
         $error->callStackInfo = debug_backtrace();
         unset($error->callStackInfo[0]);
         // Add scope of start page file.
@@ -310,7 +322,7 @@ class BreakpointDebugging_InAllCase
             return $string;
         } else if ($charSet === false) {
             self::$_onceErrorDispFlag = true;
-            throw new BreakpointDebugging_Error_Exception('This is not single character sets.');
+            throw new \BreakpointDebugging_Error_Exception('This is not single character sets.');
         }
         return mb_convert_encoding($string, 'UTF-8', $charSet);
     }
@@ -325,16 +337,14 @@ class BreakpointDebugging_InAllCase
      */
     private static function _setOwner($name, $permission)
     {
-        if (strncmp(PHP_OS, 'WIN', 3) === 0) {
+        if (B::$os === 'WIN') { // In case of Windows.
             return;
-        } else if (PHP_OS === 'Linux') {
-            chmod($name, $permission);
-            if (trim(`echo \$USER`) === 'root') {
-                $user = self::$_userName;
-                `chown \$user.\$user \$name`;
-            }
-        } else {
-            self::internalAssert(false);
+        }
+        // In case of Unix.
+        chmod($name, $permission);
+        if (trim(`echo \$USER`) === 'root') {
+            $user = self::$_userName;
+            `chown \$user.\$user \$name`;
         }
     }
 
@@ -389,9 +399,9 @@ class BreakpointDebugging_InAllCase
                 $diff = 0x7D * (int) ($int / 0x7D);
                 $byte = $int - $diff;
                 // Changes end of line character.
-                if ($byte === 0x0A) { // For data reading by "fgets()" in Windows and Unix.
+                if ($byte === "\n") { // For data reading by "fgets()" in Windows and Unix.
                     $tmpBytes .= chr(0x7E | $delimiter);
-                } else if ($byte === 0x0D) { // For data reading by "fgets()" in Mac.
+                } else if ($byte === "\r") { // For line feed of Windows.
                     $tmpBytes .= chr(0x7F | $delimiter);
                 } else {
                     $tmpBytes .= chr($byte | $delimiter);
@@ -400,8 +410,8 @@ class BreakpointDebugging_InAllCase
             }
             $compressBytes .= strrev($tmpBytes);
         }
-        // Adds "\r\n" For data reading by "fgets()" in Windows and Unix and Mac.
-        return $compressBytes . "\r\n";
+        // Adds "PHP_EOL" For data reading by "fgets()".
+        return $compressBytes . PHP_EOL;
     }
 
     /**
@@ -414,8 +424,7 @@ class BreakpointDebugging_InAllCase
      */
     static function decompressIntArray($compressBytes)
     {
-        // Trims "\r\n" For Windows and Unix and Mac.
-        $compressBytes = trim($compressBytes, "\r\n");
+        $compressBytes = trim($compressBytes, PHP_EOL);
         $intArray = array ();
         $int = 0;
         $strlen = strlen($compressBytes);
@@ -426,9 +435,9 @@ class BreakpointDebugging_InAllCase
             $tmpByte = $compressByte & 0x7F;
             // Changes to end of line character.
             if ($tmpByte === 0x7E) {
-                $tmpByte = 0x0A;
+                $tmpByte = "\n";
             } else if ($tmpByte === 0x7F) {
-                $tmpByte = 0x0D;
+                $tmpByte = "\r";
             }
             // This changes from 126 number to decimal number.
             $int = $int * 0x7D + $tmpByte;
@@ -469,7 +478,7 @@ class BreakpointDebugging_InAllCase
             B::makeUnitTestException();
         }
         self::$_handlerOf = 'exception'; // This registers as exception handler.
-        $error = new BreakpointDebugging_Error();
+        $error = new \BreakpointDebugging_Error();
         $error->exceptionHandler2($pException, self::$prependExceptionLog);
         self::$_handlerOf = 'none'; // This registers as none handler.
     }
@@ -491,7 +500,7 @@ class BreakpointDebugging_InAllCase
         }
         $handlerStore = self::$_handlerOf; // Stores the handler.
         self::$_handlerOf = 'error'; // This registers as error handler.
-        $error = new BreakpointDebugging_Error();
+        $error = new \BreakpointDebugging_Error();
         $error->errorHandler2($errorNumber, $errorMessage, self::$prependErrorLog);
         self::$_handlerOf = $handlerStore; // Restores handler.
         return true;

@@ -42,7 +42,7 @@ class Test
 
 }
 
-$Test = new Test();
+$Test = new \Test();
 $Test->testLock();
 
 ?>

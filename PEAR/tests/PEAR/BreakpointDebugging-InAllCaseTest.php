@@ -114,7 +114,6 @@ class BreakpointDebugging_InAllCaseTest extends PHPUnit_Framework_TestCase
                 $intArray[] = $count;
             }
             $pFile = fopen('test.bin', 'w+b');
-            // Adds "\r\n" For data reading by "fgets()" in Windows and Unix and Mac.
             fwrite($pFile, B::compressIntArray($intArray));
             fwrite($pFile, B::compressIntArray($intArray));
             fflush($pFile);

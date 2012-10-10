@@ -48,11 +48,9 @@ use \BreakpointDebugging as B;
 // Reference path setting.
 if (substr(PHP_OS, 0, 3) === 'WIN') { // In case of Windows.
     ini_set('include_path', '.;./PEAR;C:\xampp\php\PEAR'); // In case of local.
-} else if (PHP_OS === 'Linux') { // In case of Linux.
+} else { // In case of Unix.
     ini_set('include_path', '.:./PEAR:/opt/lampp/lib/php:/opt/lampp/lib/php/PEAR'); // In case of local.
     // ini_set('include_path', '.:/opt/lampp/lib/php:/opt/lampp/lib/php/PEAR'); // In case of remote.
-} else { // In case of other.
-    assert(false);
 }
 
 /**
@@ -78,19 +76,19 @@ function BreakpointDebugging_setExecutionMode()
     // ### Execution mode setting. ===>
     /**
      * @see "### Debug mode constant number ###" of class "BreakpointDebugging_InAllCase" in "BreakpointDebugging.php".
-     *       B::LOCAL_DEBUG                 // Local debug by breakpoint.
-     *       B::LOCAL_DEBUG_OF_RELEASE      // Local debug by logging.
-     *       B::REMOTE_DEBUG                // Remote debug by browser display.
-     *       B::RELEASE                     // Remote release by logging. We must execute "REMOTE_DEBUG" before this.
-     *       B::LOCAL_DEBUG | B::UNIT_TEST  // Tests by "phpunit" on local.
-     *       B::REMOTE_DEBUG | B::UNIT_TEST // Tests by "phpunit" on remote.
+     *       B::LOCAL_DEBUG                             // Local debug by breakpoint.
+     *       B::LOCAL_DEBUG_OF_RELEASE                  // Local debug by logging.
+     *       B::REMOTE_DEBUG                            // Remote debug by browser display.
+     *       B::RELEASE                                 // Remote release by logging. We must execute "REMOTE_DEBUG" before this.
+     *       B::LOCAL_DEBUG_OF_RELEASE | B::UNIT_TEST   // Tests by "phpunit" on local.
+     *       B::RELEASE | B::UNIT_TEST                  // Tests by "phpunit" on remote.
      */
     // $_BreakpointDebugging_EXE_MODE = $LOCAL_DEBUG;
     // $_BreakpointDebugging_EXE_MODE = $LOCAL_DEBUG_OF_RELEASE;
     // $_BreakpointDebugging_EXE_MODE = $REMOTE_DEBUG;
     // $_BreakpointDebugging_EXE_MODE = $RELEASE;
-    $_BreakpointDebugging_EXE_MODE = $LOCAL_DEBUG | $UNIT_TEST;
-    // $_BreakpointDebugging_EXE_MODE = $REMOTE_DEBUG | $UNIT_TEST;
+    $_BreakpointDebugging_EXE_MODE = $LOCAL_DEBUG_OF_RELEASE | $UNIT_TEST;
+    // $_BreakpointDebugging_EXE_MODE = $RELEASE | $UNIT_TEST;
     // ### <=== Execution mode setting.
 }
 
@@ -114,12 +112,10 @@ function BreakpointDebugging_mySetting()
     // Please, set your username.
     B::$_userName = 'root'; // Example: 'hidenori'
     // PHP It limits directory which opens a file.
-    if (substr(PHP_OS, 0, 3) === 'WIN') { // In case of Windows.
+    if (B::$os === 'WIN') { // In case of Windows.
         $openBasedir = 'C:\xampp\;.\\';
-    } else if (PHP_OS === 'Linux') { // In case of Linux.
+    } else { // In case of Unix.
         $openBasedir = '/opt/lampp/:./';
-    } else { // In case of other.
-        assert(false);
     }
     // Maximum log file sum mega byte size. Recommendation size is 1 MB.
     // Log file rotation is from "php_error_1.log" file to "php_error_8.log" file.
@@ -160,13 +156,11 @@ function BreakpointDebugging_mySetting()
     //
     // /* ### Example. ===>
     if ($_BreakpointDebugging_EXE_MODE & (B::REMOTE_DEBUG | B::RELEASE)) { // In case of remote.
-        if (substr(PHP_OS, 0, 3) === 'WIN') { // In case of Windows.
+        if (B::$os === 'WIN') { // In case of Windows.
             // PHP It limits directory which opens a file.
-            B::iniSet('open_basedir', 'C:\xampp\;.\\'); // '/???/:/???/'
-        } else if (PHP_OS === 'Linux') { // In case of Linux.
-            B::iniSet('open_basedir', '/opt/lampp/:./'); // '/???/:/???/'
-        } else { // In case of other.
-            assert(false);
+            B::iniSet('open_basedir', 'C:\xampp\;.\\');
+        } else { // In case of Unix.
+            B::iniSet('open_basedir', '/opt/lampp/:./');
         }
         // Windows e-mail sending server setting.
         B::iniSet('SMTP', 'smtp.example.com'); // 'smtp.???.com'

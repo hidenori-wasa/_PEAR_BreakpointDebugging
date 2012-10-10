@@ -45,6 +45,11 @@
  * Procedure 8: Please, if you use "Linux", register your username as
  *      "User" and "Group" into "lampp/apache/conf/httpd.conf".
  *      And, register "export PATH=$PATH:/opt/lampp/bin" into "~/.profile".
+ * Procedure 9: Please, if you can change "php.ini" file,
+ *      use "\BreakpointDebugging::iniCheck()" instead of
+ *      "\BreakpointDebugging::iniSet(), ini_set()" in "*_MySetting.php" file,
+ *      and move it to "*_MySetting_Option.php" file
+ *      because decreases the read and the parse bytes.
  *
  * Caution: Do not execute "ini_set('error_log')"
  *      because this package uses local log instead of system log.
@@ -55,7 +60,7 @@
  *      Then, we can discern function or method or file
  *      which has been not fixed with browser screen or log.
  * Option procedure: Please, register local variable or global variable
- *      which you want to see with \BreakpointDebugging::addValuesToTrace().
+ *      which you want to see with "\BreakpointDebugging::addValuesToTrace()".
  *
  * ### The debugging mode which we can use. ###
  * First "LOCAL_DEBUG" mode is breakpoint debugging with local personal computer.
@@ -90,29 +95,26 @@
  * and this returns.
  *      \BreakpointDebugging::convertMbString($string)
  * This changes a character sets to display a multibyte character string
- * with local window of debugger, and this returns it.
- * But, this doesn't exist in case of release.
+ * with local window of debugger, and this returns it. (Debug only.)
  *      \BreakpointDebugging::convertMbStringForDebug($params)
  * This is ini_set() with validation except for release mode.
  * I set with "ini_set()" because "php.ini" file and ".htaccess" file isn't sometimes possible to be set on sharing server.
  *      \BreakpointDebugging::iniSet($phpIniVariable, $setValue, $doCheck = true)
  * This checks php.ini setting.
  *      \BreakpointDebugging::iniCheck($phpIniVariable, $cmpValue, $errorMessage)
- * Get property for test.
- * But, this doesn't exist in case of release.
+ * Gets property for test. (Unit test only.)
  *      \BreakpointDebugging::getPropertyForTest($objectOrClassName, $propertyName)
- * Set property for test.
- * But, this doesn't exist in case of release.
+ * Sets property for test. (Unit test only.)
  *      \BreakpointDebugging::setPropertyForTest($objectOrClassName, $propertyName, $value)
- * Checks unit-test-execution-mode.
+ * Checks unit-test-execution-mode. (Unit test only.)
  *      \BreakpointDebugging::checkUnitTestExeMode()
- * Executes unit test.
+ * Executes unit test. (Unit test only.)
  *      \BreakpointDebugging::executeUnitTest($testFileNames, $currentDir)
  * "mkdir" method which sets permission and sets own user to owner.
  *      \BreakpointDebugging::mkdir($dirName, $permission = 0777)
  * "fopen" method which sets the file mode, permission and sets own user to owner.
  *      \BreakpointDebugging::fopen($fileName, $mode, $permission)
- * Executes function by parameter array, then displays executed function line, file, parameters and results.
+ * Executes function by parameter array, then displays executed function line, file, parameters and results. (Debug only.)
  *      \BreakpointDebugging::displayVerification($functionName, $params)
  *
  * ### Useful class index. ###
@@ -198,6 +200,8 @@ final class BreakpointDebugging extends BreakpointDebugging_InAllCase
      */
     function __construct()
     {
+        parent::__construct();
+
         static $createOnlyOneTime = false;
 
         assert($createOnlyOneTime === false);
@@ -234,6 +238,11 @@ final class BreakpointDebugging extends BreakpointDebugging_InAllCase
     {
         global $_BreakpointDebugging_EXE_MODE;
 
+        if ($_BreakpointDebugging_EXE_MODE & self::UNIT_TEST) {
+            // Unit test cannot execute "xdebug_break()".
+            return;
+        }
+
         B::internalAssert(func_num_args() === 2);
         B::internalAssert(is_string($message));
         B::internalAssert(is_array($callStackInfo));
@@ -261,7 +270,6 @@ final class BreakpointDebugging extends BreakpointDebugging_InAllCase
 
     /**
      * This changes a character sets to display a multibyte character string with local window of debugger, and this returns it.
-     * But, this doesn't exist in case of release.
      *
      * @param array $params Character set string to want to display, and Some variables.
      *
@@ -397,7 +405,7 @@ EOD;
                 }
             }
             if (ini_set($phpIniVariable, $setValue) === false) {
-                throw new BreakpointDebugging_Error_Exception('');
+                throw new \BreakpointDebugging_Error_Exception('');
             }
         }
     }
@@ -438,8 +446,7 @@ EOD;
     }
 
     /**
-     * Get property for test.
-     * But, this doesn't exist in case of release.
+     * Gets property for test.
      *
      * @param mixed  $objectOrClassName A object or class name.
      * @param string $propertyName      Property name or constant name.
@@ -447,42 +454,43 @@ EOD;
      * @return mixed Property value.
      *
      * @example $propertyValue = \BreakpointDebugging::getPropertyForTest('ClassName', 'CONST_NAME');
-     *           $propertyValue = \BreakpointDebugging::getPropertyForTest($object, '$_privateName');
+     *          $propertyValue = \BreakpointDebugging::getPropertyForTest('ClassName', '$_privateStaticName');
+     *          $propertyValue = \BreakpointDebugging::getPropertyForTest($object, '$_privateStaticName');
+     *          $propertyValue = \BreakpointDebugging::getPropertyForTest($object, '$_privateAutoName');
      */
     final static function getPropertyForTest($objectOrClassName, $propertyName)
     {
         if (is_object($objectOrClassName)) {
             $className = get_class($objectOrClassName);
-            $classReflection = new ReflectionClass($className);
-            $propertyReflections = $classReflection->getProperties();
-            foreach ($propertyReflections as $propertyReflection) {
-                $propertyReflection->setAccessible(true);
-                $paramName = '$' . $propertyReflection->getName();
-                if ($paramName !== $propertyName) {
-                    continue;
-                }
-                if ($propertyReflection->isStatic()) {
-                    return $propertyReflection->getValue($propertyReflection);
-                } else {
-                    return $propertyReflection->getValue($objectOrClassName);
-                }
-            }
         } else {
-            $classReflection = new ReflectionClass($objectOrClassName);
-            $constants = $classReflection->getConstants();
-            foreach ($constants as $constName => $constValue) {
-                if ($constName !== $propertyName) {
-                    continue;
-                }
-                return $constValue;
+            $className = $objectOrClassName;
+        }
+        $classReflection = new \ReflectionClass($className);
+        $propertyReflections = $classReflection->getProperties();
+        foreach ($propertyReflections as $propertyReflection) {
+            $propertyReflection->setAccessible(true);
+            $paramName = '$' . $propertyReflection->getName();
+            if ($paramName !== $propertyName) {
+                continue;
             }
+            if ($propertyReflection->isStatic()) {
+                return $propertyReflection->getValue($propertyReflection);
+            } else {
+                return $propertyReflection->getValue($objectOrClassName);
+            }
+        }
+        $constants = $classReflection->getConstants();
+        foreach ($constants as $constName => $constValue) {
+            if ($constName !== $propertyName) {
+                continue;
+            }
+            return $constValue;
         }
         assert(false);
     }
 
     /**
-     * Set property for test.
-     * But, this doesn't exist in case of release.
+     * Sets property for test.
      *
      * @param mixed  $objectOrClassName A object or class name.
      * @param string $propertyName      Property name or constant name.
@@ -490,13 +498,18 @@ EOD;
      *
      * @return void
      *
-     * @example $propertyValue = \BreakpointDebugging::setPropertyForTest($object, '$_privateName', $value);
+     * @example \BreakpointDebugging::setPropertyForTest('ClassName', '$_privateStaticName', $value);
+     *          \BreakpointDebugging::setPropertyForTest($object, '$_privateStaticName', $value);
+     *          \BreakpointDebugging::setPropertyForTest($object, '$_privateAutoName', $value);
      */
     final static function setPropertyForTest($objectOrClassName, $propertyName, $value)
     {
-        assert(is_object($objectOrClassName));
-        $className = get_class($objectOrClassName);
-        $classReflection = new ReflectionClass($className);
+        if (is_object($objectOrClassName)) {
+            $className = get_class($objectOrClassName);
+        } else {
+            $className = $objectOrClassName;
+        }
+        $classReflection = new \ReflectionClass($className);
         $propertyReflections = $classReflection->getProperties();
         foreach ($propertyReflections as $propertyReflection) {
             $propertyReflection->setAccessible(true);
@@ -512,6 +525,7 @@ EOD;
                 return;
             }
         }
+        assert(false);
     }
 
     /**
@@ -524,6 +538,7 @@ EOD;
         global $_BreakpointDebugging_EXE_MODE;
 
         if ($_BreakpointDebugging_EXE_MODE & B::UNIT_TEST) {
+            xdebug_break();
             // Throws exception for unit test.
             throw new \BreakpointDebugging_Error_Exception('Unit test exception was thrown.');
         }
@@ -546,8 +561,8 @@ EOD;
     {
         global $_BreakpointDebugging_EXE_MODE;
 
-        if (!($_BreakpointDebugging_EXE_MODE & B::UNIT_TEST)) {
-            exit('You must set "$_BreakpointDebugging_EXE_MODE = B::????? | B::UNIT_TEST" into "./PEAR_Setting/BreakpointDebugging_MySetting.php" in case of unit test.' . PHP_EOL);
+        if ($_BreakpointDebugging_EXE_MODE !== (B::LOCAL_DEBUG_OF_RELEASE | B::UNIT_TEST) && $_BreakpointDebugging_EXE_MODE !== (B::RELEASE | B::UNIT_TEST)) {
+            exit('You must set "$_BreakpointDebugging_EXE_MODE = $LOCAL_DEBUG_OF_RELEASE | $UNIT_TEST" or "$_BreakpointDebugging_EXE_MODE = $RELEASE | $UNIT_TEST" into "./PEAR_Setting/BreakpointDebugging_MySetting.php" in case of unit test.' . PHP_EOL);
         }
     }
 
@@ -583,9 +598,9 @@ EOD;
     static function executeUnitTest($testFileNames, $currentDir)
     {
         self::checkUnitTestExeMode();
-        if (strncmp(PHP_OS, 'WIN', 3) === 0) { // In case of Windows.
+        if (B::$os === 'WIN') { // In case of Windows.
             $phpunit = 'phpunit.bat';
-        } else if (PHP_OS === 'Linux') { // In case of Linux.
+        } else { // In case of Unix.
             // Command execution path by "bash" differs because "Apache" is root user in case of default, therefore uses full path for command.
             while (true) {
                 $phpunit = `which phpunit`;
@@ -603,8 +618,6 @@ EOD;
             if (!is_executable($phpunit)) {
                 exit('"phpunit" command is not executable. (' . $phpunit . ')');
             }
-        } else { // In case of other.
-            assert(false);
         }
         echo '<pre>';
         foreach ($testFileNames as $testFileName) {
