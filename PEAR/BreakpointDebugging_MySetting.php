@@ -192,12 +192,12 @@ function BreakpointDebugging_mySetting()
     // Windows mail address setting.
     B::iniSet('sendmail_from', $sendmailFrom); // '???@???.com'
     // */ ### <=== Example.
-    if (!($_BreakpointDebugging_EXE_MODE & B::RELEASE)) { // In case of not release.
+    if ($_BreakpointDebugging_EXE_MODE !== B::RELEASE) { // In case of not release.
         include_once './PEAR_Setting/BreakpointDebugging_MySetting_Option.php';
     }
     ////////////////////////////////////////////////////////////////////////////////
     // ### This setting has been Fixed. ###
-    if ($_BreakpointDebugging_EXE_MODE & B::RELEASE) { // In case of release.
+    if ($_BreakpointDebugging_EXE_MODE === B::RELEASE) { // In case of release.
         // Output it at log to except notice and deprecated.
         B::iniSet('error_reporting', (string) (PHP_INT_MAX & ~(E_NOTICE | E_DEPRECATED | E_STRICT)), false);
         // For security, it doesn't display all errors, warnings and notices.

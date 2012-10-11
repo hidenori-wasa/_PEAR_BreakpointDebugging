@@ -32,7 +32,7 @@ class LockByFileExistingTest extends PHPUnit_Framework_TestCase
             $this->lockByFileExisting->unlock();
             clearstatcache();
             $this->assertTrue(!is_file(B::getPropertyForTest($this->lockByFileExisting, '$lockFilePath')));
-        } catch (\Exception $exception) {
+        } catch (\Exception $e) {
             $this->assertTrue(false);
             return;
         }
@@ -52,7 +52,7 @@ class LockByFileExistingTest extends PHPUnit_Framework_TestCase
                 while (!@unlink(B::$workDir . '/LockFlag.file'));
             }
             set_error_handler('\BreakpointDebugging::errorHandler', -1);
-        } catch (\Exception $exception) {
+        } catch (\Exception $e) {
             $this->assertTrue(false);
             return;
         }
@@ -64,7 +64,7 @@ class LockByFileExistingTest extends PHPUnit_Framework_TestCase
         try {
             $this->lockByFileExisting->lock();
             $this->lockByFileExisting->unlock();
-        } catch (\Exception $exception) {
+        } catch (\Exception $e) {
             $this->assertTrue(false);
             return;
         }
@@ -78,7 +78,7 @@ class LockByFileExistingTest extends PHPUnit_Framework_TestCase
             $this->lockByFileExisting->lock();
             $this->lockByFileExisting->unlock();
             $this->lockByFileExisting->unlock();
-        } catch (\Exception $exception) {
+        } catch (\Exception $e) {
             $this->assertTrue(false);
             return;
         }
@@ -90,7 +90,7 @@ class LockByFileExistingTest extends PHPUnit_Framework_TestCase
         try {
             $lockByFileExisting1 = &\BreakpointDebugging_LockByFileExisting::singleton(5, 10);
             $lockByFileExisting2 = &\BreakpointDebugging_LockByFileExisting::singleton(5, 10); // Same object.
-        } catch (\Exception $exception) {
+        } catch (\Exception $e) {
             $this->assertTrue(false);
             return;
         }
@@ -101,7 +101,7 @@ class LockByFileExistingTest extends PHPUnit_Framework_TestCase
     {
         try {
             $this->lockByFileExisting->unlock(); // Error.
-        } catch (\BreakpointDebugging_Error_Exception $exception) {
+        } catch (\BreakpointDebugging_UnitTest_Exception $e) {
             $this->assertTrue(true);
             return;
         }
@@ -112,14 +112,14 @@ class LockByFileExistingTest extends PHPUnit_Framework_TestCase
     {
         try {
             $this->lockByFileExisting->lock();
-        } catch (\Exception $exception) {
+        } catch (\Exception $e) {
             $this->assertTrue(false);
             return;
         }
         try {
             // Calls "__destruct()".
             $this->lockByFileExisting = null; // Error.
-        } catch (\BreakpointDebugging_Error_Exception $exception) {
+        } catch (\BreakpointDebugging_UnitTest_Exception $e) {
             $this->assertTrue(true);
             return;
         }
@@ -131,13 +131,13 @@ class LockByFileExistingTest extends PHPUnit_Framework_TestCase
         try {
             $this->lockByFileExisting->lock();
             $this->lockByFileExisting->unlock();
-        } catch (\Exception $exception) {
+        } catch (\Exception $e) {
             $this->assertTrue(false);
             return;
         }
         try {
             $this->lockByFileExisting->unlock(); // Error.
-        } catch (\BreakpointDebugging_Error_Exception $exception) {
+        } catch (\BreakpointDebugging_UnitTest_Exception $e) {
             $this->assertTrue(true);
             return;
         }
@@ -150,14 +150,14 @@ class LockByFileExistingTest extends PHPUnit_Framework_TestCase
             $this->lockByFileExisting->lock();
             $this->lockByFileExisting->lock();
             $this->lockByFileExisting->unlock();
-        } catch (\Exception $exception) {
+        } catch (\Exception $e) {
             $this->assertTrue(false);
             return;
         }
         try {
             // Calls "__destruct()".
             $this->lockByFileExisting = null; // Error.
-        } catch (\BreakpointDebugging_Error_Exception $exception) {
+        } catch (\BreakpointDebugging_UnitTest_Exception $e) {
             $this->assertTrue(true);
             return;
         }
@@ -169,7 +169,7 @@ class LockByFileExistingTest extends PHPUnit_Framework_TestCase
         try {
             // Constructs instance of other class.
             $LockByShmop = &\BreakpointDebugging_LockByShmop::singleton(5, 10); // Error.
-        } catch (\BreakpointDebugging_Error_Exception $exception) {
+        } catch (\BreakpointDebugging_UnitTest_Exception $e) {
             $this->assertTrue(true);
             return;
         }
@@ -181,7 +181,7 @@ class LockByFileExistingTest extends PHPUnit_Framework_TestCase
         try {
             // Constructs instance of other class.
             $lockByFlock = &\BreakpointDebugging_LockByFlock::singleton(5, 10); // Error.
-        } catch (\BreakpointDebugging_Error_Exception $exception) {
+        } catch (\BreakpointDebugging_UnitTest_Exception $e) {
             $this->assertTrue(true);
             return;
         }

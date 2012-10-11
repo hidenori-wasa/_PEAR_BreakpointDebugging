@@ -535,7 +535,7 @@ final class BreakpointDebugging_Error
         // Add scope of start page file.
         $this->callStackInfo[] = array ();
         $this->outputErrorCallStackLog2($errorKind, $errorMessage, $prependLog);
-        if ($_BreakpointDebugging_EXE_MODE & B::RELEASE) { // In case of release.
+        if ($_BreakpointDebugging_EXE_MODE === B::RELEASE) { // In case of release.
             if (isset($endFlag)) {
                 // In case of release mode, we must exit this process when kind is error.
                 exit;

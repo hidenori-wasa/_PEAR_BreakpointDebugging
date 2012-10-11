@@ -172,6 +172,21 @@
 use \BreakpointDebugging as B;
 
 /**
+ * Unit test exception.
+ *
+ * @category PHP
+ * @package  BreakpointDebugging
+ * @author   Hidenori Wasa <wasa_@nifty.com>
+ * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
+ * @version  Release: @package_version@
+ * @link     http://pear.php.net/package/BreakpointDebugging
+ */
+class BreakpointDebugging_UnitTest_Exception extends BreakpointDebugging_Exception
+{
+
+}
+
+/**
  * This class executes error or exception handling, and it is except release mode.
  *
  * @category PHP
@@ -538,9 +553,10 @@ EOD;
         global $_BreakpointDebugging_EXE_MODE;
 
         if ($_BreakpointDebugging_EXE_MODE & B::UNIT_TEST) {
+            // For debug which executes direct-test-class-method-call from "index.php".
             xdebug_break();
             // Throws exception for unit test.
-            throw new \BreakpointDebugging_Error_Exception('Unit test exception was thrown.');
+            throw new \BreakpointDebugging_UnitTest_Exception('');
         }
     }
 
@@ -556,13 +572,17 @@ EOD;
      *      use \BreakpointDebugging as B;
      *      B::checkUnitTestExeMode();
      *      class BreakpointDebuggingTest extends PHPUnit_Framework_TestCase
+     *      {
+     *          .
+     *          .
+     *          .
      */
     static function checkUnitTestExeMode()
     {
         global $_BreakpointDebugging_EXE_MODE;
 
         if ($_BreakpointDebugging_EXE_MODE !== (B::LOCAL_DEBUG_OF_RELEASE | B::UNIT_TEST) && $_BreakpointDebugging_EXE_MODE !== (B::RELEASE | B::UNIT_TEST)) {
-            exit('You must set "$_BreakpointDebugging_EXE_MODE = $LOCAL_DEBUG_OF_RELEASE | $UNIT_TEST" or "$_BreakpointDebugging_EXE_MODE = $RELEASE | $UNIT_TEST" into "./PEAR_Setting/BreakpointDebugging_MySetting.php" in case of unit test.' . PHP_EOL);
+            exit('You must set "$_BreakpointDebugging_EXE_MODE = $LOCAL_DEBUG_OF_RELEASE | $UNIT_TEST" or "$_BreakpointDebugging_EXE_MODE = $REMOTE_DEBUG | $UNIT_TEST" into "./PEAR_Setting/BreakpointDebugging_MySetting.php" in case of unit test.' . PHP_EOL);
         }
     }
 

@@ -46,7 +46,7 @@ use \BreakpointDebugging as B;
 require_once __DIR__ . '/PEAR/Exception.php';
 
 /**
- * This class is own package exception.
+ * Own package exception.
  *
  * @category PHP
  * @package  BreakpointDebugging
@@ -58,7 +58,7 @@ require_once __DIR__ . '/PEAR/Exception.php';
 class BreakpointDebugging_Exception extends PEAR_Exception
 {
     /**
-     * This is "PEAR_Exception" breakpoint in case of local.
+     * Constructs instance.
      *
      * @param string $message  Exception message.
      * @param int    $code     Exception code.
@@ -68,8 +68,6 @@ class BreakpointDebugging_Exception extends PEAR_Exception
      */
     function __construct($message, $code = null, $previous = null)
     {
-        global $_BreakpointDebugging_EXE_MODE;
-
         B::internalAssert(func_num_args() <= 3);
         B::internalAssert(is_string($message));
         B::internalAssert(is_int($code) || $code === null);
@@ -86,7 +84,7 @@ class BreakpointDebugging_Exception extends PEAR_Exception
 }
 
 /**
- * This class is own package error exception.
+ * Own package error exception.
  *
  * @category PHP
  * @package  BreakpointDebugging
@@ -208,8 +206,6 @@ class BreakpointDebugging_InAllCase
      * @var string Which handler of "none" or "error" or "exception"?
      */
     private static $_handlerOf = 'none';
-
-    // protected static $_handlerOf = 'none';
 
     function __construct()
     {
@@ -564,7 +560,7 @@ class BreakpointDebugging_InAllCase
     {
         global $_BreakpointDebugging_EXE_MODE;
 
-        if (!($_BreakpointDebugging_EXE_MODE & self::RELEASE)) { // In case of not release.
+        if ($_BreakpointDebugging_EXE_MODE !== self::RELEASE) { // In case of not release.
             if (func_num_args() !== 1 || !is_bool($expression) || $expression === false) {
                 self::_internal('Assertion failed.', 'error');
             }
@@ -584,7 +580,7 @@ class BreakpointDebugging_InAllCase
         global $_BreakpointDebugging_EXE_MODE;
 
         self::_internal($message, 'exception');
-        if ($_BreakpointDebugging_EXE_MODE & self::RELEASE) { // In case of release.
+        if ($_BreakpointDebugging_EXE_MODE === self::RELEASE) { // In case of release.
             exit;
         }
     }
@@ -615,7 +611,7 @@ class BreakpointDebugging_InAllCase
 
 }
 
-if ($_BreakpointDebugging_EXE_MODE & BreakpointDebugging_InAllCase::RELEASE) { // In case of release.
+if ($_BreakpointDebugging_EXE_MODE === BreakpointDebugging_InAllCase::RELEASE) { // In case of release.
     /**
      * This class executes error or exception handling, and it is only in case of release mode.
      *

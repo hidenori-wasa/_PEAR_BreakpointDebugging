@@ -122,7 +122,7 @@ class BreakpointDebugging_InAllCaseTest extends PHPUnit_Framework_TestCase
                 $this->assertTrue($intArray === $intResultArray);
             }
             fclose($pFile);
-        } catch (\Exception $exception) {
+        } catch (\Exception $e) {
             $this->assertTrue(false);
             return;
         }

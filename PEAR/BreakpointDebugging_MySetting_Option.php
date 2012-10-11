@@ -64,7 +64,7 @@ $xdebugVarDisplayMaxDepth = '3';
 // PHP It limits directory which opens a file.
 B::iniSet('open_basedir', $openBasedir);
 // "if" statement is needed to copy in case of "B::RELEASE" if copies a code inside "if".
-if ($_BreakpointDebugging_EXE_MODE & (B::REMOTE_DEBUG | B::RELEASE)) { // In case of remote.
+if ($_BreakpointDebugging_EXE_MODE & B::REMOTE_DEBUG) { // In case of remote.
     // Windows e-mail sending server setting.
     B::iniSet('SMTP', $SMTP); // 'smtp.???.com'
     // Windows mail address setting.

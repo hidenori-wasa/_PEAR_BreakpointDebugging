@@ -91,7 +91,7 @@ class BreakpointDebuggingTest extends PHPUnit_Framework_TestCase
         $this->assertTrue(B::getPropertyForTest($_BreakpointDebugging, '$_onceFlag') === array ()); // Private auto property.
         try {
             B::getPropertyForTest($_BreakpointDebugging, '$_handlerOf'); // Private static property of base class.
-        } catch (\Exception $e) {
+        } catch (\BreakpointDebugging_UnitTest_Exception $e) {
             $this->assertTrue(true);
             return;
         }
@@ -111,7 +111,7 @@ class BreakpointDebuggingTest extends PHPUnit_Framework_TestCase
         $this->assertTrue(B::getPropertyForTest($_BreakpointDebugging, '$_onceFlag') === array ('change'));
         try {
             B::setPropertyForTest($_BreakpointDebugging, '$_handlerOf', 'change'); // Private static property of base class.
-        } catch (\Exception $e) {
+        } catch (\BreakpointDebugging_UnitTest_Exception $e) {
             $this->assertTrue(true);
             return;
         }
