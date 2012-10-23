@@ -32,51 +32,68 @@ class BreakpointDebuggingTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers BreakpointDebugging::__destruct
-     * @todo Implement test__destruct().
+     * @covers BreakpointDebugging::breakpoint
      */
-    public function test__destruct()
+    public function testBreakpoint()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-        'This test has not been implemented yet.'
-        );
+        global $_BreakpointDebugging_EXE_MODE;
+
+        $debugBacktrace = debug_backtrace();
+        $storeDebugBacktrace = $debugBacktrace;
+        $_BreakpointDebugging_EXE_MODE &= ~B::UNIT_TEST;
+        B::breakpoint('Error message.', $debugBacktrace);
+        $_BreakpointDebugging_EXE_MODE |= B::UNIT_TEST;
+        $this->assertTrue($debugBacktrace === $storeDebugBacktrace);
     }
 
     /**
      * @covers BreakpointDebugging::convertMbStringForDebug
-     * @todo Implement testConvertMbStringForDebug().
      */
     public function testConvertMbStringForDebug()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-        'This test has not been implemented yet.'
-        );
+        $testArray = array (2, "\xE6\x96\x87\xE5\xAD\x97 ");
+        $debugValues = B::convertMbStringForDebug('SJIS', 1, $testArray, "\xE6\x96\x87\xE5\xAD\x97 ");
+        $this->assertTrue($debugValues[0] === 1);
+        $cmpArray = array (2, "\x95\xB6\x8E\x9A ");
+        $this->assertTrue($debugValues[1] === $cmpArray);
+        $this->assertTrue($debugValues[2] === "\x95\xB6\x8E\x9A ");
     }
 
     /**
      * @covers BreakpointDebugging::iniSet
-     * @todo Implement testIniSet().
      */
     public function testIniSet()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-        'This test has not been implemented yet.'
-        );
+        B::iniSet('default_charset', 'SJIS');
+
+        try {
+            B::iniSet('not_exist', true);
+        } catch (\BreakpointDebugging_Error_Exception $e) {
+            $this->assertTrue($e->getMessage() === '"ini_set()" failed.');
+        }
+
+        try {
+            B::iniSet('default_charset', 8);
+        } catch (\BreakpointDebugging_UnitTest_Exception $e) {
+            return;
+        }
+        $this->assertTrue(false);
     }
 
     /**
      * @covers BreakpointDebugging::iniCheck
-     * @todo Implement testIniCheck().
      */
     public function testIniCheck()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-        'This test has not been implemented yet.'
-        );
+        ob_start();
+        B::iniCheck('safe_mode', '', 'Test message 1.');
+        $this->assertTrue(ob_get_contents() === '');
+        ob_clean();
+        B::iniCheck('safe_mode', 'On', 'Test message 2.');
+        $this->assertTrue(ob_get_contents() !== '');
+        ob_clean();
+        B::iniCheck('xdebug.remote_host', array ('127.0.0.1', 'localhost'), 'Test message 3.');
+        $this->assertTrue(ob_get_clean() !== '');
     }
 
     /**
@@ -120,38 +137,37 @@ class BreakpointDebuggingTest extends PHPUnit_Framework_TestCase
 
     /**
      * @covers BreakpointDebugging::makeUnitTestException
-     * @todo Implement testMakeUnitTestException().
      */
     public function testMakeUnitTestException()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-        'This test has not been implemented yet.'
-        );
+        try {
+            B::makeUnitTestException();
+        } catch (\BreakpointDebugging_UnitTest_Exception $e) {
+            return;
+        }
+        $this->assertTrue(false);
     }
 
     /**
      * @covers BreakpointDebugging::checkUnitTestExeMode
-     * @todo Implement testCheckUnitTestExeMode().
      */
     public function testCheckUnitTestExeMode()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-        'This test has not been implemented yet.'
-        );
+        B::checkUnitTestExeMode();
     }
 
     /**
-     * @covers BreakpointDebugging::executeUnitTest
-     * @todo Implement testExecuteUnitTest().
+     * @covers BreakpointDebugging::testExecuteUnitTest
      */
     public function testExecuteUnitTest()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-        'This test has not been implemented yet.'
+        $testFileNames = array (
+            'BreakpointDebugging-ExceptionTest.php',
         );
+        ob_start();
+        // Executes unit tests.
+        B::executeUnitTest($testFileNames, __DIR__);
+        ob_clean();
     }
 
     /**
@@ -160,10 +176,16 @@ class BreakpointDebuggingTest extends PHPUnit_Framework_TestCase
      */
     public function testDisplayVerification()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-        'This test has not been implemented yet.'
-        );
+        global $_BreakpointDebugging;
+
+        $mandate = "January 01 2000";
+        ob_start();
+        $return = $_BreakpointDebugging->displayVerification('sscanf', array ($mandate, "%s %d %d", &$month, &$day, &$year));
+        $this->assertTrue($return === 3);
+        $this->assertTrue($month === 'January');
+        $this->assertTrue($day === 1);
+        $this->assertTrue($year === 2000);
+        $this->assertTrue(ob_get_clean() !== '');
     }
 
 }

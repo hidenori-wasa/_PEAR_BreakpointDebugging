@@ -11,19 +11,76 @@ class LockByFileExistingTest extends PHPUnit_Framework_TestCase
 {
     protected $lockByFileExisting;
 
+    /**
+     * Sets up the fixture, for example, opens a network connection.
+     * This method is called before a test is executed.
+     */
     function setUp()
     {
         // Constructs instance.
         $this->lockByFileExisting = &\BreakpointDebugging_LockByFileExisting::singleton(5, 10);
     }
 
+    /**
+     * Tears down the fixture, for example, closes a network connection.
+     * This method is called after a test is executed.
+     */
     function tearDown()
     {
         // Destructs instance.
         $this->lockByFileExisting = null;
+        B::setPropertyForTest('\BreakpointDebugging_Lock', '$_internalInstance', null);
     }
 
-    function testWhole1()
+    /**
+     * @covers \BreakpointDebugging_LockByFileExisting::__clone
+     */
+    function test__clone()
+    {
+        try {
+            $tmp = clone $this->lockByFileExisting;
+        } catch (\BreakpointDebugging_UnitTest_Exception $e) {
+            return;
+        }
+        $this->assertTrue(false);
+    }
+
+    /**
+     * @covers \BreakpointDebugging_LockByFileExisting::__destruct
+     */
+    public function test__destruct()
+    {
+        $this->assertTrue(B::getPropertyForTest('\BreakpointDebugging_Lock', '$_instance') instanceof \BreakpointDebugging_LockByFileExisting);
+        // Calls "__destruct".
+        $this->lockByFileExisting = null;
+        $this->assertTrue(B::getPropertyForTest('\BreakpointDebugging_Lock', '$_instance') === null);
+    }
+
+    /**
+     * @todo Implement testForceUnlocking().
+     */
+    public function testForceUnlocking()
+    {
+        $internalInstance = &\BreakpointDebugging_LockByFileExisting::internalSingleton();
+        $internalInstance->lock();
+        $internalInstance->lock();
+        $this->lockByFileExisting->lock();
+        $this->lockByFileExisting->lock();
+
+        $this->assertTrue(B::getPropertyForTest($internalInstance, '$lockCount') === 2);
+        $this->assertTrue(B::getPropertyForTest($this->lockByFileExisting, '$lockCount') === 2);
+
+        BreakpointDebugging_LockByFileExisting::forceUnlocking();
+
+        $this->assertTrue(B::getPropertyForTest($internalInstance, '$lockCount') === 0);
+        $this->assertTrue(B::getPropertyForTest($this->lockByFileExisting, '$lockCount') === 0);
+    }
+
+    /**
+     * @covers \BreakpointDebugging_LockByFileExisting::lock
+     * @covers \BreakpointDebugging_LockByFileExisting::unlock
+     */
+    function testLockThenUnlock_A()
     {
         try {
             $this->lockByFileExisting->lock();
@@ -39,27 +96,11 @@ class LockByFileExistingTest extends PHPUnit_Framework_TestCase
         $this->assertTrue(true);
     }
 
-    function testFopen()
-    {
-        try {
-            // Extend maximum execution time.
-            set_time_limit(300);
-            restore_error_handler();
-            @unlink(B::$workDir . '/LockFlag.file');
-            for ($count = 0; $count < 10; $count++) {
-                while (!($pFile = @B::fopen(B::$workDir . '/LockFlag.file', 'x+b', 0600)));
-                fclose($pFile);
-                while (!@unlink(B::$workDir . '/LockFlag.file'));
-            }
-            set_error_handler('\BreakpointDebugging::errorHandler', -1);
-        } catch (\Exception $e) {
-            $this->assertTrue(false);
-            return;
-        }
-        $this->assertTrue(true);
-    }
-
-    function testLockByFileExisting1()
+    /**
+     * @covers \BreakpointDebugging_LockByFileExisting::lock
+     * @covers \BreakpointDebugging_LockByFileExisting::unlock
+     */
+    function testLockThenUnlock_B()
     {
         try {
             $this->lockByFileExisting->lock();
@@ -71,7 +112,11 @@ class LockByFileExistingTest extends PHPUnit_Framework_TestCase
         $this->assertTrue(true);
     }
 
-    function testLockByFileExisting2()
+    /**
+     * @covers \BreakpointDebugging_LockByFileExisting::lock
+     * @covers \BreakpointDebugging_LockByFileExisting::unlock
+     */
+    function testLockThenUnlock_C()
     {
         try {
             $this->lockByFileExisting->lock();
@@ -85,7 +130,108 @@ class LockByFileExistingTest extends PHPUnit_Framework_TestCase
         $this->assertTrue(true);
     }
 
-    function testLockByFileExisting3()
+    /**
+     * @covers \BreakpointDebugging_LockByFileExisting::lock
+     * @covers \BreakpointDebugging_LockByFileExisting::unlock
+     */
+    function testLockThenUnlock_D()
+    {
+        try {
+            $this->lockByFileExisting->unlock(); // Error.
+        } catch (\BreakpointDebugging_UnitTest_Exception $e) {
+            $this->assertTrue(true);
+            return;
+        }
+        $this->assertTrue(false);
+    }
+
+    /**
+     * @covers \BreakpointDebugging_LockByFileExisting::lock
+     * @covers \BreakpointDebugging_LockByFileExisting::unlock
+     */
+    function testLockThenUnlock_E()
+    {
+        try {
+            $this->lockByFileExisting->lock();
+        } catch (\Exception $e) {
+            $this->assertTrue(false);
+            return;
+        }
+        try {
+            // Calls "__destruct()".
+            $this->lockByFileExisting = null; // Error.
+        } catch (\BreakpointDebugging_UnitTest_Exception $e) {
+            $this->assertTrue(true);
+            return;
+        }
+        $this->assertTrue(false);
+    }
+
+    /**
+     * @covers \BreakpointDebugging_LockByFileExisting::lock
+     * @covers \BreakpointDebugging_LockByFileExisting::unlock
+     */
+    function testLockThenUnlock_F()
+    {
+        try {
+            $this->lockByFileExisting->lock();
+            $this->lockByFileExisting->unlock();
+        } catch (\Exception $e) {
+            $this->assertTrue(false);
+            return;
+        }
+        try {
+            $this->lockByFileExisting->unlock(); // Error.
+        } catch (\BreakpointDebugging_UnitTest_Exception $e) {
+            $this->assertTrue(true);
+            return;
+        }
+        $this->assertTrue(false);
+    }
+
+    /**
+     * @covers \BreakpointDebugging_LockByFileExisting::lock
+     * @covers \BreakpointDebugging_LockByFileExisting::unlock
+     */
+    function testLockThenUnlock_G()
+    {
+        try {
+            $this->lockByFileExisting->lock();
+            $this->lockByFileExisting->lock();
+            $this->lockByFileExisting->unlock();
+        } catch (\Exception $e) {
+            $this->assertTrue(false);
+            return;
+        }
+        try {
+            // Calls "__destruct()".
+            $this->lockByFileExisting = null; // Error.
+        } catch (\BreakpointDebugging_UnitTest_Exception $e) {
+            $this->assertTrue(true);
+            return;
+        }
+        $this->assertTrue(false);
+    }
+
+    /**
+     * @covers \BreakpointDebugging_LockByFileExisting::internalSingleton
+     */
+    function testInternalSingleton()
+    {
+        $internalInstance = B::getPropertyForTest('\BreakpointDebugging_Lock', '$_internalInstance');
+        clearstatcache();
+        $this->assertTrue($internalInstance === null);
+
+        $testInstance = &\BreakpointDebugging_LockByFileExisting::internalSingleton();
+
+        $internalInstance = B::getPropertyForTest('\BreakpointDebugging_Lock', '$_internalInstance');
+        $this->assertTrue($internalInstance instanceof \BreakpointDebugging_LockByFileExisting);
+    }
+
+    /**
+     * @covers \BreakpointDebugging_LockByFileExisting::singleton
+     */
+    function testSingleton_A()
     {
         try {
             $lockByFileExisting1 = &\BreakpointDebugging_LockByFileExisting::singleton(5, 10);
@@ -97,74 +243,10 @@ class LockByFileExistingTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($lockByFileExisting1 === $lockByFileExisting2);
     }
 
-    function testLockByFileExisting4()
-    {
-        try {
-            $this->lockByFileExisting->unlock(); // Error.
-        } catch (\BreakpointDebugging_UnitTest_Exception $e) {
-            $this->assertTrue(true);
-            return;
-        }
-        $this->assertTrue(false);
-    }
-
-    function testLockByFileExisting6()
-    {
-        try {
-            $this->lockByFileExisting->lock();
-        } catch (\Exception $e) {
-            $this->assertTrue(false);
-            return;
-        }
-        try {
-            // Calls "__destruct()".
-            $this->lockByFileExisting = null; // Error.
-        } catch (\BreakpointDebugging_UnitTest_Exception $e) {
-            $this->assertTrue(true);
-            return;
-        }
-        $this->assertTrue(false);
-    }
-
-    function testLockByFileExisting5()
-    {
-        try {
-            $this->lockByFileExisting->lock();
-            $this->lockByFileExisting->unlock();
-        } catch (\Exception $e) {
-            $this->assertTrue(false);
-            return;
-        }
-        try {
-            $this->lockByFileExisting->unlock(); // Error.
-        } catch (\BreakpointDebugging_UnitTest_Exception $e) {
-            $this->assertTrue(true);
-            return;
-        }
-        $this->assertTrue(false);
-    }
-
-    function testLockByFileExisting7()
-    {
-        try {
-            $this->lockByFileExisting->lock();
-            $this->lockByFileExisting->lock();
-            $this->lockByFileExisting->unlock();
-        } catch (\Exception $e) {
-            $this->assertTrue(false);
-            return;
-        }
-        try {
-            // Calls "__destruct()".
-            $this->lockByFileExisting = null; // Error.
-        } catch (\BreakpointDebugging_UnitTest_Exception $e) {
-            $this->assertTrue(true);
-            return;
-        }
-        $this->assertTrue(false);
-    }
-
-    function testLockByShmop8()
+    /**
+     * @covers \BreakpointDebugging_LockByFileExisting::singleton
+     */
+    function testSingleton_B()
     {
         try {
             // Constructs instance of other class.
@@ -176,7 +258,10 @@ class LockByFileExistingTest extends PHPUnit_Framework_TestCase
         $this->assertTrue(false);
     }
 
-    function testLockByShmop9()
+    /**
+     * @covers \BreakpointDebugging_LockByFileExisting::singleton
+     */
+    function testSingleton_C()
     {
         try {
             // Constructs instance of other class.

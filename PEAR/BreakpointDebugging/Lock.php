@@ -77,7 +77,8 @@ abstract class BreakpointDebugging_Lock
     /**
      * @var int The lock count.
      */
-    private $_lockCount;
+    //private $_lockCount;
+    protected $lockCount;
 
     /**
      * @var string Lock-flag-file path.
@@ -144,7 +145,8 @@ abstract class BreakpointDebugging_Lock
      */
     function __clone()
     {
-        $this->_throwErrorException('Clone is not allowed.');
+        //$this->_throwErrorException('Clone is not allowed.');
+        B::internalAssert(false);
     }
 
     /**
@@ -158,7 +160,7 @@ abstract class BreakpointDebugging_Lock
     {
         // Extend maximum execution time.
         set_time_limit($timeout + 10);
-        $this->_lockCount = 0;
+        $this->lockCount = 0;
         $this->timeout = $timeout;
         $this->sleepMicroSeconds = $sleepMicroSeconds;
         $this->lockFilePath = $lockFilePath;
@@ -170,9 +172,9 @@ abstract class BreakpointDebugging_Lock
      */
     function __destruct()
     {
-        $_lockCount = $this->_lockCount;
+        $lockCount = $this->lockCount;
         // Unlocks all. We must unlock before "B::internalAssert" because if we execute unit test, it throws exception.
-        while ($this->_lockCount > 0) {
+        while ($this->lockCount > 0) {
             $this->unlock();
         }
         // In case of lock by shared memory operation.
@@ -180,7 +182,7 @@ abstract class BreakpointDebugging_Lock
             // Closes the shared memory.
             shmop_close(self::$sharedMemoryID);
         }
-        B::internalAssert($_lockCount <= 0);
+        B::internalAssert($lockCount <= 0);
     }
 
     /**
@@ -197,8 +199,8 @@ abstract class BreakpointDebugging_Lock
      */
     function lock()
     {
-        if ($this->_lockCount > 0) {
-            $this->_lockCount++;
+        if ($this->lockCount > 0) {
+            $this->lockCount++;
             return;
         }
         // Extend maximum execution time.
@@ -208,8 +210,8 @@ abstract class BreakpointDebugging_Lock
         $this->lockingLoop();
         set_error_handler('\BreakpointDebugging::errorHandler', -1);
 
-        B::internalAssert($this->_lockCount === 0);
-        $this->_lockCount++;
+        B::internalAssert($this->lockCount === 0);
+        $this->lockCount++;
     }
 
     /**
@@ -226,12 +228,12 @@ abstract class BreakpointDebugging_Lock
      */
     function unlock()
     {
-        if ($this->_lockCount > 1) {
-            $this->_lockCount--;
+        if ($this->lockCount > 1) {
+            $this->lockCount--;
             return;
         }
-        $this->_lockCount--;
-        B::internalAssert($this->_lockCount === 0);
+        $this->lockCount--;
+        B::internalAssert($this->lockCount === 0);
 
         restore_error_handler();
         $this->unlockingLoop();
@@ -246,12 +248,12 @@ abstract class BreakpointDebugging_Lock
     static function forceUnlocking()
     {
         if (is_object(self::$_internalInstance)) {
-            while (self::$_internalInstance->_lockCount > 0) {
+            while (self::$_internalInstance->lockCount > 0) {
                 self::$_internalInstance->unlock();
             }
         }
         if (is_object(self::$_instance)) {
-            while (self::$_instance->_lockCount > 0) {
+            while (self::$_instance->lockCount > 0) {
                 self::$_instance->unlock();
             }
         }

@@ -440,7 +440,7 @@ final class BreakpointDebugging_Error
             // Add scope of start page file.
             $this->callStackInfo[] = array ();
             $errorMessage = $this->_convertMbString($pCurrentException->getMessage());
-            $this->outputErrorCallStackLog2(get_class($pCurrentException), $errorMessage, $prependLog);
+            $this->_outputErrorCallStackLog2(get_class($pCurrentException), $errorMessage, $prependLog);
         }
 
         B::breakpoint($errorMessage, $this->callStackInfo);
@@ -534,7 +534,7 @@ final class BreakpointDebugging_Error
         }
         // Add scope of start page file.
         $this->callStackInfo[] = array ();
-        $this->outputErrorCallStackLog2($errorKind, $errorMessage, $prependLog);
+        $this->_outputErrorCallStackLog2($errorKind, $errorMessage, $prependLog);
         if ($_BreakpointDebugging_EXE_MODE === B::RELEASE) { // In case of release.
             if (isset($endFlag)) {
                 // In case of release mode, we must exit this process when kind is error.
@@ -624,7 +624,7 @@ final class BreakpointDebugging_Error
      *
      * @return void
      */
-    function outputErrorCallStackLog2($errorKind, $errorMessage, $prependLog = '')
+    private function _outputErrorCallStackLog2($errorKind, $errorMessage, $prependLog = '')
     {
         global $_BreakpointDebugging_EXE_MODE;
 

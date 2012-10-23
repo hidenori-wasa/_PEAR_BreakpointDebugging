@@ -219,7 +219,7 @@ class BreakpointDebugging_InAllCase
      *
      * @return void
      *
-     * @example static $isRegister; \BreakpointDebugging::registerNotFixedLocation( $isRegister);
+     * @example static $isRegister; \BreakpointDebugging::registerNotFixedLocation($isRegister);
      */
     final static function registerNotFixedLocation(&$isRegister)
     {
@@ -276,27 +276,6 @@ class BreakpointDebugging_InAllCase
         }
         $_BreakpointDebugging->valuesToTrace[$file][$line] = $backTrace2;
         $_BreakpointDebugging->valuesToTrace[$file][$line]['values'] = $values;
-    }
-
-    /**
-     * This outputs function call stack log.
-     *
-     * @param string $errorKind    Error kind.
-     * @param string $errorMessage Error message.
-     *
-     * @return void
-     *
-     * @example \BreakpointDebugging::outputErrorCallStackLog('EXCEPTION', 'Description of exception.');
-     */
-    final static function outputErrorCallStackLog($errorKind, $errorMessage)
-    {
-        $error = new \BreakpointDebugging_Error();
-        $error->callStackInfo = debug_backtrace();
-        unset($error->callStackInfo[0]);
-        // Add scope of start page file.
-        $error->callStackInfo[] = array ();
-        $error->outputErrorCallStackLog2($errorKind, $errorMessage);
-        B::breakpoint($errorMessage, $error->callStackInfo);
     }
 
     /**
@@ -448,29 +427,34 @@ class BreakpointDebugging_InAllCase
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /**
-     * This does autoload with word which was divided by name space separator and underscore separator as directory.
+     * Does autoload by path which was divided by name space separator and underscore separator as directory.
      *
-     * @param string $className This is class name to do "new" and "extends".
+     * @param string $className The class name which calls class member of static.
+     *                          Or, the class name which creates new instance.
+     *                          Or, the class name when extends base class.
      *
      * @return void
      */
     final static function autoload($className)
     {
-        // This changes underscore and name space separator into directory separator.
+        // Changes underscore and name space separator to directory separator.
         $className = str_replace(array ('_', '\\'), '/', $className) . '.php';
         include_once $className;
     }
 
     /**
-     * This writes inside of "catch()", then display logging or log.
+     * Global exception handler.
+     * Displays exception-log in case of debug, or logs exception in case of release.
      *
-     * @param object $pException Exception info.
+     * @param object $pException Exception information.
      *
      * @return void
      */
     final static function exceptionHandler($pException)
     {
         if (method_exists('BreakpointDebugging', 'makeUnitTestException')) {
+            // For debug which calls test-class method from start page of IDE project.
+            xdebug_break();
             B::makeUnitTestException();
         }
         self::$_handlerOf = 'exception'; // This registers as exception handler.
@@ -492,6 +476,8 @@ class BreakpointDebugging_InAllCase
         global $_BreakpointDebugging_EXE_MODE;
 
         if (method_exists('BreakpointDebugging', 'makeUnitTestException')) {
+            // For debug which calls test-class method from start page of IDE project.
+            xdebug_break();
             B::makeUnitTestException();
         }
         $handlerStore = self::$_handlerOf; // Stores the handler.
@@ -503,15 +489,14 @@ class BreakpointDebugging_InAllCase
     }
 
     /**
-     * Method which calls handler inside handler.
+     * Calls global handler inside global handler.
      *
-     * @param string $message     Exception message.
+     * @param string $message     A message.
      * @param string $handlerKind Handler kind.
      *
      * @return void
-     * @example \BreakpointDebugging::internalException($message);
      */
-    final static function _internal($message, $handlerKind)
+    final private static function _internal($message, $handlerKind)
     {
         global $_BreakpointDebugging_EXE_MODE;
 
@@ -548,8 +533,7 @@ class BreakpointDebugging_InAllCase
     }
 
     /**
-     * This is avoiding recursive method call inside error handling or exception handling.
-     * And this is possible assertion inside error handling.
+     * Asserts inside global error handling or global exception handling. (For this package developer).
      *
      * @param bool   $expression Judgment expression.
      *
@@ -568,7 +552,7 @@ class BreakpointDebugging_InAllCase
     }
 
     /**
-     * Method which throw exception inside exception handler. (For this package developer)
+     * Calls exception handler inside global error handling or global exception handling. (For this package developer).
      *
      * @param string $message Exception message.
      *
@@ -586,7 +570,7 @@ class BreakpointDebugging_InAllCase
     }
 
     /**
-     * We must call "__destructor()" of other object for debug by keeping "$_BreakpointDebugging".
+     * Calls "__destructor()" of other object for debug by keeping "$_BreakpointDebugging".
      *
      * @return void
      */
@@ -602,7 +586,7 @@ class BreakpointDebugging_InAllCase
                     continue;
                 }
                 if (is_callable(array ($variable, '__destruct'))) {
-                    // Destructs instance.
+                    // Calls "__destruct" class method.
                     $variable = null;
                 }
             }
@@ -654,7 +638,7 @@ if ($_BreakpointDebugging_EXE_MODE === BreakpointDebugging_InAllCase::RELEASE) {
         }
 
         /**
-         * This is ini_check() without validate in case of release mode.
+         * "iniCheck()" does not exist in case of release mode.
          *
          * @return void
          */

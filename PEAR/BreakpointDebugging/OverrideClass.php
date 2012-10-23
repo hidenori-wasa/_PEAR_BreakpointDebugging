@@ -112,6 +112,7 @@
   }
  */
 
+chdir(__DIR__ . '/../../');
 require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
 
 /**
@@ -204,6 +205,7 @@ class BreakpointDebugging_OverrideClass
     {
         static $nativeClassName = null;
 
+        // Uses late static binding because it can define each value to each derived class.
         $nativeClassName = static::$pr_nativeClassName;
         if (count($params) < 2) {
             return $nativeClassName::$methodName($params);

@@ -14,32 +14,43 @@ B::checkUnitTestExeMode();
 class BreakpointDebugging_ExceptionTest extends PHPUnit_Framework_TestCase
 {
     /**
-     * Sets up the fixture, for example, opens a network connection.
-     * This method is called before a test is executed.
-     */
-    protected function setUp()
-    {
-
-    }
-
-    /**
-     * Tears down the fixture, for example, closes a network connection.
-     * This method is called after a test is executed.
-     */
-    protected function tearDown()
-    {
-
-    }
-
-    /**
-     * @todo Implement testSometing().
+     * Tests exception throwing.
      */
     public function testSometing()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-        'This test has not been implemented yet.'
-        );
+        while (true) {
+            try {
+                throw new \BreakpointDebugging_Exception('Test message.');
+            } catch (\BreakpointDebugging_Exception $e) {
+                $this->assertTrue($e->getMessage() === 'Test message.');
+                break;
+            }
+            $this->assertTrue(false);
+        }
+
+        while (true) {
+            try {
+                throw new \BreakpointDebugging_Exception('Test message.', 123);
+            } catch (\BreakpointDebugging_Exception $e) {
+                $this->assertTrue($e->getMessage() === 'Test message.');
+                $this->assertTrue($e->getCode() === 123);
+                break;
+            }
+            $this->assertTrue(false);
+        }
+
+        while (true) {
+            try {
+                $previous = new \Exception('Previous message.');
+                throw new \BreakpointDebugging_Exception('Test message.', 123, $previous);
+            } catch (\BreakpointDebugging_Exception $e) {
+                $this->assertTrue($e->getMessage() === 'Test message.');
+                $this->assertTrue($e->getCode() === 123);
+                $this->assertTrue($e->getCause() === $previous);
+                break;
+            }
+            $this->assertTrue(false);
+        }
     }
 
 }

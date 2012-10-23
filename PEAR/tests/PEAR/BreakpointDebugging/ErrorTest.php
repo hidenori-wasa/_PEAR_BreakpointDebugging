@@ -37,33 +37,59 @@ class BreakpointDebugging_ErrorTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * Tears down the fixture, for example, closes a network connection.
-     * This method is called after a test is executed.
-     */
-    protected function tearDown()
-    {
-
-    }
-
-    /**
      * @covers BreakpointDebugging_Error::exceptionHandler2
-     * @todo Implement testExceptionHandler2().
      */
     public function testExceptionHandler2()
     {
-        // B::$_handlerOf = 'exception'; // This registers as exception handler.
-        // $this->_error = new \BreakpointDebugging_Error();
-        // $this->_error->exceptionHandler2(new \Exception(), B::$prependExceptionLog);
-        // B::$_handlerOf = 'none'; // This registers as none handler.
+        global $line1_, $line2_, $lineA_, $lineB_;
 
-        $this->markTestIncomplete(
-        'This test has not been implemented yet.'
-        );
+        B::setPropertyForTest('BreakpointDebugging_InAllCase', '$_handlerOf', 'exception'); // This registers as exception handler.
+        self::$error = new \BreakpointDebugging_Error();
+
+        require_once __DIR__ . '/testExceptionHandler2_Parent.php';
+        $lineParent = __LINE__ - 1;
+        function test2_()
+        {
+            global $line1_;
+
+            BreakpointDebugging_ErrorTest::$error->exceptionHandler2(new \Exception(), B::$prependExceptionLog);
+            $line1_ = __LINE__ - 1;
+        }
+
+        function test1_()
+        {
+            global $line2_;
+
+            test2_();
+            $line2_ = __LINE__ - 1;
+        }
+
+        BreakpointDebugging_ErrorTest::$error->exceptionHandler2(new \Exception(), B::$prependExceptionLog);
+        $line = __LINE__ - 1;
+        test1_();
+        $line3 = __LINE__ - 1;
+
+        $binData1 = file_get_contents(B::$workDir . '/ErrorLog/1.bin');
+
+        $cmpBinData1 = rtrim(B::compressIntArray(array (1, $line__, 2, $lineParent)), PHP_EOL);
+        $this->assertTrue(strpos($binData1, $cmpBinData1) !== false);
+
+        $cmpBinData1 = rtrim(B::compressIntArray(array (1, $lineA_, 1, $lineB_, 1, $lineC_, 2, $lineParent)), PHP_EOL);
+        $this->assertTrue(strpos($binData1, $cmpBinData1) !== false);
+
+        $binData2 = file_get_contents(B::$workDir . '/ErrorLog/2.bin');
+
+        $cmpBinData2 = rtrim(B::compressIntArray(array (2, $line)), PHP_EOL);
+        $this->assertTrue(strpos($binData2, $cmpBinData2) !== false);
+
+        $cmpBinData2 = rtrim(B::compressIntArray(array (2, $line1_, 2, $line2_, 2, $line3)), PHP_EOL);
+        $this->assertTrue(strpos($binData2, $cmpBinData2) !== false);
+
+        B::setPropertyForTest('BreakpointDebugging_InAllCase', '$_handlerOf', 'none'); // This registers as none handler.
     }
 
     /**
      * @covers BreakpointDebugging_Error::errorHandler2
-     * @todo Implement testErrorHandler2().
      */
     public function testErrorHandler2()
     {
@@ -107,47 +133,21 @@ class BreakpointDebugging_ErrorTest extends PHPUnit_Framework_TestCase
 
         $binData1 = file_get_contents(B::$workDir . '/ErrorLog/1.bin');
 
-        $cmpBinData1 = '';
-        $tmpArray = array (0x81, 0x80 + $line_, 0x82, 0x80 + $lineParent);
-        foreach ($tmpArray as $element) {
-            $cmpBinData1 .= chr($element);
-        }
+        $cmpBinData1 = rtrim(B::compressIntArray(array (1, $line_, 2, $lineParent)), PHP_EOL);
         $this->assertTrue(strpos($binData1, $cmpBinData1) !== false);
-        $cmpBinData1 = '';
-        $tmpArray = array (0x81, 0x80 + $lineA, 0x81, 0x80 + $lineB, 0x81, 0x80 + $lineC, 0x82, 0x80 + $lineParent);
-        foreach ($tmpArray as $element) {
-            $cmpBinData1 .= chr($element);
-        }
+
+        $cmpBinData1 = rtrim(B::compressIntArray(array (1, $lineA, 1, $lineB, 1, $lineC, 2, $lineParent)), PHP_EOL);
         $this->assertTrue(strpos($binData1, $cmpBinData1) !== false);
 
         $binData2 = file_get_contents(B::$workDir . '/ErrorLog/2.bin');
-        $cmpBinData2 = '';
-        $tmpArray = array (0x82, 0x80 + $line);
-        foreach ($tmpArray as $element) {
-            $cmpBinData2 .= chr($element);
-        }
+
+        $cmpBinData2 = rtrim(B::compressIntArray(array (2, $line)), PHP_EOL);
         $this->assertTrue(strpos($binData2, $cmpBinData2) !== false);
 
-        $cmpBinData2 = '';
-        $tmpArray = array (0x82, 0x80 + $line1, 0x82, 0x80 + $line2, 0x82, 0x80 + $line3);
-        foreach ($tmpArray as $element) {
-            $cmpBinData2 .= chr($element);
-        }
+        $cmpBinData2 = rtrim(B::compressIntArray(array (2, $line1, 2, $line2, 2, $line3)), PHP_EOL);
         $this->assertTrue(strpos($binData2, $cmpBinData2) !== false);
 
         B::setPropertyForTest('BreakpointDebugging_InAllCase', '$_handlerOf', $handlerStore); // Restores handler.
-    }
-
-    /**
-     * @covers BreakpointDebugging_Error::outputErrorCallStackLog2
-     * @todo Implement testOutputErrorCallStackLog2().
-     */
-    public function testOutputErrorCallStackLog2()
-    {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-        'This test has not been implemented yet.'
-        );
     }
 
 }

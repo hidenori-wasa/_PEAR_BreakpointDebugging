@@ -239,6 +239,13 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
      */
     function __destruct()
     {
+        $callStack = debug_backtrace();
+        if (array_key_exists('line', $callStack[0])) {
+            if ($callStack[0]['line'] === 0) { // In case of clone error.
+                return;
+            }
+        }
+
         // Lock php code.
         self::$_lockingObject->lock();
 
@@ -287,18 +294,9 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
     private function _getSharedMemoryID()
     {
         restore_error_handler();
-        for ($count = 0; $count < 100; $count++) {
-            rewind($this->pFile);
-            $sharedMemoryKey = fread($this->pFile, 10);
-            // Open shared memory to read and write.
-            $sharedMemoryID = @shmop_open($sharedMemoryKey, 'w', 0, 0);
-            if ($sharedMemoryID === false) {
-                // Wait 0.1 second.
-                usleep(100000);
-                continue;
-            }
-            break;
-        }
+        $sharedMemoryKey = fread($this->pFile, 10);
+        // Open shared memory to read and write.
+        $sharedMemoryID = @shmop_open($sharedMemoryKey, 'w', 0, 0);
         set_error_handler('\BreakpointDebugging::errorHandler', -1);
         if ($sharedMemoryID === false || $sharedMemoryKey === '') {
             return false;

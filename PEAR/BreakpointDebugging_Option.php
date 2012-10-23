@@ -46,10 +46,12 @@
  *      "User" and "Group" into "lampp/apache/conf/httpd.conf".
  *      And, register "export PATH=$PATH:/opt/lampp/bin" into "~/.profile".
  * Procedure 9: Please, if you can change "php.ini" file,
- *      use "\BreakpointDebugging::iniCheck()" instead of
- *      "\BreakpointDebugging::iniSet(), ini_set()" in "*_MySetting.php" file,
+ *      use "B::iniCheck()" instead of
+ *      "B::iniSet(), ini_set()" in "*_MySetting.php" file,
  *      and move it to "*_MySetting_Option.php" file
  *      because decreases the read and the parse bytes.
+ *      Also, use "B::iniCheck()" instead of "B::iniSet(), ini_set()"
+ *      in "*_MySetting_Option.php" file.
  *
  * Caution: Do not execute "ini_set('error_log')"
  *      because this package uses local log instead of system log.
@@ -80,10 +82,9 @@
  *  PEAR_Exception
  *      BreakpointDebugging_Exception
  *          BreakpointDebugging_Error_Exception
+ *          BreakpointDebugging_UnitTest_Exception
  *
  * ### Useful function index. ###
- * This outputs function call stack log.
- *      \BreakpointDebugging::outputErrorCallStackLog($errorKind, $errorMessage)
  * This registers as function or method being not fixed.
  *      \BreakpointDebugging::registerNotFixedLocation(&$isRegister)
  * Add values to trace.
@@ -126,6 +127,20 @@
  *      class BreakpointDebugging_LockByShmop
  * Class which locks php-code by "flock()".
  *      class BreakpointDebugging_LockByFlock
+ *
+ * My viewpoint about PHP-types for reading my PHP code.
+ *      Any types of PHP have only ID. ( Contents of ID are pointer to movable memory which has variable, array ID district or object instance or resource ).
+ *
+ *      Variable copy is new ID creation, and points the same memory area. ( Memory area reference count and ID count is incremented ).
+ *      Then, when memory area is updated, its memory area is allocated newly, then writes updated value.
+ *      But, object type is reference copy. If you want to copy, use "$cloneObject = clone $object;".
+ *
+ *      Variable reference copy is ID copy, and points the same memory area. ( ID count is incremented ).
+ *      Then, when memory area is updated, writes updated value.
+ *
+ *      When "unset()" function deletes only ID, ID count is decremented, then if ID count became 0, memory area which is pointed is deleted.
+ *
+ *      When variable is written null value, memory area reference count is decremented, then if it became 0, memory area which is pointed is deleted.
  *
  * PHP version 5.3
  *
@@ -240,16 +255,16 @@ final class BreakpointDebugging extends BreakpointDebugging_InAllCase
     }
 
     /**
-     * This is function to debug with breakpoint.
-     * We must define this function outside namespace, and we must not change method name when we call this method.
+     * Debugs by using breakpoint.
+     * We must define this class method outside namespace, and we must not change method name when we call this method.
      *
-     * @param string $message       Message.
-     * @param array  $callStackInfo A call stack info.
+     * @param string $message        Message.
+     * @param array  &$callStackInfo A call stack info.
      *
      * @return void
      * @example B::breakpoint('Error message.', debug_backtrace());
      */
-    static function breakpoint($message, $callStackInfo)
+    static function breakpoint($message, &$callStackInfo)
     {
         global $_BreakpointDebugging_EXE_MODE;
 
@@ -323,8 +338,10 @@ final class BreakpointDebugging extends BreakpointDebugging_InAllCase
             foreach ($mbParamArray as $mbString) {
                 if (is_array($mbString)) {
                     $displayMbStringArray[$count] = self::_convertMbStringForDebugSubroop($charSet, $mbString);
-                } else {
+                } else if (is_string($mbString)) {
                     $displayMbStringArray[$count] = mb_convert_encoding($mbString, $charSet, 'auto');
+                } else {
+                    $displayMbStringArray[$count] = $mbString;
                 }
                 $count++;
             }
@@ -370,12 +387,12 @@ final class BreakpointDebugging extends BreakpointDebugging_InAllCase
     }
 
     /**
-     * This is ini_set() with validation except for release mode.
-     * I set with "ini_set()" because "php.ini" file and ".htaccess" file isn't sometimes possible to be set on sharing server.
+     * "ini_set()" with validation except for release mode.
+     * Sets with "ini_set()" because "php.ini" file and ".htaccess" file isn't sometimes possible to be set on sharing server.
      *
-     * @param string $phpIniVariable This is php.ini variable.
+     * @param string $phpIniVariable "php.ini" variable.
      * @param string $setValue       Value of variable.
-     * @param bool   $doCheck        Does it check to copy to the release file?
+     * @param bool   $doCheck        Does this class method check to copy to the release file?
      *
      * @return void
      */
@@ -393,11 +410,16 @@ final class BreakpointDebugging extends BreakpointDebugging_InAllCase
                 $backTrace = debug_backtrace();
                 $baseName = basename($backTrace[0]['file']);
                 $cmpName = '_MySetting_Option.php';
+                if (B::$os === 'WIN') {
+                    $baseName = strtolower($baseName);
+                    $cmpName = strtolower($cmpName);
+                }
                 $cmpNameLength = strlen($cmpName);
                 if (!substr_compare($baseName, $cmpName, 0 - $cmpNameLength, $cmpNameLength, true)) {
                     $notExistFlag = true;
                     foreach ($_BreakpointDebugging->_onceFlag as $cmpName) {
-                        if (!strcasecmp($baseName, $cmpName)) {
+                        //if (!strcasecmp($baseName, $cmpName)) {
+                        if (!strcmp($baseName, $cmpName)) {
                             $notExistFlag = false;
                             break;
                         }
@@ -408,29 +430,30 @@ final class BreakpointDebugging extends BreakpointDebugging_InAllCase
                         echo <<<EOD
 <pre>
 ### "\BreakpointDebugging::iniSet()": You must copy from "./{$packageName}_MySetting_Option.php" to user place folder of "./{$packageName}_MySetting.php" for release because set value and value of php.ini differ.
-### But, When remote "php.ini" is changed, you must redo remote debug.<pre/>
+### But, When remote "php.ini" is changed, you must redo remote debug.
+</pre>
 EOD;
                     }
                     echo <<<EOD
+<pre>
 	file: {$backTrace[0]['file']}
 	line: {$backTrace[0]['line']}
-
-<pre/>
+</pre>
 EOD;
                 }
             }
             if (ini_set($phpIniVariable, $setValue) === false) {
-                throw new \BreakpointDebugging_Error_Exception('');
+                throw new \BreakpointDebugging_Error_Exception('"ini_set()" failed.');
             }
         }
     }
 
     /**
-     * This checks php.ini setting.
+     * Checks "php.ini" file-setting.
      *
-     * @param string $phpIniVariable The php.ini file setting variable.
+     * @param string $phpIniVariable "php.ini" file-setting variable.
      * @param mixed  $cmpValue       Value which should set in case of string.
-     *                                Value which should avoid in case of array.
+     *                               Value which should avoid in case of array.
      * @param string $errorMessage   Error message.
      *
      * @return void
@@ -456,7 +479,9 @@ EOD;
         }
         if ($cmpResult) {
             echo '<br/>' . $errorMessage . '<br/>' .
-            'Current value is ' . $value . '<br/>';
+            //'Current value is ' . $value . '<br/>';
+            'Current value =';
+            var_dump($value);
         }
     }
 
@@ -553,8 +578,6 @@ EOD;
         global $_BreakpointDebugging_EXE_MODE;
 
         if ($_BreakpointDebugging_EXE_MODE & B::UNIT_TEST) {
-            // For debug which executes direct-test-class-method-call from "index.php".
-            xdebug_break();
             // Throws exception for unit test.
             throw new \BreakpointDebugging_UnitTest_Exception('');
         }
@@ -582,7 +605,7 @@ EOD;
         global $_BreakpointDebugging_EXE_MODE;
 
         if ($_BreakpointDebugging_EXE_MODE !== (B::LOCAL_DEBUG_OF_RELEASE | B::UNIT_TEST) && $_BreakpointDebugging_EXE_MODE !== (B::RELEASE | B::UNIT_TEST)) {
-            exit('You must set "$_BreakpointDebugging_EXE_MODE = $LOCAL_DEBUG_OF_RELEASE | $UNIT_TEST" or "$_BreakpointDebugging_EXE_MODE = $REMOTE_DEBUG | $UNIT_TEST" into "./PEAR_Setting/BreakpointDebugging_MySetting.php" in case of unit test.' . PHP_EOL);
+            exit('You must set "$_BreakpointDebugging_EXE_MODE = $LOCAL_DEBUG_OF_RELEASE | $UNIT_TEST" or "$_BreakpointDebugging_EXE_MODE = $RELEASE | $UNIT_TEST" into "./PEAR_Setting/BreakpointDebugging_MySetting.php" in case of unit test.' . PHP_EOL);
         }
     }
 
@@ -593,15 +616,14 @@ EOD;
      * Procedure 1: Please, start a apache.
      * Procedure 2: Please, drop php unit test file which calls this method to web browser.
      * Procedure 3: Please, rewrite web browser URL prefix to "localhost", and push return.
-     * If you want step execution, please, set composition of project of "NetBeans IDE".
-     * If you want remote execution, please, upload unit test files, and execute with browser.
+     * Please, if you want remote execution, upload unit test files, and execute with browser.
      *
      * @param array  $testFileNames Unit test file names.
      * @param string $currentDir    Unit test current directory.
      *
      * @return void
      *
-     * @example
+     * @Example page which executes unit tests.
      * <?php
      * chdir(__DIR__ . '/../../');
      * require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
@@ -613,6 +635,17 @@ EOD;
      * );
      * // Executes unit tests.
      * B::executeUnitTest($testFileNames, __DIR__);
+     * ?>
+     *
+     * @Example page which calls test-class method from start page of IDE project for debug.
+     * <?php
+     * require_once './tests/SomethingTest.php'; // Includes test PHP page.
+     *
+     * $pSomethingTest = new \SomethingTest();
+     *
+     * $pSomethingTest->setUp();
+     * $pSomethingTest->testSomething();
+     * $pSomethingTest->tearDown();
      * ?>
      */
     static function executeUnitTest($testFileNames, $currentDir)
