@@ -46,11 +46,10 @@
  *      "User" and "Group" into "lampp/apache/conf/httpd.conf".
  *      And, register "export PATH=$PATH:/opt/lampp/bin" into "~/.profile".
  * Procedure 9: Please, if you can change "php.ini" file,
- *      use "B::iniCheck()" instead of
- *      "B::iniSet(), ini_set()" in "*_MySetting.php" file,
+ *      use "B::iniCheck()" instead of "B::iniSet()" in "*_MySetting.php" file,
  *      and move it to "*_MySetting_Option.php" file
  *      because decreases the read and the parse bytes.
- *      Also, use "B::iniCheck()" instead of "B::iniSet(), ini_set()"
+ *      Also, use "B::iniCheck()" instead of "B::iniSet()"
  *      in "*_MySetting_Option.php" file.
  *
  * Caution: Do not execute "ini_set('error_log')"
@@ -349,43 +348,42 @@ final class BreakpointDebugging extends BreakpointDebugging_InAllCase
         }
     }
 
-    /**
-     * This validates to be same type.
-     *
-     * @param mixed $cmp1 A variable to compare type.
-     * @param mixed $cmp2 A variable to compare type.
-     *
-     * @return bool Is this the same type?
-     */
-    private static function _isSameType($cmp1, $cmp2)
-    {
-        if (is_string($cmp1) === true && is_string($cmp2) === true) {
-            return true;
-        }
-        if (is_int($cmp1) === true && is_int($cmp2) === true) {
-            return true;
-        }
-        if (is_bool($cmp1) === true && is_bool($cmp2) === true) {
-            return true;
-        }
-        if (is_array($cmp1) === true && is_array($cmp2) === true) {
-            return true;
-        }
-        if (is_null($cmp1) === true && is_null($cmp2) === true) {
-            return true;
-        }
-        if (is_float($cmp1) === true && is_float($cmp2) === true) {
-            return true;
-        }
-        if (is_object($cmp1) === true && is_object($cmp2) === true) {
-            return true;
-        }
-        if (is_resource($cmp1) === true && is_resource($cmp2) === true) {
-            return true;
-        }
-        return false;
-    }
-
+//    /**
+//     * This validates to be same type.
+//     *
+//     * @param mixed $cmp1 A variable to compare type.
+//     * @param mixed $cmp2 A variable to compare type.
+//     *
+//     * @return bool Is this the same type?
+//     */
+//    private static function _isSameType($cmp1, $cmp2)
+//    {
+//        if (is_string($cmp1) === true && is_string($cmp2) === true) {
+//            return true;
+//        }
+//        if (is_int($cmp1) === true && is_int($cmp2) === true) {
+//            return true;
+//        }
+//        if (is_bool($cmp1) === true && is_bool($cmp2) === true) {
+//            return true;
+//        }
+//        if (is_array($cmp1) === true && is_array($cmp2) === true) {
+//            return true;
+//        }
+//        if (is_null($cmp1) === true && is_null($cmp2) === true) {
+//            return true;
+//        }
+//        if (is_float($cmp1) === true && is_float($cmp2) === true) {
+//            return true;
+//        }
+//        if (is_object($cmp1) === true && is_object($cmp2) === true) {
+//            return true;
+//        }
+//        if (is_resource($cmp1) === true && is_resource($cmp2) === true) {
+//            return true;
+//        }
+//        return false;
+//    }
     /**
      * "ini_set()" with validation except for release mode.
      * Sets with "ini_set()" because "php.ini" file and ".htaccess" file isn't sometimes possible to be set on sharing server.
@@ -401,9 +399,9 @@ final class BreakpointDebugging extends BreakpointDebugging_InAllCase
         global $_BreakpointDebugging_EXE_MODE, $_BreakpointDebugging;
         assert(func_num_args() <= 3);
         assert($phpIniVariable !== 'error_log');
+        assert(is_string($setValue));
 
         $getValue = ini_get($phpIniVariable);
-        assert(self::_isSameType($setValue, $getValue));
         if ($setValue !== $getValue) {
             // In case of remote.
             if ($doCheck === true && ($_BreakpointDebugging_EXE_MODE & self::REMOTE_DEBUG)) {
@@ -418,7 +416,6 @@ final class BreakpointDebugging extends BreakpointDebugging_InAllCase
                 if (!substr_compare($baseName, $cmpName, 0 - $cmpNameLength, $cmpNameLength, true)) {
                     $notExistFlag = true;
                     foreach ($_BreakpointDebugging->_onceFlag as $cmpName) {
-                        //if (!strcasecmp($baseName, $cmpName)) {
                         if (!strcmp($baseName, $cmpName)) {
                             $notExistFlag = false;
                             break;
@@ -445,43 +442,6 @@ EOD;
             if (ini_set($phpIniVariable, $setValue) === false) {
                 throw new \BreakpointDebugging_Error_Exception('"ini_set()" failed.');
             }
-        }
-    }
-
-    /**
-     * Checks "php.ini" file-setting.
-     *
-     * @param string $phpIniVariable "php.ini" file-setting variable.
-     * @param mixed  $cmpValue       Value which should set in case of string.
-     *                               Value which should avoid in case of array.
-     * @param string $errorMessage   Error message.
-     *
-     * @return void
-     */
-    static function iniCheck($phpIniVariable, $cmpValue, $errorMessage)
-    {
-        assert(func_num_args() === 3);
-        $value = (string) ini_get($phpIniVariable);
-        $cmpResult = false;
-        if (is_array($cmpValue)) {
-            foreach ($cmpValue as $eachCmpValue) {
-                assert(self::_isSameType($value, $eachCmpValue));
-                if ($value === $eachCmpValue) {
-                    $cmpResult = true;
-                    break;
-                }
-            }
-        } else {
-            assert(self::_isSameType($value, $cmpValue));
-            if ($value !== $cmpValue) {
-                $cmpResult = true;
-            }
-        }
-        if ($cmpResult) {
-            echo '<br/>' . $errorMessage . '<br/>' .
-            //'Current value is ' . $value . '<br/>';
-            'Current value =';
-            var_dump($value);
         }
     }
 

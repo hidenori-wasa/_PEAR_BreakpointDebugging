@@ -3,15 +3,16 @@
 /**
  * Error log files manager.
  *
- * Procedure1: Please, register your IP address to "$myIPAddress".
- * Procedure2: Please, upload this page to the project current directory.
- * Procedure3: Please, call this page from browser.
- * Procedure4: Please, download by clicking all "Download error log file" button.
- * Procedure5: Please, click "Delete all error log files" button.
- * Procedure6: Please, debug php code by downloaded error log files.
- * Procedure7: Please, go to "Procedure4" if "Download error log file" button exists.
- * Procedure8: Please, upload repaired php code.
- * Procedure9: Please, click "Reset error log files" button.
+ * Procedure1: Please, set "$_BreakpointDebugging_EXE_MODE = $RELEASE;" in BreakpointDebugging_MySetting.php file.
+ * Procedure2: Please, register your IP address to "$myIPAddress".
+ * Procedure3: Please, upload this page to the project current directory.
+ * Procedure4: Please, call this page from browser.
+ * Procedure5: Please, download by clicking all "Download error log file" button.
+ * Procedure6: Please, click "Delete all error log files" button.
+ * Procedure7: Please, debug php code by downloaded error log files.
+ * Procedure8: Please, go to "Procedure4" if "Download error log file" button exists.
+ * Procedure9: Please, upload repaired php code.
+ * Procedure10: Please, click "Reset error log files" button.
  *
  * PHP version 5.3
  *

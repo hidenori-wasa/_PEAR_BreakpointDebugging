@@ -77,7 +77,6 @@ abstract class BreakpointDebugging_Lock
     /**
      * @var int The lock count.
      */
-    //private $_lockCount;
     protected $lockCount;
 
     /**
@@ -145,7 +144,6 @@ abstract class BreakpointDebugging_Lock
      */
     function __clone()
     {
-        //$this->_throwErrorException('Clone is not allowed.');
         B::internalAssert(false);
     }
 

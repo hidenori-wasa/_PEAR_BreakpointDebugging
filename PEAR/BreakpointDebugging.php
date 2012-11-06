@@ -213,6 +213,46 @@ class BreakpointDebugging_InAllCase
     }
 
     /**
+     * Checks "php.ini" file-setting.
+     *
+     * @param string $phpIniVariable "php.ini" file-setting variable.
+     * @param mixed  $cmpValue       Value which should set in case of string.
+     *                               Value which should avoid in case of array.
+     * @param string $errorMessage   Error message.
+     *
+     * @return void
+     */
+    static function iniCheck($phpIniVariable, $cmpValue, $errorMessage)
+    {
+        assert(func_num_args() === 3);
+        $value = (string) ini_get($phpIniVariable);
+        $cmpResult = false;
+        if (is_array($cmpValue)) {
+            foreach ($cmpValue as $eachCmpValue) {
+                if (!is_string($eachCmpValue)) {
+                    throw new \BreakpointDebugging_Error_Exception('');
+                }
+                if ($value === $eachCmpValue) {
+                    $cmpResult = true;
+                    break;
+                }
+            }
+        } else {
+            if (!is_string($cmpValue)) {
+                throw new \BreakpointDebugging_Error_Exception('');
+            }
+            if ($value !== $cmpValue) {
+                $cmpResult = true;
+            }
+        }
+        if ($cmpResult) {
+            echo '<br/>' . $errorMessage . '<br/>' .
+            'Current value =';
+            var_dump($value);
+        }
+    }
+
+    /**
      * This registers as function or method being not fixed.
      *
      * @param bool &$isRegister Is this registered?
@@ -637,16 +677,15 @@ if ($_BreakpointDebugging_EXE_MODE === BreakpointDebugging_InAllCase::RELEASE) {
             ini_set($phpIniVariable, $setValue);
         }
 
-        /**
-         * "iniCheck()" does not exist in case of release mode.
-         *
-         * @return void
-         */
-        static function iniCheck()
-        {
-
-        }
-
+//        /**
+//         * "iniCheck()" does not exist in case of release mode.
+//         *
+//         * @return void
+//         */
+//        static function iniCheck()
+//        {
+//
+//        }
     }
 
     if (assert_options(ASSERT_ACTIVE, 0) === false) { // Ignore assert().

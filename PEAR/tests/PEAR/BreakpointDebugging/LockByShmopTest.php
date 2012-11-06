@@ -36,7 +36,6 @@ class LockByShmopTest extends PHPUnit_Framework_TestCase
      */
     function test__clone()
     {
-        $tmp = 'dummy';
         try {
             $tmp = clone $this->LockByShmop;
         } catch (\BreakpointDebugging_UnitTest_Exception $e) {

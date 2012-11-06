@@ -14,24 +14,6 @@ B::checkUnitTestExeMode();
 class BreakpointDebuggingTest extends PHPUnit_Framework_TestCase
 {
     /**
-     * Sets up the fixture, for example, opens a network connection.
-     * This method is called before a test is executed.
-     */
-    protected function setUp()
-    {
-
-    }
-
-    /**
-     * Tears down the fixture, for example, closes a network connection.
-     * This method is called after a test is executed.
-     */
-    protected function tearDown()
-    {
-
-    }
-
-    /**
      * @covers BreakpointDebugging::breakpoint
      */
     public function testBreakpoint()
@@ -51,12 +33,16 @@ class BreakpointDebuggingTest extends PHPUnit_Framework_TestCase
      */
     public function testConvertMbStringForDebug()
     {
-        $testArray = array (2, "\xE6\x96\x87\xE5\xAD\x97 ");
-        $debugValues = B::convertMbStringForDebug('SJIS', 1, $testArray, "\xE6\x96\x87\xE5\xAD\x97 ");
-        $this->assertTrue($debugValues[0] === 1);
-        $cmpArray = array (2, "\x95\xB6\x8E\x9A ");
-        $this->assertTrue($debugValues[1] === $cmpArray);
-        $this->assertTrue($debugValues[2] === "\x95\xB6\x8E\x9A ");
+        global $_BreakpointDebugging_EXE_MODE;
+
+        if (!($_BreakpointDebugging_EXE_MODE & B::RELEASE)) { // In case of not release.
+            $testArray = array (2, "\xE6\x96\x87\xE5\xAD\x97 ");
+            $debugValues = B::convertMbStringForDebug('SJIS', 1, $testArray, "\xE6\x96\x87\xE5\xAD\x97 ");
+            $this->assertTrue($debugValues[0] === 1);
+            $cmpArray = array (2, "\x95\xB6\x8E\x9A ");
+            $this->assertTrue($debugValues[1] === $cmpArray);
+            $this->assertTrue($debugValues[2] === "\x95\xB6\x8E\x9A ");
+        }
     }
 
     /**
@@ -66,13 +52,19 @@ class BreakpointDebuggingTest extends PHPUnit_Framework_TestCase
     {
         B::iniSet('default_charset', 'SJIS');
 
-        try {
-            B::iniSet('not_exist', true);
-        } catch (\BreakpointDebugging_Error_Exception $e) {
-            $this->assertTrue($e->getMessage() === '"ini_set()" failed.');
+        while (true) {
+            try {
+                // First parameter does not exist.
+                B::iniSet('not_exist', 'true');
+            } catch (\BreakpointDebugging_Error_Exception $e) {
+                $this->assertTrue($e->getMessage() === '"ini_set()" failed.');
+                break;
+            }
+            $this->assertTrue(false);
         }
 
         try {
+            // Second parameter is not character string.
             B::iniSet('default_charset', 8);
         } catch (\BreakpointDebugging_UnitTest_Exception $e) {
             return;

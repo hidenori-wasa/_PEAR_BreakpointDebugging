@@ -100,22 +100,6 @@ class LockByFileExistingTest extends PHPUnit_Framework_TestCase
      * @covers \BreakpointDebugging_LockByFileExisting::lock
      * @covers \BreakpointDebugging_LockByFileExisting::unlock
      */
-    function testLockThenUnlock_B()
-    {
-        try {
-            $this->lockByFileExisting->lock();
-            $this->lockByFileExisting->unlock();
-        } catch (\Exception $e) {
-            $this->assertTrue(false);
-            return;
-        }
-        $this->assertTrue(true);
-    }
-
-    /**
-     * @covers \BreakpointDebugging_LockByFileExisting::lock
-     * @covers \BreakpointDebugging_LockByFileExisting::unlock
-     */
     function testLockThenUnlock_C()
     {
         try {
@@ -219,7 +203,6 @@ class LockByFileExistingTest extends PHPUnit_Framework_TestCase
     function testInternalSingleton()
     {
         $internalInstance = B::getPropertyForTest('\BreakpointDebugging_Lock', '$_internalInstance');
-        clearstatcache();
         $this->assertTrue($internalInstance === null);
 
         $testInstance = &\BreakpointDebugging_LockByFileExisting::internalSingleton();

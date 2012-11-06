@@ -45,14 +45,6 @@
  */
 use \BreakpointDebugging as B;
 
-// Reference path setting.
-if (substr(PHP_OS, 0, 3) === 'WIN') { // In case of Windows.
-    ini_set('include_path', '.;./PEAR;C:\xampp\php\PEAR'); // In case of local.
-} else { // In case of Unix.
-    ini_set('include_path', '.:./PEAR:/opt/lampp/lib/php:/opt/lampp/lib/php/PEAR'); // In case of local.
-    // ini_set('include_path', '.:/opt/lampp/lib/php:/opt/lampp/lib/php/PEAR'); // In case of remote.
-}
-
 /**
  * @const int $_BreakpointDebugging_EXE_MODE Debug mode constant.
  */
@@ -85,12 +77,31 @@ function BreakpointDebugging_setExecutionMode()
      */
     // Please, choose a mode.
     // $_BreakpointDebugging_EXE_MODE = $LOCAL_DEBUG;
-    // $_BreakpointDebugging_EXE_MODE = $LOCAL_DEBUG_OF_RELEASE;
+    $_BreakpointDebugging_EXE_MODE = $LOCAL_DEBUG_OF_RELEASE;
     // $_BreakpointDebugging_EXE_MODE = $REMOTE_DEBUG;
     // $_BreakpointDebugging_EXE_MODE = $RELEASE;
-    $_BreakpointDebugging_EXE_MODE = $LOCAL_DEBUG_OF_RELEASE | $UNIT_TEST;
+    // $_BreakpointDebugging_EXE_MODE = $LOCAL_DEBUG_OF_RELEASE | $UNIT_TEST;
     // $_BreakpointDebugging_EXE_MODE = $RELEASE | $UNIT_TEST;
     // ### <=== Execution mode setting.
+    //
+    // Reference path setting.
+    if ($_BreakpointDebugging_EXE_MODE & ($REMOTE_DEBUG | $RELEASE)) { // In case of remote.
+        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') { // In case of Windows.
+            // ini_set('include_path', '.;C:\xampp\php\PEAR');
+            ini_set('include_path', '.;./PEAR;C:\xampp\php\PEAR');
+        } else { // In case of Unix.
+            // ini_set('include_path', '.:/opt/lampp/lib/php:/opt/lampp/lib/php/PEAR');
+            ini_set('include_path', '.:./PEAR:/opt/lampp/lib/php:/opt/lampp/lib/php/PEAR');
+        }
+    } else { // In case of local.
+        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') { // In case of Windows.
+            // ini_set('include_path', '.;C:\xampp\php\PEAR');
+            ini_set('include_path', '.;./PEAR;C:\xampp\php\PEAR');
+        } else { // In case of Unix.
+            // ini_set('include_path', '.:/opt/lampp/lib/php:/opt/lampp/lib/php/PEAR');
+            ini_set('include_path', '.:./PEAR:/opt/lampp/lib/php:/opt/lampp/lib/php/PEAR');
+        }
+    }
 }
 
 BreakpointDebugging_setExecutionMode();
@@ -199,16 +210,19 @@ function BreakpointDebugging_mySetting()
     ////////////////////////////////////////////////////////////////////////////////
     // ### This setting has been Fixed. ###
     if ($_BreakpointDebugging_EXE_MODE === B::RELEASE) { // In case of release.
+        B::iniCheck('xdebug.remote_enable', '0', 'Set "xdebug.remote_enable = 0" of "php.ini" file because is for security.');
+        // Does not display XDebug information.
+        ini_set('xdebug.default_enable', '0');
         // Output it at log to except notice and deprecated.
-        B::iniSet('error_reporting', (string) (PHP_INT_MAX & ~(E_NOTICE | E_DEPRECATED | E_STRICT)), false);
+        ini_set('error_reporting', (string) (PHP_INT_MAX & ~(E_NOTICE | E_DEPRECATED | E_STRICT)));
         // For security, it doesn't display all errors, warnings and notices.
-        B::iniSet('display_errors', '', false);
+        ini_set('display_errors', '');
         // This changes "php.ini" file setting into "display_startup_errors = Off" Because this makes not display an error on start-up for security.
-        B::iniSet('display_startup_errors', '', false);
+        ini_set('display_startup_errors', '');
         // This changes "php.ini" file setting into "log_errors = On" to record log for security.
-        B::iniSet('log_errors', '1', false);
+        ini_set('log_errors', '1');
         // This changes "php.ini" file setting into "html_errors=Off" for security because this does not make output link to page which explains function which HTML error occurred.
-        B::iniSet('html_errors', '', false);
+        ini_set('html_errors', '');
     }
 }
 

@@ -110,7 +110,7 @@ B::iniSet('xdebug.max_nesting_level', '100', false);
 B::iniSet('xdebug.overload_var_dump', '1', false);
 // Connects automatically. Therefore, does not use because other human can debug.
 B::iniSet('xdebug.remote_autostart', '0', false);
-// Ignores "xdebug.remote_host", then connects by sending client IP. Therefore, does not use because other human can debug.
+// Ignores "xdebug.remote_host", then connects by sending client IP. Therefore, does not use because anybody can debug.
 B::iniSet('xdebug.remote_connect_back', '0', false);
 // Deadline of remote debug by session cookie.
 B::iniSet('xdebug.remote_cookie_expire_time', '3600', false);
