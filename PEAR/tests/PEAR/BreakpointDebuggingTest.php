@@ -73,22 +73,6 @@ class BreakpointDebuggingTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers BreakpointDebugging::iniCheck
-     */
-    public function testIniCheck()
-    {
-        ob_start();
-        B::iniCheck('safe_mode', '', 'Test message 1.');
-        $this->assertTrue(ob_get_contents() === '');
-        ob_clean();
-        B::iniCheck('safe_mode', 'On', 'Test message 2.');
-        $this->assertTrue(ob_get_contents() !== '');
-        ob_clean();
-        B::iniCheck('xdebug.remote_host', array ('127.0.0.1', 'localhost'), 'Test message 3.');
-        $this->assertTrue(ob_get_clean() !== '');
-    }
-
-    /**
      * @covers BreakpointDebugging::getPropertyForTest
      */
     public function testGetPropertyForTest()
@@ -122,19 +106,6 @@ class BreakpointDebuggingTest extends PHPUnit_Framework_TestCase
             B::setPropertyForTest($_BreakpointDebugging, '$_handlerOf', 'change'); // Private static property of base class.
         } catch (\BreakpointDebugging_UnitTest_Exception $e) {
             $this->assertTrue(true);
-            return;
-        }
-        $this->assertTrue(false);
-    }
-
-    /**
-     * @covers BreakpointDebugging::makeUnitTestException
-     */
-    public function testMakeUnitTestException()
-    {
-        try {
-            B::makeUnitTestException();
-        } catch (\BreakpointDebugging_UnitTest_Exception $e) {
             return;
         }
         $this->assertTrue(false);

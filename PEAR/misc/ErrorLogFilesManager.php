@@ -47,7 +47,7 @@
  *
  * @category PHP
  * @package  BreakpointDebugging
- * @author   Hidenori Wasa <wasa_@nifty.com>
+ * @author   Hidenori Wasa <public@hidenori-wasa.com>
  * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
  * @version  SVN: $Id$
  * @link     http://pear.php.net/package/BreakpointDebugging

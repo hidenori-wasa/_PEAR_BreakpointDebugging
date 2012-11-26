@@ -40,7 +40,7 @@
  *
  * @category PHP
  * @package  BreakpointDebugging
- * @author   Hidenori Wasa <wasa_@nifty.com>
+ * @author   Hidenori Wasa <public@hidenori-wasa.com>
  * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
  * @version  SVN: $Id$
  * @link     http://pear.php.net/package/BreakpointDebugging
@@ -56,79 +56,82 @@ use \BreakpointDebugging as B;
 $xdebugVarDisplayMaxChildren = '50';
 $xdebugVarDisplayMaxData = '3000';
 $xdebugVarDisplayMaxDepth = '3';
-// xdebug.dump.*    * = COOKIE, FILES, GET, POST, REQUEST, SERVER, SESSION.
-//      Shows the specified superglobal value. Example is shown below.
-//      B::iniSet('xdebug.dump.SERVER', 'REMOTE_ADDR,REQUEST_METHOD');
 // ### <=== Item-setting for debugging.
 //
 // PHP It limits directory which opens a file.
 B::iniSet('open_basedir', $openBasedir);
 // "if" statement is needed to copy in case of "B::RELEASE" if copies a code inside "if".
-if ($_BreakpointDebugging_EXE_MODE & B::REMOTE_DEBUG) { // In case of remote.
+//if ($_BreakpointDebugging_EXE_MODE & B::REMOTE_DEBUG) { // In case of remote.
+if ($_BreakpointDebugging_EXE_MODE & (B::REMOTE_DEBUG | B::RELEASE)) { // In case of remote.
     // Windows e-mail sending server setting.
     B::iniSet('SMTP', $SMTP); // 'smtp.???.com'
     // Windows mail address setting.
     B::iniSet('sendmail_from', $sendmailFrom); // '???@???.com'
-    // ### [XDebug] setting in "php.ini" file. ###
-    B::iniCheck('xdebug.remote_host', array ('127.0.0.1', 'localhost'), 'Sets the \'xdebug.remote_host = "&lt;Remote IDE host of server&gt;"\' of "php.ini file", in other words remote IDE host of server is "&lt;Your host name or IP&gt;".');
 } else { // In case of local.
+    // "mbstring.func_overload" do coding with 0 for plainness, but release environment is any possibly.
+    B::iniCheck('mbstring.func_overload', '0', 'To make coding plain must be set "mbstring.func_overload = 0" of "php.ini" file.');
     B::iniSet('SMTP', $SMTP);
     B::iniSet('sendmail_from', $sendmailFrom);
     // ### [XDebug] setting in "php.ini" file. ###
     B::iniCheck('xdebug.remote_host', '127.0.0.1', 'Set \'xdebug.remote_host = "127.0.0.1"\' of "php.ini" file because remote IDE host of server is "127.0.0.1".');
 }
-// ### [XDebug] setting in "php.ini" file. ###
-// First is DBGP_IDEKEY, and next is USER, and last is USERNAME.
-// B::iniSet('xdebug.idekey', ?????);
-// // Manual base url for links from function traces or error messages.
-// B::iniSet('xdebug.manual_url', $xdebugManualUrl, false);
-// Limits the number of object properties or array elements for display of var_dump(), local variables or Function Traces.
-B::iniSet('xdebug.var_display_max_children', $xdebugVarDisplayMaxChildren, false);
-// Limits character string type byte-count for display of var_dump(), local variables or Function Traces.
-B::iniSet('xdebug.var_display_max_data', $xdebugVarDisplayMaxData, false);
-// Controls how many nested levels of array elements and object properties.
-// Display by var_dump(), local variables or Function Traces.
-B::iniSet('xdebug.var_display_max_depth', $xdebugVarDisplayMaxDepth, false);
-// Shows function call parameters name and value.
-// B::iniSet('xdebug.collect_params', '4', false);
-B::iniSet('xdebug.collect_params', '2', false);
-// Does not gather local variables information for "xdebug_get_declared_vars()".
-B::iniSet('xdebug.collect_vars', '0', false);
-// Shows stack-traces.
-B::iniSet('xdebug.default_enable', '1', false);
-// Shows values of superglobals defined by "xdebug.dump.*".
-B::iniSet('xdebug.dump_globals', '1', false);
-// Dumps superglobals on first error situation.
-B::iniSet('xdebug.dump_once', '1', false);
-// Does not dump undefined values from superglobals.
-B::iniSet('xdebug.dump_undefined', '0', false);
-// Necessary for remote breakpoint debugging execution.
-B::iniSet('xdebug.extended_info', '1', false);
-// Max nesting level of function call.
-B::iniSet('xdebug.max_nesting_level', '100', false);
-// Overloads var_dump() with its own improved version for displaying variables.
-B::iniSet('xdebug.overload_var_dump', '1', false);
-// Connects automatically. Therefore, does not use because other human can debug.
-B::iniSet('xdebug.remote_autostart', '0', false);
-// Ignores "xdebug.remote_host", then connects by sending client IP. Therefore, does not use because anybody can debug.
-B::iniSet('xdebug.remote_connect_back', '0', false);
-// Deadline of remote debug by session cookie.
-B::iniSet('xdebug.remote_cookie_expire_time', '3600', false);
-B::iniCheck('xdebug.remote_enable', '1', 'Set "xdebug.remote_enable = 1" of "php.ini" file because this is needed to do breakpoint debugging.');
-B::iniCheck('xdebug.remote_handler', 'dbgp', 'Set \'xdebug.remote_handler = "dbgp"\' of "php.ini" file because this is needed to do remote debugging.');
-// Connects when remote debug begins.
-B::iniSet('xdebug.remote_mode', 'req', false);
-B::iniCheck('xdebug.remote_port', '9000', 'Set "xdebug.remote_port = 9000" of "php.ini" file. This is "NetBeans IDE" port number of own terminal. Also, we use default value because it is the default of "NetBeans IDE".');
-// Enables '@' operator.
-B::iniSet('xdebug.scream', '0', false);
-// Shows local variables.
-B::iniSet('xdebug.show_local_vars', '1', false);
-////////////////////////////////////////////////////////////////////////////////
-if ($_BreakpointDebugging_EXE_MODE & B::LOCAL_DEBUG) {
-    // "mbstring.func_overload" do coding with 0 for plainness, but release environment is any possibly.
-    B::iniCheck('mbstring.func_overload', '0', 'To make coding plain must be set "mbstring.func_overload = 0" of "php.ini" file.');
+
+if (B::$xdebug_exists) {
+    // xdebug.dump.*    * = COOKIE, FILES, GET, POST, REQUEST, SERVER, SESSION.
+    //      Shows the specified superglobal value. Example is shown below.
+    //      B::iniSet('xdebug.dump.SERVER', 'REMOTE_ADDR,REQUEST_METHOD');
+    if ($_BreakpointDebugging_EXE_MODE & (B::REMOTE_DEBUG | B::RELEASE)) { // In case of remote.
+        // ### [XDebug] setting in "php.ini" file. ###
+        B::iniCheck('xdebug.remote_host', array ('127.0.0.1', 'localhost'), 'Sets the \'xdebug.remote_host = "&lt;Remote IDE host of server&gt;"\' of "php.ini file", in other words remote IDE host of server is "&lt;Your host name or IP&gt;".');
+    }
+    // ### [XDebug] setting in "php.ini" file. ###
+    // First is DBGP_IDEKEY, and next is USER, and last is USERNAME.
+    // B::iniSet('xdebug.idekey', ?????);
+    // // Manual base url for links from function traces or error messages.
+    // B::iniSet('xdebug.manual_url', $xdebugManualUrl, false);
+    // Limits the number of object properties or array elements for display of var_dump(), local variables or Function Traces.
+    B::iniSet('xdebug.var_display_max_children', $xdebugVarDisplayMaxChildren, false);
+    // Limits character string type byte-count for display of var_dump(), local variables or Function Traces.
+    B::iniSet('xdebug.var_display_max_data', $xdebugVarDisplayMaxData, false);
+    // Controls how many nested levels of array elements and object properties.
+    // Display by var_dump(), local variables or Function Traces.
+    B::iniSet('xdebug.var_display_max_depth', $xdebugVarDisplayMaxDepth, false);
+    // Shows function call parameters name and value.
+    // B::iniSet('xdebug.collect_params', '4', false);
+    B::iniSet('xdebug.collect_params', '2', false);
+    // Does not gather local variables information for "xdebug_get_declared_vars()".
+    B::iniSet('xdebug.collect_vars', '0', false);
+    // Shows stack-traces.
+    B::iniSet('xdebug.default_enable', '1', false);
+    // Shows values of superglobals defined by "xdebug.dump.*".
+    B::iniSet('xdebug.dump_globals', '1', false);
+    // Dumps superglobals on first error situation.
+    B::iniSet('xdebug.dump_once', '1', false);
+    // Does not dump undefined values from superglobals.
+    B::iniSet('xdebug.dump_undefined', '0', false);
+    // Necessary for remote breakpoint debugging execution.
+    B::iniSet('xdebug.extended_info', '1', false);
+    // Max nesting level of function call.
+    B::iniSet('xdebug.max_nesting_level', '100', false);
+    // Overloads var_dump() with its own improved version for displaying variables.
+    B::iniSet('xdebug.overload_var_dump', '1', false);
+    // Connects automatically. Therefore, does not use because other human can debug.
+    B::iniSet('xdebug.remote_autostart', '0', false);
+    // Ignores "xdebug.remote_host", then connects by sending client IP. Therefore, does not use because anybody can debug.
+    B::iniSet('xdebug.remote_connect_back', '0', false);
+    // Deadline of remote debug by session cookie.
+    B::iniSet('xdebug.remote_cookie_expire_time', '3600', false);
+    B::iniCheck('xdebug.remote_enable', '1', 'Set "xdebug.remote_enable = 1" of "php.ini" file because this is needed to do breakpoint debugging.');
+    B::iniCheck('xdebug.remote_handler', 'dbgp', 'Set \'xdebug.remote_handler = "dbgp"\' of "php.ini" file because this is needed to do remote debugging.');
+    // Connects when remote debug begins.
+    B::iniSet('xdebug.remote_mode', 'req', false);
+    B::iniCheck('xdebug.remote_port', '9000', 'Set "xdebug.remote_port = 9000" of "php.ini" file. This is "NetBeans IDE" port number of own terminal. Also, we use default value because it is the default of "NetBeans IDE".');
+    // Enables '@' operator.
+    B::iniSet('xdebug.scream', '0', false);
+    // Shows local variables.
+    B::iniSet('xdebug.show_local_vars', '1', false);
 }
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // ### [mbstring] setting in "php.ini" file. ###
 // The default character sets of PHP.
 B::iniSet('default_charset', 'utf8');

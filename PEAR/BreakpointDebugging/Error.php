@@ -39,7 +39,7 @@
  *
  * @category PHP
  * @package  BreakpointDebugging
- * @author   Hidenori Wasa <wasa_@nifty.com>
+ * @author   Hidenori Wasa <public@hidenori-wasa.com>
  * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
  * @version  SVN: $Id$
  * @link     http://pear.php.net/package/BreakpointDebugging
@@ -51,7 +51,7 @@ use \BreakpointDebugging as B;
  *
  * @category PHP
  * @package  BreakpointDebugging
- * @author   Hidenori Wasa <wasa_@nifty.com>
+ * @author   Hidenori Wasa <public@hidenori-wasa.com>
  * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
  * @version  Release: @package_version@
  * @link     http://pear.php.net/package/BreakpointDebugging
@@ -133,47 +133,56 @@ final class BreakpointDebugging_Error
     {
         global $_BreakpointDebugging_EXE_MODE;
 
+        $setTags = function ($object) {
+            $object->tags['font']['caution'] = '';
+            $object->tags['font']['bool'] = '';
+            $object->tags['font']['int'] = '';
+            $object->tags['font']['float'] = '';
+            $object->tags['font']['string'] = '';
+            $object->tags['font']['null'] = '';
+            $object->tags['font']['resource'] = '';
+            $object->tags['font']['=>'] = '';
+            $object->tags['/font'] = '';
+            $object->tags['small'] = '';
+            $object->tags['/small'] = '';
+            $object->tags['i'] = '';
+            $object->tags['/i'] = '';
+            $object->tags['b'] = '';
+            $object->tags['/b'] = '';
+        };
         $this->_loggedArrays = array ();
         $this->_loggedObjects = array ();
         if ($_BreakpointDebugging_EXE_MODE & (B::RELEASE | B::LOCAL_DEBUG_OF_RELEASE)) { // In case of the logging.
             $this->_isLogging = true;
             $this->_mark = '#';
-            $this->tags['font']['caution'] = '';
-            $this->tags['font']['bool'] = '';
-            $this->tags['font']['int'] = '';
-            $this->tags['font']['float'] = '';
-            $this->tags['font']['string'] = '';
-            $this->tags['font']['null'] = '';
-            $this->tags['font']['resource'] = '';
-            $this->tags['font']['=>'] = '';
-            $this->tags['/font'] = '';
-            $this->tags['small'] = '';
-            $this->tags['/small'] = '';
-            $this->tags['i'] = '';
-            $this->tags['/i'] = '';
-            $this->tags['b'] = '';
-            $this->tags['/b'] = '';
+            $setTags($this);
             $this->tags['pre'] = '';
             $this->tags['/pre'] = PHP_EOL . PHP_EOL;
         } else { // In case of not the logging.
             $this->_isLogging = false;
             $this->_mark = '&diams;';
-            $this->tags['font']['caution'] = '<font color=\'#ff0000\'>';
-            $this->tags['font']['bool'] = '<font color=\'#75507b\'>';
-            $this->tags['font']['int'] = '<font color=\'#4e9a06\'>';
-            $this->tags['font']['float'] = '<font color=\'#f57900\'>';
-            $this->tags['font']['string'] = '<font color=\'#cc0000\'>';
-            $this->tags['font']['null'] = '<font color=\'#3465a4\'>';
-            $this->tags['font']['resource'] = '<font color=\'#8080ff\'>';
-            $this->tags['font']['=>'] = '<font color=\'#888a85\'>';
-            $this->tags['/font'] = '</font>';
-            $this->tags['small'] = '<small>';
-            $this->tags['/small'] = '</small>';
-            $this->tags['i'] = '<i>';
-            $this->tags['/i'] = '</i>';
-            $this->tags['b'] = '<b>';
-            $this->tags['/b'] = '</b>';
-            $this->tags['pre'] = '<pre class=\'xdebug-var-dump\' dir=\'ltr\'>';
+            // When "Xdebug" exists.
+            if (B::$xdebug_exists) {
+                $this->tags['pre'] = '<pre class=\'xdebug-var-dump\' dir=\'ltr\'>';
+                $this->tags['font']['caution'] = '<font color=\'#ff0000\'>';
+                $this->tags['font']['bool'] = '<font color=\'#75507b\'>';
+                $this->tags['font']['int'] = '<font color=\'#4e9a06\'>';
+                $this->tags['font']['float'] = '<font color=\'#f57900\'>';
+                $this->tags['font']['string'] = '<font color=\'#cc0000\'>';
+                $this->tags['font']['null'] = '<font color=\'#3465a4\'>';
+                $this->tags['font']['resource'] = '<font color=\'#8080ff\'>';
+                $this->tags['font']['=>'] = '<font color=\'#888a85\'>';
+                $this->tags['/font'] = '</font>';
+                $this->tags['small'] = '<small>';
+                $this->tags['/small'] = '</small>';
+                $this->tags['i'] = '<i>';
+                $this->tags['/i'] = '</i>';
+                $this->tags['b'] = '<b>';
+                $this->tags['/b'] = '</b>';
+            } else { // When "Xdebug" does not exist.
+                $this->tags['pre'] = '<pre>';
+                $setTags($this);
+            }
             $this->tags['/pre'] = '</pre>';
         }
     }
@@ -941,7 +950,7 @@ final class BreakpointDebugging_Error
     {
         global $_BreakpointDebugging_EXE_MODE;
 
-        if ($_BreakpointDebugging_EXE_MODE & (B::LOCAL_DEBUG | B::LOCAL_DEBUG_OF_RELEASE)) { // In case of local.
+        if ($_BreakpointDebugging_EXE_MODE & (B::LOCAL_DEBUG | B::LOCAL_DEBUG_OF_RELEASE)) { // In case of local host.
             return array ();
         } else { // In case of not local debug.
             return tmpfile();

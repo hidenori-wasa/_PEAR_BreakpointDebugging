@@ -16,7 +16,7 @@
  * Notice: Use "phpMyAdmin" to see database and to execute "MySQL" command.
  *
  * ### The advantage of breakpoint debugging. ###
- * it is to be able to find a position of a bug immediately.
+ * It is to be able to find a position of a bug immediately.
  * In addition to it, condition of variable can be examined.
  * Therefore, it is possible to do debugging quickly.
  *
@@ -28,9 +28,9 @@
  * "BreakpointDebugging" class.
  *
  * ### The execution procedure. ###
- * Procedure 1: Please, install "XDebug" by seeing "http://xdebug.org/docs/install".
- *      This is required to stop at breakpoint.
- * Procedure 2: If you execute "REMOTE_DEBUG", please set "xdebug.remote_host =
+ * Procedure 1: Please, install "XDebug" by seeing "http://xdebug.org/docs/install" in case of your local host.
+ *      "Xdebug" extension is required because (uses breakpoint, displays for fatal error and detects infinity recursive function call).
+ * Procedure 2: If you want remote debug, please set "xdebug.remote_host =
  *      "<name or ip of host which debugger exists>"" into "php.ini" file.
  * Procedure 3: Please, set *.php file format to utf8, but we should create backup of
  *      php files because multibyte strings may be destroyed.
@@ -75,8 +75,9 @@
  * Last "RELEASE" mode is log debugging with remote personal computer,
  *      and we must set on last for security.
  *      On release
- * "UNIT_TEST" mode tests by "phpunit" command.
- *
+ * "LOCAL_DEBUG_OF_RELEASE | UNIT_TEST" mode tests by "phpunit" command on local.
+ * "RELEASE | UNIT_TEST" mode tests by "phpunit" command on remote.
+ *      This does logging same as "RELEASE" mode, but enables XDebug display for fatal error.
  *  ### Exception hierarchical structure ###
  *  PEAR_Exception
  *      BreakpointDebugging_Exception
@@ -137,7 +138,7 @@
  *      Variable reference copy is ID copy, and points the same memory area. ( ID count is incremented ).
  *      Then, when memory area is updated, writes updated value.
  *
- *      When "unset()" function deletes only ID, ID count is decremented, then if ID count became 0, memory area which is pointed is deleted.
+ *      When "unset()" function deletes only ID, ID count is decremented, then if it became 0, memory area which is pointed is deleted.
  *
  *      When variable is written null value, memory area reference count is decremented, then if it became 0, memory area which is pointed is deleted.
  *
@@ -174,7 +175,7 @@
  *
  * @category PHP
  * @package  BreakpointDebugging
- * @author   Hidenori Wasa <wasa_@nifty.com>
+ * @author   Hidenori Wasa <public@hidenori-wasa.com>
  * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
  * @version  SVN: $Id$
  * @link     http://pear.php.net/package/BreakpointDebugging
@@ -190,7 +191,7 @@ use \BreakpointDebugging as B;
  *
  * @category PHP
  * @package  BreakpointDebugging
- * @author   Hidenori Wasa <wasa_@nifty.com>
+ * @author   Hidenori Wasa <public@hidenori-wasa.com>
  * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
  * @version  Release: @package_version@
  * @link     http://pear.php.net/package/BreakpointDebugging
@@ -205,7 +206,7 @@ class BreakpointDebugging_UnitTest_Exception extends BreakpointDebugging_Excepti
  *
  * @category PHP
  * @package  BreakpointDebugging
- * @author   Hidenori Wasa <wasa_@nifty.com>
+ * @author   Hidenori Wasa <public@hidenori-wasa.com>
  * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
  * @version  Release: @package_version@
  * @link     http://pear.php.net/package/BreakpointDebugging
@@ -288,8 +289,9 @@ final class BreakpointDebugging extends BreakpointDebugging_InAllCase
             }
         }
 
-        $return = xdebug_break(); // Breakpoint. See local variable value by doing step execution here.
-        self::internalAssert($return);
+        if (B::$xdebug_exists) {
+            xdebug_break(); // Breakpoint. See local variable value by doing step execution here.
+        }
 
         if ($_BreakpointDebugging_EXE_MODE & self::REMOTE_DEBUG) {
             // Remote debug must end immediately to avoid eternal execution.
@@ -348,42 +350,6 @@ final class BreakpointDebugging extends BreakpointDebugging_InAllCase
         }
     }
 
-//    /**
-//     * This validates to be same type.
-//     *
-//     * @param mixed $cmp1 A variable to compare type.
-//     * @param mixed $cmp2 A variable to compare type.
-//     *
-//     * @return bool Is this the same type?
-//     */
-//    private static function _isSameType($cmp1, $cmp2)
-//    {
-//        if (is_string($cmp1) === true && is_string($cmp2) === true) {
-//            return true;
-//        }
-//        if (is_int($cmp1) === true && is_int($cmp2) === true) {
-//            return true;
-//        }
-//        if (is_bool($cmp1) === true && is_bool($cmp2) === true) {
-//            return true;
-//        }
-//        if (is_array($cmp1) === true && is_array($cmp2) === true) {
-//            return true;
-//        }
-//        if (is_null($cmp1) === true && is_null($cmp2) === true) {
-//            return true;
-//        }
-//        if (is_float($cmp1) === true && is_float($cmp2) === true) {
-//            return true;
-//        }
-//        if (is_object($cmp1) === true && is_object($cmp2) === true) {
-//            return true;
-//        }
-//        if (is_resource($cmp1) === true && is_resource($cmp2) === true) {
-//            return true;
-//        }
-//        return false;
-//    }
     /**
      * "ini_set()" with validation except for release mode.
      * Sets with "ini_set()" because "php.ini" file and ".htaccess" file isn't sometimes possible to be set on sharing server.
@@ -529,21 +495,6 @@ EOD;
     }
 
     /**
-     * Makes php unit test exception.
-     *
-     * @return void
-     */
-    static function makeUnitTestException()
-    {
-        global $_BreakpointDebugging_EXE_MODE;
-
-        if ($_BreakpointDebugging_EXE_MODE & B::UNIT_TEST) {
-            // Throws exception for unit test.
-            throw new \BreakpointDebugging_UnitTest_Exception('');
-        }
-    }
-
-    /**
      * Checks unit-test-execution-mode.
      *
      * @return void
@@ -637,7 +588,9 @@ EOD;
             // If test file name contains '_'.
             if (strpos($testFileName, '_') !== false) {
                 echo "You must change its array element and its file name into '-' because '$testFileName' contains '_'." . PHP_EOL;
-                xdebug_break();
+                if (B::$xdebug_exists) {
+                    xdebug_break();
+                }
                 return;
             }
             echo $testFileName . PHP_EOL;
@@ -701,15 +654,16 @@ if (assert_options(ASSERT_QUIET_EVAL, 0) === false) { // As for assertion expres
 //   It is possible to assert that <judgment expression> is "This must be". Especially, this uses to verify a function's argument.
 //   For example: assert(3 <= $value && $value <= 5); // $value should be 3-5.
 //   Caution: Don't change the value of variable in "assert()" function because there isn't executed in case of release.
-
-if (!extension_loaded('xdebug')) {
-    exit(
-    '### ERROR ###<br/>' . PHP_EOL .
-    'FILE: ' . __FILE__ . ' LINE: ' . __LINE__ . '<br/>' . PHP_EOL .
-    '"Xdebug" extension has been not loaded.<br/>' . PHP_EOL .
-    '"Xdebug" extension is required because avoids infinity recursive function call.<br/>' . PHP_EOL .
-    'Also, this package requires "Xdebug" extension.<br/>'
-    );
+// When "Xdebug" does not exist.
+if (!B::$xdebug_exists) {
+    if ($_BreakpointDebugging_EXE_MODE & (B::LOCAL_DEBUG | B::LOCAL_DEBUG_OF_RELEASE)) { // In case of local host.
+        exit(
+        '### ERROR ###<br/>' . PHP_EOL .
+        'FILE: ' . __FILE__ . ' LINE: ' . __LINE__ . '<br/>' . PHP_EOL .
+        '"Xdebug" extension has been not loaded though this is a local host.<br/>' . PHP_EOL .
+        '"Xdebug" extension is required because (uses breakpoint, displays for fatal error and avoids infinity recursive function call).<br/>'
+        );
+    }
 }
 
 ?>

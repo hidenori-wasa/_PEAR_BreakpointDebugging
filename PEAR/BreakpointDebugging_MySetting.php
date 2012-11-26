@@ -38,7 +38,7 @@
  *
  * @category PHP
  * @package  BreakpointDebugging
- * @author   Hidenori Wasa <wasa_@nifty.com>
+ * @author   Hidenori Wasa <public@hidenori-wasa.com>
  * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
  * @version  SVN: $Id$
  * @link     http://pear.php.net/package/BreakpointDebugging
@@ -77,8 +77,8 @@ function BreakpointDebugging_setExecutionMode()
      */
     // Please, choose a mode.
     // $_BreakpointDebugging_EXE_MODE = $LOCAL_DEBUG;
-    $_BreakpointDebugging_EXE_MODE = $LOCAL_DEBUG_OF_RELEASE;
-    // $_BreakpointDebugging_EXE_MODE = $REMOTE_DEBUG;
+    // $_BreakpointDebugging_EXE_MODE = $LOCAL_DEBUG_OF_RELEASE;
+    $_BreakpointDebugging_EXE_MODE = $REMOTE_DEBUG;
     // $_BreakpointDebugging_EXE_MODE = $RELEASE;
     // $_BreakpointDebugging_EXE_MODE = $LOCAL_DEBUG_OF_RELEASE | $UNIT_TEST;
     // $_BreakpointDebugging_EXE_MODE = $RELEASE | $UNIT_TEST;
@@ -210,9 +210,12 @@ function BreakpointDebugging_mySetting()
     ////////////////////////////////////////////////////////////////////////////////
     // ### This setting has been Fixed. ###
     if ($_BreakpointDebugging_EXE_MODE === B::RELEASE) { // In case of release.
-        B::iniCheck('xdebug.remote_enable', '0', 'Set "xdebug.remote_enable = 0" of "php.ini" file because is for security.');
-        // Does not display XDebug information.
-        ini_set('xdebug.default_enable', '0');
+        // When "Xdebug" exists.
+        if (B::$xdebug_exists) {
+            B::iniCheck('xdebug.remote_enable', '0', 'Set "xdebug.remote_enable = 0" of "php.ini" file because is for security.');
+            // Does not display XDebug information.
+            ini_set('xdebug.default_enable', '0');
+        }
         // Output it at log to except notice and deprecated.
         ini_set('error_reporting', (string) (PHP_INT_MAX & ~(E_NOTICE | E_DEPRECATED | E_STRICT)));
         // For security, it doesn't display all errors, warnings and notices.

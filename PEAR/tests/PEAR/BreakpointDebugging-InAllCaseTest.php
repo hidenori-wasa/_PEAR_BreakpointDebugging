@@ -26,21 +26,21 @@ class BreakpointDebugging_InAllCaseTest extends PHPUnit_Framework_TestCase
     const TEST_CONST = 'The test constant.';
 
     /**
-     * Sets up the fixture, for example, opens a network connection.
-     * This method is called before a test is executed.
+     * @covers BreakpointDebugging_InAllCase::iniCheck
      */
-    protected function setUp()
+    public function testIniCheck()
     {
+        global $_BreakpointDebugging_EXE_MODE;
 
-    }
-
-    /**
-     * Tears down the fixture, for example, closes a network connection.
-     * This method is called after a test is executed.
-     */
-    protected function tearDown()
-    {
-
+        ob_start();
+        B::iniCheck('safe_mode', '', 'Test message 1.');
+        $this->assertTrue(ob_get_contents() === '');
+        ob_clean();
+        B::iniCheck('safe_mode', 'On', 'Test message 2.');
+        $this->assertTrue(ob_get_contents() !== '');
+        ob_clean();
+        B::iniCheck('xdebug.remote_host', array ('Other1', 'Other2'), 'Test message 3.');
+        $this->assertTrue(ob_get_clean() === '');
     }
 
     /**

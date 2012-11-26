@@ -7,12 +7,18 @@ The features list
 The dependences
     OS requires "Linux" or "Windows".
     PHP version >= 5.3.0
-    Requires "Xdebug" extension.
-    Requires "shmop" extension if you use "BreakpointDebugging_LockByShmop" class. (optional)
-    Requires environment which "flock()" enables if you use "BreakpointDebugging_LockByFlock" class. (optional)
+
+    Requires "Xdebug" extension in case of local host.
+        "Xdebug" extension is required because (uses breakpoint, displays for fatal error and detects infinity recursive function call).
+    Requires "Xdebug" extension if you want above in case of "$_BreakpointDebugging_EXE_MODE = B::REMOTE_DEBUG" mode. (optional).
+
+    Requires "shmop" extension if you use "BreakpointDebugging_LockByShmop" class. (optional).
+    Requires environment which "flock()" enables if you use "BreakpointDebugging_LockByFlock" class. (optional).
 
 Notice
-    I will do execution check of remote debug by rental server.
+    I have been borrowing a rental server.
+    Also, I have been acquiring my domain.
 
 Warning
+    I have not done UNIX OS debug yet.
     I have not done a remote debug yet.

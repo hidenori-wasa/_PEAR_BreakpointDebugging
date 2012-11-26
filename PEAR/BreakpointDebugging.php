@@ -36,7 +36,7 @@
  *
  * @category PHP
  * @package  BreakpointDebugging
- * @author   Hidenori Wasa <wasa_@nifty.com>
+ * @author   Hidenori Wasa <public@hidenori-wasa.com>
  * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
  * @version  SVN: $Id$
  * @link     http://pear.php.net/package/BreakpointDebugging
@@ -50,7 +50,7 @@ require_once __DIR__ . '/PEAR/Exception.php';
  *
  * @category PHP
  * @package  BreakpointDebugging
- * @author   Hidenori Wasa <wasa_@nifty.com>
+ * @author   Hidenori Wasa <public@hidenori-wasa.com>
  * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
  * @version  Release: @package_version@
  * @link     http://pear.php.net/package/BreakpointDebugging
@@ -88,7 +88,7 @@ class BreakpointDebugging_Exception extends PEAR_Exception
  *
  * @category PHP
  * @package  BreakpointDebugging
- * @author   Hidenori Wasa <wasa_@nifty.com>
+ * @author   Hidenori Wasa <public@hidenori-wasa.com>
  * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
  * @version  Release: @package_version@
  * @link     http://pear.php.net/package/BreakpointDebugging
@@ -103,7 +103,7 @@ class BreakpointDebugging_Error_Exception extends BreakpointDebugging_Exception
  *
  * @category PHP
  * @package  BreakpointDebugging
- * @author   Hidenori Wasa <wasa_@nifty.com>
+ * @author   Hidenori Wasa <public@hidenori-wasa.com>
  * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
  * @version  Release: @package_version@
  * @link     http://pear.php.net/package/BreakpointDebugging
@@ -136,6 +136,11 @@ class BreakpointDebugging_InAllCase
      * @const int Tests by "phpunit". This flag is used with other flag.
      */
     const UNIT_TEST = 16;
+
+    /**
+     * @var bool "Xdebug" existing-flag.
+     */
+    static $xdebug_exists;
 
     /**
      * @var string Upper case 3 character prefix of operating system name.
@@ -222,7 +227,7 @@ class BreakpointDebugging_InAllCase
      *
      * @return void
      */
-    static function iniCheck($phpIniVariable, $cmpValue, $errorMessage)
+    final static function iniCheck($phpIniVariable, $cmpValue, $errorMessage)
     {
         assert(func_num_args() === 3);
         $value = (string) ini_get($phpIniVariable);
@@ -350,7 +355,7 @@ class BreakpointDebugging_InAllCase
      *
      * @return void
      */
-    private static function _setOwner($name, $permission)
+    final private static function _setOwner($name, $permission)
     {
         if (B::$os === 'WIN') { // In case of Windows.
             return;
@@ -371,7 +376,7 @@ class BreakpointDebugging_InAllCase
      *
      * @return void
      */
-    static function mkdir($dirName, $permission = 0777)
+    final static function mkdir($dirName, $permission = 0777)
     {
         if (mkdir($dirName)) {
             self::_setOwner($dirName, $permission);
@@ -387,7 +392,7 @@ class BreakpointDebugging_InAllCase
      *
      * @return resource The file pointer.
      */
-    static function fopen($fileName, $mode, $permission)
+    final static function fopen($fileName, $mode, $permission)
     {
         $pFile = fopen($fileName, $mode);
         if ($pFile) {
@@ -404,7 +409,7 @@ class BreakpointDebugging_InAllCase
      * @return string Compression character string.
      * @example fwrite($pFile, \BreakpointDebugging::compressIntArray(array(0xFFFFFFFF, 0x7C, 0x7D, 0x7E, 0x0A, 0x0D)));
      */
-    static function compressIntArray($intArray)
+    final static function compressIntArray($intArray)
     {
         $compressBytes = '';
         foreach ($intArray as $int) {
@@ -437,7 +442,7 @@ class BreakpointDebugging_InAllCase
      * @return array Integer array.
      * @example while ($intArray = \BreakpointDebugging::decompressIntArray(fgets($pFile))) {
      */
-    static function decompressIntArray($compressBytes)
+    final static function decompressIntArray($compressBytes)
     {
         $compressBytes = trim($compressBytes, PHP_EOL);
         $intArray = array ();
@@ -492,10 +497,15 @@ class BreakpointDebugging_InAllCase
      */
     final static function exceptionHandler($pException)
     {
-        if (method_exists('BreakpointDebugging', 'makeUnitTestException')) {
-            // For debug which calls test-class method from start page of IDE project.
-            xdebug_break();
-            B::makeUnitTestException();
+        global $_BreakpointDebugging_EXE_MODE;
+
+        if ($_BreakpointDebugging_EXE_MODE & B::UNIT_TEST) {
+            if (B::$xdebug_exists) {
+                // For debug which calls test-class method from start page of IDE project.
+                xdebug_break();
+            }
+            // Throws exception for unit test.
+            throw new \BreakpointDebugging_UnitTest_Exception('');
         }
         self::$_handlerOf = 'exception'; // This registers as exception handler.
         $error = new \BreakpointDebugging_Error();
@@ -515,10 +525,13 @@ class BreakpointDebugging_InAllCase
     {
         global $_BreakpointDebugging_EXE_MODE;
 
-        if (method_exists('BreakpointDebugging', 'makeUnitTestException')) {
-            // For debug which calls test-class method from start page of IDE project.
-            xdebug_break();
-            B::makeUnitTestException();
+        if ($_BreakpointDebugging_EXE_MODE & B::UNIT_TEST) {
+            if (B::$xdebug_exists) {
+                // For debug which calls test-class method from start page of IDE project.
+                xdebug_break();
+            }
+            // Throws exception for unit test.
+            throw new \BreakpointDebugging_UnitTest_Exception('');
         }
         $handlerStore = self::$_handlerOf; // Stores the handler.
         self::$_handlerOf = 'error'; // This registers as error handler.
@@ -614,7 +627,7 @@ class BreakpointDebugging_InAllCase
      *
      * @return void
      */
-    static function shutdown()
+    final static function shutdown()
     {
         global $_BreakpointDebugging;
 
@@ -641,7 +654,7 @@ if ($_BreakpointDebugging_EXE_MODE === BreakpointDebugging_InAllCase::RELEASE) {
      *
      * @category PHP
      * @package  BreakpointDebugging
-     * @author   Hidenori Wasa <wasa_@nifty.com>
+     * @author   Hidenori Wasa <public@hidenori-wasa.com>
      * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
      * @version  Release: @package_version@
      * @link     http://pear.php.net/package/BreakpointDebugging
@@ -677,21 +690,19 @@ if ($_BreakpointDebugging_EXE_MODE === BreakpointDebugging_InAllCase::RELEASE) {
             ini_set($phpIniVariable, $setValue);
         }
 
-//        /**
-//         * "iniCheck()" does not exist in case of release mode.
-//         *
-//         * @return void
-//         */
-//        static function iniCheck()
-//        {
-//
-//        }
     }
 
     if (assert_options(ASSERT_ACTIVE, 0) === false) { // Ignore assert().
         throw new \BreakpointDebugging_Error_Exception('');
     }
+    // Ignores "Xdebug" in case of release because must not stop.
+    BreakpointDebugging_InAllCase::$xdebug_exists = false;
 } else { // In case of not release.
+    if (extension_loaded('xdebug')) {
+        BreakpointDebugging_InAllCase::$xdebug_exists = true;
+    } else { // When "Xdebug" does not exist.
+        BreakpointDebugging_InAllCase::$xdebug_exists = false;
+    }
     include_once __DIR__ . '/BreakpointDebugging_Option.php';
 }
 
