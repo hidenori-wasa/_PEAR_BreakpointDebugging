@@ -78,8 +78,8 @@ function BreakpointDebugging_setExecutionMode()
     // Please, choose a mode.
     // $_BreakpointDebugging_EXE_MODE = $LOCAL_DEBUG;
     // $_BreakpointDebugging_EXE_MODE = $LOCAL_DEBUG_OF_RELEASE;
-    $_BreakpointDebugging_EXE_MODE = $REMOTE_DEBUG;
-    // $_BreakpointDebugging_EXE_MODE = $RELEASE;
+    // $_BreakpointDebugging_EXE_MODE = $REMOTE_DEBUG;
+    $_BreakpointDebugging_EXE_MODE = $RELEASE;
     // $_BreakpointDebugging_EXE_MODE = $LOCAL_DEBUG_OF_RELEASE | $UNIT_TEST;
     // $_BreakpointDebugging_EXE_MODE = $RELEASE | $UNIT_TEST;
     // ### <=== Execution mode setting.
@@ -211,7 +211,8 @@ function BreakpointDebugging_mySetting()
     // ### This setting has been Fixed. ###
     if ($_BreakpointDebugging_EXE_MODE === B::RELEASE) { // In case of release.
         // When "Xdebug" exists.
-        if (B::$xdebug_exists) {
+        //if (B::$xdebugExists) {
+        if (extension_loaded('xdebug')) {
             B::iniCheck('xdebug.remote_enable', '0', 'Set "xdebug.remote_enable = 0" of "php.ini" file because is for security.');
             // Does not display XDebug information.
             ini_set('xdebug.default_enable', '0');

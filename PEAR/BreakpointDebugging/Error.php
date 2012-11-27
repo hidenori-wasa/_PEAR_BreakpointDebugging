@@ -162,7 +162,7 @@ final class BreakpointDebugging_Error
             $this->_isLogging = false;
             $this->_mark = '&diams;';
             // When "Xdebug" exists.
-            if (B::$xdebug_exists) {
+            if (B::$xdebugExists) {
                 $this->tags['pre'] = '<pre class=\'xdebug-var-dump\' dir=\'ltr\'>';
                 $this->tags['font']['caution'] = '<font color=\'#ff0000\'>';
                 $this->tags['font']['bool'] = '<font color=\'#75507b\'>';

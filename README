@@ -5,7 +5,7 @@ The features list
     Please, read the file level document block of "PEAR/BreakpointDebugging_Option.php".
 
 The dependences
-    OS requires "Linux" or "Windows".
+    OS requires "Linux" or "Windows", but may be able to require "Unix".
     PHP version >= 5.3.0
 
     Requires "Xdebug" extension in case of local host.
@@ -20,5 +20,5 @@ Notice
     Also, I have been acquiring my domain.
 
 Warning
-    I have not done UNIX OS debug yet.
+    I have not done "Linux" OS debug yet.
     I have not done a remote debug yet.

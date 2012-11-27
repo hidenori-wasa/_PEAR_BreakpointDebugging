@@ -289,7 +289,7 @@ final class BreakpointDebugging extends BreakpointDebugging_InAllCase
             }
         }
 
-        if (B::$xdebug_exists) {
+        if (B::$xdebugExists) {
             xdebug_break(); // Breakpoint. See local variable value by doing step execution here.
         }
 
@@ -588,7 +588,7 @@ EOD;
             // If test file name contains '_'.
             if (strpos($testFileName, '_') !== false) {
                 echo "You must change its array element and its file name into '-' because '$testFileName' contains '_'." . PHP_EOL;
-                if (B::$xdebug_exists) {
+                if (B::$xdebugExists) {
                     xdebug_break();
                 }
                 return;
@@ -655,7 +655,7 @@ if (assert_options(ASSERT_QUIET_EVAL, 0) === false) { // As for assertion expres
 //   For example: assert(3 <= $value && $value <= 5); // $value should be 3-5.
 //   Caution: Don't change the value of variable in "assert()" function because there isn't executed in case of release.
 // When "Xdebug" does not exist.
-if (!B::$xdebug_exists) {
+if (!B::$xdebugExists) {
     if ($_BreakpointDebugging_EXE_MODE & (B::LOCAL_DEBUG | B::LOCAL_DEBUG_OF_RELEASE)) { // In case of local host.
         exit(
         '### ERROR ###<br/>' . PHP_EOL .

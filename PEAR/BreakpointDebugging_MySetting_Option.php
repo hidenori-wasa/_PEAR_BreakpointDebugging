@@ -60,8 +60,7 @@ $xdebugVarDisplayMaxDepth = '3';
 //
 // PHP It limits directory which opens a file.
 B::iniSet('open_basedir', $openBasedir);
-// "if" statement is needed to copy in case of "B::RELEASE" if copies a code inside "if".
-//if ($_BreakpointDebugging_EXE_MODE & B::REMOTE_DEBUG) { // In case of remote.
+// Caution: "if" statement is needed to copy in case of "B::RELEASE" if copies a code inside "if".
 if ($_BreakpointDebugging_EXE_MODE & (B::REMOTE_DEBUG | B::RELEASE)) { // In case of remote.
     // Windows e-mail sending server setting.
     B::iniSet('SMTP', $SMTP); // 'smtp.???.com'
@@ -76,7 +75,7 @@ if ($_BreakpointDebugging_EXE_MODE & (B::REMOTE_DEBUG | B::RELEASE)) { // In cas
     B::iniCheck('xdebug.remote_host', '127.0.0.1', 'Set \'xdebug.remote_host = "127.0.0.1"\' of "php.ini" file because remote IDE host of server is "127.0.0.1".');
 }
 
-if (B::$xdebug_exists) {
+if (B::$xdebugExists) {
     // xdebug.dump.*    * = COOKIE, FILES, GET, POST, REQUEST, SERVER, SESSION.
     //      Shows the specified superglobal value. Example is shown below.
     //      B::iniSet('xdebug.dump.SERVER', 'REMOTE_ADDR,REQUEST_METHOD');

@@ -140,7 +140,7 @@ class BreakpointDebugging_InAllCase
     /**
      * @var bool "Xdebug" existing-flag.
      */
-    static $xdebug_exists;
+    static $xdebugExists;
 
     /**
      * @var string Upper case 3 character prefix of operating system name.
@@ -500,7 +500,7 @@ class BreakpointDebugging_InAllCase
         global $_BreakpointDebugging_EXE_MODE;
 
         if ($_BreakpointDebugging_EXE_MODE & B::UNIT_TEST) {
-            if (B::$xdebug_exists) {
+            if (B::$xdebugExists) {
                 // For debug which calls test-class method from start page of IDE project.
                 xdebug_break();
             }
@@ -526,7 +526,7 @@ class BreakpointDebugging_InAllCase
         global $_BreakpointDebugging_EXE_MODE;
 
         if ($_BreakpointDebugging_EXE_MODE & B::UNIT_TEST) {
-            if (B::$xdebug_exists) {
+            if (B::$xdebugExists) {
                 // For debug which calls test-class method from start page of IDE project.
                 xdebug_break();
             }
@@ -696,12 +696,12 @@ if ($_BreakpointDebugging_EXE_MODE === BreakpointDebugging_InAllCase::RELEASE) {
         throw new \BreakpointDebugging_Error_Exception('');
     }
     // Ignores "Xdebug" in case of release because must not stop.
-    BreakpointDebugging_InAllCase::$xdebug_exists = false;
+    BreakpointDebugging_InAllCase::$xdebugExists = false;
 } else { // In case of not release.
     if (extension_loaded('xdebug')) {
-        BreakpointDebugging_InAllCase::$xdebug_exists = true;
+        BreakpointDebugging_InAllCase::$xdebugExists = true;
     } else { // When "Xdebug" does not exist.
-        BreakpointDebugging_InAllCase::$xdebug_exists = false;
+        BreakpointDebugging_InAllCase::$xdebugExists = false;
     }
     include_once __DIR__ . '/BreakpointDebugging_Option.php';
 }
