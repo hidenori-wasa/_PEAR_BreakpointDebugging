@@ -131,7 +131,7 @@ class BreakpointDebugging_InAllCaseTest extends PHPUnit_Framework_TestCase
             return;
         }
         clearstatcache();
-        $this->assertTrue(fileperms($testDirName) === 0700);
+        $this->assertTrue(substr( sprintf( '%o', fileperms($testDirName)), -4) === '0700');
     }
 
     /**
@@ -150,7 +150,7 @@ class BreakpointDebugging_InAllCaseTest extends PHPUnit_Framework_TestCase
             return;
         }
         clearstatcache();
-        $this->assertTrue(fileperms($testFileName) === 0700);
+        $this->assertTrue(substr( sprintf( '%o', fileperms($testFileName)), -4) === '0700');
     }
 
     /**

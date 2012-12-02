@@ -475,58 +475,58 @@ final class BreakpointDebugging_Error
 
         // This creates error log.
         switch ($errorNumber) {
-            case E_USER_DEPRECATED:
-                $errorKind = 'E_USER_DEPRECATED';
-                break;
-            case E_USER_NOTICE:
-                $errorKind = 'E_USER_NOTICE';
-                break;
-            case E_USER_WARNING:
-                $errorKind = 'E_USER_WARNING';
-                break;
-            case E_USER_ERROR:
-                $errorKind = 'E_USER_ERROR';
-                $endFlag = true;
-                break;
-            case E_ERROR:
-                $errorKind = 'E_ERROR';
-                $endFlag = true;
-                break;
-            case E_WARNING:
-                $errorKind = 'E_WARNING';
-                break;
-            case E_PARSE:
-                $errorKind = 'E_PARSE';
-                break;
-            case E_NOTICE:
-                $errorKind = 'E_NOTICE';
-                break;
-            case E_CORE_ERROR:
-                $errorKind = 'E_CORE_ERROR';
-                $endFlag = true;
-                break;
-            case E_CORE_WARNING:
-                $errorKind = 'E_CORE_WARNING';
-                break;
-            case E_COMPILE_ERROR:
-                $errorKind = 'E_COMPILE_ERROR';
-                $endFlag = true;
-                break;
-            case E_COMPILE_WARNING:
-                $errorKind = 'E_COMPILE_WARNING';
-                break;
-            case E_STRICT:
-                $errorKind = 'E_STRICT';
-                break;
-            case E_RECOVERABLE_ERROR:
-                $errorKind = 'E_RECOVERABLE_ERROR';
-                break;
-            case E_DEPRECATED:
-                $errorKind = 'E_DEPRECATED';
-                break;
-            default:
-                B::internalAssert(false);
-                break;
+        case E_USER_DEPRECATED:
+            $errorKind = 'E_USER_DEPRECATED';
+            break;
+        case E_USER_NOTICE:
+            $errorKind = 'E_USER_NOTICE';
+            break;
+        case E_USER_WARNING:
+            $errorKind = 'E_USER_WARNING';
+            break;
+        case E_USER_ERROR:
+            $errorKind = 'E_USER_ERROR';
+            $endFlag = true;
+            break;
+        case E_ERROR:
+            $errorKind = 'E_ERROR';
+            $endFlag = true;
+            break;
+        case E_WARNING:
+            $errorKind = 'E_WARNING';
+            break;
+        case E_PARSE:
+            $errorKind = 'E_PARSE';
+            break;
+        case E_NOTICE:
+            $errorKind = 'E_NOTICE';
+            break;
+        case E_CORE_ERROR:
+            $errorKind = 'E_CORE_ERROR';
+            $endFlag = true;
+            break;
+        case E_CORE_WARNING:
+            $errorKind = 'E_CORE_WARNING';
+            break;
+        case E_COMPILE_ERROR:
+            $errorKind = 'E_COMPILE_ERROR';
+            $endFlag = true;
+            break;
+        case E_COMPILE_WARNING:
+            $errorKind = 'E_COMPILE_WARNING';
+            break;
+        case E_STRICT:
+            $errorKind = 'E_STRICT';
+            break;
+        case E_RECOVERABLE_ERROR:
+            $errorKind = 'E_RECOVERABLE_ERROR';
+            break;
+        case E_DEPRECATED:
+            $errorKind = 'E_DEPRECATED';
+            break;
+        default:
+            B::internalAssert(false);
+            break;
         }
 
         $errorMessage = $this->_convertMbString($errorMessage);
@@ -662,7 +662,7 @@ final class BreakpointDebugging_Error
             $errorLogDirectory = B::$workDir . '/ErrorLog/';
             if (!is_dir($errorLogDirectory)) {
                 // Makes directory, sets permission and sets own user.
-                B::mkdir($errorLogDirectory, 0600);
+                B::mkdir($errorLogDirectory, 0700);
             }
             $exceptionMessage = '';
             $varConfFilePath = $errorLogDirectory . $this->_varConfFileName;
@@ -989,34 +989,34 @@ final class BreakpointDebugging_Error
         global $_BreakpointDebugging_EXE_MODE;
 
         switch ($_BreakpointDebugging_EXE_MODE & ~B::UNIT_TEST) {
-            case B::RELEASE:
-                rewind($pTmpLog);
-                while (!feof($pTmpLog)) {
-                    fwrite($this->_pErrorLogFile, fread($pTmpLog, 4096));
-                }
-                // Delete temporary file.
-                fclose($pTmpLog);
-                break;
-            case B::LOCAL_DEBUG:
-                foreach ($pTmpLog as $log) {
-                    echo $log;
-                }
-                break;
-            case B::REMOTE_DEBUG:
-                rewind($pTmpLog);
-                while (!feof($pTmpLog)) {
-                    echo fread($pTmpLog, 4096);
-                }
-                // Delete temporary file.
-                fclose($pTmpLog);
-                break;
-            case B::LOCAL_DEBUG_OF_RELEASE:
-                foreach ($pTmpLog as $log) {
-                    fwrite($this->_pErrorLogFile, $log);
-                }
-                break;
-            default:
-                B::internalAssert(false);
+        case B::RELEASE:
+            rewind($pTmpLog);
+            while (!feof($pTmpLog)) {
+                fwrite($this->_pErrorLogFile, fread($pTmpLog, 4096));
+            }
+            // Delete temporary file.
+            fclose($pTmpLog);
+            break;
+        case B::LOCAL_DEBUG:
+            foreach ($pTmpLog as $log) {
+                echo $log;
+            }
+            break;
+        case B::REMOTE_DEBUG:
+            rewind($pTmpLog);
+            while (!feof($pTmpLog)) {
+                echo fread($pTmpLog, 4096);
+            }
+            // Delete temporary file.
+            fclose($pTmpLog);
+            break;
+        case B::LOCAL_DEBUG_OF_RELEASE:
+            foreach ($pTmpLog as $log) {
+                fwrite($this->_pErrorLogFile, $log);
+            }
+            break;
+        default:
+            B::internalAssert(false);
         }
         $pTmpLog = null;
     }
@@ -1037,36 +1037,36 @@ final class BreakpointDebugging_Error
         global $_BreakpointDebugging_EXE_MODE;
 
         switch ($_BreakpointDebugging_EXE_MODE & ~B::UNIT_TEST) {
-            case B::RELEASE:
-                if ($pLogBuffer === null) {
-                    fwrite($this->_pErrorLogFile, $log);
-                } else {
-                    fwrite($pLogBuffer, $log);
-                }
-                break;
-            case B::LOCAL_DEBUG:
-                if ($pLogBuffer === null) {
-                    echo $log;
-                } else {
-                    $pLogBuffer[] = $log;
-                }
-                break;
-            case B::REMOTE_DEBUG:
-                if ($pLogBuffer === null) {
-                    echo $log;
-                } else {
-                    fwrite($pLogBuffer, $log);
-                }
-                break;
-            case B::LOCAL_DEBUG_OF_RELEASE:
-                if ($pLogBuffer === null) {
-                    fwrite($this->_pErrorLogFile, $log);
-                } else {
-                    $pLogBuffer[] = $log;
-                }
-                break;
-            default:
-                B::internalAssert(false);
+        case B::RELEASE:
+            if ($pLogBuffer === null) {
+                fwrite($this->_pErrorLogFile, $log);
+            } else {
+                fwrite($pLogBuffer, $log);
+            }
+            break;
+        case B::LOCAL_DEBUG:
+            if ($pLogBuffer === null) {
+                echo $log;
+            } else {
+                $pLogBuffer[] = $log;
+            }
+            break;
+        case B::REMOTE_DEBUG:
+            if ($pLogBuffer === null) {
+                echo $log;
+            } else {
+                fwrite($pLogBuffer, $log);
+            }
+            break;
+        case B::LOCAL_DEBUG_OF_RELEASE:
+            if ($pLogBuffer === null) {
+                fwrite($this->_pErrorLogFile, $log);
+            } else {
+                $pLogBuffer[] = $log;
+            }
+            break;
+        default:
+            B::internalAssert(false);
         }
     }
 
@@ -1084,56 +1084,56 @@ final class BreakpointDebugging_Error
         global $_BreakpointDebugging_EXE_MODE;
 
         switch ($_BreakpointDebugging_EXE_MODE & ~B::UNIT_TEST) {
-            case B::RELEASE:
-                rewind($pTmpLog2);
-                if ($pTmpLog === null) {
-                    while (!feof($pTmpLog2)) {
-                        fwrite($this->_pErrorLogFile, fread($pTmpLog2, 4096));
-                    }
-                } else {
-                    while (!feof($pTmpLog2)) {
-                        fwrite($pTmpLog, fread($pTmpLog2, 4096));
-                    }
+        case B::RELEASE:
+            rewind($pTmpLog2);
+            if ($pTmpLog === null) {
+                while (!feof($pTmpLog2)) {
+                    fwrite($this->_pErrorLogFile, fread($pTmpLog2, 4096));
                 }
-                break;
-            case B::LOCAL_DEBUG:
-                if ($pTmpLog === null) {
-                    echo $pTmpLog2;
-                } else if (count($pTmpLog) === 0) {
-                    if (count($pTmpLog2) !== 0) {
-                        $pTmpLog = $pTmpLog2;
-                    }
-                } else if (count($pTmpLog2) !== 0) {
-                    $pTmpLog = array_merge($pTmpLog, $pTmpLog2);
+            } else {
+                while (!feof($pTmpLog2)) {
+                    fwrite($pTmpLog, fread($pTmpLog2, 4096));
                 }
-                break;
-            case B::REMOTE_DEBUG:
-                rewind($pTmpLog2);
-                if ($pTmpLog === null) {
-                    while (!feof($pTmpLog2)) {
-                        echo fread($pTmpLog2, 4096);
-                    }
-                } else {
-                    while (!feof($pTmpLog2)) {
-                        fwrite($pTmpLog, fread($pTmpLog2, 4096));
-                    }
+            }
+            break;
+        case B::LOCAL_DEBUG:
+            if ($pTmpLog === null) {
+                echo $pTmpLog2;
+            } else if (count($pTmpLog) === 0) {
+                if (count($pTmpLog2) !== 0) {
+                    $pTmpLog = $pTmpLog2;
                 }
-                break;
-            case B::LOCAL_DEBUG_OF_RELEASE:
-                if ($pTmpLog === null) {
-                    foreach ($pTmpLog2 as $log) {
-                        fwrite($this->_pErrorLogFile, $log);
-                    }
-                } else if (count($pTmpLog) === 0) {
-                    if (count($pTmpLog2) !== 0) {
-                        $pTmpLog = $pTmpLog2;
-                    }
-                } else if (count($pTmpLog2) !== 0) {
-                    $pTmpLog = array_merge($pTmpLog, $pTmpLog2);
+            } else if (count($pTmpLog2) !== 0) {
+                $pTmpLog = array_merge($pTmpLog, $pTmpLog2);
+            }
+            break;
+        case B::REMOTE_DEBUG:
+            rewind($pTmpLog2);
+            if ($pTmpLog === null) {
+                while (!feof($pTmpLog2)) {
+                    echo fread($pTmpLog2, 4096);
                 }
-                break;
-            default:
-                B::internalAssert(false);
+            } else {
+                while (!feof($pTmpLog2)) {
+                    fwrite($pTmpLog, fread($pTmpLog2, 4096));
+                }
+            }
+            break;
+        case B::LOCAL_DEBUG_OF_RELEASE:
+            if ($pTmpLog === null) {
+                foreach ($pTmpLog2 as $log) {
+                    fwrite($this->_pErrorLogFile, $log);
+                }
+            } else if (count($pTmpLog) === 0) {
+                if (count($pTmpLog2) !== 0) {
+                    $pTmpLog = $pTmpLog2;
+                }
+            } else if (count($pTmpLog2) !== 0) {
+                $pTmpLog = array_merge($pTmpLog, $pTmpLog2);
+            }
+            break;
+        default:
+            B::internalAssert(false);
         }
         $this->_logPointerClosing($pTmpLog2);
     }

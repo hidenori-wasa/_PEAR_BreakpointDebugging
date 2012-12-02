@@ -79,9 +79,9 @@ function BreakpointDebugging_setExecutionMode()
     // $_BreakpointDebugging_EXE_MODE = $LOCAL_DEBUG;
     // $_BreakpointDebugging_EXE_MODE = $LOCAL_DEBUG_OF_RELEASE;
     // $_BreakpointDebugging_EXE_MODE = $REMOTE_DEBUG;
-    $_BreakpointDebugging_EXE_MODE = $RELEASE;
+    // $_BreakpointDebugging_EXE_MODE = $RELEASE;
     // $_BreakpointDebugging_EXE_MODE = $LOCAL_DEBUG_OF_RELEASE | $UNIT_TEST;
-    // $_BreakpointDebugging_EXE_MODE = $RELEASE | $UNIT_TEST;
+    $_BreakpointDebugging_EXE_MODE = $RELEASE | $UNIT_TEST;
     // ### <=== Execution mode setting.
     //
     // Reference path setting.
@@ -203,6 +203,12 @@ function BreakpointDebugging_mySetting()
     B::iniSet('SMTP', $SMTP); // 'smtp.???.com'
     // Windows mail address setting.
     B::iniSet('sendmail_from', $sendmailFrom); // '???@???.com'
+    // Timezone setting.
+    B::iniSet('date.timezone', $timezone);
+    // Change "php.ini" file setting into "track_errors = Off" because this is not make to insert an error message in direct near "$php_errormsg" variable for security.
+    B::iniSet('track_errors', '');
+    // This changes "php.ini" file setting into "arg_separator.output = "&amp;" to be based on XHTML fully.
+    B::iniSet('arg_separator.output', '&amp;');
     // */ ### <=== Example.
     if ($_BreakpointDebugging_EXE_MODE !== B::RELEASE) { // In case of not release.
         include_once './PEAR_Setting/BreakpointDebugging_MySetting_Option.php';
@@ -211,7 +217,6 @@ function BreakpointDebugging_mySetting()
     // ### This setting has been Fixed. ###
     if ($_BreakpointDebugging_EXE_MODE === B::RELEASE) { // In case of release.
         // When "Xdebug" exists.
-        //if (B::$xdebugExists) {
         if (extension_loaded('xdebug')) {
             B::iniCheck('xdebug.remote_enable', '0', 'Set "xdebug.remote_enable = 0" of "php.ini" file because is for security.');
             // Does not display XDebug information.

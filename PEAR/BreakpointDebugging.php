@@ -212,6 +212,9 @@ class BreakpointDebugging_InAllCase
      */
     private static $_handlerOf = 'none';
 
+    /**
+     * Constructs instance.
+     */
     function __construct()
     {
         self::$os = strtoupper(substr(PHP_OS, 0, 3));
@@ -559,25 +562,25 @@ class BreakpointDebugging_InAllCase
         // Is internal method.
         self::$isInternal = true;
         switch (self::$_handlerOf) {
-            case 'exception': // Is inside exception handler.
-            case 'error': // Is inside error handler.
-                self::$_onceErrorDispFlag = true;
-            case 'none': // Is outer of handler.
-                switch ($handlerKind) {
-                    case 'exception':
-                        // Calls exception handler because exception handler cannot throw exception.
-                        self::exceptionHandler(new \BreakpointDebugging_Error_Exception($message));
-                        break;
-                    case 'error':
-                        // Calls error handler because error handler cannot trigger error.
-                        self::errorHandler(E_USER_ERROR, $message);
-                        break;
-                    default:
-                        B::breakpoint('"$handlerKind" is wrong value.', debug_backtrace());
-                }
+        case 'exception': // Is inside exception handler.
+        case 'error': // Is inside error handler.
+            self::$_onceErrorDispFlag = true;
+        case 'none': // Is outer of handler.
+            switch ($handlerKind) {
+            case 'exception':
+                // Calls exception handler because exception handler cannot throw exception.
+                self::exceptionHandler(new \BreakpointDebugging_Error_Exception($message));
+                break;
+            case 'error':
+                // Calls error handler because error handler cannot trigger error.
+                self::errorHandler(E_USER_ERROR, $message);
                 break;
             default:
-                B::breakpoint('"\BreakpointDebugging::$_handlerOf" is wrong value.', debug_backtrace());
+                B::breakpoint('"$handlerKind" is wrong value.', debug_backtrace());
+            }
+            break;
+        default:
+            B::breakpoint('"\BreakpointDebugging::$_handlerOf" is wrong value.', debug_backtrace());
         }
         if ($_BreakpointDebugging_EXE_MODE & self::REMOTE_DEBUG) { // In case of remote debug.
             // Remote debug must end immediately to avoid eternal execution.
@@ -588,7 +591,7 @@ class BreakpointDebugging_InAllCase
     /**
      * Asserts inside global error handling or global exception handling. (For this package developer).
      *
-     * @param bool   $expression Judgment expression.
+     * @param bool $expression Judgment expression.
      *
      * @return void
      * @example \BreakpointDebugging::internalAssert($expression);
