@@ -79,9 +79,9 @@ function BreakpointDebugging_setExecutionMode()
     // $_BreakpointDebugging_EXE_MODE = $LOCAL_DEBUG;
     // $_BreakpointDebugging_EXE_MODE = $LOCAL_DEBUG_OF_RELEASE;
     // $_BreakpointDebugging_EXE_MODE = $REMOTE_DEBUG;
-    // $_BreakpointDebugging_EXE_MODE = $RELEASE;
+    $_BreakpointDebugging_EXE_MODE = $RELEASE;
     // $_BreakpointDebugging_EXE_MODE = $LOCAL_DEBUG_OF_RELEASE | $UNIT_TEST;
-    $_BreakpointDebugging_EXE_MODE = $RELEASE | $UNIT_TEST;
+    // $_BreakpointDebugging_EXE_MODE = $RELEASE | $UNIT_TEST;
     // ### <=== Execution mode setting.
     //
     // Reference path setting.
@@ -166,18 +166,14 @@ function BreakpointDebugging_mySetting()
     //
     //
     //
-    // /* ### Example. ===>
+    // /* ### "Unix" Example. ===>
+    // PHP It limits directory which opens a file.
+    B::iniSet('open_basedir', $openBasedir);
     if ($_BreakpointDebugging_EXE_MODE & (B::REMOTE_DEBUG | B::RELEASE)) { // In case of remote.
-        if (B::$os === 'WIN') { // In case of Windows.
-            // PHP It limits directory which opens a file.
-            B::iniSet('open_basedir', 'C:\xampp\;.\\');
-        } else { // In case of Unix.
-            B::iniSet('open_basedir', '/opt/lampp/:./');
-        }
         // Windows e-mail sending server setting.
-        B::iniSet('SMTP', 'smtp.example.com'); // 'smtp.???.com'
+        B::iniSet('SMTP', $SMTP); // 'smtp.???.com'
         // Windows mail address setting.
-        B::iniSet('sendmail_from', '?@example.com'); // '???@???.com'
+        B::iniSet('sendmail_from', $sendmailFrom); // '???@???.com'
     }
     // The default character sets of PHP.
     B::iniSet('default_charset', 'utf8');
@@ -191,25 +187,48 @@ function BreakpointDebugging_mySetting()
     B::iniSet('mbstring.http_output', 'utf8');
     // Set "mbstring.strict_detection = Off" of "php.ini" file because this is purpose to not do strict encoding detection.
     B::iniSet('mbstring.strict_detection', '');
+    // this is possible for any value because "mbstring.script_encoding" is unrelated.
     // This is possible for any value because we doesn't use "allow_url_include".
     // This sets "user_agent" to "PHP".
     B::iniSet('user_agent', 'PHP');
     // Set for the debugging because "from" can be set only in "php.ini".
     // This judges an end of a sentence character by the data which was read in "fgets()" and "file()", and we can use "PHP_EOL" constant.
     B::iniSet('auto_detect_line_endings', '1');
-    // This changes "php.ini" file setting into "ignore_user_abort = Off" because it is purpose to end execution of script when client is disconnected.
-    B::iniSet('ignore_user_abort', '');
-    // Windows e-mail sending server setting.
-    B::iniSet('SMTP', $SMTP); // 'smtp.???.com'
-    // Windows mail address setting.
-    B::iniSet('sendmail_from', $sendmailFrom); // '???@???.com'
-    // Timezone setting.
-    B::iniSet('date.timezone', $timezone);
-    // Change "php.ini" file setting into "track_errors = Off" because this is not make to insert an error message in direct near "$php_errormsg" variable for security.
-    B::iniSet('track_errors', '');
     // This changes "php.ini" file setting into "arg_separator.output = "&amp;" to be based on XHTML fully.
     B::iniSet('arg_separator.output', '&amp;');
-    // */ ### <=== Example.
+    // This changes "php.ini" file setting into "ignore_user_abort = Off" because it is purpose to end execution of script when client is disconnected.
+    B::iniSet('ignore_user_abort', '');
+    //  ### <=== "Unix" Example. */
+
+    /* ### "Windows" Example. ===>
+      // PHP It limits directory which opens a file.
+      B::iniSet('open_basedir', $openBasedir);
+      if ($_BreakpointDebugging_EXE_MODE & (B::REMOTE_DEBUG | B::RELEASE)) { // In case of remote.
+      // Windows e-mail sending server setting.
+      B::iniSet('SMTP', $SMTP); // 'smtp.???.com'
+      // Windows mail address setting.
+      B::iniSet('sendmail_from', $sendmailFrom); // '???@???.com'
+      }
+      // The default character sets of PHP.
+      B::iniSet('default_charset', 'utf8');
+      // The default value of language setting (NLS).
+      B::iniSet('mbstring.language', $language);
+      // Set "mbstring.internal_encoding = utf8" of "php.ini" file because this is purpose to define default value of inner character encoding.
+      B::iniSet('mbstring.internal_encoding', 'utf8');
+      // Set "mbstring.http_input = auto" of "php.ini" file because this is purpose to define default value of HTTP entry character encoding.
+      B::iniSet('mbstring.http_input', 'auto');
+      // Set "mbstring.http_output = utf8" of "php.ini" file because this is purpose to define default value of HTTP output character encoding.
+      B::iniSet('mbstring.http_output', 'utf8');
+      // Set "mbstring.strict_detection = Off" of "php.ini" file because this is purpose to not do strict encoding detection.
+      B::iniSet('mbstring.strict_detection', '');
+      // This sets "user_agent" to "PHP".
+      B::iniSet('user_agent', 'PHP');
+      // Set for the debugging because "from" can be set only in "php.ini".
+      // This judges an end of a sentence character by the data which was read in "fgets()" and "file()", and we can use "PHP_EOL" constant.
+      B::iniSet('auto_detect_line_endings', '1');
+      // This changes "php.ini" file setting into "ignore_user_abort = Off" because it is purpose to end execution of script when client is disconnected.
+      B::iniSet('ignore_user_abort', '');
+      ### <=== "Windows" Example. */
     if ($_BreakpointDebugging_EXE_MODE !== B::RELEASE) { // In case of not release.
         include_once './PEAR_Setting/BreakpointDebugging_MySetting_Option.php';
     }

@@ -4,7 +4,7 @@
  * Class which is for breakpoint debugging.
  *
  * "*_Option.php" file does not use on release. Therefore, response time is zero on release.
- * These file names put "_" to become error when we do autoload.
+ * These file names put "_" to cause error when we do autoload.
  *
  * ### Environment which can do breakpoint debugging. ###
  * Debugger which can use breakpoint.
@@ -16,20 +16,23 @@
  * Notice: Use "phpMyAdmin" to see database and to execute "MySQL" command.
  *
  * ### The advantage of breakpoint debugging. ###
- * It is to be able to find a position of a bug immediately.
- * In addition to it, condition of variable can be examined.
- * Therefore, it is possible to do debugging quickly.
+ * Can find a position of a bug immediately.
+ * In addition to it, we can examine value of variable.
+ * Therefore, can debug quickly.
  *
- * ### How to do breakpoint debugging coding. ###
- * We have to do coding as follows to process in "BreakpointDebugging" class.
- * We have to verify a impossible return value of function or method with "assert()".
- * We have to verify a impossible value in code.
- * Also, an error and an exception which wasn't caught are processed in
- * "BreakpointDebugging" class.
+ * ### How to code breakpoint debugging. ###
+ * We must code as follows to process in "BreakpointDebugging" class.
+ * We should verify an impossible "parameters and return value" of
+ * "function and method" with "assert()".
+ * Also, we should verify other impossible values of those.
+ * We do not need error and exception handler coding because an error and an exception
+ * which wasn't caught are processed by global handler in "BreakpointDebugging" class.
  *
  * ### The execution procedure. ###
- * Procedure 1: Please, install "XDebug" by seeing "http://xdebug.org/docs/install" in case of your local host.
- *      "Xdebug" extension is required because (uses breakpoint, displays for fatal error and detects infinity recursive function call).
+ * Procedure 1: Please, install "XDebug" by seeing "http://xdebug.org/docs/install"
+ *      in case of your local host.
+ *      "Xdebug" extension is required because "uses breakpoint,
+ *      displays for fatal error and detects infinity recursive function call".
  * Procedure 2: If you want remote debug, please set "xdebug.remote_host =
  *      "<name or ip of host which debugger exists>"" into "php.ini" file.
  * Procedure 3: Please, set *.php file format to utf8, but we should create backup of
@@ -39,10 +42,10 @@
  * Procedure 5: Please, edit BreakpointDebugging_MySetting*.php for customize.
  *      Then, it fixes part setting about all debugging modes.
  * Procedure 6: Please, copy following in your project php code.
- *      "require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';"
+ *      require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
  * Procedure 7: Please, set debugging mode to "$_BreakpointDebugging_EXE_MODE" into
  *      "./PEAR_Setting/BreakpointDebugging_MySetting.php".
- * Procedure 8: Please, if you use "Linux", register your username as
+ * Procedure 8: Please, if you use "Unix", register your username as
  *      "User" and "Group" into "lampp/apache/conf/httpd.conf".
  *      And, register "export PATH=$PATH:/opt/lampp/bin" into "~/.profile".
  * Procedure 9: Please, if you can change "php.ini" file,
@@ -52,8 +55,8 @@
  *      Also, use "B::iniCheck()" instead of "B::iniSet()"
  *      in "*_MySetting_Option.php" file.
  *
- * Caution: Do not execute "ini_set('error_log')"
- *      because this package uses local log instead of system log.
+ * Caution: Do not execute "ini_set('error_log', ...)" because
+ * this package uses local log rotation instead of system log.
  *
  * Option procedure: Please, register at top of the function or method or file
  *      which has been not fixed. Please, copy following.
@@ -64,20 +67,21 @@
  *      which you want to see with "\BreakpointDebugging::addValuesToTrace()".
  *
  * ### The debugging mode which we can use. ###
- * First "LOCAL_DEBUG" mode is breakpoint debugging with local personal computer.
- *      Debugger which can use breakpoint.
- * Second "LOCAL_DEBUG_OF_RELEASE" mode is breakpoint debugging to emulate release
- *      with local personal computer.
- *      Debugger which can use breakpoint.
- * Third "REMOTE_DEBUG" mode is browser display debugging with remote personal computer.
- *      And it is remote debugging by debugger.
- *      Debugger which can use breakpoint.
- * Last "RELEASE" mode is log debugging with remote personal computer,
+ * First "LOCAL_DEBUG" mode is breakpoint debugging with local server.
+ *      We can use breakpoint.
+ * Second "LOCAL_DEBUG_OF_RELEASE" mode is breakpoint debugging
+ *      to emulate release with local server.
+ *      We can use breakpoint.
+ * Third "REMOTE_DEBUG" mode is browser display debugging with remote server.
+ *      We can use breakpoint, if remote server supports.
+ * Last "RELEASE" mode is logging-debug with remote server,
  *      and we must set on last for security.
- *      On release
- * "LOCAL_DEBUG_OF_RELEASE | UNIT_TEST" mode tests by "phpunit" command on local.
- * "RELEASE | UNIT_TEST" mode tests by "phpunit" command on remote.
- *      This does logging same as "RELEASE" mode, but enables XDebug display for fatal error.
+ *      We cannot use breakpoint.
+ * "LOCAL_DEBUG_OF_RELEASE | UNIT_TEST" mode tests by "phpunit" command with local server.
+ * "RELEASE | UNIT_TEST" mode tests by "phpunit" command with remote server,
+ *      if remote server supports.
+ *      This does logging same as "RELEASE" mode,
+ *      but enables "Xdebug" which displays fatal error.
  *  ### Exception hierarchical structure ###
  *  PEAR_Exception
  *      BreakpointDebugging_Exception
@@ -117,6 +121,10 @@
  *      \BreakpointDebugging::fopen($fileName, $mode, $permission)
  * Executes function by parameter array, then displays executed function line, file, parameters and results. (Debug only.)
  *      \BreakpointDebugging::displayVerification($functionName, $params)
+ * Compresses integer array.
+ *      \BreakpointDebugging::compressIntArray($intArray)
+ * Decompresses to integer array.
+ *      \BreakpointDebugging::decompressIntArray($compressBytes)
  *
  * ### Useful class index. ###
  * This class override a class without inheritance, but only public member can be inherited.
@@ -196,7 +204,7 @@ use \BreakpointDebugging as B;
  * @version  Release: @package_version@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-class BreakpointDebugging_UnitTest_Exception extends BreakpointDebugging_Exception
+class BreakpointDebugging_UnitTest_Exception extends \BreakpointDebugging_Exception
 {
 
 }
@@ -211,7 +219,7 @@ class BreakpointDebugging_UnitTest_Exception extends BreakpointDebugging_Excepti
  * @version  Release: @package_version@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-final class BreakpointDebugging extends BreakpointDebugging_InAllCase
+final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
 {
     /**
      * @var array Setting option filenames.
@@ -393,7 +401,7 @@ final class BreakpointDebugging extends BreakpointDebugging_InAllCase
                         echo <<<EOD
 <pre>
 ### "\BreakpointDebugging::iniSet()": You must copy from "./{$packageName}_MySetting_Option.php" to user place folder of "./{$packageName}_MySetting.php" for release because set value and value of php.ini differ.
-### But, When remote "php.ini" is changed, you must redo remote debug.
+### Also, if remote "php.ini" was changed, you must redo "B::REMOTE_DEBUG" mode.
 </pre>
 EOD;
                     }
@@ -505,7 +513,8 @@ EOD;
      *      require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
      *      use \BreakpointDebugging as B;
      *      B::checkUnitTestExeMode();
-     *      class BreakpointDebuggingTest extends PHPUnit_Framework_TestCase
+     *      // class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTest // For step execution.
+     *      class BreakpointDebuggingTest extends \PHPUnit_Framework_TestCase // For continuation execution.
      *      {
      *          .
      *          .
@@ -562,6 +571,31 @@ EOD;
     static function executeUnitTest($testFileNames, $currentDir)
     {
         self::checkUnitTestExeMode();
+
+        $isSubclassOfBreakpointDebugging_UnitTest = function($currentDir, $testFileName, &$className) {
+            require_once "$currentDir/$testFileName";
+            $className = str_replace(array ('-', '/'), '_', substr($testFileName, 0, -4));
+            $pClassReflection = new \ReflectionClass($className);
+            return $pClassReflection->isSubclassOf('BreakpointDebugging_UnitTest');
+        };
+
+        $testFileName = $testFileNames[0];
+        //require_once "$currentDir/$testFileName";
+        if ($isSubclassOfBreakpointDebugging_UnitTest($currentDir, $testFileName, &$className)) {
+            // Only one unit test process must be executed because static variable can not be initialized.
+            if (count($testFileNames) !== 1) {
+                $pUnitTest = new \BreakpointDebugging_UnitTest();
+                $pUnitTest->assertTrue(false);
+                exit;
+            }
+            // Constructs a test instance.
+            $pClass = new $className;
+            // Destructs a test instance.
+            $pClass = null;
+            echo '<pre>Unit test ended.</pre>';
+            return;
+        }
+
         if (B::$os === 'WIN') { // In case of Windows.
             $phpunit = 'phpunit.bat';
         } else { // In case of Unix.
@@ -585,6 +619,12 @@ EOD;
         }
         echo '<pre>';
         foreach ($testFileNames as $testFileName) {
+            // Array element of "BreakpointDebugging_UnitTest" class must be comment.
+            if ($isSubclassOfBreakpointDebugging_UnitTest($currentDir, $testFileName, &$className)) {
+                $pUnitTest = new \BreakpointDebugging_UnitTest();
+                $pUnitTest->assertTrue(false);
+                exit;
+            }
             // If test file name contains '_'.
             if (strpos($testFileName, '_') !== false) {
                 echo "You must change its array element and its file name into '-' because '$testFileName' contains '_'." . PHP_EOL;
@@ -597,7 +637,7 @@ EOD;
             echo `$phpunit $currentDir/$testFileName`;
             echo '//////////////////////////////////////////////////////////////////////////' . PHP_EOL;
         }
-        echo '</pre>';
+        echo 'Unit test ended.</pre>';
     }
 
     /**

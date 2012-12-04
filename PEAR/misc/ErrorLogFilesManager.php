@@ -3,14 +3,14 @@
 /**
  * Error log files manager.
  *
- * Procedure1: Please, set "$_BreakpointDebugging_EXE_MODE = $RELEASE;" in BreakpointDebugging_MySetting.php file.
+ * Procedure1: Please, set "$_BreakpointDebugging_EXE_MODE = $RELEASE;" in "BreakpointDebugging_MySetting.php" file.
  * Procedure2: Please, register your IP address to "$myIPAddress".
  * Procedure3: Please, upload this page to the project current directory.
  * Procedure4: Please, call this page from browser.
  * Procedure5: Please, download by clicking all "Download error log file" button.
  * Procedure6: Please, click "Delete all error log files" button.
  * Procedure7: Please, debug php code by downloaded error log files.
- * Procedure8: Please, go to "Procedure4" if "Download error log file" button exists.
+ * Procedure8: Please, go to "Procedure5" if "Download error log file" button exists.
  * Procedure9: Please, upload repaired php code.
  * Procedure10: Please, click "Reset error log files" button.
  *
@@ -58,9 +58,14 @@ require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
 
 use \BreakpointDebugging as B;
 
+// Checks the execution mode.
+if ($_BreakpointDebugging_EXE_MODE !== B::RELEASE) { // In case of not release.
+    exit('You must set "$_BreakpointDebugging_EXE_MODE = $RELEASE;" in "BreakpointDebugging_MySetting.php" file.');
+}
+
 // Checks client IP address.
 if ($_SERVER['REMOTE_ADDR'] !== $myIPAddress) {
-    exit('You must register your IP address into this page, then upload it.');
+    exit('You must register your IP address into "$myIPAddress" of this page, then upload it.');
 }
 // Checks the request protocol.
 if (empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] === 'off') {

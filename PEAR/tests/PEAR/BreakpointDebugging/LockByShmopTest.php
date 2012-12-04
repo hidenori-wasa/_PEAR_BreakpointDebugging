@@ -7,7 +7,8 @@ use \BreakpointDebugging as B;
 
 B::checkUnitTestExeMode();
 
-class LockByShmopTest extends PHPUnit_Framework_TestCase
+// class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_UnitTest // For step execution.
+class BreakpointDebugging_LockByShmopTest extends \PHPUnit_Framework_TestCase // For continuation execution.
 {
     protected $LockByShmop;
 
@@ -65,7 +66,7 @@ class LockByShmopTest extends PHPUnit_Framework_TestCase
 
         $this->assertTrue(B::getPropertyForTest($this->LockByShmop, '$lockCount') === 2);
 
-        BreakpointDebugging_LockByFileExisting::forceUnlocking();
+        \BreakpointDebugging_Lock::forceUnlocking();
 
         $this->assertTrue(B::getPropertyForTest($this->LockByShmop, '$lockCount') === 0);
     }
@@ -83,7 +84,6 @@ class LockByShmopTest extends PHPUnit_Framework_TestCase
             $this->assertTrue(false);
             return;
         }
-        $this->assertTrue(true);
     }
 
     /**
@@ -101,7 +101,6 @@ class LockByShmopTest extends PHPUnit_Framework_TestCase
             $this->assertTrue(false);
             return;
         }
-        $this->assertTrue(true);
     }
 
     /**
@@ -113,7 +112,6 @@ class LockByShmopTest extends PHPUnit_Framework_TestCase
         try {
             $this->LockByShmop->unlock(); // Error.
         } catch (\BreakpointDebugging_UnitTest_Exception $e) {
-            $this->assertTrue(true);
             return;
         }
         $this->assertTrue(false);
@@ -135,7 +133,6 @@ class LockByShmopTest extends PHPUnit_Framework_TestCase
         try {
             $this->LockByShmop->unlock(); // Error.
         } catch (\BreakpointDebugging_UnitTest_Exception $e) {
-            $this->assertTrue(true);
             return;
         }
         $this->assertTrue(false);
@@ -157,7 +154,6 @@ class LockByShmopTest extends PHPUnit_Framework_TestCase
             // Calls "__destruct()".
             $this->LockByShmop = null; // Error.
         } catch (\BreakpointDebugging_UnitTest_Exception $e) {
-            $this->assertTrue(true);
             return;
         }
         $this->assertTrue(false);
@@ -181,7 +177,6 @@ class LockByShmopTest extends PHPUnit_Framework_TestCase
             // Calls "__destruct()".
             $this->LockByShmop = null; // Error.
         } catch (\BreakpointDebugging_UnitTest_Exception $e) {
-            $this->assertTrue(true);
             return;
         }
         $this->assertTrue(false);
@@ -211,7 +206,6 @@ class LockByShmopTest extends PHPUnit_Framework_TestCase
             // Constructs instance of other class.
             $lockByFileExisting = &\BreakpointDebugging_LockByFileExisting::singleton(5, 10); // Error.
         } catch (\BreakpointDebugging_UnitTest_Exception $e) {
-            $this->assertTrue(true);
             return;
         }
         $this->assertTrue(false);
@@ -226,7 +220,6 @@ class LockByShmopTest extends PHPUnit_Framework_TestCase
             // Constructs instance of other class.
             $lockByFlock = &\BreakpointDebugging_LockByFlock::singleton(5, 10); // Error.
         } catch (\BreakpointDebugging_UnitTest_Exception $e) {
-            $this->assertTrue(true);
             return;
         }
         $this->assertTrue(false);

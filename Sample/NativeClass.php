@@ -59,7 +59,7 @@ class BaseNativeClass
 
 }
 
-class NativeClass extends BaseNativeClass
+class NativeClass extends \BaseNativeClass
 {
     private function privateFunction()
     {

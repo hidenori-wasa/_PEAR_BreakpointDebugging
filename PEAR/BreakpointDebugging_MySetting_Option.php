@@ -79,10 +79,10 @@ if (B::$xdebugExists) {
     // xdebug.dump.*    * = COOKIE, FILES, GET, POST, REQUEST, SERVER, SESSION.
     //      Shows the specified superglobal value. Example is shown below.
     //      B::iniSet('xdebug.dump.SERVER', 'REMOTE_ADDR,REQUEST_METHOD');
-    if ($_BreakpointDebugging_EXE_MODE & (B::REMOTE_DEBUG | B::RELEASE)) { // In case of remote.
-        // ### [XDebug] setting in "php.ini" file. ###
-        B::iniCheck('xdebug.remote_host', array ('127.0.0.1', 'localhost'), 'Sets the \'xdebug.remote_host = "&lt;Remote IDE host of server&gt;"\' of "php.ini file", in other words remote IDE host of server is "&lt;Your host name or IP&gt;".');
-    }
+    // if ($_BreakpointDebugging_EXE_MODE & (B::REMOTE_DEBUG | B::RELEASE)) { // In case of remote.
+    //    // ### [XDebug] setting in "php.ini" file. ###
+    //    B::iniCheck('xdebug.remote_host', array ('127.0.0.1', 'localhost'), 'Sets the \'xdebug.remote_host = "&lt;Remote IDE host of server&gt;"\' of "php.ini file", in other words remote IDE host of server is "&lt;Your host name or IP&gt;".');
+    // }
     // ### [XDebug] setting in "php.ini" file. ###
     // First is DBGP_IDEKEY, and next is USER, and last is USERNAME.
     // B::iniSet('xdebug.idekey', ?????);
@@ -197,7 +197,7 @@ if (B::$os === 'WIN') { // In case of Windows.
 }
 // The SMTP port setting of Windows.
 B::iniSet('smtp_port', '25');
-B::iniCheck('mail.add_x_header', '', 'We recommend to set "mail.add_x_header = Off" of "php.ini" file because does not write that header continue "UID" behind the file name.');
+// B::iniCheck('mail.add_x_header', '', 'We recommend to set "mail.add_x_header = Off" of "php.ini" file because does not write that header continue "UID" behind the file name.');
 ////////////////////////////////////////////////////////////////////////////////
 // ### This uses "false" because this setting doesn't have relation with release. ###
 // This makes all errors, warnings and note a stop at breakpoint or a display.

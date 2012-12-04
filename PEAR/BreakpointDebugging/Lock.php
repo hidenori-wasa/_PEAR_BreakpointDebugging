@@ -121,6 +121,10 @@ abstract class BreakpointDebugging_Lock
     {
         static $currentClassName = null;
 
+//        if (self::$_internalInstance === null && self::$_instance === null) {
+//            // Registers callback class method to force unlocking if forces a exit.
+//            register_shutdown_function('\BreakpointDebugging_Lock::forceUnlocking');
+//        }
         if ($isInternal) {
             if (self::$_internalInstance === null) {
                 self::$_internalInstance = new $className($lockFilePath, $timeout, $expire, $sleepMicroSeconds);
