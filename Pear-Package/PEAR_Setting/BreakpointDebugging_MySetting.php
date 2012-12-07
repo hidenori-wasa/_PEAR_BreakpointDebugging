@@ -86,7 +86,7 @@ function BreakpointDebugging_setExecutionMode()
     //
     // Reference path setting.
     if ($_BreakpointDebugging_EXE_MODE & ($REMOTE_DEBUG | $RELEASE)) { // In case of remote.
-        if ($_SERVER['SERVER_ADDR'] === '127.0.0.1') {
+        if (isset($_SERVER['SERVER_ADDR']) && $_SERVER['SERVER_ADDR'] === '127.0.0.1') {
             exit('You mistake "$_BreakpointDebugging_EXE_MODE" into "./PEAR_Setting/BreakpointDebugging_MySetting.php" because this is local server.');
         }
         if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') { // In case of Windows.
@@ -97,7 +97,7 @@ function BreakpointDebugging_setExecutionMode()
             ini_set('include_path', '.:./PEAR:/opt/lampp/lib/php:/opt/lampp/lib/php/PEAR');
         }
     } else { // In case of local.
-        if ($_SERVER['SERVER_ADDR'] !== '127.0.0.1') {
+        if (isset($_SERVER['SERVER_ADDR']) && $_SERVER['SERVER_ADDR'] !== '127.0.0.1') {
             exit('You mistake "$_BreakpointDebugging_EXE_MODE" into "./PEAR_Setting/BreakpointDebugging_MySetting.php" because this is remote server.');
         }
         if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') { // In case of Windows.

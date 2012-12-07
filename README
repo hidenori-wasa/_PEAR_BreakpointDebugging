@@ -15,3 +15,6 @@ The dependences
     "$_BreakpointDebugging_EXE_MODE = B::REMOTE_DEBUG" mode. (optional).
     Requires "shmop" extension if you use "BreakpointDebugging_LockByShmop" class. (optional).
     Requires environment which "flock()" enables if you use "BreakpointDebugging_LockByFlock" class. (optional).
+
+ Notice
+    "Pear-Package" directory is project directory of "NetBeans IDE 7.1.2".
