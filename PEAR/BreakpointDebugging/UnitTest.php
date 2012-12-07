@@ -123,7 +123,7 @@ class BreakpointDebugging_UnitTest
     /**
      * Asserts conditional expression.
      *
-     * @param bool Conditional expression.
+     * @param bool $expression Conditional expression.
      *
      * @return void
      */

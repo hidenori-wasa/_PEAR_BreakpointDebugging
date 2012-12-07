@@ -573,14 +573,13 @@ EOD;
         self::checkUnitTestExeMode();
 
         $isSubclassOfBreakpointDebugging_UnitTest = function($currentDir, $testFileName, &$className) {
-            require_once "$currentDir/$testFileName";
+            include_once "$currentDir/$testFileName";
             $className = str_replace(array ('-', '/'), '_', substr($testFileName, 0, -4));
             $pClassReflection = new \ReflectionClass($className);
             return $pClassReflection->isSubclassOf('BreakpointDebugging_UnitTest');
         };
 
         $testFileName = $testFileNames[0];
-        //require_once "$currentDir/$testFileName";
         if ($isSubclassOfBreakpointDebugging_UnitTest($currentDir, $testFileName, &$className)) {
             // Only one unit test process must be executed because static variable can not be initialized.
             if (count($testFileNames) !== 1) {
@@ -690,10 +689,11 @@ if (assert_options(ASSERT_QUIET_EVAL, 0) === false) { // As for assertion expres
     throw new \BreakpointDebugging_Error_Exception('');
 }
 // ### usage ###
-//   assert(<judgment expression>);
-//   It is possible to assert that <judgment expression> is "This must be". Especially, this uses to verify a function's argument.
-//   For example: assert(3 <= $value && $value <= 5); // $value should be 3-5.
-//   Caution: Don't change the value of variable in "assert()" function because there isn't executed in case of release.
+// assert(<judgment expression>);
+// It is possible to assert that <judgment expression> is "This must be". Especially, this uses to verify a function's argument.
+// For example: assert(3 <= $value && $value <= 5); // $value should be 3-5.
+// Caution: Don't change the value of variable in "assert()" function because there isn't executed in case of release.
+// 
 // When "Xdebug" does not exist.
 if (!B::$xdebugExists) {
     if ($_BreakpointDebugging_EXE_MODE & (B::LOCAL_DEBUG | B::LOCAL_DEBUG_OF_RELEASE)) { // In case of local host.

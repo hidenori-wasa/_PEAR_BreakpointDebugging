@@ -66,8 +66,6 @@ class BreakpointDebugging_LockByFlockTest extends \PHPUnit_Framework_TestCase //
 
         $this->assertTrue(B::getPropertyForTest($this->lockByFlock, '$lockCount') === 2);
 
-        //BreakpointDebugging_LockByFileExisting::forceUnlocking();
-        //\BreakpointDebugging_LockByFlock::forceUnlocking();
         \BreakpointDebugging_Lock::forceUnlocking();
 
         $this->assertTrue(B::getPropertyForTest($this->lockByFlock, '$lockCount') === 0);

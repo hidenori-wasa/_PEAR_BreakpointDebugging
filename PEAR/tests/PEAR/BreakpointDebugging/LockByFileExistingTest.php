@@ -71,7 +71,6 @@ class BreakpointDebugging_LockByFileExistingTest extends \PHPUnit_Framework_Test
         $this->assertTrue(B::getPropertyForTest($internalInstance, '$lockCount') === 2);
         $this->assertTrue(B::getPropertyForTest($this->lockByFileExisting, '$lockCount') === 2);
 
-        //BreakpointDebugging_LockByFileExisting::forceUnlocking();
         \BreakpointDebugging_Lock::forceUnlocking();
 
         $this->assertTrue(B::getPropertyForTest($internalInstance, '$lockCount') === 0);

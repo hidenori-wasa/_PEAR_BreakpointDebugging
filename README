@@ -15,6 +15,3 @@ The dependences
     "$_BreakpointDebugging_EXE_MODE = B::REMOTE_DEBUG" mode. (optional).
     Requires "shmop" extension if you use "BreakpointDebugging_LockByShmop" class. (optional).
     Requires environment which "flock()" enables if you use "BreakpointDebugging_LockByFlock" class. (optional).
-
-Notice
-    I am debugging with remote server.

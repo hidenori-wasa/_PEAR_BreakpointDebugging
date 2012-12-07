@@ -124,7 +124,9 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
      */
     static function &singleton($timeout = 60, $expire = 300, $sleepMicroSeconds = 100000)
     {
-        assert(extension_loaded('shmop'));
+        if (!extension_loaded('shmop')) {
+            exit('"shmop" extension has been not loaded.');
+        }
         return parent::singletonBase('\\' . __CLASS__, B::$workDir . '/LockByShmop.txt', $timeout, $expire, $sleepMicroSeconds);
     }
 
@@ -141,8 +143,6 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
         parent::__construct($lockFilePath, $timeout, $sleepMicroSeconds);
 
         self::$_lockingObject = &\BreakpointDebugging_LockByFileExisting::internalSingleton();
-        //// Registers callback class method to force unlocking if forces a exit.
-        //register_shutdown_function('\BreakpointDebugging_LockByShmop::forceUnlocking');
         // Lock php code.
         self::$_lockingObject->lock();
 
@@ -288,20 +288,6 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
         parent::__destruct();
     }
 
-//    /**
-//     * Forces unlocking if forces a exit.
-//     *
-//     * @return void
-//     */
-//    static function forceUnlocking()
-//    {
-//        // Force unlocking.
-//        if (is_object(self::$_lockingObject)) {
-//            while (self::$_lockingObject->lockCount > 0) {
-//                self::$_lockingObject->unlock();
-//            }
-//        }
-//    }
     /**
      * Get shared memory ID.
      *

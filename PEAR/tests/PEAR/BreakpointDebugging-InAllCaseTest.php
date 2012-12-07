@@ -31,8 +31,6 @@ class BreakpointDebugging_InAllCaseTest extends \PHPUnit_Framework_TestCase // F
      */
     public function testIniCheck()
     {
-        //global $_BreakpointDebugging_EXE_MODE;
-
         ob_start();
         B::iniCheck('safe_mode', '', 'Test message 1.');
         $this->assertTrue(ob_get_contents() === '');
