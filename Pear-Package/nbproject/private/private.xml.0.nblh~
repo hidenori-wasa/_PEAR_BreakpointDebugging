@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-private xmlns="http://www.netbeans.org/ns/project-private/1">
+    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/1">
+        <file>
+            <url>PEAR/BreakpointDebugging/LockByMkdir.php</url>
+            <line>207</line>
+        </file>
+        <file>
+            <url>BreakpointDebugging_MySetting.php</url>
+            <line>81</line>
+        </file>
+        <file>
+            <url>PEAR/BreakpointDebugging/Mutex.php</url>
+            <line>90</line>
+        </file>
+        <file>
+            <url>PEAR/BreakpointDebugging.php</url>
+            <line>424</line>
+        </file>
+        <file>
+            <url>PEAR/BreakpointDebugging/LockByShmop.php</url>
+            <line>277</line>
+        </file>
+    </editor-bookmarks>
+</project-private>

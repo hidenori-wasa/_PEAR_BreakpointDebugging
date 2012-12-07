@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-private xmlns="http://www.netbeans.org/ns/project-private/1">
+    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/1">
+        <file>
+            <url>PEAR_Setting/BreakpointDebugging_MySetting_Option.php</url>
+            <line>68</line>
+        </file>
+        <file>
+            <url>PEAR/BreakpointDebugging/Mutex.php</url>
+            <line>90</line>
+        </file>
+        <file>
+            <url>ErrorLogFilesManager.php</url>
+            <line>122</line>
+            <line>162</line>
+        </file>
+        <file>
+            <url>DownloadErrorLogFiles.php</url>
+            <line>54</line>
+        </file>
+        <file>
+            <url>PEAR/BreakpointDebugging/LockByShmop_Bug.php</url>
+            <line>62</line>
+        </file>
+        <file>
+            <url>PEAR/Validate/MySQLi.php</url>
+            <line>389</line>
+        </file>
+        <file>
+            <url>PEAR/BreakpointDebugging/LockByShmop.php</url>
+            <line>145</line>
+        </file>
+        <file>
+            <url>PEAR/Validate/MySQLi/Result.php</url>
+            <line>195</line>
+        </file>
+        <file>
+            <url>PEAR/BreakpointDebugging/LockByMkdir.php</url>
+            <line>207</line>
+        </file>
+        <file>
+            <url>index.php</url>
+            <line>0</line>
+        </file>
+        <file>
+            <url>PEAR/BreakpointDebugging.php</url>
+            <line>348</line>
+        </file>
+        <file>
+            <url>BreakpointDebugging_MySetting.php</url>
+            <line>81</line>
+        </file>
+    </editor-bookmarks>
+    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/1">
+        <file>file:/C:/xampp/htdocs/Pear-Package/PEAR/</file>
+    </open-files>
+</project-private>
