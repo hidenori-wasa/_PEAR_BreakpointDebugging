@@ -526,13 +526,12 @@ class BreakpointDebugging_InAllCase
         global $_BreakpointDebugging_EXE_MODE;
 
         if ($_BreakpointDebugging_EXE_MODE & B::UNIT_TEST) {
-            //if (B::$xdebugExists) {
-            //    // For debug which calls test-class method from start page of IDE project.
-            //    xdebug_break();
-            //}
-            self::$isInternal = false;
-            // Throws exception for unit test.
-            throw new \BreakpointDebugging_UnitTest_Exception('');
+            if (\BreakpointDebugging_UnitTestAssert::isUnitTestOfAssertionFailure()) {
+                self::$isInternal = false;
+                // Throws exception for unit test.
+                throw new \BreakpointDebugging_UnitTest_Exception('');
+            }
+            \BreakpointDebugging_UnitTestAssert::displayErrorCallStack($errorMessage);
         }
         $handlerStore = self::$_handlerOf; // Stores the handler.
         self::$_handlerOf = 'error'; // This registers as error handler.
@@ -560,25 +559,25 @@ class BreakpointDebugging_InAllCase
         // Is internal method.
         self::$isInternal = true;
         switch (self::$_handlerOf) {
-        case 'exception': // Is inside global exception handler.
-        case 'error': // Is inside global error handler.
-            self::$_onceErrorDispFlag = true;
-        case 'none': // Is outer of handler.
-            switch ($handlerKind) {
-            case 'exception':
-                // Calls exception handler because global exception handler cannot throw exception.
-                self::exceptionHandler(new \BreakpointDebugging_Error_Exception($message));
-                break;
-            case 'error':
-                // Calls error handler because global error handler cannot trigger error.
-                self::errorHandler(E_USER_ERROR, $message);
+            case 'exception': // Is inside global exception handler.
+            case 'error': // Is inside global error handler.
+                self::$_onceErrorDispFlag = true;
+            case 'none': // Is outer of handler.
+                switch ($handlerKind) {
+                    case 'exception':
+                        // Calls exception handler because global exception handler cannot throw exception.
+                        self::exceptionHandler(new \BreakpointDebugging_Error_Exception($message));
+                        break;
+                    case 'error':
+                        // Calls error handler because global error handler cannot trigger error.
+                        self::errorHandler(E_USER_ERROR, $message);
+                        break;
+                    default:
+                        B::breakpoint('"$handlerKind" is wrong value.', debug_backtrace());
+                }
                 break;
             default:
-                B::breakpoint('"$handlerKind" is wrong value.', debug_backtrace());
-            }
-            break;
-        default:
-            B::breakpoint('"\BreakpointDebugging::$_handlerOf" is wrong value.', debug_backtrace());
+                B::breakpoint('"\BreakpointDebugging::$_handlerOf" is wrong value.', debug_backtrace());
         }
         if ($_BreakpointDebugging_EXE_MODE & self::REMOTE_DEBUG) { // In case of remote debug.
             // Remote debug must end immediately to avoid eternal execution.
@@ -694,11 +693,7 @@ if ($_BreakpointDebugging_EXE_MODE === BreakpointDebugging_InAllCase::RELEASE) {
     // Ignores "Xdebug" in case of release because must not stop.
     BreakpointDebugging_InAllCase::$xdebugExists = false;
 } else { // In case of not release.
-    if (extension_loaded('xdebug')) {
-        BreakpointDebugging_InAllCase::$xdebugExists = true;
-    } else { // When "Xdebug" does not exist.
-        BreakpointDebugging_InAllCase::$xdebugExists = false;
-    }
+    BreakpointDebugging_InAllCase::$xdebugExists = extension_loaded('xdebug');
     include_once __DIR__ . '/BreakpointDebugging_Option.php';
 }
 

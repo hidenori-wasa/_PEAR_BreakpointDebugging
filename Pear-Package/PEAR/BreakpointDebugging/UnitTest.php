@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Unit test step execution by extending.
+ * Unit test step execution by extending instead of "PHPUnit_Framework_TestCase".
  *
  * This class is like "PHPUnit_Framework_TestCase".
  * However, executes a test class method in turn only.
@@ -11,7 +11,6 @@
  *
  * @example of usage.
  *      class SomethingTest extends \BreakpointDebugging_UnitTest // For step execution.
- *      // class SomethingTest extends \PHPUnit_Framework_TestCase // For continuation execution.
  *      {
  *          protected $pSomething;
  *
@@ -30,12 +29,13 @@
  *          function testSomething()
  *          {
  *              try {
- *                  $this->pSomething->something(); // Error.
+ *                  BreakpointDebugging_UnitTest::registerAssertionFailureLocationOfUnitTest('TargetClassName', 'TargetClassMethodName');
+ *                  $this->pSomething->Something(); // Error.
  *              } catch (\BreakpointDebugging_UnitTest_Exception $e) {
  *                  return;
  *              }
  *              $this->assertTrue(false);
- *         }
+ *          }
  *      }
  *
  * PHP version 5.3
@@ -79,72 +79,96 @@
 require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
 
 use \BreakpointDebugging as B;
+use \BreakpointDebugging_UnitTestAssert as U;
 
-/**
- * Executes unit test by extending.
- *
- * @category PHP
- * @package  BreakpointDebugging
- * @author   Hidenori Wasa <public@hidenori-wasa.com>
- * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
- * @version  Release: @package_version@
- * @link     http://pear.php.net/package/BreakpointDebugging
- */
-class BreakpointDebugging_UnitTest
-{
-    /**
-     * Executes a test class method in turn only.
-     */
-    final function __construct()
-    {
-        $pClassReflection = new ReflectionClass($this);
-        $pMethodReflections = $pClassReflection->getMethods();
-        foreach ($pMethodReflections as $pMethodReflection) {
-            if ($pMethodReflection->name === 'setUp') {
-                $pSetUp = $pMethodReflection;
-            } else if ($pMethodReflection->name === 'tearDown') {
-                $pTearDown = $pMethodReflection;
-            }
-        }
-        foreach ($pMethodReflections as $pMethodReflection) {
-            if (substr_compare($pMethodReflection->name, 'test', 0, 4, true)) {
-                continue;
-            }
-            if (isset($pSetUp)) {
-                $pSetUp->invoke($this);
-            }
-            $pMethodReflection->invoke($this);
-            if (isset($pTearDown)) {
-                $pTearDown->invoke($this);
-            }
-        }
-    }
+if (false) {
 
     /**
-     * Asserts conditional expression.
+     * Class which does unit test step execution by extending instead of "PHPUnit_Framework_TestCase".
      *
-     * @param bool $expression Conditional expression.
-     *
-     * @return void
+     * @category PHP
+     * @package  BreakpointDebugging
+     * @author   Hidenori Wasa <public@hidenori-wasa.com>
+     * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
+     * @version  Release: @package_version@
+     * @link     http://pear.php.net/package/BreakpointDebugging
      */
-    final function assertTrue($expression)
+    class BreakpointDebugging_UnitTest
     {
-        global $_BreakpointDebugging_EXE_MODE;
-
-        assert(is_bool($expression));
-
-        if (!$expression) {
-            $storeExeMode = $_BreakpointDebugging_EXE_MODE;
-            if ($_BreakpointDebugging_EXE_MODE & B::LOCAL_DEBUG_OF_RELEASE) {
-                $_BreakpointDebugging_EXE_MODE = B::LOCAL_DEBUG;
-            } else if ($_BreakpointDebugging_EXE_MODE & B::RELEASE) {
-                $_BreakpointDebugging_EXE_MODE = B::REMOTE_DEBUG;
+        /**
+         * Executes a test class method in turn only.
+         */
+        final function __construct()
+        {
+            // Parses a class object which extended this class.
+            $pClassReflection = new ReflectionClass($this);
+            $pMethodReflections = $pClassReflection->getMethods();
+            // Takes out "setUp()" and "tearDown()" class method.
+            foreach ($pMethodReflections as $pMethodReflection) {
+                if ($pMethodReflection->name === 'setUp') {
+                    $pSetUp = $pMethodReflection;
+                } else if ($pMethodReflection->name === 'tearDown') {
+                    $pTearDown = $pMethodReflection;
+                }
             }
-            trigger_error('"assertTrue()" was failed.');
-            $_BreakpointDebugging_EXE_MODE = $storeExeMode;
+            // Calls in test class method in turn.
+            foreach ($pMethodReflections as $pMethodReflection) {
+                // Skips class method except test class method.
+                if (substr_compare($pMethodReflection->name, 'test', 0, 4, true)) {
+                    continue;
+                }
+                if (isset($pSetUp)) {
+                    // Calls in "setUp()" class method.
+                    $pSetUp->invoke($this);
+                }
+                // Calls in test class method.
+                $pMethodReflection->invoke($this);
+                if (isset($pTearDown)) {
+                    // Calls in "tearDown()" class method.
+                    $pTearDown->invoke($this);
+                }
+            }
         }
+
+        /**
+         * Asserts conditional expression.
+         *
+         * @param bool $expression Conditional expression.
+         *
+         * @return void
+         */
+        final function assertTrue($expression)
+        {
+            global $_BreakpointDebugging_EXE_MODE;
+
+            assert(is_bool($expression));
+
+            if (!$expression) {
+                U::displayErrorCallStack('"assertTrue()" was failed.');
+            }
+        }
+
     }
 
+} else if (true) {
+
+    /**
+     * Class which does unit test continuation execution by extending "PHPUnit_Framework_TestCase".
+     *
+     * @category PHP
+     * @package  BreakpointDebugging
+     * @author   Hidenori Wasa <public@hidenori-wasa.com>
+     * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
+     * @version  Release: @package_version@
+     * @link     http://pear.php.net/package/BreakpointDebugging
+     */
+    class BreakpointDebugging_UnitTest extends \PHPUnit_Framework_TestCase
+    {
+
+    }
+
+} else {
+    U::displayErrorCallStack('Undefined constant number.');
 }
 
 ?>

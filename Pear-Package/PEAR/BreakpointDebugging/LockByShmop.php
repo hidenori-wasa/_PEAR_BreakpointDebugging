@@ -124,9 +124,7 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
      */
     static function &singleton($timeout = 60, $expire = 300, $sleepMicroSeconds = 100000)
     {
-        if (!extension_loaded('shmop')) {
-            exit('"shmop" extension has been not loaded.');
-        }
+        assert(extension_loaded('shmop'));
         return parent::singletonBase('\\' . __CLASS__, B::$workDir . '/LockByShmop.txt', $timeout, $expire, $sleepMicroSeconds);
     }
 

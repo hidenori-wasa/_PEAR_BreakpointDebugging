@@ -7,9 +7,7 @@ class Initialization
 {
     function __construct()
     {
-        if(!extension_loaded('shmop')){
-            exit('"shmop" extension has been not loaded.');
-        }
+        assert(extension_loaded('shmop'));
         // Allocate shared memory area.
         $shmopId = shmop_open(1234, 'c', 0600, 10);
         // Initialize shared memory.

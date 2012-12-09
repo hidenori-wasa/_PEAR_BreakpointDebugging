@@ -4,11 +4,12 @@ chdir(__DIR__ . '/../../../');
 require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
 
 use \BreakpointDebugging as B;
+use \BreakpointDebugging_UnitTestAssert as U;
 
 B::checkUnitTestExeMode();
 
-// class BreakpointDebugging_LockByFlockTest extends \BreakpointDebugging_UnitTest // For step execution.
-class BreakpointDebugging_LockByFlockTest extends \PHPUnit_Framework_TestCase // For continuation execution.
+class BreakpointDebugging_LockByFlockTest extends \BreakpointDebugging_UnitTest //// For step execution.
+//class BreakpointDebugging_LockByFlockTest extends \PHPUnit_Framework_TestCase // For continuation execution.
 {
     protected $lockByFlock;
 
@@ -38,6 +39,7 @@ class BreakpointDebugging_LockByFlockTest extends \PHPUnit_Framework_TestCase //
     function test__clone()
     {
         try {
+            U::registerAssertionFailureLocationOfUnitTest('BreakpointDebugging_Lock', '__clone');
             $tmp = clone $this->lockByFlock;
         } catch (\BreakpointDebugging_UnitTest_Exception $e) {
             return;
@@ -110,6 +112,7 @@ class BreakpointDebugging_LockByFlockTest extends \PHPUnit_Framework_TestCase //
     function testLockThenUnlock_C()
     {
         try {
+            U::registerAssertionFailureLocationOfUnitTest('BreakpointDebugging_Lock', 'unlock');
             $this->lockByFlock->unlock(); // Error.
         } catch (\BreakpointDebugging_UnitTest_Exception $e) {
             return;
@@ -131,6 +134,7 @@ class BreakpointDebugging_LockByFlockTest extends \PHPUnit_Framework_TestCase //
             return;
         }
         try {
+            U::registerAssertionFailureLocationOfUnitTest('BreakpointDebugging_Lock', 'unlock');
             $this->lockByFlock->unlock(); // Error.
         } catch (\BreakpointDebugging_UnitTest_Exception $e) {
             return;
@@ -151,6 +155,7 @@ class BreakpointDebugging_LockByFlockTest extends \PHPUnit_Framework_TestCase //
             return;
         }
         try {
+            U::registerAssertionFailureLocationOfUnitTest('BreakpointDebugging_Lock', '__destruct');
             // Calls "__destruct()".
             $this->lockByFlock = null; // Error.
         } catch (\BreakpointDebugging_UnitTest_Exception $e) {
@@ -174,6 +179,7 @@ class BreakpointDebugging_LockByFlockTest extends \PHPUnit_Framework_TestCase //
             return;
         }
         try {
+            U::registerAssertionFailureLocationOfUnitTest('BreakpointDebugging_Lock', '__destruct');
             // Calls "__destruct()".
             $this->lockByFlock = null; // Error.
         } catch (\BreakpointDebugging_UnitTest_Exception $e) {
@@ -203,6 +209,7 @@ class BreakpointDebugging_LockByFlockTest extends \PHPUnit_Framework_TestCase //
     function testSingleton_B()
     {
         try {
+            U::registerAssertionFailureLocationOfUnitTest('BreakpointDebugging_Lock', 'singletonBase');
             // Constructs instance of other class.
             $lockByFileExisting = &\BreakpointDebugging_LockByFileExisting::singleton(5, 10); // Error.
         } catch (\BreakpointDebugging_UnitTest_Exception $e) {
@@ -217,6 +224,7 @@ class BreakpointDebugging_LockByFlockTest extends \PHPUnit_Framework_TestCase //
     function testSingleton_C()
     {
         try {
+            U::registerAssertionFailureLocationOfUnitTest('BreakpointDebugging_Lock', 'singletonBase');
             // Constructs instance of other class.
             $LockByShmop = &\BreakpointDebugging_LockByShmop::singleton(5, 10); // Error.
         } catch (\BreakpointDebugging_UnitTest_Exception $e) {

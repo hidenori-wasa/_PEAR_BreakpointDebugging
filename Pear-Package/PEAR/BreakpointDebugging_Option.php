@@ -193,6 +193,7 @@
 // and moreover "use" keyword alias has priority over class definition,
 // therefore "use" keyword alias does not be affected by other files.
 use \BreakpointDebugging as B;
+use \BreakpointDebugging_UnitTestAssert as U;
 
 /**
  * Unit test exception.
@@ -275,11 +276,6 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
     static function breakpoint($message, &$callStackInfo)
     {
         global $_BreakpointDebugging_EXE_MODE;
-
-        if ($_BreakpointDebugging_EXE_MODE & self::UNIT_TEST) {
-            // Unit test cannot execute "xdebug_break()".
-            return;
-        }
 
         B::internalAssert(func_num_args() === 2);
         B::internalAssert(is_string($message));
@@ -513,8 +509,7 @@ EOD;
      *      require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
      *      use \BreakpointDebugging as B;
      *      B::checkUnitTestExeMode();
-     *      // class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTest // For step execution.
-     *      class BreakpointDebuggingTest extends \PHPUnit_Framework_TestCase // For continuation execution.
+     *      class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTest
      *      {
      *          .
      *          .
@@ -534,7 +529,7 @@ EOD;
      *
      * ### Execution procedure ###
      * Procedure 1: Please, start a apache.
-     * Procedure 2: Please, drop php unit test file which calls this method to web browser.
+     * Procedure 2: Please, drop page like example page which executes unit tests to web browser.
      * Procedure 3: Please, rewrite web browser URL prefix to "localhost", and push return.
      * Please, if you want remote execution, upload unit test files, and execute with browser.
      *
@@ -576,16 +571,15 @@ EOD;
             include_once "$currentDir/$testFileName";
             $className = str_replace(array ('-', '/'), '_', substr($testFileName, 0, -4));
             $pClassReflection = new \ReflectionClass($className);
-            return $pClassReflection->isSubclassOf('BreakpointDebugging_UnitTest');
+            return !$pClassReflection->getParentClass()->getParentClass();
         };
 
         $testFileName = $testFileNames[0];
+        // In case of extending test class with "\BreakpointDebugging_UnitTest" class.
         if ($isSubclassOfBreakpointDebugging_UnitTest($currentDir, $testFileName, &$className)) {
             // Only one unit test process must be executed because static variable can not be initialized.
             if (count($testFileNames) !== 1) {
-                $pUnitTest = new \BreakpointDebugging_UnitTest();
-                $pUnitTest->assertTrue(false);
-                exit;
+                U::displayErrorCallStack('Only one unit test process must be executed because static variable can not be initialized. Or, you must define "\BreakpointDebugging_UnitTest" class correctly in "./PEAR/BreakpointDebugging/UnitTest.php" file.');
             }
             // Constructs a test instance.
             $pClass = new $className;
@@ -595,6 +589,7 @@ EOD;
             return;
         }
 
+        // In case of extending test class except "\BreakpointDebugging_UnitTest" class.
         if (B::$os === 'WIN') { // In case of Windows.
             $phpunit = 'phpunit.bat';
         } else { // In case of Unix.
@@ -618,11 +613,8 @@ EOD;
         }
         echo '<pre>';
         foreach ($testFileNames as $testFileName) {
-            // Array element of "BreakpointDebugging_UnitTest" class must be comment.
             if ($isSubclassOfBreakpointDebugging_UnitTest($currentDir, $testFileName, &$className)) {
-                $pUnitTest = new \BreakpointDebugging_UnitTest();
-                $pUnitTest->assertTrue(false);
-                exit;
+                U::displayErrorCallStack('This program is mistaking.');
             }
             // If test file name contains '_'.
             if (strpos($testFileName, '_') !== false) {
@@ -633,6 +625,7 @@ EOD;
                 return;
             }
             echo $testFileName . PHP_EOL;
+            // Executes unit test command.
             echo `$phpunit $currentDir/$testFileName`;
             echo '//////////////////////////////////////////////////////////////////////////' . PHP_EOL;
         }
@@ -693,7 +686,7 @@ if (assert_options(ASSERT_QUIET_EVAL, 0) === false) { // As for assertion expres
 // It is possible to assert that <judgment expression> is "This must be". Especially, this uses to verify a function's argument.
 // For example: assert(3 <= $value && $value <= 5); // $value should be 3-5.
 // Caution: Don't change the value of variable in "assert()" function because there isn't executed in case of release.
-// 
+//
 // When "Xdebug" does not exist.
 if (!B::$xdebugExists) {
     if ($_BreakpointDebugging_EXE_MODE & (B::LOCAL_DEBUG | B::LOCAL_DEBUG_OF_RELEASE)) { // In case of local host.
