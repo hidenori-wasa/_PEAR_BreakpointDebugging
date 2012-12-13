@@ -533,8 +533,8 @@ EOD;
      * Procedure 3: Please, rewrite web browser URL prefix to "localhost", and push return.
      * Please, if you want remote execution, upload unit test files, and execute with browser.
      *
-     * @param array  $testFileNames Unit test file names.
-     * @param string $currentDir    Unit test current directory.
+     * @param array  $unitTestCommands Commands of unit tests.
+     * @param string $currentDir       Unit test current directory.
      *
      * @return void
      *
@@ -544,92 +544,93 @@ EOD;
      * require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
      * use \BreakpointDebugging as B;
      * // Please, choose unit tests files by customizing.
-     * $testFileNames = array (
-     *     'BreakpointDebuggingTest.php',
-     *     'BreakpointDebugging/LockTest.php',
+     * $unitTestCommands = array (
+     *     '--stop-on-failure BreakpointDebuggingTest.php',
+     *     '--stop-on-failure BreakpointDebugging/LockTest.php',
      * );
      * // Executes unit tests.
-     * B::executeUnitTest($testFileNames, __DIR__);
-     * ?>
-     *
-     * @Example page which calls test-class method from start page of IDE project for debug.
-     * <?php
-     * require_once './tests/SomethingTest.php'; // Includes test PHP page.
-     *
-     * $pSomethingTest = new \SomethingTest();
-     *
-     * $pSomethingTest->setUp();
-     * $pSomethingTest->testSomething();
-     * $pSomethingTest->tearDown();
+     * B::executeUnitTest($unitTestCommands, __DIR__);
      * ?>
      */
-    static function executeUnitTest($testFileNames, $currentDir)
+    static function executeUnitTest($unitTestCommands, $currentDir)
     {
+        global $_BreakpointDebugging_UNIT_TEST_MODE;
+
         self::checkUnitTestExeMode();
 
-        $isSubclassOfBreakpointDebugging_UnitTest = function($currentDir, $testFileName, &$className) {
-            include_once "$currentDir/$testFileName";
-            $className = str_replace(array ('-', '/'), '_', substr($testFileName, 0, -4));
-            $pClassReflection = new \ReflectionClass($className);
-            return !$pClassReflection->getParentClass()->getParentClass();
-        };
-
-        $testFileName = $testFileNames[0];
-        // In case of extending test class with "\BreakpointDebugging_UnitTest" class.
-        if ($isSubclassOfBreakpointDebugging_UnitTest($currentDir, $testFileName, &$className)) {
-            // Only one unit test process must be executed because static variable can not be initialized.
-            if (count($testFileNames) !== 1) {
-                U::displayErrorCallStack('Only one unit test process must be executed because static variable can not be initialized. Or, you must define "\BreakpointDebugging_UnitTest" class correctly in "./PEAR/BreakpointDebugging/UnitTest.php" file.');
-            }
-            // Constructs a test instance.
-            $pClass = new $className;
-            // Destructs a test instance.
-            $pClass = null;
-            echo '<pre>Unit test ended.</pre>';
-            return;
+        if (!is_array($unitTestCommands)) {
+            U::displayErrorCallStack('First parameter is wrong type.');
+        }
+        if (!is_string($currentDir)) {
+            U::displayErrorCallStack('Second parameter is wrong type.');
         }
 
-        // In case of extending test class except "\BreakpointDebugging_UnitTest" class.
-        if (B::$os === 'WIN') { // In case of Windows.
-            $phpunit = 'phpunit.bat';
-        } else { // In case of Unix.
-            // Command execution path by "bash" differs because "Apache" is root user in case of default, therefore uses full path for command.
-            while (true) {
-                $phpunit = `which phpunit`;
-                $phpunit = trim($phpunit);
-                if ($phpunit) {
-                    break;
-                }
-                $phpunit = `export PATH=/opt/lampp/bin:/opt/local/bin:/usr/bin:/usr/bin/X11:/usr/share/php;which phpunit`;
-                $phpunit = trim($phpunit);
-                if ($phpunit) {
-                    break;
-                }
-                exit('"phpunit" command does not exist.');
+        if ($_BreakpointDebugging_UNIT_TEST_MODE === 'DEBUG') {
+            if (count($unitTestCommands) !== 1) {
+                U::displayErrorCallStack('Only one unit test process must be executed because static variable can not be initialized. Or, change to "$_BreakpointDebugging_UNIT_TEST_MODE = \'ALL\';" in "./PEAR_Setting/BreakpointDebugging_MySetting.php" file.');
             }
-            if (!is_executable($phpunit)) {
-                exit('"phpunit" command is not executable. (' . $phpunit . ')');
+            //foreach ($unitTestCommands as $command) {
+            $command = $unitTestCommands[0];
+            $commandElements = explode(' ', $command);
+            $testFileName = array_pop($commandElements);
+            array_push($commandElements, "$currentDir/$testFileName");
+//            $className = str_replace(array ('-', '/'), '_', substr("$currentDir/$testFileName", 0, -4));
+//            // Constructs a test instance.
+//            $pClass = new $className;
+//            // Destructs a test instance.
+//            $pClass = null;
+//            echo '<pre>Unit test ended.</pre>';
+//            return;
+            array_unshift($commandElements, 'dummy');
+            $pPHPUnit_TextUI_Command = new \PHPUnit_TextUI_Command;
+            echo "<pre>Starts Debugging of '$testFileName' file." . PHP_EOL;
+            echo $pPHPUnit_TextUI_Command->run($commandElements, true);
+            //}
+        } else if ($_BreakpointDebugging_UNIT_TEST_MODE === 'ALL') {
+            // In case of extending test class except "\BreakpointDebugging_UnitTest" class.
+            if (B::$os === 'WIN') { // In case of Windows.
+                $phpunit = 'phpunit.bat';
+            } else { // In case of Unix.
+                // Command execution path by "bash" differs because "Apache" is root user in case of default, therefore uses full path for command.
+                while (true) {
+                    $phpunit = `which phpunit`;
+                    $phpunit = trim($phpunit);
+                    if ($phpunit) {
+                        break;
+                    }
+                    $phpunit = `export PATH=/opt/lampp/bin:/opt/local/bin:/usr/bin:/usr/bin/X11:/usr/share/php;which phpunit`;
+                    $phpunit = trim($phpunit);
+                    if ($phpunit) {
+                        break;
+                    }
+                    exit('"phpunit" command does not exist.');
+                }
+                if (!is_executable($phpunit)) {
+                    exit('"phpunit" command is not executable. (' . $phpunit . ')');
+                }
             }
+            echo '<pre>';
+            foreach ($unitTestCommands as $command) {
+                $commandElements = explode(' ', $command);
+                $testFileName = array_pop($commandElements);
+                $commandOptions = implode(' ', $commandElements);
+                // If test file name contains '_'.
+                if (strpos($testFileName, '_') !== false) {
+                    echo "You must change its array element and its file name into '-' because '$testFileName' contains '_'." . PHP_EOL;
+                    if (B::$xdebugExists) {
+                        xdebug_break();
+                    }
+                    return;
+                }
+                echo $testFileName . PHP_EOL;
+                // Executes unit test command.
+                echo `$phpunit $commandOptions $currentDir/$testFileName`;
+                echo '//////////////////////////////////////////////////////////////////////////' . PHP_EOL;
+            }
+            echo 'All unit tests ended.</pre>';
+        } else {
+            U::displayErrorCallStack('"$_BreakpointDebugging_UNIT_TEST_MODE" of "./PEAR_Setting/BreakpointDebugging_MySetting.php" file is mistaking.');
         }
-        echo '<pre>';
-        foreach ($testFileNames as $testFileName) {
-            if ($isSubclassOfBreakpointDebugging_UnitTest($currentDir, $testFileName, &$className)) {
-                U::displayErrorCallStack('This program is mistaking.');
-            }
-            // If test file name contains '_'.
-            if (strpos($testFileName, '_') !== false) {
-                echo "You must change its array element and its file name into '-' because '$testFileName' contains '_'." . PHP_EOL;
-                if (B::$xdebugExists) {
-                    xdebug_break();
-                }
-                return;
-            }
-            echo $testFileName . PHP_EOL;
-            // Executes unit test command.
-            echo `$phpunit $currentDir/$testFileName`;
-            echo '//////////////////////////////////////////////////////////////////////////' . PHP_EOL;
-        }
-        echo 'Unit test ended.</pre>';
     }
 
     /**

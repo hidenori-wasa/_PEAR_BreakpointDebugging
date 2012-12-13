@@ -46,17 +46,21 @@
 use \BreakpointDebugging as B;
 
 /**
- * @const int $_BreakpointDebugging_EXE_MODE Debug mode constant.
- */
-global $_BreakpointDebugging_EXE_MODE;
-/**
  * Sets execution mode.
  *
  * @return void
  */
 function BreakpointDebugging_setExecutionMode()
 {
+    /**
+     * @var int Specifies debug mode.
+     */
     global $_BreakpointDebugging_EXE_MODE;
+
+    /**
+     * @var string Specifies unit test mode.
+     */
+    global $_BreakpointDebugging_UNIT_TEST_MODE;
 
     // ### Debug mode number ###
     $LOCAL_DEBUG = 1;
@@ -82,6 +86,13 @@ function BreakpointDebugging_setExecutionMode()
     // $_BreakpointDebugging_EXE_MODE = $RELEASE;
     $_BreakpointDebugging_EXE_MODE = $LOCAL_DEBUG_OF_RELEASE | $UNIT_TEST;
     // $_BreakpointDebugging_EXE_MODE = $RELEASE | $UNIT_TEST;
+    /**
+     * Please, specify unit test mode.
+     *      'ALL' tests all unit test files by "B::executeUnitTest()" class method.
+     *      'DEBUG' debugs one unit test file by "B::executeUnitTest()" class method.
+     */
+    $_BreakpointDebugging_UNIT_TEST_MODE = 'ALL';
+    // $_BreakpointDebugging_UNIT_TEST_MODE = 'DEBUG';
     // ### <=== Execution mode setting.
     //
     // Reference path setting.

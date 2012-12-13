@@ -5,19 +5,16 @@ require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
 
 use \BreakpointDebugging as B;
 
-//// Sets unit test class which extends.
-//\BreakpointDebugging::$extendedUnitTestClass = B::EXTENDS_PHPUNIT_FRAMEWORK_TESTCASE;
-
 // Please, choose unit tests files by customizing.
 $testFileNames = array (
-    'BreakpointDebugging-ExceptionTest.php',
-    'BreakpointDebugging-InAllCaseTest.php',
-    'BreakpointDebuggingTest.php',
-    'BreakpointDebugging/ErrorTest.php',
-    'BreakpointDebugging/LockByFileExistingTest.php',
-    'BreakpointDebugging/LockByFlockTest.php',
-    'BreakpointDebugging/LockByShmopTest.php',
-    'BreakpointDebugging/OverrideClassTest.php',
+    '--stop-on-failure BreakpointDebugging-ExceptionTest.php',
+    '--stop-on-failure BreakpointDebugging-InAllCaseTest.php',
+    '--stop-on-failure BreakpointDebugging/ErrorTest.php',
+    '--stop-on-failure BreakpointDebugging/LockByFileExistingTest.php',
+    '--stop-on-failure BreakpointDebugging/LockByFlockTest.php',
+    '--stop-on-failure BreakpointDebugging/LockByShmopTest.php',
+    '--stop-on-failure BreakpointDebugging/OverrideClassTest.php',
+    '--stop-on-failure BreakpointDebuggingTest.php',
 );
 // Executes unit tests.
 B::executeUnitTest($testFileNames, __DIR__);

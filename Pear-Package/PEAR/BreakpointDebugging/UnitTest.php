@@ -1,16 +1,20 @@
 <?php
 
 /**
- * Unit test step execution by extending instead of "PHPUnit_Framework_TestCase".
+ * (Debugs one unit test file, or tests the all unit test files) by "B::executeUnitTest()" class method.
  *
- * This class is like "PHPUnit_Framework_TestCase".
- * However, executes a test class method in turn only.
- * Therefore, cannot use extension feature like annotation.
- * Also, uses few memory because doesn't create objects of test class methods at once.
- * Therefore, is easy to execute with remote server.
+ * This class extends "PHPUnit_Framework_TestCase".
+ * This class does not use "phpunit" command in case of "$_BreakpointDebugging_UNIT_TEST_MODE === 'DEBUG'" mode.
+ * Therefore, we can execute basic unit test with remote server by the following files.
+ *      PEAR/PHPUnit/TextUI/Command.php
+ *      PEAR/PHPUnit/TextUI/TestRunner.php
+ *      PEAR/PHPUnit/Framework/TestSuite.php
+ *      PEAR/PHPUnit/Framework/TestCase.php
+ *      PEAR/PHPUnit/Framework/TestResult.php
  *
  * @example of usage.
- *      class SomethingTest extends \BreakpointDebugging_UnitTest // For step execution.
+ *      use \BreakpointDebugging_UnitTestAssert as U;
+ *      class SomethingTest extends \BreakpointDebugging_UnitTest
  *      {
  *          protected $pSomething;
  *
@@ -29,7 +33,7 @@
  *          function testSomething()
  *          {
  *              try {
- *                  BreakpointDebugging_UnitTest::registerAssertionFailureLocationOfUnitTest('TargetClassName', 'TargetClassMethodName');
+ *                  U::registerAssertionFailureLocationOfUnitTest('TargetClassName', 'TargetClassMethodName');
  *                  $this->pSomething->Something(); // Error.
  *              } catch (\BreakpointDebugging_UnitTest_Exception $e) {
  *                  return;
@@ -81,10 +85,13 @@ require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
 use \BreakpointDebugging as B;
 use \BreakpointDebugging_UnitTestAssert as U;
 
-if (false) {
+global $_BreakpointDebugging_UNIT_TEST_MODE;
+
+if ($_BreakpointDebugging_UNIT_TEST_MODE === 'DEBUG') { // 'DEBUG' debugs one unit test file by "B::executeUnitTest()" class method.
 
     /**
-     * Class which does unit test step execution by extending instead of "PHPUnit_Framework_TestCase".
+     * Debugs one unit test file by "B::executeUnitTest()" class method.
+     * Notice:  You must code one array element comment which hands to "B::executeUnitTest()" before you execute this mode.
      *
      * @category PHP
      * @package  BreakpointDebugging
@@ -93,67 +100,77 @@ if (false) {
      * @version  Release: @package_version@
      * @link     http://pear.php.net/package/BreakpointDebugging
      */
-    class BreakpointDebugging_UnitTest
-    {
-        /**
-         * Executes a test class method in turn only.
-         */
-        final function __construct()
-        {
-            // Parses a class object which extended this class.
-            $pClassReflection = new ReflectionClass($this);
-            $pMethodReflections = $pClassReflection->getMethods();
-            // Takes out "setUp()" and "tearDown()" class method.
-            foreach ($pMethodReflections as $pMethodReflection) {
-                if ($pMethodReflection->name === 'setUp') {
-                    $pSetUp = $pMethodReflection;
-                } else if ($pMethodReflection->name === 'tearDown') {
-                    $pTearDown = $pMethodReflection;
-                }
-            }
-            // Calls in test class method in turn.
-            foreach ($pMethodReflections as $pMethodReflection) {
-                // Skips class method except test class method.
-                if (substr_compare($pMethodReflection->name, 'test', 0, 4, true)) {
-                    continue;
-                }
-                if (isset($pSetUp)) {
-                    // Calls in "setUp()" class method.
-                    $pSetUp->invoke($this);
-                }
-                // Calls in test class method.
-                $pMethodReflection->invoke($this);
-                if (isset($pTearDown)) {
-                    // Calls in "tearDown()" class method.
-                    $pTearDown->invoke($this);
-                }
-            }
-        }
 
+    class BreakpointDebugging_UnitTest extends \PHPUnit_Framework_TestCase
+    {
+//        /**
+//         * Executes a test class method in turn only.
+//         */
+//        final function __construct()
+//        {
+//            // Parses a class object which extended this class.
+//            $pClassReflection = new ReflectionClass($this);
+//            $pMethodReflections = $pClassReflection->getMethods();
+//            // Takes out "setUp()" and "tearDown()" class method.
+//            foreach ($pMethodReflections as $pMethodReflection) {
+//                if ($pMethodReflection->name === 'setUp') {
+//                    $pSetUp = $pMethodReflection;
+//                } else if ($pMethodReflection->name === 'tearDown') {
+//                    $pTearDown = $pMethodReflection;
+//                }
+//            }
+//            // Calls in test class method in turn.
+//            foreach ($pMethodReflections as $pMethodReflection) {
+//                // Skips class method except test class method.
+//                if (substr_compare($pMethodReflection->name, 'test', 0, 4, true)) {
+//                    continue;
+//                }
+//                if (isset($pSetUp)) {
+//                    // Calls in "setUp()" class method.
+//                    $pSetUp->invoke($this);
+//                }
+//                // Calls in test class method.
+//                $pMethodReflection->invoke($this);
+//                if (isset($pTearDown)) {
+//                    // Calls in "tearDown()" class method.
+//                    $pTearDown->invoke($this);
+//                }
+//            }
+//        }
         /**
-         * Asserts conditional expression.
+         * Asserts that a condition is true. "PHPUnit_Framework_Assert::assertTrue()" class method has been overridden by this class method.
          *
-         * @param bool $expression Conditional expression.
+         * @param  bool   $condition Conditional expression.
+         * @param  string $message   Error message.
          *
          * @return void
          */
-        final function assertTrue($expression)
+        static function assertTrue($condition, $message = '')
         {
             global $_BreakpointDebugging_EXE_MODE;
 
-            assert(is_bool($expression));
+            if (!is_bool($condition)) {
+                U::displayErrorCallStack('First parameter is wrong type.');
+            }
+            if (!is_string($message)) {
+                U::displayErrorCallStack('Second parameter is wrong type.');
+            }
 
-            if (!$expression) {
-                U::displayErrorCallStack('"assertTrue()" was failed.');
+            if (!$condition) {
+                if ($message === '') {
+                    $message = '"assertTrue()" was failed.';
+                }
+                U::displayErrorCallStack($message);
             }
         }
 
     }
 
-} else if (true) {
+} else if ($_BreakpointDebugging_UNIT_TEST_MODE === 'ALL') { // 'ALL' tests all unit test files by "B::executeUnitTest()" class method.
 
     /**
-     * Class which does unit test continuation execution by extending "PHPUnit_Framework_TestCase".
+     * Tests the all unit test files by "B::executeUnitTest()" class method.
+     * Notice:  You must code all array element comment which hands to "B::executeUnitTest()" before you execute this mode.
      *
      * @category PHP
      * @package  BreakpointDebugging
@@ -162,6 +179,7 @@ if (false) {
      * @version  Release: @package_version@
      * @link     http://pear.php.net/package/BreakpointDebugging
      */
+
     class BreakpointDebugging_UnitTest extends \PHPUnit_Framework_TestCase
     {
 

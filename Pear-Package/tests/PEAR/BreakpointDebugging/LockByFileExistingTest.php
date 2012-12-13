@@ -8,8 +8,7 @@ use \BreakpointDebugging_UnitTestAssert as U;
 
 B::checkUnitTestExeMode();
 
-class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_UnitTest //// For step execution.
-//class BreakpointDebugging_LockByFileExistingTest extends \PHPUnit_Framework_TestCase // For continuation execution.
+class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_UnitTest
 {
     protected $lockByFileExisting;
 
