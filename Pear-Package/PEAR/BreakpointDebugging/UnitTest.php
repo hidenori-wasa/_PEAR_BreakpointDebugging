@@ -6,11 +6,10 @@
  * This class extends "PHPUnit_Framework_TestCase".
  * This class does not use "phpunit" command in case of "$_BreakpointDebugging_UNIT_TEST_MODE === 'DEBUG'" mode.
  * Therefore, we can execute basic unit test with remote server by the following files.
- *      PEAR/PHPUnit/TextUI/Command.php
- *      PEAR/PHPUnit/TextUI/TestRunner.php
- *      PEAR/PHPUnit/Framework/TestSuite.php
- *      PEAR/PHPUnit/Framework/TestCase.php
- *      PEAR/PHPUnit/Framework/TestResult.php
+ *      PEAR/PHPUnit/*
+ *      PEAR/PHP/Timer.php
+ *      PEAR/PHP/CodeCoverage/Filter.php
+ *      PEAR/PHP/CodeCoverage/Util.php
  *
  * @example of usage.
  *      use \BreakpointDebugging_UnitTestAssert as U;
@@ -147,8 +146,6 @@ if ($_BreakpointDebugging_UNIT_TEST_MODE === 'DEBUG') { // 'DEBUG' debugs one un
          */
         static function assertTrue($condition, $message = '')
         {
-            global $_BreakpointDebugging_EXE_MODE;
-
             if (!is_bool($condition)) {
                 U::displayErrorCallStack('First parameter is wrong type.');
             }

@@ -62,7 +62,7 @@ class BreakpointDebugging_Exception extends \PEAR_Exception
      *
      * @param string $message  Exception message.
      * @param int    $code     Exception code.
-     * @param string $previous Previous exception.
+     * @param object $previous Previous exception.
      *
      * @return void
      */
@@ -483,8 +483,10 @@ class BreakpointDebugging_InAllCase
      *
      * @return void
      */
-    final static function autoload($className)
+    static function autoload($className)
     {
+        global $_BreakpointDebugging_EXE_MODE;
+
         // Changes underscore and name space separator to directory separator.
         $className = str_replace(array ('_', '\\'), '/', $className) . '.php';
         include_once $className;

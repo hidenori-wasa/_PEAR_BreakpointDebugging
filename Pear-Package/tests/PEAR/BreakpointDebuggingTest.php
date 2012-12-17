@@ -144,6 +144,12 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTest
      */
     public function testExecuteUnitTest()
     {
+        global $_BreakpointDebugging_UNIT_TEST_MODE;
+
+        if ($_BreakpointDebugging_UNIT_TEST_MODE === 'DEBUG') {
+            return;
+        }
+
         $testFileNames = array (
             '--stop-on-failure --strict BreakpointDebugging-ExceptionTest.php',
         );

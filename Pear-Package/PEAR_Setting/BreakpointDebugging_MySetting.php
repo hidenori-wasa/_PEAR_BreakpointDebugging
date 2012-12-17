@@ -84,15 +84,15 @@ function BreakpointDebugging_setExecutionMode()
     // $_BreakpointDebugging_EXE_MODE = $LOCAL_DEBUG_OF_RELEASE;
     // $_BreakpointDebugging_EXE_MODE = $REMOTE_DEBUG;
     // $_BreakpointDebugging_EXE_MODE = $RELEASE;
-    $_BreakpointDebugging_EXE_MODE = $LOCAL_DEBUG_OF_RELEASE | $UNIT_TEST;
-    // $_BreakpointDebugging_EXE_MODE = $RELEASE | $UNIT_TEST;
+    // $_BreakpointDebugging_EXE_MODE = $LOCAL_DEBUG_OF_RELEASE | $UNIT_TEST;
+    $_BreakpointDebugging_EXE_MODE = $RELEASE | $UNIT_TEST;
     /**
      * Please, specify unit test mode.
      *      'ALL' tests all unit test files by "B::executeUnitTest()" class method.
      *      'DEBUG' debugs one unit test file by "B::executeUnitTest()" class method.
      */
-    $_BreakpointDebugging_UNIT_TEST_MODE = 'ALL';
-    // $_BreakpointDebugging_UNIT_TEST_MODE = 'DEBUG';
+    // $_BreakpointDebugging_UNIT_TEST_MODE = 'ALL';
+    $_BreakpointDebugging_UNIT_TEST_MODE = 'DEBUG';
     // ### <=== Execution mode setting.
     //
     // Reference path setting.
@@ -102,10 +102,12 @@ function BreakpointDebugging_setExecutionMode()
         }
         if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') { // In case of Windows.
             // ini_set('include_path', '.;C:\xampp\php\PEAR');
-            ini_set('include_path', '.;./PEAR;C:\xampp\php\PEAR');
+            // ini_set('include_path', '.;./PEAR;C:\xampp\php\PEAR');
+            ini_set('include_path', '.;./PEAR');
         } else { // In case of Unix.
             // ini_set('include_path', '.:/opt/lampp/lib/php:/opt/lampp/lib/php/PEAR');
-            ini_set('include_path', '.:./PEAR:/opt/lampp/lib/php:/opt/lampp/lib/php/PEAR');
+            // ini_set('include_path', '.:./PEAR:/opt/lampp/lib/php:/opt/lampp/lib/php/PEAR');
+            ini_set('include_path', '.:./PEAR:/opt/lampp/lib/php');
         }
     } else { // In case of local.
         if (isset($_SERVER['SERVER_ADDR']) && $_SERVER['SERVER_ADDR'] !== '127.0.0.1') {
@@ -113,10 +115,12 @@ function BreakpointDebugging_setExecutionMode()
         }
         if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') { // In case of Windows.
             // ini_set('include_path', '.;C:\xampp\php\PEAR');
-            ini_set('include_path', '.;./PEAR;C:\xampp\php\PEAR');
+            // ini_set('include_path', '.;./PEAR;C:\xampp\php\PEAR');
+            ini_set('include_path', '.;./PEAR');
         } else { // In case of Unix.
             // ini_set('include_path', '.:/opt/lampp/lib/php:/opt/lampp/lib/php/PEAR');
-            ini_set('include_path', '.:./PEAR:/opt/lampp/lib/php:/opt/lampp/lib/php/PEAR');
+            // ini_set('include_path', '.:./PEAR:/opt/lampp/lib/php:/opt/lampp/lib/php/PEAR');
+            ini_set('include_path', '.:./PEAR:/opt/lampp/lib/php');
         }
     }
 }

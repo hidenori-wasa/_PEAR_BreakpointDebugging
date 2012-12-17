@@ -519,8 +519,17 @@ EOD;
     {
         global $_BreakpointDebugging_EXE_MODE;
 
-        if ($_BreakpointDebugging_EXE_MODE !== (B::LOCAL_DEBUG_OF_RELEASE | B::UNIT_TEST) && $_BreakpointDebugging_EXE_MODE !== (B::RELEASE | B::UNIT_TEST)) {
-            exit('You must set "$_BreakpointDebugging_EXE_MODE = $LOCAL_DEBUG_OF_RELEASE | $UNIT_TEST" or "$_BreakpointDebugging_EXE_MODE = $RELEASE | $UNIT_TEST" into "./PEAR_Setting/BreakpointDebugging_MySetting.php" in case of unit test.' . PHP_EOL);
+        if (!isset($_SERVER['SERVER_ADDR'])) { // In case of command.
+            return;
+        }
+        if ($_SERVER['SERVER_ADDR'] === '127.0.0.1') { // In case of local host
+            if ($_BreakpointDebugging_EXE_MODE !== (B::LOCAL_DEBUG_OF_RELEASE | B::UNIT_TEST)) {
+                exit('You must set "$_BreakpointDebugging_EXE_MODE = $LOCAL_DEBUG_OF_RELEASE | $UNIT_TEST" into "./PEAR_Setting/BreakpointDebugging_MySetting.php" because this is unit test.' . PHP_EOL);
+            }
+        } else {
+            if ($_BreakpointDebugging_EXE_MODE !== (B::RELEASE | B::UNIT_TEST)) {
+                exit('You must set "$_BreakpointDebugging_EXE_MODE = $RELEASE | $UNIT_TEST" into "./PEAR_Setting/BreakpointDebugging_MySetting.php" because this is unit test.' . PHP_EOL);
+            }
         }
     }
 
@@ -569,7 +578,6 @@ EOD;
             if (count($unitTestCommands) !== 1) {
                 U::displayErrorCallStack('Only one unit test process must be executed because static variable can not be initialized. Or, change to "$_BreakpointDebugging_UNIT_TEST_MODE = \'ALL\';" in "./PEAR_Setting/BreakpointDebugging_MySetting.php" file.');
             }
-            //foreach ($unitTestCommands as $command) {
             $command = $unitTestCommands[0];
             $commandElements = explode(' ', $command);
             $testFileName = array_pop($commandElements);
@@ -584,8 +592,8 @@ EOD;
             array_unshift($commandElements, 'dummy');
             $pPHPUnit_TextUI_Command = new \PHPUnit_TextUI_Command;
             echo "<pre>Starts Debugging of '$testFileName' file." . PHP_EOL;
+            echo '//////////////////////////////////////////////////////////////////////////' . PHP_EOL;
             echo $pPHPUnit_TextUI_Command->run($commandElements, true);
-            //}
         } else if ($_BreakpointDebugging_UNIT_TEST_MODE === 'ALL') {
             // In case of extending test class except "\BreakpointDebugging_UnitTest" class.
             if (B::$os === 'WIN') { // In case of Windows.
@@ -609,7 +617,8 @@ EOD;
                     exit('"phpunit" command is not executable. (' . $phpunit . ')');
                 }
             }
-            echo '<pre>';
+            echo '<pre>Starts continuation unit tests.' . PHP_EOL;
+            echo '//////////////////////////////////////////////////////////////////////////' . PHP_EOL;
             foreach ($unitTestCommands as $command) {
                 $commandElements = explode(' ', $command);
                 $testFileName = array_pop($commandElements);
@@ -627,10 +636,28 @@ EOD;
                 echo `$phpunit $commandOptions $currentDir/$testFileName`;
                 echo '//////////////////////////////////////////////////////////////////////////' . PHP_EOL;
             }
-            echo 'All unit tests ended.</pre>';
+            echo '</pre>';
         } else {
             U::displayErrorCallStack('"$_BreakpointDebugging_UNIT_TEST_MODE" of "./PEAR_Setting/BreakpointDebugging_MySetting.php" file is mistaking.');
         }
+    }
+
+    /**
+     * Changes execution mode for purpose which displays unit test error.
+     *
+     * @return Original execution mode value.
+     */
+    static function changeExecutionModeForUnitTest()
+    {
+        global $_BreakpointDebugging_EXE_MODE;
+
+        $original = $_BreakpointDebugging_EXE_MODE;
+        if ($_BreakpointDebugging_EXE_MODE & B::LOCAL_DEBUG_OF_RELEASE) {
+            $_BreakpointDebugging_EXE_MODE = B::LOCAL_DEBUG;
+        } else if ($_BreakpointDebugging_EXE_MODE & B::RELEASE) {
+            $_BreakpointDebugging_EXE_MODE = B::REMOTE_DEBUG;
+        }
+        return $original;
     }
 
     /**
@@ -665,6 +692,30 @@ EOD;
         $code = $functionName . '(' . implode(',', $paramString) . ')';
         $return = eval('global $_BreakpointDebugging; $return = ' . $code . '; echo "<br/><br/>RETURN = "; var_dump($return); echo "<br/>"; return $return;');
         return $return;
+    }
+
+    /**
+     * Does autoload by path which was divided by name space separator and underscore separator as directory.
+     *
+     * @param string $className The class name which calls class member of static.
+     *                          Or, the class name which creates new instance.
+     *                          Or, the class name when extends base class.
+     *
+     * @return void
+     */
+    final static function autoload($className)
+    {
+        global $_BreakpointDebugging_EXE_MODE;
+
+        // Changes underscore and name space separator to directory separator.
+        $className = str_replace(array ('_', '\\'), '/', $className) . '.php';
+        if ($_BreakpointDebugging_EXE_MODE & self::UNIT_TEST) {
+            $storeExeMode = B::changeExecutionModeForUnitTest();
+            include_once $className;
+            $_BreakpointDebugging_EXE_MODE = $storeExeMode;
+        } else {
+            include_once $className;
+        }
     }
 
 }

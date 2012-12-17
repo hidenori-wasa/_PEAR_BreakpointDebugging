@@ -16,13 +16,12 @@ The dependences
     Requires "shmop" extension if you use "BreakpointDebugging_LockByShmop" class. (optional).
     Requires environment which "flock()" enables if you use "BreakpointDebugging_LockByFlock" class. (optional).
     Requires PHPUnit pear package if you use "BreakpointDebugging::executeUnitTest()" class method. (optional).
-        However, we can execute basic unit test with remote server by the following files
+        However, we can execute basic unit test using remote server by the following directories and files
         in case of "$_BreakpointDebugging_UNIT_TEST_MODE === 'DEBUG'" mode.
-             PEAR/PHPUnit/TextUI/Command.php
-             PEAR/PHPUnit/TextUI/TestRunner.php
-             PEAR/PHPUnit/Framework/TestSuite.php
-             PEAR/PHPUnit/Framework/TestCase.php
-             PEAR/PHPUnit/Framework/TestResult.php
+             PEAR/PHPUnit/*
+             PEAR/PHP/Timer.php
+             PEAR/PHP/CodeCoverage/Filter.php
+             PEAR/PHP/CodeCoverage/Util.php
 
 Notice
-    "Pear-Package" directory is project directory of "NetBeans IDE 7.1.2".
+    "Pear-Package" directory is project directory of "NetBeans IDE 7.1.2 for Windows".

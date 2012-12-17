@@ -130,19 +130,17 @@ class BreakpointDebugging_UnitTestAssert
      *
      * @return void
      */
-    static function displayErrorCallStack($errorMessage)
+    static function displayErrorCallStack($error)
     {
         global $_BreakpointDebugging_EXE_MODE;
 
-        // Stores the execution mode.
-        $storeExeMode = $_BreakpointDebugging_EXE_MODE;
-        // Changes execution mode to display assertion failure of unit test.
-        if ($_BreakpointDebugging_EXE_MODE & B::LOCAL_DEBUG_OF_RELEASE) {
-            $_BreakpointDebugging_EXE_MODE = B::LOCAL_DEBUG;
-        } else if ($_BreakpointDebugging_EXE_MODE & B::RELEASE) {
-            $_BreakpointDebugging_EXE_MODE = B::REMOTE_DEBUG;
+        // Stores the execution mode. And, changes execution mode to display an error call stack.
+        $storeExeMode = B::changeExecutionModeForUnitTest();
+        if (is_string($error)) {
+            trigger_error($error);
+        } else {
+            throw new \BreakpointDebugging_Error_Exception('Wrong parameter type.');
         }
-        trigger_error($errorMessage);
         // Restores the execution mode.
         $_BreakpointDebugging_EXE_MODE = $storeExeMode;
         exit;
