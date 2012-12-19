@@ -86,7 +86,6 @@
  *  PEAR_Exception
  *      BreakpointDebugging_Exception
  *          BreakpointDebugging_Error_Exception
- *          BreakpointDebugging_UnitTest_Exception
  *
  * ### Useful function index. ###
  * This registers as function or method being not fixed.
@@ -194,21 +193,6 @@
 // therefore "use" keyword alias does not be affected by other files.
 use \BreakpointDebugging as B;
 use \BreakpointDebugging_UnitTestAssert as U;
-
-/**
- * Unit test exception.
- *
- * @category PHP
- * @package  BreakpointDebugging
- * @author   Hidenori Wasa <public@hidenori-wasa.com>
- * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
- * @version  Release: @package_version@
- * @link     http://pear.php.net/package/BreakpointDebugging
- */
-class BreakpointDebugging_UnitTest_Exception extends \BreakpointDebugging_Exception
-{
-
-}
 
 /**
  * This class executes error or exception handling, and it is except release mode.
@@ -428,7 +412,7 @@ EOD;
      *          $propertyValue = \BreakpointDebugging::getPropertyForTest($object, '$_privateStaticName');
      *          $propertyValue = \BreakpointDebugging::getPropertyForTest($object, '$_privateAutoName');
      */
-    final static function getPropertyForTest($objectOrClassName, $propertyName)
+    static function getPropertyForTest($objectOrClassName, $propertyName)
     {
         if (is_object($objectOrClassName)) {
             $className = get_class($objectOrClassName);
@@ -472,7 +456,7 @@ EOD;
      *          \BreakpointDebugging::setPropertyForTest($object, '$_privateStaticName', $value);
      *          \BreakpointDebugging::setPropertyForTest($object, '$_privateAutoName', $value);
      */
-    final static function setPropertyForTest($objectOrClassName, $propertyName, $value)
+    static function setPropertyForTest($objectOrClassName, $propertyName, $value)
     {
         if (is_object($objectOrClassName)) {
             $className = get_class($objectOrClassName);
@@ -567,29 +551,23 @@ EOD;
 
         self::checkUnitTestExeMode();
 
-        if (!is_array($unitTestCommands)) {
-            U::displayErrorCallStack('First parameter is wrong type.');
-        }
-        if (!is_string($currentDir)) {
-            U::displayErrorCallStack('Second parameter is wrong type.');
-        }
+        B::$isErrorAtUnitTest = true;
+        assert(is_array($unitTestCommands));
+        assert(is_string($currentDir));
+        B::$isErrorAtUnitTest = false;
 
         if ($_BreakpointDebugging_UNIT_TEST_MODE === 'DEBUG') {
             if (count($unitTestCommands) !== 1) {
-                U::displayErrorCallStack('Only one unit test process must be executed because static variable can not be initialized. Or, change to "$_BreakpointDebugging_UNIT_TEST_MODE = \'ALL\';" in "./PEAR_Setting/BreakpointDebugging_MySetting.php" file.');
+                B::$isErrorAtUnitTest = true;
+                trigger_error('Only one unit test process must be executed because static variable can not be initialized. Or, change to "$_BreakpointDebugging_UNIT_TEST_MODE = \'ALL\';" in "./PEAR_Setting/BreakpointDebugging_MySetting.php" file.', E_USER_ERROR);
+                B::$isErrorAtUnitTest = false;
             }
             $command = $unitTestCommands[0];
             $commandElements = explode(' ', $command);
             $testFileName = array_pop($commandElements);
             array_push($commandElements, "$currentDir/$testFileName");
-//            $className = str_replace(array ('-', '/'), '_', substr("$currentDir/$testFileName", 0, -4));
-//            // Constructs a test instance.
-//            $pClass = new $className;
-//            // Destructs a test instance.
-//            $pClass = null;
-//            echo '<pre>Unit test ended.</pre>';
-//            return;
             array_unshift($commandElements, 'dummy');
+            include_once 'PHPUnit/Autoload.php';
             $pPHPUnit_TextUI_Command = new \PHPUnit_TextUI_Command;
             echo "<pre>Starts Debugging of '$testFileName' file." . PHP_EOL;
             echo '//////////////////////////////////////////////////////////////////////////' . PHP_EOL;
@@ -638,7 +616,9 @@ EOD;
             }
             echo '</pre>';
         } else {
-            U::displayErrorCallStack('"$_BreakpointDebugging_UNIT_TEST_MODE" of "./PEAR_Setting/BreakpointDebugging_MySetting.php" file is mistaking.');
+            B::$isErrorAtUnitTest = true;
+            trigger_error('"$_BreakpointDebugging_UNIT_TEST_MODE" of "./PEAR_Setting/BreakpointDebugging_MySetting.php" file is mistaking.', E_USER_ERROR);
+            B::$isErrorAtUnitTest = false;
         }
     }
 
@@ -692,30 +672,6 @@ EOD;
         $code = $functionName . '(' . implode(',', $paramString) . ')';
         $return = eval('global $_BreakpointDebugging; $return = ' . $code . '; echo "<br/><br/>RETURN = "; var_dump($return); echo "<br/>"; return $return;');
         return $return;
-    }
-
-    /**
-     * Does autoload by path which was divided by name space separator and underscore separator as directory.
-     *
-     * @param string $className The class name which calls class member of static.
-     *                          Or, the class name which creates new instance.
-     *                          Or, the class name when extends base class.
-     *
-     * @return void
-     */
-    final static function autoload($className)
-    {
-        global $_BreakpointDebugging_EXE_MODE;
-
-        // Changes underscore and name space separator to directory separator.
-        $className = str_replace(array ('_', '\\'), '/', $className) . '.php';
-        if ($_BreakpointDebugging_EXE_MODE & self::UNIT_TEST) {
-            $storeExeMode = B::changeExecutionModeForUnitTest();
-            include_once $className;
-            $_BreakpointDebugging_EXE_MODE = $storeExeMode;
-        } else {
-            include_once $className;
-        }
     }
 
 }

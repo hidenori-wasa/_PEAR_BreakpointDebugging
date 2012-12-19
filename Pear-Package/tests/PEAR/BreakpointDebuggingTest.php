@@ -68,7 +68,7 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTest
             U::registerAssertionFailureLocationOfUnitTest('BreakpointDebugging', 'iniSet');
             // Second parameter is not character string.
             B::iniSet('default_charset', 8);
-        } catch (\BreakpointDebugging_UnitTest_Exception $e) {
+        } catch (\PHPUnit_Framework_Error_Warning $e) {
             return;
         }
         $this->assertTrue(false);
@@ -87,7 +87,7 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTest
         try {
             U::registerAssertionFailureLocationOfUnitTest('BreakpointDebugging', 'getPropertyForTest');
             B::getPropertyForTest($_BreakpointDebugging, '$_handlerOf'); // Private static property of base class.
-        } catch (\BreakpointDebugging_UnitTest_Exception $e) {
+        } catch (\PHPUnit_Framework_Error_Warning $e) {
             return;
         }
         $this->assertTrue(false);
@@ -107,7 +107,7 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTest
         try {
             U::registerAssertionFailureLocationOfUnitTest('BreakpointDebugging', 'setPropertyForTest');
             B::setPropertyForTest($_BreakpointDebugging, '$_handlerOf', 'change'); // Private static property of base class.
-        } catch (\BreakpointDebugging_UnitTest_Exception $e) {
+        } catch (\PHPUnit_Framework_Error_Warning $e) {
             return;
         }
         $this->assertTrue(false);

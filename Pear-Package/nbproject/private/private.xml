@@ -18,6 +18,10 @@
             <line>144</line>
         </file>
         <file>
+            <url>PEAR_Setting/BreakpointDebugging_MySetting.php</url>
+            <line>95</line>
+        </file>
+        <file>
             <url>ErrorLogFilesManager.php</url>
             <line>122</line>
             <line>162</line>
@@ -44,7 +48,7 @@
         </file>
         <file>
             <url>PEAR/BreakpointDebugging.php</url>
-            <line>348</line>
+            <line>543</line>
         </file>
         <file>
             <url>BreakpointDebugging_MySetting.php</url>

@@ -213,6 +213,11 @@ class BreakpointDebugging_InAllCase
     private static $_handlerOf = 'none';
 
     /**
+     * @var bool Is it error at unit test?
+     */
+    static $isErrorAtUnitTest = false;
+
+    /**
      * Constructs instance.
      */
     function __construct()
@@ -254,8 +259,8 @@ class BreakpointDebugging_InAllCase
             }
         }
         if ($cmpResult) {
-            echo '<br/>' . $errorMessage . '<br/>' .
-            'Current value =';
+            echo "<pre>$errorMessage</pre>" .
+            "<pre>Current value =</pre>";
             var_dump($value);
         }
     }
@@ -485,11 +490,11 @@ class BreakpointDebugging_InAllCase
      */
     static function autoload($className)
     {
-        global $_BreakpointDebugging_EXE_MODE;
-
         // Changes underscore and name space separator to directory separator.
         $className = str_replace(array ('_', '\\'), '/', $className) . '.php';
+        self::$isErrorAtUnitTest = true;
         include_once $className;
+        self::$isErrorAtUnitTest = false;
     }
 
     /**
@@ -504,10 +509,10 @@ class BreakpointDebugging_InAllCase
     {
         global $_BreakpointDebugging_EXE_MODE;
 
-        if ($_BreakpointDebugging_EXE_MODE & B::UNIT_TEST) {
+        if ($_BreakpointDebugging_EXE_MODE & B::UNIT_TEST) { // For direct call.
             self::$isInternal = false;
             // Throws exception for unit test.
-            throw new \BreakpointDebugging_UnitTest_Exception('');
+            throw new \PHPUnit_Framework_Error($pException->getMessage(), $pException->getCode(), $pException->getFile(), $pException->getLine(), $pException->getTrace());
         }
         self::$_handlerOf = 'exception'; // This registers as exception handler.
         $error = new \BreakpointDebugging_Error();
@@ -523,23 +528,34 @@ class BreakpointDebugging_InAllCase
      *
      * @return bool Without system log (true).
      */
-    final static function errorHandler($errorNumber, $errorMessage)
+    final static function errorHandler($errorNumber, $errorMessage, $errorFileName, $errorLine)
     {
         global $_BreakpointDebugging_EXE_MODE;
+        static $didDisplayUnitTestError = false;
 
         if ($_BreakpointDebugging_EXE_MODE & B::UNIT_TEST) {
-            if (\BreakpointDebugging_UnitTestAssert::isUnitTestOfAssertionFailure()) {
+            $isUnitTest = true;
+            if (!self::$isErrorAtUnitTest && \BreakpointDebugging_UnitTestAssert::isUnitTestOfAssertionFailure()) {
                 self::$isInternal = false;
-                // Throws exception for unit test.
-                throw new \BreakpointDebugging_UnitTest_Exception('');
+                if ($didDisplayUnitTestError) {
+                    exit;
+                }
+                // Calls the error handler of default.
+                return \PHPUnit_Util_ErrorHandler::handleError($errorNumber, $errorMessage, $errorFileName, $errorLine);
             }
-            \BreakpointDebugging_UnitTestAssert::displayErrorCallStack($errorMessage);
+            // Stores the execution mode. And, changes execution mode to display an error call stack.
+            $storeExeMode = B::changeExecutionModeForUnitTest();
         }
         $handlerStore = self::$_handlerOf; // Stores the handler.
         self::$_handlerOf = 'error'; // This registers as error handler.
         $error = new \BreakpointDebugging_Error();
         $error->errorHandler2($errorNumber, $errorMessage, self::$prependErrorLog);
         self::$_handlerOf = $handlerStore; // Restores handler.
+        if (isset($isUnitTest)) {
+            $didDisplayUnitTestError = true;
+            // Restores the execution mode.
+            $_BreakpointDebugging_EXE_MODE = $storeExeMode;
+        }
         return true;
     }
 
@@ -704,7 +720,7 @@ set_exception_handler('\BreakpointDebugging::exceptionHandler');
 // This sets global error handler.( -1 sets all bits on 1. Therefore, this specifies error, warning and note of all kinds and so on.)
 set_error_handler('\BreakpointDebugging::errorHandler', -1);
 $_BreakpointDebugging = new \BreakpointDebugging();
-spl_autoload_register('\BreakpointDebugging::autoload', true, true);
+spl_autoload_register('\BreakpointDebugging::autoload');
 register_shutdown_function('\BreakpointDebugging::shutdown');
 
 ?>

@@ -41,7 +41,7 @@ class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_Un
         try {
             U::registerAssertionFailureLocationOfUnitTest('BreakpointDebugging_Lock', '__clone');
             $tmp = clone $this->lockByFileExisting;
-        } catch (\BreakpointDebugging_UnitTest_Exception $e) {
+        } catch (\PHPUnit_Framework_Error_Warning $e) {
             return;
         }
         $this->assertTrue(false);
@@ -123,7 +123,7 @@ class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_Un
         try {
             U::registerAssertionFailureLocationOfUnitTest('BreakpointDebugging_Lock', 'unlock');
             $this->lockByFileExisting->unlock(); // Error.
-        } catch (\BreakpointDebugging_UnitTest_Exception $e) {
+        } catch (\PHPUnit_Framework_Error_Warning $e) {
             return;
         }
         $this->assertTrue(false);
@@ -145,7 +145,7 @@ class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_Un
             U::registerAssertionFailureLocationOfUnitTest('BreakpointDebugging_Lock', '__destruct');
             // Calls "__destruct()".
             $this->lockByFileExisting = null; // Error.
-        } catch (\BreakpointDebugging_UnitTest_Exception $e) {
+        } catch (\PHPUnit_Framework_Error_Warning $e) {
             return;
         }
         $this->assertTrue(false);
@@ -167,7 +167,7 @@ class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_Un
         try {
             U::registerAssertionFailureLocationOfUnitTest('BreakpointDebugging_Lock', 'unlock');
             $this->lockByFileExisting->unlock(); // Error.
-        } catch (\BreakpointDebugging_UnitTest_Exception $e) {
+        } catch (\PHPUnit_Framework_Error_Warning $e) {
             return;
         }
         $this->assertTrue(false);
@@ -191,7 +191,7 @@ class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_Un
             U::registerAssertionFailureLocationOfUnitTest('BreakpointDebugging_Lock', '__destruct');
             // Calls "__destruct()".
             $this->lockByFileExisting = null; // Error.
-        } catch (\BreakpointDebugging_UnitTest_Exception $e) {
+        } catch (\PHPUnit_Framework_Error_Warning $e) {
             return;
         }
         $this->assertTrue(false);
@@ -231,11 +231,16 @@ class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_Un
      */
     function testSingleton_B()
     {
+        global $_BreakpointDebugging_EXE_MODE;
+
+        if (($_BreakpointDebugging_EXE_MODE & B::RELEASE) && !extension_loaded('shmop')) {
+            $this->markTestSkipped('"shmop" extention has been not loaded.');
+        }
         try {
             U::registerAssertionFailureLocationOfUnitTest('BreakpointDebugging_Lock', 'singletonBase');
             // Constructs instance of other class.
             $LockByShmop = &\BreakpointDebugging_LockByShmop::singleton(5, 10); // Error.
-        } catch (\BreakpointDebugging_UnitTest_Exception $e) {
+        } catch (\PHPUnit_Framework_Error_Warning $e) {
             return;
         }
         $this->assertTrue(false);
@@ -250,7 +255,7 @@ class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_Un
             U::registerAssertionFailureLocationOfUnitTest('BreakpointDebugging_Lock', 'singletonBase');
             // Constructs instance of other class.
             $lockByFlock = &\BreakpointDebugging_LockByFlock::singleton(5, 10); // Error.
-        } catch (\BreakpointDebugging_UnitTest_Exception $e) {
+        } catch (\PHPUnit_Framework_Error_Warning $e) {
             return;
         }
         $this->assertTrue(false);

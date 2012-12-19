@@ -200,7 +200,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTest
             $pPrevious = new \Exception('Previous exception.', E_USER_ERROR);
             $pException = new \Exception('Exception.', E_USER_ERROR, $pPrevious);
             B::exceptionHandler($pException);
-        } catch (\BreakpointDebugging_UnitTest_Exception $e) {
+        } catch (\PHPUnit_Framework_Error $e) {
             return;
         }
         $this->assertTrue(false);
@@ -213,7 +213,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTest
     {
         try {
             B::errorHandler(E_USER_ERROR, 'Error test.');
-        } catch (\BreakpointDebugging_UnitTest_Exception $e) {
+        } catch (\PHPUnit_Framework_Error_Warning $e) {
             return;
         }
         $this->assertTrue(false);
@@ -228,7 +228,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTest
             try {
                 U::registerAssertionFailureLocationOfUnitTest(__CLASS__, __FUNCTION__);
                 B::internalAssert(false);
-            } catch (\BreakpointDebugging_UnitTest_Exception $e) {
+            } catch (\PHPUnit_Framework_Error_Warning $e) {
                 break;
             }
             $this->assertTrue(false);
@@ -245,7 +245,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTest
         while (true) {
             try {
                 B::internalException('Tests "internalException()".');
-            } catch (\BreakpointDebugging_UnitTest_Exception $e) {
+            } catch (\PHPUnit_Framework_Error $e) {
                 break;
             }
             $this->assertTrue(false);
@@ -265,7 +265,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTest
         try {
             // Emulates this page shutdown.
             \BreakpointDebugging_InAllCase::shutdown();
-        } catch (\BreakpointDebugging_UnitTest_Exception $e) {
+        } catch (\PHPUnit_Framework_Error_Warning $e) {
             $this->assertTrue(!is_object($_BreakpointDebugging_InAllCaseTest_ForDebug));
             $this->assertTrue(is_object($_BreakpointDebugging));
             return;
@@ -280,7 +280,7 @@ class BreakpointDebugging_InAllCaseTest_ForDebug
     function __destruct()
     {
         U::registerAssertionFailureLocationOfUnitTest(__CLASS__, __FUNCTION__);
-        // Throws "\BreakpointDebugging_UnitTest_Exception" inside "__destruct()" class method.
+        // Throws "\PHPUnit_Framework_Error_Warning" inside "__destruct()" class method.
         assert(false);
     }
 

@@ -43,9 +43,6 @@
  */
 require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
 
-use \BreakpointDebugging as B;
-use \BreakpointDebugging_UnitTestAssert as U;
-
 /**
  * Class which discerns unit test assertion failure.
  *
@@ -56,8 +53,10 @@ use \BreakpointDebugging_UnitTestAssert as U;
  * @version  Release: @package_version@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-class BreakpointDebugging_UnitTestAssert
+final class BreakpointDebugging_UnitTestAssert
 {
+    private static $_isEnabled = false;
+
     /**
      * @var string Class name which causes assertion failure of unit test.
      */
@@ -71,14 +70,18 @@ class BreakpointDebugging_UnitTestAssert
     /**
      * Registers class method name which causes assertion failure of unit test.
      * Then, discerns between "assertion failure" or "unit test of assertion failure".
+     * Extends feature of "PHPUnit" package if this class method was called. (Not the default.)
      *
      * @param string $className  Class name.
      * @param string $methodName Class method name.
      *
      * @return void
+     *
+     * @See the file level document of "UnitTest.php".
      */
-    final static function registerAssertionFailureLocationOfUnitTest($className, $methodName)
+    static function registerAssertionFailureLocationOfUnitTest($className, $methodName)
     {
+        self::$_isEnabled = true;
         self::$_assertClassName = $className;
         self::$_assertMethodName = $methodName;
     }
@@ -88,15 +91,20 @@ class BreakpointDebugging_UnitTestAssert
      *
      * @return bool Unit test of assertion failure returns true.
      */
-    final static function isUnitTestOfAssertionFailure()
+    static function isUnitTestOfAssertionFailure()
     {
+        // Did you use feature except "PHPUnit" package?
+        if (!self::$_isEnabled) {
+            return true;
+        }
+
         $cmpAssertClassMethodName = function ($prevCall, $className, $methodName) {
             if (isset($prevCall)) {
                 // Searches the location which calls "Registered class method which causes assertion failure of unit test" in call stack.
                 if (array_key_exists('class', $prevCall) && $prevCall['class'] === $className
                 && array_key_exists('function', $prevCall) && $prevCall['function'] === $methodName) {
                     // Unregisters class method name which causes assertion failure of unit test.
-                    U::registerAssertionFailureLocationOfUnitTest('', '');
+                    \BreakpointDebugging_UnitTestAssert::registerAssertionFailureLocationOfUnitTest('', '');
                     return true;
                 }
                 // Assertion error.
@@ -110,42 +118,18 @@ class BreakpointDebugging_UnitTestAssert
         foreach ($debugBacktrace as $key => $call) {
             // Searches the location which calls "assert() function" in call stack.
             if (array_key_exists('function', $call) && $call['function'] === 'assert') {
-                return $cmpAssertClassMethodName($prevCall, U::$_assertClassName, U::$_assertMethodName);
+                return $cmpAssertClassMethodName($prevCall, self::$_assertClassName, self::$_assertMethodName);
             }
             // Searches the location which calls "BreakpointDebugging_InAllCase::internalAssert() class method" in call stack.
             if (array_key_exists('class', $call) && $call['class'] === 'BreakpointDebugging_InAllCase'
             && array_key_exists('function', $call) && $call['function'] === 'internalAssert') {
-                return $cmpAssertClassMethodName($prevCall, U::$_assertClassName, U::$_assertMethodName);
+                return $cmpAssertClassMethodName($prevCall, self::$_assertClassName, self::$_assertMethodName);
             }
             $prevCall = $call;
         }
         // Not assertion.
         return true;
     }
-
-    /**
-     * Displays an error call stack.
-     *
-     * @param string $errorMessage Error message.
-     *
-     * @return void
-     */
-    static function displayErrorCallStack($error)
-    {
-        global $_BreakpointDebugging_EXE_MODE;
-
-        // Stores the execution mode. And, changes execution mode to display an error call stack.
-        $storeExeMode = B::changeExecutionModeForUnitTest();
-        if (is_string($error)) {
-            trigger_error($error);
-        } else {
-            throw new \BreakpointDebugging_Error_Exception('Wrong parameter type.');
-        }
-        // Restores the execution mode.
-        $_BreakpointDebugging_EXE_MODE = $storeExeMode;
-        exit;
-    }
-
 }
 
 ?>

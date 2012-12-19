@@ -84,8 +84,8 @@ function BreakpointDebugging_setExecutionMode()
     // $_BreakpointDebugging_EXE_MODE = $LOCAL_DEBUG_OF_RELEASE;
     // $_BreakpointDebugging_EXE_MODE = $REMOTE_DEBUG;
     // $_BreakpointDebugging_EXE_MODE = $RELEASE;
-    // $_BreakpointDebugging_EXE_MODE = $LOCAL_DEBUG_OF_RELEASE | $UNIT_TEST;
-    $_BreakpointDebugging_EXE_MODE = $RELEASE | $UNIT_TEST;
+    $_BreakpointDebugging_EXE_MODE = $LOCAL_DEBUG_OF_RELEASE | $UNIT_TEST;
+    // $_BreakpointDebugging_EXE_MODE = $RELEASE | $UNIT_TEST;
     /**
      * Please, specify unit test mode.
      *      'ALL' tests all unit test files by "B::executeUnitTest()" class method.
@@ -98,7 +98,7 @@ function BreakpointDebugging_setExecutionMode()
     // Reference path setting.
     if ($_BreakpointDebugging_EXE_MODE & ($REMOTE_DEBUG | $RELEASE)) { // In case of remote.
         if (isset($_SERVER['SERVER_ADDR']) && $_SERVER['SERVER_ADDR'] === '127.0.0.1') {
-            exit('You mistake "$_BreakpointDebugging_EXE_MODE" into "./PEAR_Setting/BreakpointDebugging_MySetting.php" because this is local server.');
+            exit('<pre>You mistake "$_BreakpointDebugging_EXE_MODE" into "./PEAR_Setting/BreakpointDebugging_MySetting.php" because this is local server.</pre>');
         }
         if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') { // In case of Windows.
             // ini_set('include_path', '.;C:\xampp\php\PEAR');

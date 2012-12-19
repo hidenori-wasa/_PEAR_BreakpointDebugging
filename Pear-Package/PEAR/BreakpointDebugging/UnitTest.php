@@ -5,11 +5,21 @@
  *
  * This class extends "PHPUnit_Framework_TestCase".
  * This class does not use "phpunit" command in case of "$_BreakpointDebugging_UNIT_TEST_MODE === 'DEBUG'" mode.
- * Therefore, we can execute basic unit test with remote server by the following files.
- *      PEAR/PHPUnit/*
+ * Therefore, we can execute unit test with remote server by the following files.
+ *      PEAR/PHP/CodeCoverage.php
+ *      PEAR/PHP/CodeCoverage/
+ *          Copyright (c) 2009-2012 Sebastian Bergmann <sb@sebastian-bergmann.de>
+ *      PEAR/PHP/Invoker.php
+ *      PEAR/PHP/Invoker/
+ *          Copyright (c) 2011-2012 Sebastian Bergmann <sb@sebastian-bergmann.de>
  *      PEAR/PHP/Timer.php
- *      PEAR/PHP/CodeCoverage/Filter.php
- *      PEAR/PHP/CodeCoverage/Util.php
+ *      PEAR/PHP/Timer/
+ *          Copyright (c) 2010-2011 Sebastian Bergmann <sb@sebastian-bergmann.de>
+ *      PEAR/PHP/Token.php
+ *      PEAR/PHP/Token
+ *          Copyright (c) 2009-2012 Sebastian Bergmann <sb@sebastian-bergmann.de>
+ *      PEAR/PHPUnit/
+ *          Copyright (c) 2001-2012 Sebastian Bergmann <sebastian@phpunit.de>
  *
  * @example of usage.
  *      use \BreakpointDebugging_UnitTestAssert as U;
@@ -32,9 +42,10 @@
  *          function testSomething()
  *          {
  *              try {
+ *                  // Extends feature of "PHPUnit" package if this class method was called. (Not the default.)
  *                  U::registerAssertionFailureLocationOfUnitTest('TargetClassName', 'TargetClassMethodName');
  *                  $this->pSomething->Something(); // Error.
- *              } catch (\BreakpointDebugging_UnitTest_Exception $e) {
+ *              } catch (\PHPUnit_Framework_Error_Warning $e) {
  *                  return;
  *              }
  *              $this->assertTrue(false);
@@ -102,40 +113,6 @@ if ($_BreakpointDebugging_UNIT_TEST_MODE === 'DEBUG') { // 'DEBUG' debugs one un
 
     class BreakpointDebugging_UnitTest extends \PHPUnit_Framework_TestCase
     {
-//        /**
-//         * Executes a test class method in turn only.
-//         */
-//        final function __construct()
-//        {
-//            // Parses a class object which extended this class.
-//            $pClassReflection = new ReflectionClass($this);
-//            $pMethodReflections = $pClassReflection->getMethods();
-//            // Takes out "setUp()" and "tearDown()" class method.
-//            foreach ($pMethodReflections as $pMethodReflection) {
-//                if ($pMethodReflection->name === 'setUp') {
-//                    $pSetUp = $pMethodReflection;
-//                } else if ($pMethodReflection->name === 'tearDown') {
-//                    $pTearDown = $pMethodReflection;
-//                }
-//            }
-//            // Calls in test class method in turn.
-//            foreach ($pMethodReflections as $pMethodReflection) {
-//                // Skips class method except test class method.
-//                if (substr_compare($pMethodReflection->name, 'test', 0, 4, true)) {
-//                    continue;
-//                }
-//                if (isset($pSetUp)) {
-//                    // Calls in "setUp()" class method.
-//                    $pSetUp->invoke($this);
-//                }
-//                // Calls in test class method.
-//                $pMethodReflection->invoke($this);
-//                if (isset($pTearDown)) {
-//                    // Calls in "tearDown()" class method.
-//                    $pTearDown->invoke($this);
-//                }
-//            }
-//        }
         /**
          * Asserts that a condition is true. "PHPUnit_Framework_Assert::assertTrue()" class method has been overridden by this class method.
          *
@@ -146,19 +123,17 @@ if ($_BreakpointDebugging_UNIT_TEST_MODE === 'DEBUG') { // 'DEBUG' debugs one un
          */
         static function assertTrue($condition, $message = '')
         {
-            if (!is_bool($condition)) {
-                U::displayErrorCallStack('First parameter is wrong type.');
-            }
-            if (!is_string($message)) {
-                U::displayErrorCallStack('Second parameter is wrong type.');
-            }
+            B::$isErrorAtUnitTest = true;
+            assert(is_bool($condition));
+            assert(is_string($message));
 
             if (!$condition) {
                 if ($message === '') {
                     $message = '"assertTrue()" was failed.';
                 }
-                U::displayErrorCallStack($message);
+                trigger_error($message);
             }
+            B::$isErrorAtUnitTest = false;
         }
 
     }
@@ -182,8 +157,6 @@ if ($_BreakpointDebugging_UNIT_TEST_MODE === 'DEBUG') { // 'DEBUG' debugs one un
 
     }
 
-} else {
-    U::displayErrorCallStack('Undefined constant number.');
 }
 
 ?>
