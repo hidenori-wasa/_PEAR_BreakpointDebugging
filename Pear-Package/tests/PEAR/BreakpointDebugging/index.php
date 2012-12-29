@@ -19,10 +19,6 @@ require_once './tests/PEAR/BreakpointDebugging/LockByShmopMultiprocessTest/Test.
 exit;
 
 
-assert(false);
-exit;
-
-
 $uniqueIdOfMultiprocess = uniqid('', true);
 $pFile = fopen('./test.txt', 'w+b');
 chmod('./test.txt', 0600);
@@ -62,7 +58,7 @@ for ($count = 0; $count < 100000; $count++) {
     fwrite($pFile, sprintf('0x%08X', $count));
     fseek($pFile, 0);
     $return = hexdec(fread($pFile, 10));
-    assert($return === $count);
+    B::assert($return === $count, 1);
 }
 echo microtime(true) - $start;
 // fwrite       3.1231918334961 2.8318340778351

@@ -19,7 +19,7 @@
         </file>
         <file>
             <url>PEAR_Setting/BreakpointDebugging_MySetting.php</url>
-            <line>95</line>
+            <line>91</line>
         </file>
         <file>
             <url>ErrorLogFilesManager.php</url>
@@ -29,6 +29,11 @@
         <file>
             <url>PEAR/Validate/MySQLi/Result.php</url>
             <line>195</line>
+        </file>
+        <file>
+            <url>tests/PEAR/BreakpointDebuggingTest.php</url>
+            <line>10</line>
+            <line>192</line>
         </file>
         <file>
             <url>DownloadErrorLogFiles.php</url>
@@ -48,7 +53,7 @@
         </file>
         <file>
             <url>PEAR/BreakpointDebugging.php</url>
-            <line>543</line>
+            <line>529</line>
         </file>
         <file>
             <url>BreakpointDebugging_MySetting.php</url>

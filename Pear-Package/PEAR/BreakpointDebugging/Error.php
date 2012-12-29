@@ -145,10 +145,6 @@ final class BreakpointDebugging_Error
             $object->tags['/font'] = '';
             $object->tags['small'] = '';
             $object->tags['/small'] = '';
-            $object->tags['i'] = '';
-            $object->tags['/i'] = '';
-            $object->tags['b'] = '';
-            $object->tags['/b'] = '';
         };
         $this->_loggedArrays = array ();
         $this->_loggedObjects = array ();
@@ -158,6 +154,10 @@ final class BreakpointDebugging_Error
             $setTags($this);
             $this->tags['pre'] = '';
             $this->tags['/pre'] = PHP_EOL . PHP_EOL;
+            $this->tags['i'] = '';
+            $this->tags['/i'] = '';
+            $this->tags['b'] = '';
+            $this->tags['/b'] = '';
         } else { // In case of not the logging.
             $this->_isLogging = false;
             $this->_mark = '&diams;';
@@ -175,15 +175,15 @@ final class BreakpointDebugging_Error
                 $this->tags['/font'] = '</font>';
                 $this->tags['small'] = '<small>';
                 $this->tags['/small'] = '</small>';
-                $this->tags['i'] = '<i>';
-                $this->tags['/i'] = '</i>';
-                $this->tags['b'] = '<b>';
-                $this->tags['/b'] = '</b>';
             } else { // When "Xdebug" does not exist.
                 $this->tags['pre'] = '<pre>';
                 $setTags($this);
             }
             $this->tags['/pre'] = '</pre>';
+            $this->tags['i'] = '<i>';
+            $this->tags['/i'] = '</i>';
+            $this->tags['b'] = '<b>';
+            $this->tags['/b'] = '</b>';
         }
     }
 
@@ -198,8 +198,8 @@ final class BreakpointDebugging_Error
      */
     private function _convertMbString($string)
     {
-        B::internalAssert(func_num_args() === 1);
-        B::internalAssert(is_string($string));
+        B::internalAssert(func_num_args() === 1, 1);
+        B::internalAssert(is_string($string), 2);
 
         static $onceFlag = true;
 
@@ -210,7 +210,7 @@ final class BreakpointDebugging_Error
             $message = 'This isn\'t single character sets.';
             if ($onceFlag) {
                 $onceFlag = false;
-                B::internalException($message);
+                B::internalException($message, 3);
             }
             return "### ERROR: {$message} ###";
         }
@@ -278,10 +278,10 @@ final class BreakpointDebugging_Error
      */
     private function _reflectArray(&$pTmpLog, $paramName, $array, $tabNumber = 1)
     {
-        B::internalAssert(func_num_args() <= 4);
-        B::internalAssert(is_string($paramName) || is_int($paramName));
-        B::internalAssert(is_array($array));
-        B::internalAssert(is_int($tabNumber));
+        B::internalAssert(func_num_args() <= 4, 1);
+        B::internalAssert(is_string($paramName) || is_int($paramName), 2);
+        B::internalAssert(is_array($array), 3);
+        B::internalAssert(is_int($tabNumber), 4);
 
         $isOverMaxLogElementNumber = false;
         if (count($array) > B::$maxLogElementNumber) {
@@ -326,7 +326,7 @@ final class BreakpointDebugging_Error
         }
         AFTER_TREATMENT:
         $this->_logBufferWriting($pTmpLog2, PHP_EOL . $tabs . ')');
-        B::internalAssert($pTmpLog2 !== null);
+        B::internalAssert($pTmpLog2 !== null, 5);
         $this->_logCombination($pTmpLog, $pTmpLog2);
     }
 
@@ -344,11 +344,11 @@ final class BreakpointDebugging_Error
     {
         $className = get_class($object);
 
-        B::internalAssert(func_num_args() <= 4);
-        B::internalAssert(is_string($paramName) || is_int($paramName));
-        B::internalAssert(is_string($className));
-        B::internalAssert(is_object($object));
-        B::internalAssert(is_int($tabNumber));
+        B::internalAssert(func_num_args() <= 4, 1);
+        B::internalAssert(is_string($paramName) || is_int($paramName), 2);
+        B::internalAssert(is_string($className), 3);
+        B::internalAssert(is_object($object), 4);
+        B::internalAssert(is_int($tabNumber), 5);
 
         $tabs = str_repeat("\t", $tabNumber);
         $classReflection = new \ReflectionClass($className);
@@ -405,9 +405,9 @@ final class BreakpointDebugging_Error
      */
     function exceptionHandler2($pException, $prependLog)
     {
-        B::internalAssert(func_num_args() === 2);
-        B::internalAssert($pException instanceof \Exception);
-        B::internalAssert(is_string($prependLog));
+        B::internalAssert(func_num_args() === 2, 1);
+        B::internalAssert($pException instanceof \Exception, 2);
+        B::internalAssert(is_string($prependLog), 3);
 
         // Forces unlocking to avoid lock-count assertion error if forces a exit.
         \BreakpointDebugging_Lock::forceUnlocking();
@@ -428,7 +428,12 @@ final class BreakpointDebugging_Error
                 $nextCallInfo = $nextCallStackInfo[0];
                 $deleteFlag = false;
                 foreach ($callStackInfo as $callKey => $callInfo) {
-                    if ($callInfo['line'] === $nextCallInfo['line'] && $callInfo['file'] === $nextCallInfo['file']) {
+                    if (array_key_exists('line', $callInfo)
+                    && array_key_exists('line', $nextCallInfo)
+                    && $callInfo['line'] === $nextCallInfo['line']
+                    && array_key_exists('file', $callInfo)
+                    && array_key_exists('file', $nextCallInfo)
+                    && $callInfo['file'] === $nextCallInfo['file']) {
                         $deleteFlag = true;
                     }
                     if ($deleteFlag) {
@@ -466,67 +471,67 @@ final class BreakpointDebugging_Error
      */
     function errorHandler2($errorNumber, $errorMessage, $prependLog)
     {
-        B::internalAssert(func_num_args() === 3);
-        B::internalAssert(is_int($errorNumber));
-        B::internalAssert(is_string($errorMessage));
-        B::internalAssert(is_string($prependLog));
+        B::internalAssert(func_num_args() === 3, 1);
+        B::internalAssert(is_int($errorNumber), 2);
+        B::internalAssert(is_string($errorMessage), 3);
+        B::internalAssert(is_string($prependLog), 4);
 
         global $_BreakpointDebugging_EXE_MODE;
 
         // This creates error log.
         switch ($errorNumber) {
-        case E_USER_DEPRECATED:
-            $errorKind = 'E_USER_DEPRECATED';
-            break;
-        case E_USER_NOTICE:
-            $errorKind = 'E_USER_NOTICE';
-            break;
-        case E_USER_WARNING:
-            $errorKind = 'E_USER_WARNING';
-            break;
-        case E_USER_ERROR:
-            $errorKind = 'E_USER_ERROR';
-            $endFlag = true;
-            break;
-        case E_ERROR:
-            $errorKind = 'E_ERROR';
-            $endFlag = true;
-            break;
-        case E_WARNING:
-            $errorKind = 'E_WARNING';
-            break;
-        case E_PARSE:
-            $errorKind = 'E_PARSE';
-            break;
-        case E_NOTICE:
-            $errorKind = 'E_NOTICE';
-            break;
-        case E_CORE_ERROR:
-            $errorKind = 'E_CORE_ERROR';
-            $endFlag = true;
-            break;
-        case E_CORE_WARNING:
-            $errorKind = 'E_CORE_WARNING';
-            break;
-        case E_COMPILE_ERROR:
-            $errorKind = 'E_COMPILE_ERROR';
-            $endFlag = true;
-            break;
-        case E_COMPILE_WARNING:
-            $errorKind = 'E_COMPILE_WARNING';
-            break;
-        case E_STRICT:
-            $errorKind = 'E_STRICT';
-            break;
-        case E_RECOVERABLE_ERROR:
-            $errorKind = 'E_RECOVERABLE_ERROR';
-            break;
-        case E_DEPRECATED:
-            $errorKind = 'E_DEPRECATED';
-            break;
-        default:
-            B::internalAssert(false);
-            break;
+            case E_USER_DEPRECATED:
+                $errorKind = 'E_USER_DEPRECATED';
+                break;
+            case E_USER_NOTICE:
+                $errorKind = 'E_USER_NOTICE';
+                break;
+            case E_USER_WARNING:
+                $errorKind = 'E_USER_WARNING';
+                break;
+            case E_USER_ERROR:
+                $errorKind = 'E_USER_ERROR';
+                $endFlag = true;
+                break;
+            case E_ERROR:
+                $errorKind = 'E_ERROR';
+                $endFlag = true;
+                break;
+            case E_WARNING:
+                $errorKind = 'E_WARNING';
+                break;
+            case E_PARSE:
+                $errorKind = 'E_PARSE';
+                break;
+            case E_NOTICE:
+                $errorKind = 'E_NOTICE';
+                break;
+            case E_CORE_ERROR:
+                $errorKind = 'E_CORE_ERROR';
+                $endFlag = true;
+                break;
+            case E_CORE_WARNING:
+                $errorKind = 'E_CORE_WARNING';
+                break;
+            case E_COMPILE_ERROR:
+                $errorKind = 'E_COMPILE_ERROR';
+                $endFlag = true;
+                break;
+            case E_COMPILE_WARNING:
+                $errorKind = 'E_COMPILE_WARNING';
+                break;
+            case E_STRICT:
+                $errorKind = 'E_STRICT';
+                break;
+            case E_RECOVERABLE_ERROR:
+                $errorKind = 'E_RECOVERABLE_ERROR';
+                break;
+            case E_DEPRECATED:
+                $errorKind = 'E_DEPRECATED';
+                break;
+            default:
+                B::internalAssert(false, 5);
+                break;
         }
 
         $errorMessage = $this->_convertMbString($errorMessage);
@@ -637,11 +642,11 @@ final class BreakpointDebugging_Error
     {
         global $_BreakpointDebugging_EXE_MODE;
 
-        B::internalAssert(func_num_args() <= 3);
-        B::internalAssert(is_string($errorKind));
-        B::internalAssert(is_string($errorMessage));
-        B::internalAssert(is_array($this->callStackInfo));
-        B::internalAssert(is_string($prependLog));
+        B::internalAssert(func_num_args() <= 3, 1);
+        B::internalAssert(is_string($errorKind), 2);
+        B::internalAssert(is_string($errorMessage), 3);
+        B::internalAssert(is_array($this->callStackInfo), 4);
+        B::internalAssert(is_string($prependLog), 5);
 
         if (!$this->_isLogging) {
             $errorMessage = htmlspecialchars($errorMessage, ENT_QUOTES, 'UTF-8');
@@ -838,7 +843,7 @@ final class BreakpointDebugging_Error
             // Unlocks the error log files.
             $this->lockByFileExisting->unlock();
             if ($exceptionMessage) {
-                B::internalException($exceptionMessage);
+                B::internalException($exceptionMessage, 6);
             }
         }
     }
@@ -855,7 +860,7 @@ final class BreakpointDebugging_Error
      */
     private function _getTypeAndValue(&$pTmpLog, $paramName, $paramValue, $tabNumber)
     {
-        B::internalAssert(func_num_args() === 4);
+        B::internalAssert(func_num_args() === 4, 1);
 
         if (is_array($paramValue)) {
             if ($paramName === 'GLOBALS') {
@@ -904,7 +909,7 @@ final class BreakpointDebugging_Error
             $this->tags['font']['resource'] . $paramValue . $this->tags['/font'];
             $this->_logBufferWriting($pTmpLog, $tmp);
         } else {
-            B::internalAssert(false);
+            B::internalAssert(false, 2);
         }
     }
 
@@ -919,7 +924,7 @@ final class BreakpointDebugging_Error
      */
     private function _searchDebugBacktraceArgsToString(&$pTmpLog, $backtraceParams, $tabNumber = 1)
     {
-        B::internalAssert(func_num_args() <= 3);
+        B::internalAssert(func_num_args() <= 3, 1);
 
         $isFirst = true;
         $paramCount = 0;
@@ -984,39 +989,39 @@ final class BreakpointDebugging_Error
      */
     private function _logWriting(&$pTmpLog)
     {
-        B::internalAssert(func_num_args() === 1);
+        B::internalAssert(func_num_args() === 1, 1);
 
         global $_BreakpointDebugging_EXE_MODE;
 
         switch ($_BreakpointDebugging_EXE_MODE & ~B::UNIT_TEST) {
-        case B::RELEASE:
-            rewind($pTmpLog);
-            while (!feof($pTmpLog)) {
-                fwrite($this->_pErrorLogFile, fread($pTmpLog, 4096));
-            }
-            // Delete temporary file.
-            fclose($pTmpLog);
-            break;
-        case B::LOCAL_DEBUG:
-            foreach ($pTmpLog as $log) {
-                echo $log;
-            }
-            break;
-        case B::REMOTE_DEBUG:
-            rewind($pTmpLog);
-            while (!feof($pTmpLog)) {
-                echo fread($pTmpLog, 4096);
-            }
-            // Delete temporary file.
-            fclose($pTmpLog);
-            break;
-        case B::LOCAL_DEBUG_OF_RELEASE:
-            foreach ($pTmpLog as $log) {
-                fwrite($this->_pErrorLogFile, $log);
-            }
-            break;
-        default:
-            B::internalAssert(false);
+            case B::RELEASE:
+                rewind($pTmpLog);
+                while (!feof($pTmpLog)) {
+                    fwrite($this->_pErrorLogFile, fread($pTmpLog, 4096));
+                }
+                // Delete temporary file.
+                fclose($pTmpLog);
+                break;
+            case B::LOCAL_DEBUG:
+                foreach ($pTmpLog as $log) {
+                    echo $log;
+                }
+                break;
+            case B::REMOTE_DEBUG:
+                rewind($pTmpLog);
+                while (!feof($pTmpLog)) {
+                    echo fread($pTmpLog, 4096);
+                }
+                // Delete temporary file.
+                fclose($pTmpLog);
+                break;
+            case B::LOCAL_DEBUG_OF_RELEASE:
+                foreach ($pTmpLog as $log) {
+                    fwrite($this->_pErrorLogFile, $log);
+                }
+                break;
+            default:
+                B::internalAssert(false, 2);
         }
         $pTmpLog = null;
     }
@@ -1032,41 +1037,41 @@ final class BreakpointDebugging_Error
      */
     private function _logBufferWriting(&$pLogBuffer, $log)
     {
-        B::internalAssert(is_array($pLogBuffer) || is_resource($pLogBuffer) || $pLogBuffer === null);
+        B::internalAssert(is_array($pLogBuffer) || is_resource($pLogBuffer) || $pLogBuffer === null, 1);
 
         global $_BreakpointDebugging_EXE_MODE;
 
         switch ($_BreakpointDebugging_EXE_MODE & ~B::UNIT_TEST) {
-        case B::RELEASE:
-            if ($pLogBuffer === null) {
-                fwrite($this->_pErrorLogFile, $log);
-            } else {
-                fwrite($pLogBuffer, $log);
-            }
-            break;
-        case B::LOCAL_DEBUG:
-            if ($pLogBuffer === null) {
-                echo $log;
-            } else {
-                $pLogBuffer[] = $log;
-            }
-            break;
-        case B::REMOTE_DEBUG:
-            if ($pLogBuffer === null) {
-                echo $log;
-            } else {
-                fwrite($pLogBuffer, $log);
-            }
-            break;
-        case B::LOCAL_DEBUG_OF_RELEASE:
-            if ($pLogBuffer === null) {
-                fwrite($this->_pErrorLogFile, $log);
-            } else {
-                $pLogBuffer[] = $log;
-            }
-            break;
-        default:
-            B::internalAssert(false);
+            case B::RELEASE:
+                if ($pLogBuffer === null) {
+                    fwrite($this->_pErrorLogFile, $log);
+                } else {
+                    fwrite($pLogBuffer, $log);
+                }
+                break;
+            case B::LOCAL_DEBUG:
+                if ($pLogBuffer === null) {
+                    echo $log;
+                } else {
+                    $pLogBuffer[] = $log;
+                }
+                break;
+            case B::REMOTE_DEBUG:
+                if ($pLogBuffer === null) {
+                    echo $log;
+                } else {
+                    fwrite($pLogBuffer, $log);
+                }
+                break;
+            case B::LOCAL_DEBUG_OF_RELEASE:
+                if ($pLogBuffer === null) {
+                    fwrite($this->_pErrorLogFile, $log);
+                } else {
+                    $pLogBuffer[] = $log;
+                }
+                break;
+            default:
+                B::internalAssert(false, 2);
         }
     }
 
@@ -1084,56 +1089,56 @@ final class BreakpointDebugging_Error
         global $_BreakpointDebugging_EXE_MODE;
 
         switch ($_BreakpointDebugging_EXE_MODE & ~B::UNIT_TEST) {
-        case B::RELEASE:
-            rewind($pTmpLog2);
-            if ($pTmpLog === null) {
-                while (!feof($pTmpLog2)) {
-                    fwrite($this->_pErrorLogFile, fread($pTmpLog2, 4096));
+            case B::RELEASE:
+                rewind($pTmpLog2);
+                if ($pTmpLog === null) {
+                    while (!feof($pTmpLog2)) {
+                        fwrite($this->_pErrorLogFile, fread($pTmpLog2, 4096));
+                    }
+                } else {
+                    while (!feof($pTmpLog2)) {
+                        fwrite($pTmpLog, fread($pTmpLog2, 4096));
+                    }
                 }
-            } else {
-                while (!feof($pTmpLog2)) {
-                    fwrite($pTmpLog, fread($pTmpLog2, 4096));
+                break;
+            case B::LOCAL_DEBUG:
+                if ($pTmpLog === null) {
+                    echo $pTmpLog2;
+                } else if (count($pTmpLog) === 0) {
+                    if (count($pTmpLog2) !== 0) {
+                        $pTmpLog = $pTmpLog2;
+                    }
+                } else if (count($pTmpLog2) !== 0) {
+                    $pTmpLog = array_merge($pTmpLog, $pTmpLog2);
                 }
-            }
-            break;
-        case B::LOCAL_DEBUG:
-            if ($pTmpLog === null) {
-                echo $pTmpLog2;
-            } else if (count($pTmpLog) === 0) {
-                if (count($pTmpLog2) !== 0) {
-                    $pTmpLog = $pTmpLog2;
+                break;
+            case B::REMOTE_DEBUG:
+                rewind($pTmpLog2);
+                if ($pTmpLog === null) {
+                    while (!feof($pTmpLog2)) {
+                        echo fread($pTmpLog2, 4096);
+                    }
+                } else {
+                    while (!feof($pTmpLog2)) {
+                        fwrite($pTmpLog, fread($pTmpLog2, 4096));
+                    }
                 }
-            } else if (count($pTmpLog2) !== 0) {
-                $pTmpLog = array_merge($pTmpLog, $pTmpLog2);
-            }
-            break;
-        case B::REMOTE_DEBUG:
-            rewind($pTmpLog2);
-            if ($pTmpLog === null) {
-                while (!feof($pTmpLog2)) {
-                    echo fread($pTmpLog2, 4096);
+                break;
+            case B::LOCAL_DEBUG_OF_RELEASE:
+                if ($pTmpLog === null) {
+                    foreach ($pTmpLog2 as $log) {
+                        fwrite($this->_pErrorLogFile, $log);
+                    }
+                } else if (count($pTmpLog) === 0) {
+                    if (count($pTmpLog2) !== 0) {
+                        $pTmpLog = $pTmpLog2;
+                    }
+                } else if (count($pTmpLog2) !== 0) {
+                    $pTmpLog = array_merge($pTmpLog, $pTmpLog2);
                 }
-            } else {
-                while (!feof($pTmpLog2)) {
-                    fwrite($pTmpLog, fread($pTmpLog2, 4096));
-                }
-            }
-            break;
-        case B::LOCAL_DEBUG_OF_RELEASE:
-            if ($pTmpLog === null) {
-                foreach ($pTmpLog2 as $log) {
-                    fwrite($this->_pErrorLogFile, $log);
-                }
-            } else if (count($pTmpLog) === 0) {
-                if (count($pTmpLog2) !== 0) {
-                    $pTmpLog = $pTmpLog2;
-                }
-            } else if (count($pTmpLog2) !== 0) {
-                $pTmpLog = array_merge($pTmpLog, $pTmpLog2);
-            }
-            break;
-        default:
-            B::internalAssert(false);
+                break;
+            default:
+                B::internalAssert(false, 1);
         }
         $this->_logPointerClosing($pTmpLog2);
     }

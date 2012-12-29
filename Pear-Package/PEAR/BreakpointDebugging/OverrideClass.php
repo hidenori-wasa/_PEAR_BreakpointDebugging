@@ -91,29 +91,31 @@
   function override_function_name()
   {
   $refParams = func_get_arg(0);
-  assert(func_num_args() === 1);
-  assert(is_array($refParams));
+  B::assert(func_num_args() === 1, 1);
+  B::assert(is_array($refParams), 2);
 
   // How to call a function by parameter array.
   $return = call_user_func_array('override_function_name'), $refParams);
-  assert($return !== false);
+  B::assert($return !== false, 3);
 
   // How to call an parent object ( dynamic ) method by parameter array.
   $return = call_user_func_array(array ('parent', 'override_function_name'), $refParams);
-  assert($return !== false);
+  B::assert($return !== false, 4);
 
   // How to call a parent static method by parameter array.
   $return = forward_static_call_array(array ('parent', 'override_function_name'), $refParams);
-  assert($return !== false);
+  B::assert($return !== false, 5);
 
   // How to call a parent constructor by parameter array.
   $return = forward_static_call_array(array ('parent', '__construct'), func_get_args());
-  assert($return !== false);
+  B::assert($return !== false, 6);
   }
  */
 
 chdir(__DIR__ . '/../../');
 require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
+
+use \BreakpointDebugging as B;
 
 /**
  * This class override a class without inheritance, but only public member can be inherited.
@@ -158,7 +160,7 @@ class BreakpointDebugging_OverrideClass
      */
     final function __get($propertyName)
     {
-        assert(property_exists($this->pr_pNativeClass, $propertyName));
+        B::assert(property_exists($this->pr_pNativeClass, $propertyName), 1);
         return $this->pr_pNativeClass->$propertyName;
     }
 
@@ -172,7 +174,7 @@ class BreakpointDebugging_OverrideClass
      */
     final function __set($propertyName, $setValue)
     {
-        assert(property_exists($this->pr_pNativeClass, $propertyName));
+        B::assert(property_exists($this->pr_pNativeClass, $propertyName), 1);
         $this->pr_pNativeClass->$propertyName = $setValue;
     }
 
@@ -226,7 +228,7 @@ class BreakpointDebugging_OverrideClass
      */
     final static function newArray($className, $params)
     {
-        assert(is_string($className));
+        B::assert(is_string($className), 1);
 
         self::$tmpParams = $params;
         $paramNumber = count($params);

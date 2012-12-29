@@ -128,7 +128,7 @@ abstract class BreakpointDebugging_Lock
             return self::$_internalInstance;
         } else {
             // Synchronous class has to be any one of derived classes because dead-lock occurs.
-            B::internalAssert($currentClassName === null || $currentClassName === $className);
+            B::internalAssert($currentClassName === null || $currentClassName === $className, 1);
             $currentClassName = $className;
             if (self::$_instance === null) {
                 self::$_instance = new $className($lockFilePath, $timeout, $expire, $sleepMicroSeconds);
@@ -141,12 +141,15 @@ abstract class BreakpointDebugging_Lock
      * Prevents duplicating an instance.
      *
      * @return void
+     * @throws
      */
     function __clone()
     {
-        B::internalAssert(false);
+        B::internalAssert(false, 1);
+        // @codeCoverageIgnoreStart
     }
 
+    // @codeCoverageIgnoreEnd
     /**
      * Constructs the lock system.
      *
@@ -180,7 +183,7 @@ abstract class BreakpointDebugging_Lock
             // Closes the shared memory.
             shmop_close(self::$sharedMemoryID);
         }
-        B::internalAssert($lockCount <= 0);
+        B::internalAssert($lockCount <= 0, 1);
     }
 
     /**
@@ -208,7 +211,7 @@ abstract class BreakpointDebugging_Lock
         $this->lockingLoop();
         set_error_handler('\BreakpointDebugging::errorHandler', -1);
 
-        B::internalAssert($this->lockCount === 0);
+        B::internalAssert($this->lockCount === 0, 1);
         $this->lockCount++;
     }
 
@@ -231,7 +234,7 @@ abstract class BreakpointDebugging_Lock
             return;
         }
         $this->lockCount--;
-        B::internalAssert($this->lockCount === 0);
+        B::internalAssert($this->lockCount === 0, 1);
 
         restore_error_handler();
         $this->unlockingLoop();

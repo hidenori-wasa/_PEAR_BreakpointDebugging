@@ -3,7 +3,7 @@
 /**
  * Class which is for breakpoint debugging.
  *
- * "*_Option.php" file does not use on release. Therefore, response time is zero on release.
+ * "*_Option.php" file does not use on release. Therefore, response time is zero in release.
  * These file names put "_" to cause error when we do autoload.
  *
  * ### Environment which can do breakpoint debugging. ###
@@ -23,7 +23,7 @@
  * ### How to code breakpoint debugging. ###
  * We must code as follows to process in "BreakpointDebugging" class.
  * We should verify an impossible "parameters and return value" of
- * "function and method" with "assert()".
+ * "function and method" with "\BreakpointDebugging::assert()".
  * Also, we should verify other impossible values of those.
  * We do not need error and exception handler coding because an error and an exception
  * which wasn't caught are processed by global handler in "BreakpointDebugging" class.
@@ -85,7 +85,7 @@
  *  ### Exception hierarchical structure ###
  *  PEAR_Exception
  *      BreakpointDebugging_Exception
- *          BreakpointDebugging_Error_Exception
+ *          BreakpointDebugging_ErrorException
  *
  * ### Useful function index. ###
  * This registers as function or method being not fixed.
@@ -192,7 +192,6 @@
 // and moreover "use" keyword alias has priority over class definition,
 // therefore "use" keyword alias does not be affected by other files.
 use \BreakpointDebugging as B;
-use \BreakpointDebugging_UnitTestAssert as U;
 
 /**
  * This class executes error or exception handling, and it is except release mode.
@@ -217,6 +216,11 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
     public $tmpParams;
 
     /**
+     * @var string Unit test mode.
+     */
+    static $unitTestMode;
+
+    /**
      * This constructer create object only one time.
      *
      * @return void
@@ -227,7 +231,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
 
         static $createOnlyOneTime = false;
 
-        assert($createOnlyOneTime === false);
+        self::assert($createOnlyOneTime === false, 1);
         $createOnlyOneTime = true;
     }
 
@@ -252,18 +256,18 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      * We must define this class method outside namespace, and we must not change method name when we call this method.
      *
      * @param string $message        Message.
-     * @param array  &$callStackInfo A call stack info.
+     * @param array  $callStackInfo A call stack info.
      *
      * @return void
      * @example B::breakpoint('Error message.', debug_backtrace());
      */
-    static function breakpoint($message, &$callStackInfo)
+    static function breakpoint($message, $callStackInfo)
     {
         global $_BreakpointDebugging_EXE_MODE;
 
-        B::internalAssert(func_num_args() === 2);
-        B::internalAssert(is_string($message));
-        B::internalAssert(is_array($callStackInfo));
+        B::internalAssert(func_num_args() === 2, 1);
+        B::internalAssert(is_string($message), 2);
+        B::internalAssert(is_array($callStackInfo), 3);
 
         reset($callStackInfo);
         if (!empty($callStackInfo)) {
@@ -279,11 +283,54 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
 
         if (B::$xdebugExists) {
             xdebug_break(); // Breakpoint. See local variable value by doing step execution here.
+            // Push stop button if is thought error message.
         }
 
         if ($_BreakpointDebugging_EXE_MODE & self::REMOTE_DEBUG) {
             // Remote debug must end immediately to avoid eternal execution.
             exit;
+        }
+    }
+
+    /**
+     * Throws exception if assertion is false. Also, has identification code for unit test.
+     *
+     * @param type $assertion Assertion.
+     * @param type $id        Identification number inside function.
+     *
+     * @usage
+     *      \BreakpointDebugging::assert(<judgment expression>, <identification number inside function>);
+     *      It is possible to assert that <judgment expression> is "This must be". Especially, this uses to verify a function's argument.
+     *      For example: \BreakpointDebugging::assert(3 <= $value && $value <= 5); // $value should be 3-5.
+     *      Caution: Don't change the value of variable in "\BreakpointDebugging::assert()" function because there isn't executed in case of release.
+     */
+    static function assert($assertion, $id)
+    {
+        if (!is_bool($assertion)) {
+            throw new \BreakpointDebugging_ErrorException('First parameter mistake.', 1);
+        }
+        if (!is_int($id)) {
+            throw new \BreakpointDebugging_ErrorException('Second parameter mistake.', 2);
+        }
+
+        if (!$assertion) {
+            self::internal('Assertion failed.', $id);
+        }
+    }
+
+    /**
+     * Asserts inside global error handling or global exception handling. (For this package developer).
+     *
+     * @param bool $expression Judgment expression.
+     * @param int  $id         Exception identification number.
+     *
+     * @return void
+     * @example \BreakpointDebugging::internalAssert($expression, 1);
+     */
+    static function internalAssert($expression, $id)
+    {
+        if (func_num_args() !== 2 || !is_bool($expression) || $expression === false || !is_int($id)) {
+            self::internal('Assertion failed.', $id);
         }
     }
 
@@ -351,9 +398,9 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
     static function iniSet($phpIniVariable, $setValue, $doCheck = true)
     {
         global $_BreakpointDebugging_EXE_MODE, $_BreakpointDebugging;
-        assert(func_num_args() <= 3);
-        assert($phpIniVariable !== 'error_log');
-        assert(is_string($setValue));
+        self::assert(func_num_args() <= 3, 1);
+        self::assert($phpIniVariable !== 'error_log', 2);
+        self::assert(is_string($setValue), 3);
 
         $getValue = ini_get($phpIniVariable);
         if ($setValue !== $getValue) {
@@ -394,7 +441,7 @@ EOD;
                 }
             }
             if (ini_set($phpIniVariable, $setValue) === false) {
-                throw new \BreakpointDebugging_Error_Exception('"ini_set()" failed.');
+                throw new \BreakpointDebugging_ErrorException('"ini_set()" failed.', 4);
             }
         }
     }
@@ -440,7 +487,7 @@ EOD;
             }
             return $constValue;
         }
-        assert(false);
+        throw new \BreakpointDebugging_ErrorException('"' . $className . '::' . $propertyName . '" property does not exist.');
     }
 
     /**
@@ -479,7 +526,7 @@ EOD;
                 return;
             }
         }
-        assert(false);
+        throw new \BreakpointDebugging_ErrorException('"' . $className . '::' . $propertyName . '" property does not exist.');
     }
 
     /**
@@ -493,7 +540,7 @@ EOD;
      *      require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
      *      use \BreakpointDebugging as B;
      *      B::checkUnitTestExeMode();
-     *      class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTest
+     *      class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
      *      {
      *          .
      *          .
@@ -503,18 +550,16 @@ EOD;
     {
         global $_BreakpointDebugging_EXE_MODE;
 
-        if (!isset($_SERVER['SERVER_ADDR'])) { // In case of command.
-            return;
-        }
-        if ($_SERVER['SERVER_ADDR'] === '127.0.0.1') { // In case of local host
-            if ($_BreakpointDebugging_EXE_MODE !== (B::LOCAL_DEBUG_OF_RELEASE | B::UNIT_TEST)) {
-                exit('You must set "$_BreakpointDebugging_EXE_MODE = $LOCAL_DEBUG_OF_RELEASE | $UNIT_TEST" into "./PEAR_Setting/BreakpointDebugging_MySetting.php" because this is unit test.' . PHP_EOL);
+        if (!isset($_SERVER['SERVER_ADDR']) || $_SERVER['SERVER_ADDR'] === '127.0.0.1') { // In case of command or local host.
+            if ($_BreakpointDebugging_EXE_MODE === (B::LOCAL_DEBUG_OF_RELEASE | B::UNIT_TEST)) {
+                return;
             }
         } else {
-            if ($_BreakpointDebugging_EXE_MODE !== (B::RELEASE | B::UNIT_TEST)) {
-                exit('You must set "$_BreakpointDebugging_EXE_MODE = $RELEASE | $UNIT_TEST" into "./PEAR_Setting/BreakpointDebugging_MySetting.php" because this is unit test.' . PHP_EOL);
+            if ($_BreakpointDebugging_EXE_MODE === (B::RELEASE | B::UNIT_TEST)) {
+                return;
             }
         }
+        exit('<pre>You must set "$_BreakpointDebugging_EXE_MODE = $setExecutionMode(\'UNIT_TEST\');" into "./PEAR_Setting/BreakpointDebugging_MySetting.php".</pre>');
     }
 
     /**
@@ -524,9 +569,27 @@ EOD;
      * Procedure 1: Please, start a apache.
      * Procedure 2: Please, drop page like example page which executes unit tests to web browser.
      * Procedure 3: Please, rewrite web browser URL prefix to "localhost", and push return.
-     * Please, if you want remote execution, upload unit test files, and execute with browser.
+     *
+     * Please, if you want remote execution, then upload "page like example page",
+     * unit test files and following "PHPUnit" files, then execute with browser.
+     *      PEAR/PHP/CodeCoverage.php
+     *      PEAR/PHP/CodeCoverage/
+     *          Copyright (c) 2009-2012 Sebastian Bergmann <sb@sebastian-bergmann.de>
+     *      PEAR/PHP/Invoker.php
+     *      PEAR/PHP/Invoker/
+     *          Copyright (c) 2011-2012 Sebastian Bergmann <sb@sebastian-bergmann.de>
+     *      PEAR/PHP/Timer.php
+     *      PEAR/PHP/Timer/
+     *          Copyright (c) 2010-2011 Sebastian Bergmann <sb@sebastian-bergmann.de>
+     *      PEAR/PHP/Token.php
+     *      PEAR/PHP/Token/
+     *          Copyright (c) 2009-2012 Sebastian Bergmann <sb@sebastian-bergmann.de>
+     *      PEAR/PHPUnit/
+     *          Copyright (c) 2001-2012 Sebastian Bergmann <sebastian@phpunit.de>
      *
      * @param array  $unitTestCommands Commands of unit tests.
+     *                                 Debugs its unit test file if array element is one.
+     *                                 Does continuation unit tests if array element is more than one.
      * @param string $currentDir       Unit test current directory.
      *
      * @return void
@@ -544,36 +607,79 @@ EOD;
      * // Executes unit tests.
      * B::executeUnitTest($unitTestCommands, __DIR__);
      * ?>
+     *
+     * @Example of unit test file.
+     *      use \BreakpointDebugging as B;
+     *
+     *      class SomethingTest extends \BreakpointDebugging_UnitTestOverriding
+     *      {
+     *          protected $pSomething;
+     *
+     *          protected function setUp()
+     *          {
+     *              // Constructs instance.
+     *              $this->pSomething = new \Something();
+     *          }
+     *
+     *          protected function tearDown()
+     *          {
+     *              // Destructs instance.
+     *              $this->pSomething = null;
+     *          }
+     *
+     *          /*
+     *           * @expectedExceptionMessage CLASS=SomethingTest FUNCTION=testSomething_A ID=123
+     *           *
+     *          function testSomething_A()
+     *          {
+     *              throw new \BreakpointDebugging_ErrorException('Something message.', 123);
+     *          }
+     *
+     *          function testSomething_B()
+     *          {
+     *              try {
+     *                  B::assert(true, 1);
+     *                  B::assert(false, 2);
+     *              } catch (\BreakpointDebugging_ErrorException $e) {
+     *                  $this->assertTrue($e->getMessage() === 'CLASS=SomethingTest FUNCTION=testSomething_B ID=2');
+     *                  return;
+     *              }
+     *              $this->fail();
+     *          }
+     *
+     *      }
      */
     static function executeUnitTest($unitTestCommands, $currentDir)
     {
-        global $_BreakpointDebugging_UNIT_TEST_MODE;
+        global $_BreakpointDebugging_EXE_MODE;
 
         self::checkUnitTestExeMode();
 
-        B::$isErrorAtUnitTest = true;
-        assert(is_array($unitTestCommands));
-        assert(is_string($currentDir));
-        B::$isErrorAtUnitTest = false;
+        self::assert(func_num_args() === 2, 3);
+        self::assert(is_array($unitTestCommands), 1);
+        self::assert(is_string($currentDir), 2);
 
-        if ($_BreakpointDebugging_UNIT_TEST_MODE === 'DEBUG') {
-            if (count($unitTestCommands) !== 1) {
-                B::$isErrorAtUnitTest = true;
-                trigger_error('Only one unit test process must be executed because static variable can not be initialized. Or, change to "$_BreakpointDebugging_UNIT_TEST_MODE = \'ALL\';" in "./PEAR_Setting/BreakpointDebugging_MySetting.php" file.', E_USER_ERROR);
-                B::$isErrorAtUnitTest = false;
-            }
+        B::$unitTestMode = count($unitTestCommands) === 1 ? 'DEBUG' : 'ALL';
+
+        if (B::$unitTestMode === 'DEBUG') {
             $command = $unitTestCommands[0];
             $commandElements = explode(' ', $command);
             $testFileName = array_pop($commandElements);
             array_push($commandElements, "$currentDir/$testFileName");
             array_unshift($commandElements, 'dummy');
-            include_once 'PHPUnit/Autoload.php';
+            // This is "require_once" because script should stop when file which should read does not exist.
+            require_once 'PHPUnit/Autoload.php';
             $pPHPUnit_TextUI_Command = new \PHPUnit_TextUI_Command;
             echo "<pre>Starts Debugging of '$testFileName' file." . PHP_EOL;
             echo '//////////////////////////////////////////////////////////////////////////' . PHP_EOL;
+            // Uses "PHPUnit" error handler.
+            restore_error_handler();
             echo $pPHPUnit_TextUI_Command->run($commandElements, true);
-        } else if ($_BreakpointDebugging_UNIT_TEST_MODE === 'ALL') {
-            // In case of extending test class except "\BreakpointDebugging_UnitTest" class.
+        } else if (B::$unitTestMode === 'ALL') {
+            if ($_BreakpointDebugging_EXE_MODE & (B::REMOTE_DEBUG | B::RELEASE)) {
+                exit('<pre>Executes on "local server only" because continuation unit test requires many load on remote server.</pre>');
+            }
+            // In case of extending test class except "\BreakpointDebugging_UnitTestOverriding" class.
             if (B::$os === 'WIN') { // In case of Windows.
                 $phpunit = 'phpunit.bat';
             } else { // In case of Unix.
@@ -589,14 +695,15 @@ EOD;
                     if ($phpunit) {
                         break;
                     }
-                    exit('"phpunit" command does not exist.');
+                    exit('<pre>"phpunit" command does not exist.</pre>');
                 }
                 if (!is_executable($phpunit)) {
-                    exit('"phpunit" command is not executable. (' . $phpunit . ')');
+                    exit('<pre>"phpunit" command is not executable. (' . $phpunit . ')</pre>');
                 }
             }
             echo '<pre>Starts continuation unit tests.' . PHP_EOL;
             echo '//////////////////////////////////////////////////////////////////////////' . PHP_EOL;
+            // Uses "PHPUnit" error handler.
             foreach ($unitTestCommands as $command) {
                 $commandElements = explode(' ', $command);
                 $testFileName = array_pop($commandElements);
@@ -615,10 +722,6 @@ EOD;
                 echo '//////////////////////////////////////////////////////////////////////////' . PHP_EOL;
             }
             echo '</pre>';
-        } else {
-            B::$isErrorAtUnitTest = true;
-            trigger_error('"$_BreakpointDebugging_UNIT_TEST_MODE" of "./PEAR_Setting/BreakpointDebugging_MySetting.php" file is mistaking.', E_USER_ERROR);
-            B::$isErrorAtUnitTest = false;
         }
     }
 
@@ -632,9 +735,9 @@ EOD;
         global $_BreakpointDebugging_EXE_MODE;
 
         $original = $_BreakpointDebugging_EXE_MODE;
-        if ($_BreakpointDebugging_EXE_MODE & B::LOCAL_DEBUG_OF_RELEASE) {
+        if ($_BreakpointDebugging_EXE_MODE === (B::LOCAL_DEBUG_OF_RELEASE | B::UNIT_TEST)) {
             $_BreakpointDebugging_EXE_MODE = B::LOCAL_DEBUG;
-        } else if ($_BreakpointDebugging_EXE_MODE & B::RELEASE) {
+        } else if ($_BreakpointDebugging_EXE_MODE === (B::RELEASE | B::UNIT_TEST)) {
             $_BreakpointDebugging_EXE_MODE = B::REMOTE_DEBUG;
         }
         return $original;
@@ -654,8 +757,8 @@ EOD;
      */
     function displayVerification($functionName, $params)
     {
-        assert(is_string($functionName));
-        assert(is_array($params));
+        self::assert(is_string($functionName), 1);
+        self::assert(is_array($params), 2);
 
         $this->tmpParams = $params;
         $paramNumber = count($params);
@@ -676,33 +779,16 @@ EOD;
 
 }
 
-// ### Assertion setting. ###
-if (assert_options(ASSERT_ACTIVE, 1) === false) { // This makes the evaluation of assert() effective.
-    throw new \BreakpointDebugging_Error_Exception('');
-}
-if (assert_options(ASSERT_WARNING, 1) === false) { // In case of failing in assertion, this generates a warning.
-    throw new \BreakpointDebugging_Error_Exception('');
-}
-if (assert_options(ASSERT_BAIL, 0) === false) { // In case of failing in assertion, this doesn't end execution.
-    throw new \BreakpointDebugging_Error_Exception('');
-}
-if (assert_options(ASSERT_QUIET_EVAL, 0) === false) { // As for assertion expression, this doesn't make error_reporting invalid.
-    throw new \BreakpointDebugging_Error_Exception('');
-}
-// ### usage ###
-// assert(<judgment expression>);
-// It is possible to assert that <judgment expression> is "This must be". Especially, this uses to verify a function's argument.
-// For example: assert(3 <= $value && $value <= 5); // $value should be 3-5.
-// Caution: Don't change the value of variable in "assert()" function because there isn't executed in case of release.
-//
 // When "Xdebug" does not exist.
 if (!B::$xdebugExists) {
     if ($_BreakpointDebugging_EXE_MODE & (B::LOCAL_DEBUG | B::LOCAL_DEBUG_OF_RELEASE)) { // In case of local host.
         exit(
-        '### ERROR ###<br/>' . PHP_EOL .
-        'FILE: ' . __FILE__ . ' LINE: ' . __LINE__ . '<br/>' . PHP_EOL .
-        '"Xdebug" extension has been not loaded though this is a local host.<br/>' . PHP_EOL .
-        '"Xdebug" extension is required because (uses breakpoint, displays for fatal error and avoids infinity recursive function call).<br/>'
+        '<pre>' .
+        '### ERROR ###' . PHP_EOL .
+        'FILE: ' . __FILE__ . ' LINE: ' . __LINE__ . PHP_EOL .
+        '"Xdebug" extension has been not loaded though this is a local host.' . PHP_EOL .
+        '"Xdebug" extension is required because (uses breakpoint, displays for fatal error and avoids infinity recursive function call).' .
+        '</pre>'
         );
     }
 }

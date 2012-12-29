@@ -7,6 +7,7 @@ use \BreakpointDebugging as B;
 
 // Please, choose unit tests files by customizing.
 $testFileNames = array (
+    // '--stop-on-failure ExampleTest.php',
     '--stop-on-failure BreakpointDebugging-ExceptionTest.php',
     // '--stop-on-failure BreakpointDebugging-InAllCaseTest.php',
     // '--stop-on-failure BreakpointDebugging/ErrorTest.php',

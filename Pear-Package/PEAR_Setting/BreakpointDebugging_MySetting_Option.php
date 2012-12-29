@@ -213,8 +213,8 @@ B::iniSet('html_errors', '1', false);
 // // This doesn't make usual error report invalid.
 // B::iniCheck( 'xmlrpc_errors', '', 'Please, set "xmlrpc_errors = Off" in "php.ini" file because this does not change usual error report invalidly.');
 
-assert(1 <= B::$maxLogParamNestingLevel && B::$maxLogParamNestingLevel <= 100);
-assert(1 <= B::$maxLogElementNumber && B::$maxLogElementNumber <= 100);
-assert(1 <= B::$maxLogStringSize);
+B::assert(1 <= B::$maxLogParamNestingLevel && B::$maxLogParamNestingLevel <= 100, 1);
+B::assert(1 <= B::$maxLogElementNumber && B::$maxLogElementNumber <= 100, 2);
+B::assert(1 <= B::$maxLogStringSize, 3);
 
 ?>

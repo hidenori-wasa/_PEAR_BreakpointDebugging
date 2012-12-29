@@ -4,47 +4,36 @@ chdir(__DIR__ . '/../../../');
 require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
 
 use \BreakpointDebugging as B;
-use \BreakpointDebugging_UnitTestAssert as U;
 
 B::checkUnitTestExeMode();
-
-class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_UnitTest
+class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_UnitTestOverriding
 {
-    protected $lockByFileExisting;
+    protected $lockByFileExisting, $lockByFileExistingInternal;
 
-    /**
-     * Sets up the fixture, for example, opens a network connection.
-     * This method is called before a test is executed.
-     */
     function setUp()
     {
+        parent::setUp();
         // Constructs instance.
+        $this->lockByFileExistingInternal = &\BreakpointDebugging_LockByFileExisting::internalSingleton(5, 10);
         $this->lockByFileExisting = &\BreakpointDebugging_LockByFileExisting::singleton(5, 10);
     }
 
-    /**
-     * Tears down the fixture, for example, closes a network connection.
-     * This method is called after a test is executed.
-     */
     function tearDown()
     {
         // Destructs instance.
         $this->lockByFileExisting = null;
-        B::setPropertyForTest('\BreakpointDebugging_Lock', '$_internalInstance', null);
+        $this->lockByFileExistingInternal = null;
     }
 
     /**
-     * @covers \BreakpointDebugging_LockByFileExisting::__clone
+     * @covers                   \BreakpointDebugging_LockByFileExisting::__clone
+     *
+     * @expectedException        \PHPUnit_Framework_Error
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=__clone ID=1
      */
     function test__clone()
     {
-        try {
-            U::registerAssertionFailureLocationOfUnitTest('BreakpointDebugging_Lock', '__clone');
-            $tmp = clone $this->lockByFileExisting;
-        } catch (\PHPUnit_Framework_Error_Warning $e) {
-            return;
-        }
-        $this->assertTrue(false);
+        $tmp = clone $this->lockByFileExisting;
     }
 
     /**
@@ -63,18 +52,17 @@ class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_Un
      */
     public function testForceUnlocking()
     {
-        $internalInstance = &\BreakpointDebugging_LockByFileExisting::internalSingleton();
-        $internalInstance->lock();
-        $internalInstance->lock();
+        $this->lockByFileExistingInternal->lock();
+        $this->lockByFileExistingInternal->lock();
         $this->lockByFileExisting->lock();
         $this->lockByFileExisting->lock();
 
-        $this->assertTrue(B::getPropertyForTest($internalInstance, '$lockCount') === 2);
+        $this->assertTrue(B::getPropertyForTest($this->lockByFileExistingInternal, '$lockCount') === 2);
         $this->assertTrue(B::getPropertyForTest($this->lockByFileExisting, '$lockCount') === 2);
 
         \BreakpointDebugging_Lock::forceUnlocking();
 
-        $this->assertTrue(B::getPropertyForTest($internalInstance, '$lockCount') === 0);
+        $this->assertTrue(B::getPropertyForTest($this->lockByFileExistingInternal, '$lockCount') === 0);
         $this->assertTrue(B::getPropertyForTest($this->lockByFileExisting, '$lockCount') === 0);
     }
 
@@ -84,17 +72,12 @@ class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_Un
      */
     function testLockThenUnlock_A()
     {
-        try {
-            $this->lockByFileExisting->lock();
-            clearstatcache();
-            $this->assertTrue(is_file(B::getPropertyForTest($this->lockByFileExisting, '$lockFilePath')));
-            $this->lockByFileExisting->unlock();
-            clearstatcache();
-            $this->assertTrue(!is_file(B::getPropertyForTest($this->lockByFileExisting, '$lockFilePath')));
-        } catch (\Exception $e) {
-            $this->assertTrue(false);
-            return;
-        }
+        $this->lockByFileExisting->lock();
+        clearstatcache();
+        $this->assertTrue(is_file(B::getPropertyForTest($this->lockByFileExisting, '$lockFilePath')));
+        $this->lockByFileExisting->unlock();
+        clearstatcache();
+        $this->assertTrue(!is_file(B::getPropertyForTest($this->lockByFileExisting, '$lockFilePath')));
     }
 
     /**
@@ -103,57 +86,44 @@ class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_Un
      */
     function testLockThenUnlock_C()
     {
-        try {
-            $this->lockByFileExisting->lock();
-            $this->lockByFileExisting->lock();
-            $this->lockByFileExisting->unlock();
-            $this->lockByFileExisting->unlock();
-        } catch (\Exception $e) {
-            $this->assertTrue(false);
-            return;
-        }
+        $this->lockByFileExisting->lock();
+        $this->lockByFileExisting->lock();
+        $this->lockByFileExisting->unlock();
+        $this->lockByFileExisting->unlock();
     }
 
     /**
-     * @covers \BreakpointDebugging_LockByFileExisting::lock
-     * @covers \BreakpointDebugging_LockByFileExisting::unlock
+     * @covers                   \BreakpointDebugging_LockByFileExisting::lock
+     * @covers                   \BreakpointDebugging_LockByFileExisting::unlock
+     *
+     * @expectedException        \PHPUnit_Framework_Error
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=unlock ID=1
      */
     function testLockThenUnlock_D()
     {
-        try {
-            U::registerAssertionFailureLocationOfUnitTest('BreakpointDebugging_Lock', 'unlock');
-            $this->lockByFileExisting->unlock(); // Error.
-        } catch (\PHPUnit_Framework_Error_Warning $e) {
-            return;
-        }
-        $this->assertTrue(false);
+        $this->lockByFileExisting->unlock();
     }
 
     /**
-     * @covers \BreakpointDebugging_LockByFileExisting::lock
-     * @covers \BreakpointDebugging_LockByFileExisting::unlock
+     * @covers                   \BreakpointDebugging_LockByFileExisting::lock
+     * @covers                   \BreakpointDebugging_LockByFileExisting::unlock
+     *
+     * @expectedException        \PHPUnit_Framework_Error
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=__destruct ID=1
      */
     function testLockThenUnlock_E()
     {
-        try {
-            $this->lockByFileExisting->lock();
-        } catch (\Exception $e) {
-            $this->assertTrue(false);
-            return;
-        }
-        try {
-            U::registerAssertionFailureLocationOfUnitTest('BreakpointDebugging_Lock', '__destruct');
-            // Calls "__destruct()".
-            $this->lockByFileExisting = null; // Error.
-        } catch (\PHPUnit_Framework_Error_Warning $e) {
-            return;
-        }
-        $this->assertTrue(false);
+        $this->lockByFileExisting->lock();
+        // Calls "__destruct()".
+        $this->lockByFileExisting = null; // Error.
     }
 
     /**
-     * @covers \BreakpointDebugging_LockByFileExisting::lock
-     * @covers \BreakpointDebugging_LockByFileExisting::unlock
+     * @covers                   \BreakpointDebugging_LockByFileExisting::lock
+     * @covers                   \BreakpointDebugging_LockByFileExisting::unlock
+     *
+     * @expectedException        \PHPUnit_Framework_Error
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=unlock ID=1
      */
     function testLockThenUnlock_F()
     {
@@ -161,54 +131,25 @@ class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_Un
             $this->lockByFileExisting->lock();
             $this->lockByFileExisting->unlock();
         } catch (\Exception $e) {
-            $this->assertTrue(false);
-            return;
+            $this->fail();
         }
-        try {
-            U::registerAssertionFailureLocationOfUnitTest('BreakpointDebugging_Lock', 'unlock');
-            $this->lockByFileExisting->unlock(); // Error.
-        } catch (\PHPUnit_Framework_Error_Warning $e) {
-            return;
-        }
-        $this->assertTrue(false);
+        $this->lockByFileExisting->unlock(); // Error.
     }
 
     /**
-     * @covers \BreakpointDebugging_LockByFileExisting::lock
-     * @covers \BreakpointDebugging_LockByFileExisting::unlock
+     * @covers                   \BreakpointDebugging_LockByFileExisting::lock
+     * @covers                   \BreakpointDebugging_LockByFileExisting::unlock
+     *
+     * @expectedException        \PHPUnit_Framework_Error
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=__destruct ID=1
      */
     function testLockThenUnlock_G()
     {
-        try {
-            $this->lockByFileExisting->lock();
-            $this->lockByFileExisting->lock();
-            $this->lockByFileExisting->unlock();
-        } catch (\Exception $e) {
-            $this->assertTrue(false);
-            return;
-        }
-        try {
-            U::registerAssertionFailureLocationOfUnitTest('BreakpointDebugging_Lock', '__destruct');
-            // Calls "__destruct()".
-            $this->lockByFileExisting = null; // Error.
-        } catch (\PHPUnit_Framework_Error_Warning $e) {
-            return;
-        }
-        $this->assertTrue(false);
-    }
-
-    /**
-     * @covers \BreakpointDebugging_LockByFileExisting::internalSingleton
-     */
-    function testInternalSingleton()
-    {
-        $internalInstance = B::getPropertyForTest('\BreakpointDebugging_Lock', '$_internalInstance');
-        $this->assertTrue($internalInstance === null);
-
-        $testInstance = &\BreakpointDebugging_LockByFileExisting::internalSingleton();
-
-        $internalInstance = B::getPropertyForTest('\BreakpointDebugging_Lock', '$_internalInstance');
-        $this->assertTrue($internalInstance instanceof \BreakpointDebugging_LockByFileExisting);
+        $this->lockByFileExisting->lock();
+        $this->lockByFileExisting->lock();
+        $this->lockByFileExisting->unlock();
+        // Calls "__destruct()".
+        $this->lockByFileExisting = null; // Error.
     }
 
     /**
@@ -216,18 +157,16 @@ class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_Un
      */
     function testSingleton_A()
     {
-        try {
-            $lockByFileExisting1 = &\BreakpointDebugging_LockByFileExisting::singleton(5, 10);
-            $lockByFileExisting2 = &\BreakpointDebugging_LockByFileExisting::singleton(5, 10); // Same object.
-        } catch (\Exception $e) {
-            $this->assertTrue(false);
-            return;
-        }
+        $lockByFileExisting1 = &\BreakpointDebugging_LockByFileExisting::singleton(5, 10);
+        $lockByFileExisting2 = &\BreakpointDebugging_LockByFileExisting::singleton(5, 10); // Same object.
         $this->assertTrue($lockByFileExisting1 === $lockByFileExisting2);
     }
 
     /**
-     * @covers \BreakpointDebugging_LockByFileExisting::singleton
+     * @covers                   \BreakpointDebugging_LockByFileExisting::singleton
+     *
+     * @expectedException        \PHPUnit_Framework_Error
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=singletonBase ID=1
      */
     function testSingleton_B()
     {
@@ -236,29 +175,20 @@ class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_Un
         if (($_BreakpointDebugging_EXE_MODE & B::RELEASE) && !extension_loaded('shmop')) {
             $this->markTestSkipped('"shmop" extention has been not loaded.');
         }
-        try {
-            U::registerAssertionFailureLocationOfUnitTest('BreakpointDebugging_Lock', 'singletonBase');
-            // Constructs instance of other class.
-            $LockByShmop = &\BreakpointDebugging_LockByShmop::singleton(5, 10); // Error.
-        } catch (\PHPUnit_Framework_Error_Warning $e) {
-            return;
-        }
-        $this->assertTrue(false);
+        // Constructs instance of other class.
+        $LockByShmop = &\BreakpointDebugging_LockByShmop::singleton(5, 10);
     }
 
     /**
-     * @covers \BreakpointDebugging_LockByFileExisting::singleton
+     * @covers                   \BreakpointDebugging_LockByFileExisting::singleton
+     *
+     * @expectedException        \PHPUnit_Framework_Error
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=singletonBase ID=1
      */
     function testSingleton_C()
     {
-        try {
-            U::registerAssertionFailureLocationOfUnitTest('BreakpointDebugging_Lock', 'singletonBase');
-            // Constructs instance of other class.
-            $lockByFlock = &\BreakpointDebugging_LockByFlock::singleton(5, 10); // Error.
-        } catch (\PHPUnit_Framework_Error_Warning $e) {
-            return;
-        }
-        $this->assertTrue(false);
+        // Constructs instance of other class.
+        $lockByFlock = &\BreakpointDebugging_LockByFlock::singleton(5, 10); // Error.
     }
 
 }

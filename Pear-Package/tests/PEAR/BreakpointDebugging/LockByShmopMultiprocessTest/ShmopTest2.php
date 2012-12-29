@@ -2,7 +2,6 @@
 
 chdir(__DIR__ . '/../../../../');
 require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
-
 class ShmopTest2
 {
     private $shmopId;
@@ -49,7 +48,7 @@ class ShmopTest2
                 shmop_close($sharedMemoryID);
                 break;
             default:
-                assert(false);
+                B::assert(false, 1);
         }
         var_dump(shmop_read($this->shmopId, 0, 10) + 0, microtime(true) - $start);
     }

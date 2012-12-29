@@ -60,16 +60,16 @@ use \BreakpointDebugging as B;
 
 // Checks the execution mode.
 if ($_BreakpointDebugging_EXE_MODE !== B::RELEASE) { // In case of not release.
-    exit('You must set "$_BreakpointDebugging_EXE_MODE = $RELEASE;" in "BreakpointDebugging_MySetting.php" file.');
+    exit('<pre>You must set "$_BreakpointDebugging_EXE_MODE = $setExecutionMode(\'RELEASE\');" into "BreakpointDebugging_MySetting.php" file.</pre>');
 }
 
 // Checks client IP address.
 if ($_SERVER['REMOTE_ADDR'] !== $myIPAddress) {
-    exit('You must register your IP address into "$myIPAddress" of this page, then upload it.');
+    exit('<pre>You must register your IP address into "$myIPAddress" of this page, then upload it.</pre>');
 }
 // Checks the request protocol.
 if (empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] === 'off') {
-    exit('You must use "https" protocol.');
+    exit('<pre>You must use "https" protocol.</pre>');
 }
 // Locks error log files.
 $lockByFileExisting = &\BreakpointDebugging_LockByFileExisting::internalSingleton();
@@ -120,7 +120,7 @@ if (isset($_GET['download'])) {
         $doneDownload = true;
         break;
     }
-    assert($doneDownload);
+    B::assert($doneDownload, 1);
 } else if (isset($_GET['deleteErrorLogs'])) { // When you pushed "Delete all error log files" button.
     // Searches the files which should delete.
     foreach ($errorLogDirElements as $errorLogDirElement) {

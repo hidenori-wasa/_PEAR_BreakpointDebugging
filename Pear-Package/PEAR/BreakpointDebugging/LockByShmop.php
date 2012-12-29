@@ -124,7 +124,7 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
      */
     static function &singleton($timeout = 60, $expire = 300, $sleepMicroSeconds = 100000)
     {
-        assert(extension_loaded('shmop'));
+        B::assert(extension_loaded('shmop'), 1);
         return parent::singletonBase('\\' . __CLASS__, B::$workDir . '/LockByShmop.txt', $timeout, $expire, $sleepMicroSeconds);
     }
 
@@ -166,7 +166,7 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
                         // var_dump('Shared memory expired.'); // For debug.
                         // Delete shared memory.
                         if (shmop_delete(self::$sharedMemoryID) === false) {
-                            throw new \BreakpointDebugging_Error_Exception('This process failed to delete shared memory.');
+                            throw new \BreakpointDebugging_ErrorException('This process failed to delete shared memory.', 1);
                         }
                         shmop_close(self::$sharedMemoryID);
                         $isContinue = true;
@@ -327,7 +327,7 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
         }
         set_error_handler('\BreakpointDebugging::errorHandler', -1);
         if (self::$sharedMemoryID === false) {
-            throw new \BreakpointDebugging_Error_Exception('New shared memory operation opening failed.');
+            throw new \BreakpointDebugging_ErrorException('New shared memory operation opening failed.', 1);
         }
         // Register shared memory key.
         rewind($this->pFile);
@@ -380,7 +380,7 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
             if (shmop_read(self::$sharedMemoryID, $lockFlagLocationOfpartner, 1) === '1') {
                 shmop_write(self::$sharedMemoryID, '0', $lockFlagLocationOfItself);
                 if (time() - $startTime > $this->timeout) {
-                    throw new \BreakpointDebugging_Error_Exception('This process has been timeouted.');
+                    throw new \BreakpointDebugging_ErrorException('This process has been timeouted.', 1);
                 }
                 // Wait micro seconds.
                 usleep($this->sleepMicroSeconds);
@@ -415,9 +415,9 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
         shmop_write(self::$sharedMemoryID, '2', self::$_processNumber);
         $startTime = time();
         while (($isSuccess = shmop_read(self::$sharedMemoryID, 0, self::HEXADECIMAL_SIZE) + 0) !== self::$_processNumber) {
-            assert($isSuccess !== false);
+            B::assert($isSuccess !== false, 1);
             if (time() - $startTime > $this->timeout) {
-                throw new \BreakpointDebugging_Error_Exception('This process has been timeouted.');
+                throw new \BreakpointDebugging_ErrorException('This process has been timeouted.', 2);
             }
             // Wait micro seconds.
             usleep($this->sleepMicroSeconds);

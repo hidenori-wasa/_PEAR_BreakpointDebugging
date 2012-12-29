@@ -44,7 +44,6 @@
 use \BreakpointDebugging as B;
 
 require_once __DIR__ . '/PEAR/Exception.php';
-
 /**
  * Own package exception.
  *
@@ -60,24 +59,51 @@ class BreakpointDebugging_Exception extends \PEAR_Exception
     /**
      * Constructs instance.
      *
-     * @param string $message  Exception message.
-     * @param int    $code     Exception code.
-     * @param object $previous Previous exception.
+     * @param string $message                Exception message.
+     * @param int    $id                     Exception identification number.
+     * @param int    $omissionCallStackLevel Omission call stack level.
+     * @param object $previous               Previous exception.
      *
      * @return void
      */
-    function __construct($message, $code = null, $previous = null)
+    function __construct($message, $id = null, $omissionCallStackLevel = 0, $previous = null)
     {
-        B::internalAssert(func_num_args() <= 3);
-        B::internalAssert(is_string($message));
-        B::internalAssert(is_int($code) || $code === null);
-        B::internalAssert($previous instanceof \Exception || $previous === null);
-        B::internalAssert(mb_detect_encoding($message, 'utf8', true) !== false);
+        global $_BreakpointDebugging_EXE_MODE;
+
+        B::internalAssert(func_num_args() <= 4, 1);
+        B::internalAssert(is_string($message), 2);
+        B::internalAssert(is_int($id) || $id === null, 3);
+        B::internalAssert($previous instanceof \Exception || $previous === null, 5);
+        B::internalAssert(mb_detect_encoding($message, 'utf8', true) !== false, 6);
+
+        // Adds "[[[CLASS=<class name>] FUNCTION=<function name>] ID=<identification number>]" to message in case of unit test.
+        if ($_BreakpointDebugging_EXE_MODE & B::UNIT_TEST) {
+            B::internalAssert(is_int($omissionCallStackLevel) && $omissionCallStackLevel >= 0, 7);
+
+            if ($id === null) {
+                $idString = '';
+            } else {
+                $idString = ' ID=' . $id;
+            }
+            $function = '';
+            $class = '';
+            $callStack = $this->getTrace();
+            if (array_key_exists($omissionCallStackLevel, $callStack)) {
+                $call = $callStack[$omissionCallStackLevel];
+                if (array_key_exists('function', $call)) {
+                    $function = ' FUNCTION=' . $call['function'];
+                }
+                if (array_key_exists('class', $call)) {
+                    $class = ' CLASS=' . $call['class'];
+                }
+            }
+            $message .= $class . $function . $idString;
+        }
 
         if ($previous === null) {
-            parent::__construct($message, $code);
+            parent::__construct($message, $id);
         } else {
-            parent::__construct($message, $previous, $code);
+            parent::__construct($message, $previous, $id);
         }
     }
 
@@ -93,7 +119,7 @@ class BreakpointDebugging_Exception extends \PEAR_Exception
  * @version  Release: @package_version@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-class BreakpointDebugging_Error_Exception extends \BreakpointDebugging_Exception
+class BreakpointDebugging_ErrorException extends \BreakpointDebugging_Exception
 {
 
 }
@@ -200,22 +226,12 @@ class BreakpointDebugging_InAllCase
     /**
      * @var bool Once error display flag.
      */
-    private static $_onceErrorDispFlag = false;
+    protected static $onceErrorDispFlag = false;
 
     /**
      * @var bool Is it internal method?
      */
     static $isInternal = false;
-
-    /**
-     * @var string Which handler of "none" or "error" or "exception"?
-     */
-    private static $_handlerOf = 'none';
-
-    /**
-     * @var bool Is it error at unit test?
-     */
-    static $isErrorAtUnitTest = false;
 
     /**
      * Constructs instance.
@@ -237,13 +253,13 @@ class BreakpointDebugging_InAllCase
      */
     final static function iniCheck($phpIniVariable, $cmpValue, $errorMessage)
     {
-        assert(func_num_args() === 3);
+        B::assert(func_num_args() === 3, 1);
         $value = (string) ini_get($phpIniVariable);
         $cmpResult = false;
         if (is_array($cmpValue)) {
             foreach ($cmpValue as $eachCmpValue) {
                 if (!is_string($eachCmpValue)) {
-                    throw new \BreakpointDebugging_Error_Exception('');
+                    throw new \BreakpointDebugging_ErrorException('', 2);
                 }
                 if ($value === $eachCmpValue) {
                     $cmpResult = true;
@@ -252,7 +268,7 @@ class BreakpointDebugging_InAllCase
             }
         } else {
             if (!is_string($cmpValue)) {
-                throw new \BreakpointDebugging_Error_Exception('');
+                throw new \BreakpointDebugging_ErrorException('', 3);
             }
             if ($value !== $cmpValue) {
                 $cmpResult = true;
@@ -342,15 +358,16 @@ class BreakpointDebugging_InAllCase
      */
     final static function convertMbString($string)
     {
-        assert(func_num_args() === 1);
-        assert(is_string($string));
+        B::assert(func_num_args() === 1, 1);
+        B::assert(is_string($string), 2);
+
         // Analyzes character sets of character string.
         $charSet = mb_detect_encoding($string);
         if ($charSet === 'UTF-8' || $charSet === 'ASCII') {
             return $string;
         } else if ($charSet === false) {
-            self::$_onceErrorDispFlag = true;
-            throw new \BreakpointDebugging_Error_Exception('This is not single character sets.');
+            self::$onceErrorDispFlag = true;
+            throw new \BreakpointDebugging_ErrorException('This is not single character sets.', 3);
         }
         return mb_convert_encoding($string, 'UTF-8', $charSet);
     }
@@ -421,7 +438,7 @@ class BreakpointDebugging_InAllCase
     {
         $compressBytes = '';
         foreach ($intArray as $int) {
-            self::internalAssert(preg_match('`^[0-9]$ | ^[1-9][0-9]+$`xX', $int) === 1);
+            B::internalAssert(preg_match('`^[0-9]$ | ^[1-9][0-9]+$`xX', $int) === 1, 1);
             for ($diff = 1, $delimiter = 0x80, $tmpBytes = ''; $diff; $int = $diff / 0x7D) {
                 // This changes from decimal number to 126 number.
                 $diff = 0x7D * (int) ($int / 0x7D);
@@ -492,9 +509,8 @@ class BreakpointDebugging_InAllCase
     {
         // Changes underscore and name space separator to directory separator.
         $className = str_replace(array ('_', '\\'), '/', $className) . '.php';
-        self::$isErrorAtUnitTest = true;
-        include_once $className;
-        self::$isErrorAtUnitTest = false;
+        // This is "require_once" because script should stop when file which should read does not exist.
+        require_once $className;
     }
 
     /**
@@ -509,15 +525,24 @@ class BreakpointDebugging_InAllCase
     {
         global $_BreakpointDebugging_EXE_MODE;
 
-        if ($_BreakpointDebugging_EXE_MODE & B::UNIT_TEST) { // For direct call.
-            self::$isInternal = false;
-            // Throws exception for unit test.
-            throw new \PHPUnit_Framework_Error($pException->getMessage(), $pException->getCode(), $pException->getFile(), $pException->getLine(), $pException->getTrace());
+        if ($_BreakpointDebugging_EXE_MODE & self::UNIT_TEST) {
+            $callStack = $pException->getTrace();
+            $call = array_key_exists(0, $callStack) ? $callStack[0] : array ();
+            if ((array_key_exists('class', $call) && $call['class'] === 'BreakpointDebugging_InAllCase')
+            && (array_key_exists('function', $call) && $call['function'] === 'internal')) { // In case of direct call from "BreakpointDebugging_InAllCase::internal()".
+                \PHPUnit_Util_ErrorHandler::handleError($pException->getCode(), $pException->getMessage(), $pException->getFile(), $pException->getLine());
+            }
         }
-        self::$_handlerOf = 'exception'; // This registers as exception handler.
+        // For call stack display.
+        if (method_exists('\BreakpointDebugging', 'changeExecutionModeForUnitTest')) {
+            $storeExeMode = B::changeExecutionModeForUnitTest();
+        }
+
         $error = new \BreakpointDebugging_Error();
         $error->exceptionHandler2($pException, self::$prependExceptionLog);
-        self::$_handlerOf = 'none'; // This registers as none handler.
+        if ($storeExeMode & B::UNIT_TEST) {
+            $_BreakpointDebugging_EXE_MODE = $storeExeMode;
+        }
     }
 
     /**
@@ -528,32 +553,17 @@ class BreakpointDebugging_InAllCase
      *
      * @return bool Without system log (true).
      */
-    final static function errorHandler($errorNumber, $errorMessage, $errorFileName, $errorLine)
+    final static function errorHandler($errorNumber, $errorMessage)
     {
         global $_BreakpointDebugging_EXE_MODE;
-        static $didDisplayUnitTestError = false;
 
-        if ($_BreakpointDebugging_EXE_MODE & B::UNIT_TEST) {
-            $isUnitTest = true;
-            if (!self::$isErrorAtUnitTest && \BreakpointDebugging_UnitTestAssert::isUnitTestOfAssertionFailure()) {
-                self::$isInternal = false;
-                if ($didDisplayUnitTestError) {
-                    exit;
-                }
-                // Calls the error handler of default.
-                return \PHPUnit_Util_ErrorHandler::handleError($errorNumber, $errorMessage, $errorFileName, $errorLine);
-            }
-            // Stores the execution mode. And, changes execution mode to display an error call stack.
+        // For call stack display.
+        if (method_exists('\BreakpointDebugging', 'changeExecutionModeForUnitTest')) {
             $storeExeMode = B::changeExecutionModeForUnitTest();
         }
-        $handlerStore = self::$_handlerOf; // Stores the handler.
-        self::$_handlerOf = 'error'; // This registers as error handler.
         $error = new \BreakpointDebugging_Error();
         $error->errorHandler2($errorNumber, $errorMessage, self::$prependErrorLog);
-        self::$_handlerOf = $handlerStore; // Restores handler.
-        if (isset($isUnitTest)) {
-            $didDisplayUnitTestError = true;
-            // Restores the execution mode.
+        if ($storeExeMode & B::UNIT_TEST) {
             $_BreakpointDebugging_EXE_MODE = $storeExeMode;
         }
         return true;
@@ -562,41 +572,22 @@ class BreakpointDebugging_InAllCase
     /**
      * Calls global handler inside global handler.
      *
-     * @param string $message     A message.
-     * @param string $handlerKind Handler kind.
+     * @param string $message A message.
+     * @param int    $id      Exception identification number.
      *
      * @return void
      */
-    final private static function _internal($message, $handlerKind)
+    protected static function internal($message, $id)
     {
         global $_BreakpointDebugging_EXE_MODE;
 
-        if (self::$_onceErrorDispFlag) {
+        if (self::$onceErrorDispFlag) {
             return;
         }
         // Is internal method.
         self::$isInternal = true;
-        switch (self::$_handlerOf) {
-            case 'exception': // Is inside global exception handler.
-            case 'error': // Is inside global error handler.
-                self::$_onceErrorDispFlag = true;
-            case 'none': // Is outer of handler.
-                switch ($handlerKind) {
-                    case 'exception':
-                        // Calls exception handler because global exception handler cannot throw exception.
-                        self::exceptionHandler(new \BreakpointDebugging_Error_Exception($message));
-                        break;
-                    case 'error':
-                        // Calls error handler because global error handler cannot trigger error.
-                        self::errorHandler(E_USER_ERROR, $message);
-                        break;
-                    default:
-                        B::breakpoint('"$handlerKind" is wrong value.', debug_backtrace());
-                }
-                break;
-            default:
-                B::breakpoint('"\BreakpointDebugging::$_handlerOf" is wrong value.', debug_backtrace());
-        }
+        self::$onceErrorDispFlag = true;
+        self::exceptionHandler(new \BreakpointDebugging_ErrorException($message, $id, 2));
         if ($_BreakpointDebugging_EXE_MODE & self::REMOTE_DEBUG) { // In case of remote debug.
             // Remote debug must end immediately to avoid eternal execution.
             exit;
@@ -604,35 +595,17 @@ class BreakpointDebugging_InAllCase
     }
 
     /**
-     * Asserts inside global error handling or global exception handling. (For this package developer).
-     *
-     * @param bool $expression Judgment expression.
-     *
-     * @return void
-     * @example \BreakpointDebugging::internalAssert($expression);
-     */
-    final static function internalAssert($expression)
-    {
-        global $_BreakpointDebugging_EXE_MODE;
-
-        if ($_BreakpointDebugging_EXE_MODE !== self::RELEASE) { // In case of not release.
-            if (func_num_args() !== 1 || !is_bool($expression) || $expression === false) {
-                self::_internal('Assertion failed.', 'error');
-            }
-        }
-    }
-
-    /**
      * Calls exception handler inside global error handling or global exception handling. (For this package developer).
      *
      * @param string $message Exception message.
+     * @param int    $id      Exception identification number.
      *
      * @return void
-     * @example \BreakpointDebugging::internalException($message);
+     * @example \BreakpointDebugging::internalException($message, 1);
      */
-    final static function internalException($message)
+    final static function internalException($message, $id)
     {
-        self::_internal($message, 'exception');
+        self::internal($message, $id);
     }
 
     /**
@@ -644,7 +617,6 @@ class BreakpointDebugging_InAllCase
     {
         global $_BreakpointDebugging;
 
-        self::$_handlerOf = 'none'; // This registers as none handler.
         foreach ($GLOBALS as &$variable) {
             if (is_object($variable)) {
                 // Excludes this object.
@@ -660,6 +632,8 @@ class BreakpointDebugging_InAllCase
     }
 
 }
+
+global $_BreakpointDebugging_EXE_MODE;
 
 if ($_BreakpointDebugging_EXE_MODE === BreakpointDebugging_InAllCase::RELEASE) { // In case of release.
     /**
@@ -689,6 +663,31 @@ if ($_BreakpointDebugging_EXE_MODE === BreakpointDebugging_InAllCase::RELEASE) {
         }
 
         /**
+         * This is empty in case of release mode.
+         *
+         * @param type $assertion Dummy.
+         * @param type $id        Dummy.
+         */
+        static function assert($condition, $id)
+        {
+
+        }
+
+        /**
+         * This is empty in case of release mode.
+         *
+         * @param bool $expression Dummy.
+         * @param int  $id         Dummy.
+         *
+         * @return void
+         * @example \BreakpointDebugging::internalAssert($expression, 1);
+         */
+        static function internalAssert($expression, $id)
+        {
+
+        }
+
+        /**
          * This is ini_set() without validation in case of release mode.
          * I set with "ini_set()" because "php.ini" file and ".htaccess" file isn't sometimes possible to be set on sharing server.
          *
@@ -706,19 +705,24 @@ if ($_BreakpointDebugging_EXE_MODE === BreakpointDebugging_InAllCase::RELEASE) {
     }
 
     if (assert_options(ASSERT_ACTIVE, 0) === false) { // Ignore assert().
-        throw new \BreakpointDebugging_Error_Exception('');
+        throw new \BreakpointDebugging_ErrorException('', 1);
     }
     // Ignores "Xdebug" in case of release because must not stop.
     BreakpointDebugging_InAllCase::$xdebugExists = false;
 } else { // In case of not release.
     BreakpointDebugging_InAllCase::$xdebugExists = extension_loaded('xdebug');
-    include_once __DIR__ . '/BreakpointDebugging_Option.php';
+    // This is "require_once" because script should stop when file which should read does not exist.
+    require_once __DIR__ . '/BreakpointDebugging_Option.php';
 }
 
 // This sets global exception handler.
 set_exception_handler('\BreakpointDebugging::exceptionHandler');
-// This sets global error handler.( -1 sets all bits on 1. Therefore, this specifies error, warning and note of all kinds and so on.)
-set_error_handler('\BreakpointDebugging::errorHandler', -1);
+// Uses "PHPUnit" error handler in case of command.
+if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
+    // This sets global error handler.( -1 sets all bits on 1. Therefore, this specifies error, warning and note of all kinds and so on.)
+    set_error_handler('\BreakpointDebugging::errorHandler', -1);
+}
+global $_BreakpointDebugging;
 $_BreakpointDebugging = new \BreakpointDebugging();
 spl_autoload_register('\BreakpointDebugging::autoload');
 register_shutdown_function('\BreakpointDebugging::shutdown');
