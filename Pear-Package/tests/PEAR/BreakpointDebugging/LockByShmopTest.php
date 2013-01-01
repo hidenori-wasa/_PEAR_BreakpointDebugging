@@ -29,10 +29,10 @@ class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_UnitTestO
     }
 
     /**
-     * @covers                   \BreakpointDebugging_LockByShmop::__clone
+     * @covers \BreakpointDebugging_LockByShmop<extended>
      *
-     * @expectedException        \PHPUnit_Framework_Error
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=__clone ID=1
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=__clone
      */
     function test__clone()
     {
@@ -40,7 +40,7 @@ class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_UnitTestO
     }
 
     /**
-     * @covers \BreakpointDebugging_LockByShmop::__destruct
+     * @covers \BreakpointDebugging_LockByShmop<extended>
      */
     public function test__destruct()
     {
@@ -51,7 +51,7 @@ class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_UnitTestO
     }
 
     /**
-     * @covers \BreakpointDebugging_LockByShmop::forceUnlocking
+     * @covers \BreakpointDebugging_LockByShmop<extended>
      */
     public function testForceUnlocking()
     {
@@ -66,8 +66,7 @@ class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_UnitTestO
     }
 
     /**
-     * @covers \BreakpointDebugging_LockByShmop::lock
-     * @covers \BreakpointDebugging_LockByShmop::unlock
+     * @covers \BreakpointDebugging_LockByShmop<extended>
      */
     function testLockThenUnlock_A()
     {
@@ -76,8 +75,7 @@ class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_UnitTestO
     }
 
     /**
-     * @covers \BreakpointDebugging_LockByShmop::lock
-     * @covers \BreakpointDebugging_LockByShmop::unlock
+     * @covers \BreakpointDebugging_LockByShmop<extended>
      */
     function testLockThenUnlock_B()
     {
@@ -88,8 +86,7 @@ class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_UnitTestO
     }
 
     /**
-     * @covers                   \BreakpointDebugging_LockByShmop::lock
-     * @covers                   \BreakpointDebugging_LockByShmop::unlock
+     * @covers \BreakpointDebugging_LockByShmop<extended>
      *
      * @expectedException        \PHPUnit_Framework_Error
      * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=unlock ID=1
@@ -100,8 +97,7 @@ class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_UnitTestO
     }
 
     /**
-     * @covers                   \BreakpointDebugging_LockByShmop::lock
-     * @covers                   \BreakpointDebugging_LockByShmop::unlock
+     * @covers \BreakpointDebugging_LockByShmop<extended>
      *
      * @expectedException        \PHPUnit_Framework_Error
      * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=unlock ID=1
@@ -118,8 +114,7 @@ class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_UnitTestO
     }
 
     /**
-     * @covers                   \BreakpointDebugging_LockByShmop::lock
-     * @covers                   \BreakpointDebugging_LockByShmop::unlock
+     * @covers \BreakpointDebugging_LockByShmop<extended>
      *
      * @expectedException        \PHPUnit_Framework_Error
      * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=__destruct ID=1
@@ -132,8 +127,7 @@ class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_UnitTestO
     }
 
     /**
-     * @covers                   \BreakpointDebugging_LockByShmop::lock
-     * @covers                   \BreakpointDebugging_LockByShmop::unlock
+     * @covers \BreakpointDebugging_LockByShmop<extended>
      *
      * @expectedException        \PHPUnit_Framework_Error
      * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=__destruct ID=1
@@ -148,7 +142,7 @@ class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_UnitTestO
     }
 
     /**
-     * @covers \BreakpointDebugging_LockByShmop::singleton
+     * @covers \BreakpointDebugging_LockByShmop<extended>
      */
     function testSingleton_A()
     {
@@ -158,7 +152,7 @@ class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_UnitTestO
     }
 
     /**
-     * @covers                   \BreakpointDebugging_LockByShmop::singleton
+     * @covers \BreakpointDebugging_LockByShmop<extended>
      *
      * @expectedException        \PHPUnit_Framework_Error
      * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=singletonBase ID=1
@@ -170,7 +164,7 @@ class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_UnitTestO
     }
 
     /**
-     * @covers                   \BreakpointDebugging_LockByShmop::singleton
+     * @covers \BreakpointDebugging_LockByShmop<extended>
      *
      * @expectedException        \PHPUnit_Framework_Error
      * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=singletonBase ID=1

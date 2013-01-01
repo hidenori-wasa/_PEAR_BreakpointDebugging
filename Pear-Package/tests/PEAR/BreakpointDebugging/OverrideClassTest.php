@@ -45,7 +45,7 @@ class BreakpointDebugging_OverrideClassTest extends \BreakpointDebugging_UnitTes
     }
 
     /**
-     * @covers BreakpointDebugging_OverrideClass::__get
+     * @covers \BreakpointDebugging_OverrideClass<extended>
      */
     public function test__get()
     {
@@ -54,7 +54,7 @@ class BreakpointDebugging_OverrideClassTest extends \BreakpointDebugging_UnitTes
     }
 
     /**
-     * @covers BreakpointDebugging_OverrideClass::__set
+     * @covers \BreakpointDebugging_OverrideClass<extended>
      */
     public function test__set()
     {
@@ -64,7 +64,7 @@ class BreakpointDebugging_OverrideClassTest extends \BreakpointDebugging_UnitTes
     }
 
     /**
-     * @covers BreakpointDebugging_OverrideClass::__call
+     * @covers \BreakpointDebugging_OverrideClass<extended>
      */
     public function test__call_A()
     {
@@ -75,7 +75,8 @@ class BreakpointDebugging_OverrideClassTest extends \BreakpointDebugging_UnitTes
     }
 
     /**
-     * @covers BreakpointDebugging_OverrideClass::__call
+     * @covers \BreakpointDebugging_OverrideClass<extended>
+     *
      * @expectedException        \PHPUnit_Framework_Error_Warning
      * @expectedExceptionMessage call_user_func_array() expects parameter 1 to be a valid callback, class 'NativeClass' does not have a method 'notExistFunction'
      */
@@ -88,7 +89,7 @@ class BreakpointDebugging_OverrideClassTest extends \BreakpointDebugging_UnitTes
     }
 
     /**
-     * @covers BreakpointDebugging_OverrideClass::__callStatic
+     * @covers \BreakpointDebugging_OverrideClass<extended>
      */
     public function test__callStatic()
     {
@@ -99,7 +100,7 @@ class BreakpointDebugging_OverrideClassTest extends \BreakpointDebugging_UnitTes
     }
 
     /**
-     * @covers BreakpointDebugging_OverrideClass::newArray
+     * @covers \BreakpointDebugging_OverrideClass<extended>
      */
     public function testNewArray()
     {
@@ -113,6 +114,8 @@ class BreakpointDebugging_OverrideClassTest extends \BreakpointDebugging_UnitTes
     }
 
     /**
+     * @covers \BreakpointDebugging_OverrideClass<extended>
+     *
      * Tests static property which set at "NativeClassOverriding::__construct()".
      */
     public function testStaicProperty()

@@ -215,10 +215,15 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      */
     public $tmpParams;
 
+//    /**
+//     * @var string Unit test mode.
+//     */
+//    static $unitTestMode;
+
     /**
-     * @var string Unit test mode.
+     * @var string Browser execution pass.
      */
-    static $unitTestMode;
+    static $browserPass = '"C:\Program Files\Mozilla Firefox\firefox.exe"';
 
     /**
      * This constructer create object only one time.
@@ -293,6 +298,24 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
     }
 
     /**
+     * Changes execution mode for purpose which displays unit test error.
+     *
+     * @return Original execution mode value.
+     */
+    protected static function changeExecutionModeForUnitTest()
+    {
+        global $_BreakpointDebugging_EXE_MODE;
+
+        $original = $_BreakpointDebugging_EXE_MODE;
+        if ($_BreakpointDebugging_EXE_MODE === (B::LOCAL_DEBUG_OF_RELEASE | B::UNIT_TEST)) {
+            $_BreakpointDebugging_EXE_MODE = B::LOCAL_DEBUG;
+        } else if ($_BreakpointDebugging_EXE_MODE === (B::RELEASE | B::UNIT_TEST)) {
+            $_BreakpointDebugging_EXE_MODE = B::REMOTE_DEBUG;
+        }
+        return $original;
+    }
+
+    /**
      * Throws exception if assertion is false. Also, has identification code for unit test.
      *
      * @param type $assertion Assertion.
@@ -304,7 +327,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      *      For example: \BreakpointDebugging::assert(3 <= $value && $value <= 5); // $value should be 3-5.
      *      Caution: Don't change the value of variable in "\BreakpointDebugging::assert()" function because there isn't executed in case of release.
      */
-    static function assert($assertion, $id)
+    static function assert($assertion, $id = 0)
     {
         if (!is_bool($assertion)) {
             throw new \BreakpointDebugging_ErrorException('First parameter mistake.', 1);
@@ -617,6 +640,8 @@ EOD;
      *
      *          protected function setUp()
      *          {
+     *              // Executes the need setup always.
+     *              parent::setUp();
      *              // Constructs instance.
      *              $this->pSomething = new \Something();
      *          }
@@ -628,6 +653,7 @@ EOD;
      *          }
      *
      *          /*
+     *           * @expectedException        \BreakpointDebugging_ErrorException
      *           * @expectedExceptionMessage CLASS=SomethingTest FUNCTION=testSomething_A ID=123
      *           *
      *          function testSomething_A()
@@ -641,7 +667,7 @@ EOD;
      *                  B::assert(true, 1);
      *                  B::assert(false, 2);
      *              } catch (\BreakpointDebugging_ErrorException $e) {
-     *                  $this->assertTrue($e->getMessage() === 'CLASS=SomethingTest FUNCTION=testSomething_B ID=2');
+     *                  $this->assertTrue(strpos($e->getMessage(), 'CLASS=SomethingTest FUNCTION=testSomething_B ID=2'));
      *                  return;
      *              }
      *              $this->fail();
@@ -659,23 +685,23 @@ EOD;
         self::assert(is_array($unitTestCommands), 1);
         self::assert(is_string($currentDir), 2);
 
-        B::$unitTestMode = count($unitTestCommands) === 1 ? 'DEBUG' : 'ALL';
-
-        if (B::$unitTestMode === 'DEBUG') {
+        //B::$unitTestMode = count($unitTestCommands) === 1 ? 'DEBUG' : 'ALL';
+        //if (B::$unitTestMode === 'DEBUG') {
+        if (count($unitTestCommands) === 1) {
             $command = $unitTestCommands[0];
             $commandElements = explode(' ', $command);
             $testFileName = array_pop($commandElements);
             array_push($commandElements, "$currentDir/$testFileName");
             array_unshift($commandElements, 'dummy');
-            // This is "require_once" because script should stop when file which should read does not exist.
-            require_once 'PHPUnit/Autoload.php';
+            include_once 'PHPUnit/Autoload.php';
             $pPHPUnit_TextUI_Command = new \PHPUnit_TextUI_Command;
             echo "<pre>Starts Debugging of '$testFileName' file." . PHP_EOL;
             echo '//////////////////////////////////////////////////////////////////////////' . PHP_EOL;
             // Uses "PHPUnit" error handler.
             restore_error_handler();
             echo $pPHPUnit_TextUI_Command->run($commandElements, true);
-        } else if (B::$unitTestMode === 'ALL') {
+            //} else if (B::$unitTestMode === 'ALL') {
+        } else {
             if ($_BreakpointDebugging_EXE_MODE & (B::REMOTE_DEBUG | B::RELEASE)) {
                 exit('<pre>Executes on "local server only" because continuation unit test requires many load on remote server.</pre>');
             }
@@ -703,7 +729,6 @@ EOD;
             }
             echo '<pre>Starts continuation unit tests.' . PHP_EOL;
             echo '//////////////////////////////////////////////////////////////////////////' . PHP_EOL;
-            // Uses "PHPUnit" error handler.
             foreach ($unitTestCommands as $command) {
                 $commandElements = explode(' ', $command);
                 $testFileName = array_pop($commandElements);
@@ -726,21 +751,41 @@ EOD;
     }
 
     /**
-     * Changes execution mode for purpose which displays unit test error.
+     * Makes up code coverage report, then displays in browser.
      *
-     * @return Original execution mode value.
+     * @param string $unitTestFilePath Relative path of unit test file.
+     * @param mixed  $classFilePaths   It is relative path of class which see the code coverage, and its current directory must be project directory.
+     * @param string $currentDir       Unit test current directory.
+     *
+     * @example
+     *      <?php
+     *      chdir(__DIR__ . '/../../');
+     *      require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
+     *      use \BreakpointDebugging as B;
+     *      // Makes up code coverage report, then displays in browser.
+     *      \BreakpointDebugging::makeCodeCoverageReport('BreakpointDebugging-InAllCaseTest.php', 'PEAR/BreakpointDebugging.php', __DIR__);
+     *      \BreakpointDebugging::makeCodeCoverageReport('BreakpointDebugging/LockByFileExistingTest.php', array ('PEAR/BreakpointDebugging/Lock.php', 'PEAR/BreakpointDebugging/LockByFileExisting.php'), __DIR__);
+     *          .
+     *          .
+     *          .
      */
-    static function changeExecutionModeForUnitTest()
+    static function makeCodeCoverageReport($unitTestFilePath, $classFilePaths, $currentDir)
     {
-        global $_BreakpointDebugging_EXE_MODE;
+        $workDir = self::$workDir;
+        echo '<pre>' . `phpunit --coverage-html $workDir/CodeCoverageReport $currentDir/$unitTestFilePath` . '</pre>';
 
-        $original = $_BreakpointDebugging_EXE_MODE;
-        if ($_BreakpointDebugging_EXE_MODE === (B::LOCAL_DEBUG_OF_RELEASE | B::UNIT_TEST)) {
-            $_BreakpointDebugging_EXE_MODE = B::LOCAL_DEBUG;
-        } else if ($_BreakpointDebugging_EXE_MODE === (B::RELEASE | B::UNIT_TEST)) {
-            $_BreakpointDebugging_EXE_MODE = B::REMOTE_DEBUG;
+        $displayBrowser = function($classFilePath, $browserPass, $workDir) {
+            $classFilePath = str_replace(array ('/', '\\'), '_', $classFilePath);
+            `$browserPass "file:///$workDir/CodeCoverageReport/$classFilePath.html"`;
+        };
+        $browserPass = self::$browserPass;
+        if (is_array($classFilePaths)) {
+            foreach ($classFilePaths as $classFilePath) {
+                $displayBrowser($classFilePath, $browserPass, $workDir);
+            }
+        } else {
+            $displayBrowser($classFilePaths, $browserPass, $workDir);
         }
-        return $original;
     }
 
     /**

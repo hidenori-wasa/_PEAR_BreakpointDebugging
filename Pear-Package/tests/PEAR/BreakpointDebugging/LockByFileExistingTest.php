@@ -26,10 +26,10 @@ class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_Un
     }
 
     /**
-     * @covers                   \BreakpointDebugging_LockByFileExisting::__clone
+     * @covers \BreakpointDebugging_LockByFileExisting<extended>
      *
-     * @expectedException        \PHPUnit_Framework_Error
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=__clone ID=1
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=__clone
      */
     function test__clone()
     {
@@ -37,7 +37,7 @@ class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_Un
     }
 
     /**
-     * @covers \BreakpointDebugging_LockByFileExisting::__destruct
+     * @covers \BreakpointDebugging_LockByFileExisting<extended>
      */
     public function test__destruct()
     {
@@ -48,7 +48,7 @@ class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_Un
     }
 
     /**
-     * @todo Implement testForceUnlocking().
+     * @covers \BreakpointDebugging_LockByFileExisting<extended>
      */
     public function testForceUnlocking()
     {
@@ -67,8 +67,7 @@ class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_Un
     }
 
     /**
-     * @covers \BreakpointDebugging_LockByFileExisting::lock
-     * @covers \BreakpointDebugging_LockByFileExisting::unlock
+     * @covers \BreakpointDebugging_LockByFileExisting<extended>
      */
     function testLockThenUnlock_A()
     {
@@ -81,8 +80,7 @@ class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_Un
     }
 
     /**
-     * @covers \BreakpointDebugging_LockByFileExisting::lock
-     * @covers \BreakpointDebugging_LockByFileExisting::unlock
+     * @covers \BreakpointDebugging_LockByFileExisting<extended>
      */
     function testLockThenUnlock_C()
     {
@@ -93,8 +91,7 @@ class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_Un
     }
 
     /**
-     * @covers                   \BreakpointDebugging_LockByFileExisting::lock
-     * @covers                   \BreakpointDebugging_LockByFileExisting::unlock
+     * @covers \BreakpointDebugging_LockByFileExisting<extended>
      *
      * @expectedException        \PHPUnit_Framework_Error
      * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=unlock ID=1
@@ -105,8 +102,7 @@ class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_Un
     }
 
     /**
-     * @covers                   \BreakpointDebugging_LockByFileExisting::lock
-     * @covers                   \BreakpointDebugging_LockByFileExisting::unlock
+     * @covers \BreakpointDebugging_LockByFileExisting<extended>
      *
      * @expectedException        \PHPUnit_Framework_Error
      * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=__destruct ID=1
@@ -119,8 +115,7 @@ class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_Un
     }
 
     /**
-     * @covers                   \BreakpointDebugging_LockByFileExisting::lock
-     * @covers                   \BreakpointDebugging_LockByFileExisting::unlock
+     * @covers \BreakpointDebugging_LockByFileExisting<extended>
      *
      * @expectedException        \PHPUnit_Framework_Error
      * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=unlock ID=1
@@ -137,8 +132,7 @@ class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_Un
     }
 
     /**
-     * @covers                   \BreakpointDebugging_LockByFileExisting::lock
-     * @covers                   \BreakpointDebugging_LockByFileExisting::unlock
+     * @covers \BreakpointDebugging_LockByFileExisting<extended>
      *
      * @expectedException        \PHPUnit_Framework_Error
      * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=__destruct ID=1
@@ -153,7 +147,7 @@ class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_Un
     }
 
     /**
-     * @covers \BreakpointDebugging_LockByFileExisting::singleton
+     * @covers \BreakpointDebugging_LockByFileExisting<extended>
      */
     function testSingleton_A()
     {
@@ -163,7 +157,7 @@ class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_Un
     }
 
     /**
-     * @covers                   \BreakpointDebugging_LockByFileExisting::singleton
+     * @covers \BreakpointDebugging_LockByFileExisting<extended>
      *
      * @expectedException        \PHPUnit_Framework_Error
      * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=singletonBase ID=1
@@ -180,7 +174,7 @@ class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_Un
     }
 
     /**
-     * @covers                   \BreakpointDebugging_LockByFileExisting::singleton
+     * @covers \BreakpointDebugging_LockByFileExisting<extended>
      *
      * @expectedException        \PHPUnit_Framework_Error
      * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=singletonBase ID=1

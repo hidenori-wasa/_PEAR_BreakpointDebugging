@@ -14,10 +14,6 @@ class BreakpointDebugging_ErrorTest extends \BreakpointDebugging_UnitTestOverrid
 {
     static $error;
 
-    /**
-     * Sets up the fixture, for example, opens a network connection.
-     * This method is called before a test is executed.
-     */
     function setUp()
     {
         $errorLogDirectory = B::$workDir . '/ErrorLog/';
@@ -58,7 +54,7 @@ class BreakpointDebugging_ErrorTest extends \BreakpointDebugging_UnitTestOverrid
     }
 
     /**
-     * @covers BreakpointDebugging_Error::exceptionHandler2
+     * @covers \BreakpointDebugging_Error<extended>
      */
     public function testExceptionHandler2()
     {
@@ -67,7 +63,7 @@ class BreakpointDebugging_ErrorTest extends \BreakpointDebugging_UnitTestOverrid
         self::$error = new \BreakpointDebugging_Error();
 
         $parentFilePath = __DIR__ . '/testExceptionHandler2_Parent.php';
-        require_once $parentFilePath;
+        include_once $parentFilePath;
         $lineParent = __LINE__ - 1;
         $parentFileNumber = $this->_getFileNumber($parentFilePath);
         $thisFileNumber = $this->_getFileNumber(__FILE__);
@@ -110,7 +106,7 @@ class BreakpointDebugging_ErrorTest extends \BreakpointDebugging_UnitTestOverrid
     }
 
     /**
-     * @covers BreakpointDebugging_Error::errorHandler2
+     * @covers \BreakpointDebugging_Error<extended>
      */
     public function testErrorHandler2()
     {
@@ -128,7 +124,7 @@ class BreakpointDebugging_ErrorTest extends \BreakpointDebugging_UnitTestOverrid
         }
 
         $parentFilePath = __DIR__ . '/testErrorHandler2_Parent.php';
-        require_once $parentFilePath;
+        include_once $parentFilePath;
         $lineParent = __LINE__ - 1;
         $parentFileNumber = $this->_getFileNumber($parentFilePath);
         $thisFileNumber = $this->_getFileNumber(__FILE__);
@@ -169,6 +165,7 @@ class BreakpointDebugging_ErrorTest extends \BreakpointDebugging_UnitTestOverrid
         $cmpBinData2 = rtrim(B::compressIntArray(array ($thisFileNumber, $line1, $thisFileNumber, $line2, $thisFileNumber, $line3)), PHP_EOL);
         $this->assertTrue(strpos($binData2, $cmpBinData2) !== false);
     }
+
 }
 
 ?>

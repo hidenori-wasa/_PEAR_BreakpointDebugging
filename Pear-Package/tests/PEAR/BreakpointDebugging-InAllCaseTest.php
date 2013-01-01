@@ -24,7 +24,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
     const TEST_CONST = 'The test constant.';
 
     /**
-     * @covers BreakpointDebugging_InAllCase::iniCheck
+     * @covers \BreakpointDebugging_InAllCase<extended>
      */
     public function testIniCheck()
     {
@@ -40,7 +40,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
     }
 
     /**
-     * @covers BreakpointDebugging_InAllCase::registerNotFixedLocation
+     * @covers \BreakpointDebugging_InAllCase<extended>
      */
     public function testRegisterNotFixedLocation()
     {
@@ -55,7 +55,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
     }
 
     /**
-     * @covers BreakpointDebugging_InAllCase::addValuesToTrace
+     * @covers \BreakpointDebugging_InAllCase<extended>
      */
     public function testAddValuesToTrace()
     {
@@ -73,7 +73,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
     }
 
     /**
-     * @covers BreakpointDebugging_InAllCase::convertMbString
+     * @covers \BreakpointDebugging_InAllCase<extended>
      */
     public function testConvertMbString_A()
     {
@@ -82,7 +82,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
     }
 
     /**
-     * @covers BreakpointDebugging_InAllCase::convertMbString
+     * @covers \BreakpointDebugging_InAllCase<extended>
      */
     public function testConvertMbString_B()
     {
@@ -91,7 +91,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
     }
 
     /**
-     * @covers BreakpointDebugging_InAllCase::convertMbString
+     * @covers \BreakpointDebugging_InAllCase<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
      * @expectedExceptionMessage CLASS=BreakpointDebugging_InAllCase FUNCTION=convertMbString ID=3
@@ -103,7 +103,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
     }
 
     /**
-     * @covers BreakpointDebugging_InAllCase::mkdir
+     * @covers \BreakpointDebugging_InAllCase<extended>
      */
     public function testMkdir()
     {
@@ -121,7 +121,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
     }
 
     /**
-     * @covers BreakpointDebugging_InAllCase::fopen
+     * @covers \BreakpointDebugging_InAllCase<extended>
      */
     public function testFopen()
     {
@@ -140,8 +140,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
     }
 
     /**
-     * @covers BreakpointDebugging_InAllCase::compressIntArray
-     * @covers BreakpointDebugging_InAllCase::decompressIntArray
+     * @covers \BreakpointDebugging_InAllCase<extended>
      */
     public function testCompressThenDecompressIntArray()
     {
@@ -161,7 +160,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
     }
 
     /**
-     * @covers BreakpointDebugging_InAllCase::autoload
+     * @covers \BreakpointDebugging_InAllCase<extended>
      */
     public function testAutoload()
     {
@@ -179,7 +178,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
     }
 
     /**
-     * @covers BreakpointDebugging_InAllCase::exceptionHandler
+     * @covers \BreakpointDebugging_InAllCase<extended>
      */
     public function testExceptionHandler()
     {
@@ -191,7 +190,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
     }
 
     /**
-     * @covers BreakpointDebugging_InAllCase::errorHandler
+     * @covers \BreakpointDebugging_InAllCase<extended>
      */
     public function testErrorHandler()
     {
@@ -201,7 +200,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
     }
 
     /**
-     * @covers BreakpointDebugging::internalAssert
+     * @covers \BreakpointDebugging_InAllCase<extended>
      *
      * @expectedException        \PHPUnit_Framework_Error
      * @expectedExceptionMessage CLASS=BreakpointDebugging_InAllCaseTest FUNCTION=testInternalAssert ID=1
@@ -212,7 +211,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
     }
 
     /**
-     * @covers BreakpointDebugging_InAllCase::internalException
+     * @covers \BreakpointDebugging_InAllCase<extended>
      *
      * @expectedException        \PHPUnit_Framework_Error
      * @expectedExceptionMessage CLASS=BreakpointDebugging_InAllCaseTest FUNCTION=testInternalException ID=1
@@ -223,7 +222,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
     }
 
     /**
-     * @covers BreakpointDebugging_InAllCase::shutdown
+     * @covers \BreakpointDebugging_InAllCase<extended>
      */
     public function testShutdown()
     {

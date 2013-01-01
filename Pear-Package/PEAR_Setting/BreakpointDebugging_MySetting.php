@@ -245,8 +245,7 @@ function BreakpointDebugging_mySetting()
       B::iniSet('ignore_user_abort', '');
       ### <=== "Windows" Example. */
     if ($_BreakpointDebugging_EXE_MODE !== B::RELEASE) { // In case of not release.
-        // This is "require_once" because script should stop when file which should read does not exist.
-        require_once './PEAR_Setting/BreakpointDebugging_MySetting_Option.php';
+        include_once './PEAR_Setting/BreakpointDebugging_MySetting_Option.php';
     }
     ////////////////////////////////////////////////////////////////////////////////
     // ### This setting has been Fixed. ###

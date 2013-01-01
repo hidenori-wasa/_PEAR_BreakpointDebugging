@@ -509,8 +509,7 @@ class BreakpointDebugging_InAllCase
     {
         // Changes underscore and name space separator to directory separator.
         $className = str_replace(array ('_', '\\'), '/', $className) . '.php';
-        // This is "require_once" because script should stop when file which should read does not exist.
-        require_once $className;
+        include_once $className;
     }
 
     /**
@@ -668,7 +667,7 @@ if ($_BreakpointDebugging_EXE_MODE === BreakpointDebugging_InAllCase::RELEASE) {
          * @param type $assertion Dummy.
          * @param type $id        Dummy.
          */
-        static function assert($condition, $id)
+        static function assert($condition, $id = 0)
         {
 
         }
@@ -711,8 +710,7 @@ if ($_BreakpointDebugging_EXE_MODE === BreakpointDebugging_InAllCase::RELEASE) {
     BreakpointDebugging_InAllCase::$xdebugExists = false;
 } else { // In case of not release.
     BreakpointDebugging_InAllCase::$xdebugExists = extension_loaded('xdebug');
-    // This is "require_once" because script should stop when file which should read does not exist.
-    require_once __DIR__ . '/BreakpointDebugging_Option.php';
+    include_once __DIR__ . '/BreakpointDebugging_Option.php';
 }
 
 // This sets global exception handler.

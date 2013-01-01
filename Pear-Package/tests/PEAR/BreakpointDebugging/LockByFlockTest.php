@@ -24,10 +24,10 @@ class BreakpointDebugging_LockByFlockTest extends \BreakpointDebugging_UnitTestO
     }
 
     /**
-     * @covers                   \BreakpointDebugging_LockByFlock::__clone
+     * @covers \BreakpointDebugging_LockByFlock<extended>
      *
-     * @expectedException        \PHPUnit_Framework_Error
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=__clone ID=1
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=__clone
      */
     function test__clone()
     {
@@ -35,7 +35,7 @@ class BreakpointDebugging_LockByFlockTest extends \BreakpointDebugging_UnitTestO
     }
 
     /**
-     * @covers \BreakpointDebugging_LockByFlock::__destruct
+     * @covers \BreakpointDebugging_LockByFlock<extended>
      */
     public function test__destruct()
     {
@@ -46,7 +46,7 @@ class BreakpointDebugging_LockByFlockTest extends \BreakpointDebugging_UnitTestO
     }
 
     /**
-     * @covers \BreakpointDebugging_LockByFlock::forceUnlocking
+     * @covers \BreakpointDebugging_LockByFlock<extended>
      */
     public function testForceUnlocking()
     {
@@ -61,8 +61,7 @@ class BreakpointDebugging_LockByFlockTest extends \BreakpointDebugging_UnitTestO
     }
 
     /**
-     * @covers \BreakpointDebugging_LockByFlock::lock
-     * @covers \BreakpointDebugging_LockByFlock::unlock
+     * @covers \BreakpointDebugging_LockByFlock<extended>
      */
     function testLockThenUnlock_A()
     {
@@ -71,8 +70,7 @@ class BreakpointDebugging_LockByFlockTest extends \BreakpointDebugging_UnitTestO
     }
 
     /**
-     * @covers \BreakpointDebugging_LockByFlock::lock
-     * @covers \BreakpointDebugging_LockByFlock::unlock
+     * @covers \BreakpointDebugging_LockByFlock<extended>
      */
     function testLockThenUnlock_B()
     {
@@ -83,8 +81,7 @@ class BreakpointDebugging_LockByFlockTest extends \BreakpointDebugging_UnitTestO
     }
 
     /**
-     * @covers                   \BreakpointDebugging_LockByFlock::lock
-     * @covers                   \BreakpointDebugging_LockByFlock::unlock
+     * @covers \BreakpointDebugging_LockByFlock<extended>
      *
      * @expectedException        \PHPUnit_Framework_Error
      * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=unlock ID=1
@@ -95,8 +92,7 @@ class BreakpointDebugging_LockByFlockTest extends \BreakpointDebugging_UnitTestO
     }
 
     /**
-     * @covers                   \BreakpointDebugging_LockByFlock::lock
-     * @covers                   \BreakpointDebugging_LockByFlock::unlock
+     * @covers \BreakpointDebugging_LockByFlock<extended>
      *
      * @expectedException        \PHPUnit_Framework_Error
      * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=unlock ID=1
@@ -113,8 +109,7 @@ class BreakpointDebugging_LockByFlockTest extends \BreakpointDebugging_UnitTestO
     }
 
     /**
-     * @covers                   \BreakpointDebugging_LockByFlock::lock
-     * @covers                   \BreakpointDebugging_LockByFlock::unlock
+     * @covers \BreakpointDebugging_LockByFlock<extended>
      *
      * @expectedException        \PHPUnit_Framework_Error
      * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=__destruct ID=1
@@ -127,8 +122,7 @@ class BreakpointDebugging_LockByFlockTest extends \BreakpointDebugging_UnitTestO
     }
 
     /**
-     * @covers                   \BreakpointDebugging_LockByFlock::lock
-     * @covers                   \BreakpointDebugging_LockByFlock::unlock
+     * @covers \BreakpointDebugging_LockByFlock<extended>
      *
      * @expectedException        \PHPUnit_Framework_Error
      * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=__destruct ID=1
@@ -143,7 +137,7 @@ class BreakpointDebugging_LockByFlockTest extends \BreakpointDebugging_UnitTestO
     }
 
     /**
-     * @covers \BreakpointDebugging_LockByFlock::singleton
+     * @covers \BreakpointDebugging_LockByFlock<extended>
      */
     function testSingleton_A()
     {
@@ -153,7 +147,7 @@ class BreakpointDebugging_LockByFlockTest extends \BreakpointDebugging_UnitTestO
     }
 
     /**
-     * @covers                   \BreakpointDebugging_LockByFlock::singleton
+     * @covers \BreakpointDebugging_LockByFlock<extended>
      *
      * @expectedException        \PHPUnit_Framework_Error
      * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=singletonBase ID=1
@@ -165,7 +159,7 @@ class BreakpointDebugging_LockByFlockTest extends \BreakpointDebugging_UnitTestO
     }
 
     /**
-     * @covers                   \BreakpointDebugging_LockByFlock::singleton
+     * @covers \BreakpointDebugging_LockByFlock<extended>
      *
      * @expectedException        \PHPUnit_Framework_Error
      * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=singletonBase ID=1

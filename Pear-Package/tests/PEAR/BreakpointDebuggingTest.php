@@ -31,7 +31,7 @@ class BreakpointDebuggingTestExample extends \BreakpointDebuggingTestExampleBase
 class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
 {
     /**
-     * @covers BreakpointDebugging::breakpoint
+     * @covers \BreakpointDebugging<extended>
      *
      * @expectedException        \PHPUnit_Framework_Error
      * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=breakpoint ID=1
@@ -42,7 +42,7 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
     }
 
     /**
-     * @covers BreakpointDebugging::breakpoint
+     * @covers \BreakpointDebugging<extended>
      *
      * @expectedException        \PHPUnit_Framework_Error
      * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=breakpoint ID=2
@@ -53,7 +53,7 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
     }
 
     /**
-     * @covers BreakpointDebugging::breakpoint
+     * @covers \BreakpointDebugging<extended>
      *
      * @expectedException        \PHPUnit_Framework_Error
      * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=breakpoint ID=3
@@ -64,7 +64,7 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
     }
 
     /**
-     * @covers BreakpointDebugging::breakpoint
+     * @covers \BreakpointDebugging<extended>
      */
     public function testBreakpoint_D()
     {
@@ -72,7 +72,7 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
     }
 
     /**
-     * @covers BreakpointDebugging::convertMbStringForDebug
+     * @covers \BreakpointDebugging<extended>
      */
     public function testConvertMbStringForDebug()
     {
@@ -83,7 +83,7 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
     }
 
     /**
-     * @covers BreakpointDebugging::iniSet
+     * @covers \BreakpointDebugging<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
      * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=iniSet ID=4
@@ -95,7 +95,7 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
     }
 
     /**
-     * @covers BreakpointDebugging::iniSet
+     * @covers \BreakpointDebugging<extended>
      *
      * @expectedException        \PHPUnit_Framework_Error
      * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=iniSet ID=3
@@ -107,7 +107,7 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
     }
 
     /**
-     * @covers BreakpointDebugging::getPropertyForTest
+     * @covers \BreakpointDebugging<extended>
      */
     public function testGetPropertyForTest_A()
     {
@@ -119,7 +119,7 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
     }
 
     /**
-     * @covers BreakpointDebugging::getPropertyForTest
+     * @covers \BreakpointDebugging<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
      * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=getPropertyForTest
@@ -130,7 +130,7 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
     }
 
     /**
-     * @covers BreakpointDebugging::getPropertyForTest
+     * @covers \BreakpointDebugging<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
      * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=getPropertyForTest
@@ -143,7 +143,7 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
     }
 
     /**
-     * @covers BreakpointDebugging::setPropertyForTest
+     * @covers \BreakpointDebugging<extended>
      */
     public function testSetPropertyForTest_A()
     {
@@ -164,7 +164,7 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
     }
 
     /**
-     * @covers BreakpointDebugging::setPropertyForTest
+     * @covers \BreakpointDebugging<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
      * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=setPropertyForTest
@@ -179,7 +179,7 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
     }
 
     /**
-     * @covers BreakpointDebugging::setPropertyForTest
+     * @covers \BreakpointDebugging<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
      * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=setPropertyForTest
@@ -194,7 +194,7 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
     }
 
     /**
-     * @covers BreakpointDebugging::checkUnitTestExeMode
+     * @covers \BreakpointDebugging<extended>
      */
     public function testCheckUnitTestExeMode()
     {
@@ -202,7 +202,7 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
     }
 
     /**
-     * @covers BreakpointDebugging::displayVerification
+     * @covers \BreakpointDebugging<extended>
      */
     public function testDisplayVerification()
     {
@@ -219,7 +219,7 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
     }
 
     /**
-     * @covers BreakpointDebugging::testExecuteUnitTest
+     * @covers \BreakpointDebugging<extended>
      */
     public function testExecuteUnitTest_A()
     {
@@ -236,7 +236,7 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
     }
 
     /**
-     * @covers BreakpointDebugging::testExecuteUnitTest
+     * @covers \BreakpointDebugging<extended>
      *
      * @expectedException        \PHPUnit_Framework_Error
      * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=executeUnitTest ID=1
@@ -247,7 +247,7 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
     }
 
     /**
-     * @covers BreakpointDebugging::testExecuteUnitTest
+     * @covers \BreakpointDebugging<extended>
      *
      * @expectedException        \PHPUnit_Framework_Error_Warning
      * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=executeUnitTest ID=2
@@ -258,7 +258,7 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
     }
 
     /**
-     * @covers BreakpointDebugging::testExecuteUnitTest
+     * @covers \BreakpointDebugging<extended>
      *
      * @expectedException        \PHPUnit_Framework_Error
      * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=executeUnitTest ID=3

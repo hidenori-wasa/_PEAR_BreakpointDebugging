@@ -572,11 +572,20 @@ final class BreakpointDebugging_Error
      */
     private function _addParameterHeaderToLog(&$pTmpLog, $file, $line, $func, $class)
     {
-        if ($file) {
-            $this->_logBufferWriting($pTmpLog, PHP_EOL . $this->_mark . 'Error file =======>' . $this->tags['font']['string'] . '\'' . $file . '\'' . $this->tags['/font']);
-        }
-        if ($line) {
-            $this->_logBufferWriting($pTmpLog, PHP_EOL . $this->_mark . 'Error line =======>' . $this->tags['font']['int'] . $line . $this->tags['/font']);
+        if (strripos($file, 'test.php') === strlen($file) - strlen('test.php')) {
+            if ($file) {
+                $this->_logBufferWriting($pTmpLog, PHP_EOL . $this->_mark . 'Error file =======>' . $this->tags['b'] . $this->tags['font']['string'] . '\'' . $file . '\'' . $this->tags['/font'] . $this->tags['/b']);
+            }
+            if ($line) {
+                $this->_logBufferWriting($pTmpLog, PHP_EOL . $this->_mark . 'Error line =======>' . $this->tags['b'] . $this->tags['font']['int'] . $line . $this->tags['/font'] . $this->tags['/b']);
+            }
+        } else {
+            if ($file) {
+                $this->_logBufferWriting($pTmpLog, PHP_EOL . $this->_mark . 'Error file =======>' . $this->tags['font']['string'] . '\'' . $file . '\'' . $this->tags['/font']);
+            }
+            if ($line) {
+                $this->_logBufferWriting($pTmpLog, PHP_EOL . $this->_mark . 'Error line =======>' . $this->tags['font']['int'] . $line . $this->tags['/font']);
+            }
         }
         if ($class) {
             $this->_logBufferWriting($pTmpLog, PHP_EOL . $this->_mark . 'Error class ======>' . $this->tags['i'] . $class . $this->tags['/i']);

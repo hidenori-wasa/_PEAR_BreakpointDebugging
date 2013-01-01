@@ -13,7 +13,7 @@ B::checkUnitTestExeMode();
 class BreakpointDebugging_ExceptionTest extends \BreakpointDebugging_UnitTestOverriding
 {
     /**
-     * @covers BreakpointDebugging_Exception::__construct
+     * @covers \BreakpointDebugging_Exception<extended>
      */
     public function test__construct_A()
     {
@@ -25,7 +25,7 @@ class BreakpointDebugging_ExceptionTest extends \BreakpointDebugging_UnitTestOve
     }
 
     /**
-     * @covers BreakpointDebugging_Exception::__construct
+     * @covers \BreakpointDebugging_Exception<extended>
      *
      * @expectedException        \PHPUnit_Framework_Error
      * @expectedExceptionMessage CLASS=BreakpointDebugging_Exception FUNCTION=__construct ID=1
@@ -36,7 +36,7 @@ class BreakpointDebugging_ExceptionTest extends \BreakpointDebugging_UnitTestOve
     }
 
     /**
-     * @covers BreakpointDebugging_Exception::__construct
+     * @covers \BreakpointDebugging_Exception<extended>
      *
      * @expectedException        \PHPUnit_Framework_Error
      * @expectedExceptionMessage CLASS=BreakpointDebugging_Exception FUNCTION=__construct ID=2
@@ -47,7 +47,7 @@ class BreakpointDebugging_ExceptionTest extends \BreakpointDebugging_UnitTestOve
     }
 
     /**
-     * @covers BreakpointDebugging_Exception::__construct
+     * @covers \BreakpointDebugging_Exception<extended>
      *
      * @expectedException        \PHPUnit_Framework_Error
      * @expectedExceptionMessage CLASS=BreakpointDebugging_Exception FUNCTION=__construct ID=3
@@ -58,7 +58,7 @@ class BreakpointDebugging_ExceptionTest extends \BreakpointDebugging_UnitTestOve
     }
 
     /**
-     * @covers BreakpointDebugging_Exception::__construct
+     * @covers \BreakpointDebugging_Exception<extended>
      *
      * @expectedException        \PHPUnit_Framework_Error
      * @expectedExceptionMessage CLASS=BreakpointDebugging_Exception FUNCTION=__construct ID=7
@@ -69,7 +69,7 @@ class BreakpointDebugging_ExceptionTest extends \BreakpointDebugging_UnitTestOve
     }
 
     /**
-     * @covers BreakpointDebugging_Exception::__construct
+     * @covers \BreakpointDebugging_Exception<extended>
      *
      * @expectedException        \PHPUnit_Framework_Error
      * @expectedExceptionMessage CLASS=BreakpointDebugging_Exception FUNCTION=__construct ID=7
@@ -80,7 +80,7 @@ class BreakpointDebugging_ExceptionTest extends \BreakpointDebugging_UnitTestOve
     }
 
     /**
-     * @covers BreakpointDebugging_Exception::__construct
+     * @covers \BreakpointDebugging_Exception<extended>
      *
      * @expectedException        \PHPUnit_Framework_Error
      * @expectedExceptionMessage CLASS=BreakpointDebugging_Exception FUNCTION=__construct ID=5
@@ -91,7 +91,7 @@ class BreakpointDebugging_ExceptionTest extends \BreakpointDebugging_UnitTestOve
     }
 
     /**
-     * @covers BreakpointDebugging_Exception::__construct
+     * @covers \BreakpointDebugging_Exception<extended>
      *
      * @expectedException        \PHPUnit_Framework_Error
      * @expectedExceptionMessage CLASS=BreakpointDebugging_Exception FUNCTION=__construct ID=6

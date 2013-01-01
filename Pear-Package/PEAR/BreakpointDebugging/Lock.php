@@ -48,7 +48,9 @@
  * @version  SVN: $Id$
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
+// @codeCoverageIgnoreStart
 require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
+// @codeCoverageIgnoreEnd
 
 use \BreakpointDebugging as B;
 
@@ -141,11 +143,11 @@ abstract class BreakpointDebugging_Lock
      * Prevents duplicating an instance.
      *
      * @return void
-     * @throws
      */
     function __clone()
     {
-        B::internalAssert(false, 1);
+        //B::internalAssert(false, 1);
+        throw new \BreakpointDebugging_ErrorException('Prevents duplicating an instance.');
         // @codeCoverageIgnoreStart
     }
 
