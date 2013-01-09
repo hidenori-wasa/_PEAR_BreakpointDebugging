@@ -54,73 +54,26 @@ require_once __DIR__ . '/PEAR/Exception.php';
  * @version  Release: @package_version@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-class BreakpointDebugging_Exception extends \PEAR_Exception
+//class BreakpointDebugging_Exception extends \PEAR_Exception
+abstract class BreakpointDebugging_Exception_InAllCase extends \PEAR_Exception
 {
     /**
      * Constructs instance.
      *
      * @param string $message                Exception message.
      * @param int    $id                     Exception identification number.
-     * @param int    $omissionCallStackLevel Omission call stack level.
      * @param object $previous               Previous exception.
      *
      * @return void
      */
-    function __construct($message, $id = null, $omissionCallStackLevel = 0, $previous = null)
+    function __construct($message, $id = null, $previous = null)
     {
-        global $_BreakpointDebugging_EXE_MODE;
-
-        B::internalAssert(func_num_args() <= 4, 1);
-        B::internalAssert(is_string($message), 2);
-        B::internalAssert(is_int($id) || $id === null, 3);
-        B::internalAssert($previous instanceof \Exception || $previous === null, 5);
-        B::internalAssert(mb_detect_encoding($message, 'utf8', true) !== false, 6);
-
-        // Adds "[[[CLASS=<class name>] FUNCTION=<function name>] ID=<identification number>]" to message in case of unit test.
-        if ($_BreakpointDebugging_EXE_MODE & B::UNIT_TEST) {
-            B::internalAssert(is_int($omissionCallStackLevel) && $omissionCallStackLevel >= 0, 7);
-
-            if ($id === null) {
-                $idString = '';
-            } else {
-                $idString = ' ID=' . $id;
-            }
-            $function = '';
-            $class = '';
-            $callStack = $this->getTrace();
-            if (array_key_exists($omissionCallStackLevel, $callStack)) {
-                $call = $callStack[$omissionCallStackLevel];
-                if (array_key_exists('function', $call)) {
-                    $function = ' FUNCTION=' . $call['function'];
-                }
-                if (array_key_exists('class', $call)) {
-                    $class = ' CLASS=' . $call['class'];
-                }
-            }
-            $message .= $class . $function . $idString;
-        }
-
         if ($previous === null) {
             parent::__construct($message, $id);
         } else {
             parent::__construct($message, $previous, $id);
         }
     }
-
-}
-
-/**
- * Own package error exception.
- *
- * @category PHP
- * @package  BreakpointDebugging
- * @author   Hidenori Wasa <public@hidenori-wasa.com>
- * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
- * @version  Release: @package_version@
- * @link     http://pear.php.net/package/BreakpointDebugging
- */
-class BreakpointDebugging_ErrorException extends \BreakpointDebugging_Exception
-{
 
 }
 
@@ -134,7 +87,7 @@ class BreakpointDebugging_ErrorException extends \BreakpointDebugging_Exception
  * @version  Release: @package_version@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-class BreakpointDebugging_InAllCase
+abstract class BreakpointDebugging_InAllCase
 {
     // ### Debug mode constant number ###
 
@@ -166,12 +119,14 @@ class BreakpointDebugging_InAllCase
     /**
      * @var bool "Xdebug" existing-flag.
      */
-    static $xdebugExists;
+    //static $xdebugExists;
+    private static $_xdebugExists;
 
     /**
      * @var string Upper case 3 character prefix of operating system name.
      */
-    static $os = '';
+    //static $os = '';
+    private static $_os = '';
 
     /**
      * @var stirng My username.
@@ -234,11 +189,44 @@ class BreakpointDebugging_InAllCase
     static $isInternal = false;
 
     /**
+     * Sets private property. We must invoke extended class method instead of this.
+     *
+     * @param bool $property Same as property.
+     *
+     * @return void
+     */
+    static function setXebugExists($property)
+    {
+        self::$_xdebugExists = $property;
+    }
+
+    /**
+     * Gets private property.
+     *
+     * @return bool Same as property.
+     */
+    static function getXebugExists()
+    {
+        return self::$_xdebugExists;
+    }
+
+    /**
+     * Gets private property.
+     *
+     * @return bool Same as property.
+     */
+    static function getOs()
+    {
+        return self::$_os;
+    }
+
+    /**
      * Constructs instance.
      */
     function __construct()
     {
-        self::$os = strtoupper(substr(PHP_OS, 0, 3));
+        self::$_os = strtoupper(substr(PHP_OS, 0, 3));
+        //self::setOs(strtoupper(substr(PHP_OS, 0, 3)));
     }
 
     /**
@@ -251,9 +239,10 @@ class BreakpointDebugging_InAllCase
      *
      * @return void
      */
-    final static function iniCheck($phpIniVariable, $cmpValue, $errorMessage)
+    //final static function iniCheck($phpIniVariable, $cmpValue, $errorMessage)
+    static function iniCheck($phpIniVariable, $cmpValue, $errorMessage)
     {
-        B::assert(func_num_args() === 3, 1);
+        //B::assert(func_num_args() === 3, 1);
         $value = (string) ini_get($phpIniVariable);
         $cmpResult = false;
         if (is_array($cmpValue)) {
@@ -288,10 +277,14 @@ class BreakpointDebugging_InAllCase
      *
      * @return void
      *
-     * @example static $isRegister; \BreakpointDebugging::registerNotFixedLocation($isRegister);
+     * @example static $isRegister = false; \BreakpointDebugging::registerNotFixedLocation($isRegister);
      */
-    final static function registerNotFixedLocation(&$isRegister)
+    //final static function registerNotFixedLocation(&$isRegister)
+    static function registerNotFixedLocation(&$isRegister)
     {
+        B::assert(func_num_args() === 1, 1);
+        B::assert(is_bool($isRegister), 2);
+
         // When it has been registered.
         if ($isRegister) {
             return;
@@ -319,9 +312,13 @@ class BreakpointDebugging_InAllCase
      *
      * @example \BreakpointDebugging::addValuesToTrace(array('TEST_CONST' => TEST_CONST, '$testString' => $testString, '$varietyObject' => $varietyObject));
      */
-    final static function addValuesToTrace($values)
+    //final static function addValuesToTrace($values)
+    static function addValuesToTrace($values)
     {
         global $_BreakpointDebugging;
+
+        B::assert(func_num_args() === 1, 1);
+        B::assert(is_array($values), 2);
 
         $backTrace = debug_backtrace();
         $callInfo = &$backTrace[0];
@@ -356,11 +353,11 @@ class BreakpointDebugging_InAllCase
      * @return string UTF8 character string.
      * @example \BreakpointDebugging::convertMbString($warning['Message']);
      */
-    final static function convertMbString($string)
+    //final static function convertMbString($string)
+    static function convertMbString($string)
     {
-        B::assert(func_num_args() === 1, 1);
-        B::assert(is_string($string), 2);
-
+        //B::assert(func_num_args() === 1, 1);
+        //B::assert(is_string($string), 2);
         // Analyzes character sets of character string.
         $charSet = mb_detect_encoding($string);
         if ($charSet === 'UTF-8' || $charSet === 'ASCII') {
@@ -382,7 +379,8 @@ class BreakpointDebugging_InAllCase
      */
     final private static function _setOwner($name, $permission)
     {
-        if (B::$os === 'WIN') { // In case of Windows.
+        //if (B::$_os === 'WIN') { // In case of Windows.
+        if (B::getOs() === 'WIN') { // In case of Windows.
             return;
         }
         // In case of Unix.
@@ -401,7 +399,8 @@ class BreakpointDebugging_InAllCase
      *
      * @return void
      */
-    final static function mkdir($dirName, $permission = 0777)
+    //final static function mkdir($dirName, $permission = 0777)
+    static function mkdir($dirName, $permission = 0777)
     {
         if (mkdir($dirName)) {
             self::_setOwner($dirName, $permission);
@@ -412,12 +411,13 @@ class BreakpointDebugging_InAllCase
      * "fopen" method which sets the file mode, permission and sets own user to owner.
      *
      * @param stirng $fileName   The file name.
-     * @param int    $mode       The file mode.
+     * @param stirng $mode       The file mode.
      * @param int    $permission The file permission.
      *
      * @return resource The file pointer.
      */
-    final static function fopen($fileName, $mode, $permission)
+    //final static function fopen($fileName, $mode, $permission)
+    static function fopen($fileName, $mode, $permission)
     {
         $pFile = fopen($fileName, $mode);
         if ($pFile) {
@@ -434,7 +434,8 @@ class BreakpointDebugging_InAllCase
      * @return string Compression character string.
      * @example fwrite($pFile, \BreakpointDebugging::compressIntArray(array(0xFFFFFFFF, 0x7C, 0x7D, 0x7E, 0x0A, 0x0D)));
      */
-    final static function compressIntArray($intArray)
+    //final static function compressIntArray($intArray)
+    static function compressIntArray($intArray)
     {
         $compressBytes = '';
         foreach ($intArray as $int) {
@@ -462,12 +463,13 @@ class BreakpointDebugging_InAllCase
     /**
      * Decompresses to integer array.
      *
-     * @param string $compressBytes Compression character string by "\BreakpointDebugging::compressIntArray()".
+     * @param mixed $compressBytes Compression character string by "\BreakpointDebugging::compressIntArray()".
      *
      * @return array Integer array.
      * @example while ($intArray = \BreakpointDebugging::decompressIntArray(fgets($pFile))) {
      */
-    final static function decompressIntArray($compressBytes)
+    //final static function decompressIntArray($compressBytes)
+    static function decompressIntArray($compressBytes)
     {
         $compressBytes = trim($compressBytes, PHP_EOL);
         $intArray = array ();
@@ -586,7 +588,7 @@ class BreakpointDebugging_InAllCase
         // Is internal method.
         self::$isInternal = true;
         self::$onceErrorDispFlag = true;
-        self::exceptionHandler(new \BreakpointDebugging_ErrorException($message, $id, 2));
+        self::exceptionHandler(new \BreakpointDebugging_ErrorException($message, $id, null, 2));
         if ($_BreakpointDebugging_EXE_MODE & self::REMOTE_DEBUG) { // In case of remote debug.
             // Remote debug must end immediately to avoid eternal execution.
             exit;
@@ -636,6 +638,21 @@ global $_BreakpointDebugging_EXE_MODE;
 
 if ($_BreakpointDebugging_EXE_MODE === BreakpointDebugging_InAllCase::RELEASE) { // In case of release.
     /**
+     * Own package exception.
+     *
+     * @category PHP
+     * @package  BreakpointDebugging
+     * @author   Hidenori Wasa <public@hidenori-wasa.com>
+     * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
+     * @version  Release: @package_version@
+     * @link     http://pear.php.net/package/BreakpointDebugging
+     */
+    class BreakpointDebugging_Exception extends \BreakpointDebugging_Exception_InAllCase
+    {
+
+    }
+
+    /**
      * This class executes error or exception handling, and it is only in case of release mode.
      *
      * @category PHP
@@ -645,58 +662,57 @@ if ($_BreakpointDebugging_EXE_MODE === BreakpointDebugging_InAllCase::RELEASE) {
      * @version  Release: @package_version@
      * @link     http://pear.php.net/package/BreakpointDebugging
      */
-
     final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
     {
         /**
-         * This is empty in case of release mode.
-         *
-         * @param string $message       Dummy.
-         * @param array  $callStackInfo Dummy.
+         * Empties in release.
          *
          * @return void
          */
-        static function breakpoint($message, $callStackInfo)
+        static function breakpoint()
         {
 
         }
 
         /**
-         * This is empty in case of release mode.
+         * Empties in release.
          *
-         * @param type $assertion Dummy.
-         * @param type $id        Dummy.
+         * @return void
          */
-        static function assert($condition, $id = 0)
+        static function limitInvokerFilePaths()
         {
 
         }
 
         /**
-         * This is empty in case of release mode.
-         *
-         * @param bool $expression Dummy.
-         * @param int  $id         Dummy.
+         * Empties in release.
          *
          * @return void
-         * @example \BreakpointDebugging::internalAssert($expression, 1);
          */
-        static function internalAssert($expression, $id)
+        static function assert()
         {
 
         }
 
         /**
-         * This is ini_set() without validation in case of release mode.
-         * I set with "ini_set()" because "php.ini" file and ".htaccess" file isn't sometimes possible to be set on sharing server.
-         *
-         * @param string $phpIniVariable This is php.ini variable.
-         * @param string $setValue       Value of variable.
-         * @param bool   $doCheck        It is dummy.
+         * Empties in release.
          *
          * @return void
          */
-        static function iniSet($phpIniVariable, $setValue, $doCheck = true)
+        static function internalAssert()
+        {
+
+        }
+
+        /**
+         * "ini_set()" in release.
+         *
+         * @param string $phpIniVariable Same as "ini_set()".
+         * @param string $setValue       Same as "ini_set()".
+         *
+         * @return void
+         */
+        static function iniSet($phpIniVariable, $setValue)
         {
             ini_set($phpIniVariable, $setValue);
         }
@@ -707,10 +723,27 @@ if ($_BreakpointDebugging_EXE_MODE === BreakpointDebugging_InAllCase::RELEASE) {
         throw new \BreakpointDebugging_ErrorException('', 1);
     }
     // Ignores "Xdebug" in case of release because must not stop.
-    BreakpointDebugging_InAllCase::$xdebugExists = false;
+    //BreakpointDebugging_InAllCase::$_xdebugExists = false;
+    BreakpointDebugging::setXebugExists(false);
 } else { // In case of not release.
-    BreakpointDebugging_InAllCase::$xdebugExists = extension_loaded('xdebug');
+    //BreakpointDebugging_InAllCase::$_xdebugExists = extension_loaded('xdebug');
+    // This does not invoke extended class method exceptionally because its class is not defined.
+    BreakpointDebugging_InAllCase::setXebugExists(extension_loaded('xdebug'));
     include_once __DIR__ . '/BreakpointDebugging_Option.php';
+}
+/**
+ * Own package error exception.
+ *
+ * @category PHP
+ * @package  BreakpointDebugging
+ * @author   Hidenori Wasa <public@hidenori-wasa.com>
+ * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
+ * @version  Release: @package_version@
+ * @link     http://pear.php.net/package/BreakpointDebugging
+ */
+class BreakpointDebugging_ErrorException extends \BreakpointDebugging_Exception
+{
+
 }
 
 // This sets global exception handler.

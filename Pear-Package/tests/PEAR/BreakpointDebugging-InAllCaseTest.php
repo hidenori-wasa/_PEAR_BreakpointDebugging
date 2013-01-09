@@ -5,7 +5,7 @@ require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
 
 use \BreakpointDebugging as B;
 
-B::checkUnitTestExeMode();
+B::isUnitTestExeMode(true);
 
 $testAutoload = 1;
 if ($testAutoload === 1) { // The case which extends base class.
@@ -45,7 +45,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
     public function testRegisterNotFixedLocation()
     {
         global $_BreakpointDebugging;
-        static $isRegister;
+        static $isRegister = false;
 
         B::registerNotFixedLocation($isRegister);
         $notFixedLocation = $_BreakpointDebugging->notFixedLocations[count($_BreakpointDebugging->notFixedLocations) - 1];
@@ -113,7 +113,8 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
         }
         B::mkdir($testDirName, 0700);
         $this->assertTrue(is_dir($testDirName));
-        if (B::$os === 'WIN') {
+        //if (B::$os === 'WIN') {
+        if (B::getOs() === 'WIN') {
             $this->markTestSkipped('Cannot test file permission in case of windows.');
         }
         clearstatcache();
@@ -132,7 +133,8 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
         $pFile = B::fopen($testFileName, 'w+b', 0700);
         fclose($pFile);
         $this->assertTrue(is_file($testFileName));
-        if (B::$os === 'WIN') {
+        //if (B::$os === 'WIN') {
+        if (B::getOs() === 'WIN') {
             $this->markTestSkipped('Cannot test file permission in case of windows.');
         }
         clearstatcache();

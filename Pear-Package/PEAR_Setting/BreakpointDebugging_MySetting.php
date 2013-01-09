@@ -80,7 +80,7 @@ function BreakpointDebugging_setExecutionMode()
             if ($executionMode === 'DEBUG') {
                 return $REMOTE_DEBUG; // Remote server debug by browser display.
             } else if ($executionMode === 'RELEASE') {
-                return $RELEASE; // Remote server release by logging. We must execute "REMOTE_DEBUG" before this.
+                return $RELEASE; // Remote server release by logging. We must execute "REMOTE_DEBUG" before this, and we must set on last for security.
             } else if ($executionMode === 'UNIT_TEST') {
                 return $RELEASE | $UNIT_TEST; // Unit test on remote server.
             }
@@ -139,7 +139,8 @@ function BreakpointDebugging_mySetting()
     // Please, set your username.
     B::$_userName = 'root'; // Example: 'hidenori'
     // PHP It limits directory which opens a file.
-    if (B::$os === 'WIN') { // In case of Windows.
+    //if (B::$os === 'WIN') { // In case of Windows.
+    if (B::getOs() === 'WIN') { // In case of Windows.
         $openBasedir = 'C:\xampp\;.\\';
     } else { // In case of Unix.
         $openBasedir = '/opt/lampp/:./';

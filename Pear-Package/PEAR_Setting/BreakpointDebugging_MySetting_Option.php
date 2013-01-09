@@ -75,7 +75,8 @@ if ($_BreakpointDebugging_EXE_MODE & (B::REMOTE_DEBUG | B::RELEASE)) { // In cas
     B::iniCheck('xdebug.remote_host', '127.0.0.1', 'Set \'xdebug.remote_host = "127.0.0.1"\' of "php.ini" file because remote IDE host of server is "127.0.0.1".');
 }
 
-if (B::$xdebugExists) {
+//if (B::$xdebugExists) {
+if (B::getXebugExists()) {
     // xdebug.dump.*    * = COOKIE, FILES, GET, POST, REQUEST, SERVER, SESSION.
     //      Shows the specified superglobal value. Example is shown below.
     //      B::iniSet('xdebug.dump.SERVER', 'REMOTE_ADDR,REQUEST_METHOD');
@@ -188,7 +189,8 @@ B::iniSet('memory_limit', '128M');
 // This changes "php.ini" file setting into "implicit_flush = Off" because it is purpose to prevent a remarkable degradation.
 B::iniSet('implicit_flush', '');
 B::iniCheck('scream.enabled', '', 'This should change "php.ini" file setting into "scream.enabled = false" because it does not make "@" error display control operator invalid.');
-if (B::$os === 'WIN') { // In case of Windows.
+//if (B::$os === 'WIN') { // In case of Windows.
+if (B::getOs() === 'WIN') { // In case of Windows.
     B::iniCheck('post_max_size', '128M', 'We recommend to set "post_max_size = 128M" of "php.ini" file because maximum size which is permitted to a POST data is different from the default.');
     B::iniCheck('upload_max_filesize', '128M', 'We recommend to set "upload_max_filesize = 128M" of "php.ini" file because it is "XAMPP" value.');
 } else { // In case of Unix.

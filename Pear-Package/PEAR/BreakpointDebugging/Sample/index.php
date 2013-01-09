@@ -8,6 +8,8 @@ use \BreakpointDebugging as B;
 
 require_once './NativeClass.php'; // Test class.
 
+B::isUnitTestExeMode(false); // Checks the execution mode.
+
 $testNumber = 2;
 
 if ($testNumber === 1) {

@@ -5,7 +5,7 @@ require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
 
 use \BreakpointDebugging as B;
 
-B::checkUnitTestExeMode();
+B::isUnitTestExeMode(true);
 class ExampleTest extends \BreakpointDebugging_UnitTestOverriding
 {
     /**

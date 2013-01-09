@@ -69,6 +69,159 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
     class BreakpointDebugging_UnitTestOverriding extends \PHPUnit_Framework_TestCase
     {
         /**
+         * Overrides "\PHPUnit_Framework_TestCase::runBare()" to display call stack when error occurred.
+         *
+         * @return void
+         *
+         * Please, add following into "\PHPUnit_Framework_TestCase" class.
+         *      protected function getInIsolation()
+         *      {
+         *          return $this->inIsolation;
+         *      }
+         */
+        public function runBare()
+        {
+            $this->numAssertions = 0;
+
+            // Backup the $GLOBALS array and static attributes.
+            if ($this->runTestInSeparateProcess !== TRUE &&
+            $this->getInIsolation() !== TRUE) {
+                if ($this->backupGlobals === NULL ||
+                $this->backupGlobals === TRUE) {
+                    PHPUnit_Util_GlobalState::backupGlobals(
+                    $this->backupGlobalsBlacklist
+                    );
+                }
+
+                if (version_compare(PHP_VERSION, '5.3', '>') &&
+                $this->backupStaticAttributes === TRUE) {
+                    PHPUnit_Util_GlobalState::backupStaticAttributes(
+                    $this->backupStaticAttributesBlacklist
+                    );
+                }
+            }
+
+            // Start output buffering.
+            ob_start();
+            $this->outputBufferingActive = TRUE;
+
+            // Clean up stat cache.
+            clearstatcache();
+
+            try {
+                if ($this->getInIsolation()) {
+                    $this->setUpBeforeClass();
+                }
+
+                $this->setExpectedExceptionFromAnnotation();
+                $this->setUp();
+                $this->checkRequirements();
+                $this->assertPreConditions();
+                $this->testResult = $this->runTest();
+                $this->verifyMockObjects();
+                $this->assertPostConditions();
+                $this->status = PHPUnit_Runner_BaseTestRunner::STATUS_PASSED;
+            } catch (PHPUnit_Framework_IncompleteTest $e) {
+                $this->status = PHPUnit_Runner_BaseTestRunner::STATUS_INCOMPLETE;
+                $this->statusMessage = $e->getMessage();
+            } catch (PHPUnit_Framework_SkippedTest $e) {
+                $this->status = PHPUnit_Runner_BaseTestRunner::STATUS_SKIPPED;
+                $this->statusMessage = $e->getMessage();
+            } catch (PHPUnit_Framework_AssertionFailedError $e) {
+                //$this->status = PHPUnit_Runner_BaseTestRunner::STATUS_FAILURE;
+                //$this->statusMessage = $e->getMessage();
+                B::exceptionHandler($e);
+                exit;
+            } catch (Exception $e) {
+                //$this->status = PHPUnit_Runner_BaseTestRunner::STATUS_ERROR;
+                //$this->statusMessage = $e->getMessage();
+                B::exceptionHandler($e);
+                exit;
+            }
+
+            // Tear down the fixture. An exception raised in tearDown() will be
+            // caught and passed on when no exception was raised before.
+            try {
+                $this->tearDown();
+
+                if ($this->getInIsolation()) {
+                    $this->tearDownAfterClass();
+                }
+            } catch (Exception $_e) {
+                //if (!isset($e)) {
+                //    $e = $_e;
+                //}
+                B::exceptionHandler($e);
+                exit;
+            }
+
+            // Stop output buffering.
+            if ($this->outputCallback === FALSE) {
+                $this->output = ob_get_contents();
+            } else {
+                $this->output = call_user_func_array(
+                $this->outputCallback, array (ob_get_contents())
+                );
+            }
+
+            ob_end_clean();
+            $this->outputBufferingActive = FALSE;
+
+            // Clean up stat cache.
+            clearstatcache();
+
+            // Restore the $GLOBALS array and static attributes.
+            if ($this->runTestInSeparateProcess !== TRUE &&
+            $this->getInIsolation() !== TRUE) {
+                if ($this->backupGlobals === NULL ||
+                $this->backupGlobals === TRUE) {
+                    PHPUnit_Util_GlobalState::restoreGlobals(
+                    $this->backupGlobalsBlacklist
+                    );
+                }
+
+                if (version_compare(PHP_VERSION, '5.3', '>') &&
+                $this->backupStaticAttributes === TRUE) {
+                    PHPUnit_Util_GlobalState::restoreStaticAttributes();
+                }
+            }
+
+            // Clean up INI settings.
+            foreach ($this->iniSettings as $varName => $oldValue) {
+                ini_set($varName, $oldValue);
+            }
+
+            $this->iniSettings = array ();
+
+            // Clean up locale settings.
+            foreach ($this->locale as $category => $locale) {
+                setlocale($category, $locale);
+            }
+
+            // Perform assertion on output.
+            if (!isset($e)) {
+                try {
+                    if ($this->outputExpectedRegex !== NULL) {
+                        $this->hasPerformedExpectationsOnOutput = TRUE;
+                        $this->assertRegExp($this->outputExpectedRegex, $this->output);
+                        $this->outputExpectedRegex = NULL;
+                    } else if ($this->outputExpectedString !== NULL) {
+                        $this->hasPerformedExpectationsOnOutput = TRUE;
+                        $this->assertEquals($this->outputExpectedString, $this->output);
+                        $this->outputExpectedString = NULL;
+                    }
+                } catch (Exception $_e) {
+                    $e = $_e;
+                }
+            }
+
+            // Workaround for missing "finally".
+            if (isset($e)) {
+                $this->onNotSuccessfulTest($e);
+            }
+        }
+
+        /**
          * Overrides "\PHPUnit_Framework_TestCase::runTest()" to display call stack when annotation failed.
          *
          * @return mixed

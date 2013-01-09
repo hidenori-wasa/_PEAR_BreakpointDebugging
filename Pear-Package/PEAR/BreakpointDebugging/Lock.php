@@ -50,6 +50,7 @@
  */
 // @codeCoverageIgnoreStart
 require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
+
 // @codeCoverageIgnoreEnd
 
 use \BreakpointDebugging as B;
@@ -147,7 +148,7 @@ abstract class BreakpointDebugging_Lock
     function __clone()
     {
         //B::internalAssert(false, 1);
-        throw new \BreakpointDebugging_ErrorException('Prevents duplicating an instance.');
+        throw new \BreakpointDebugging_ErrorException('Prevents duplicating an instance.', 1);
         // @codeCoverageIgnoreStart
     }
 

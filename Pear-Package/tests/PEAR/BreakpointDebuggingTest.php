@@ -5,7 +5,7 @@ require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
 
 use \BreakpointDebugging as B;
 
-B::checkUnitTestExeMode();
+B::isUnitTestExeMode(true);
 class BreakpointDebuggingTestExampleBase
 {
     private static $privateStaticBase = 'private static base';
@@ -198,7 +198,7 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
      */
     public function testCheckUnitTestExeMode()
     {
-        B::checkUnitTestExeMode();
+        B::isUnitTestExeMode(true);
     }
 
     /**

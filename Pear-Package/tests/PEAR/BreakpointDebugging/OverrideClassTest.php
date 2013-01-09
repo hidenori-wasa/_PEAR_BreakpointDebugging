@@ -5,7 +5,7 @@ require_once './NativeClass.php';
 
 use \BreakpointDebugging as B;
 
-B::checkUnitTestExeMode();
+B::isUnitTestExeMode(true);
 // Overrides a class without inheritance.
 class NativeClassOverriding extends \BreakpointDebugging_OverrideClass
 {

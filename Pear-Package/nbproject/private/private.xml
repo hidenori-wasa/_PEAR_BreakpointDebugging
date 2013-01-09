@@ -31,13 +31,13 @@
             <line>195</line>
         </file>
         <file>
+            <url>DownloadErrorLogFiles.php</url>
+            <line>54</line>
+        </file>
+        <file>
             <url>tests/PEAR/BreakpointDebuggingTest.php</url>
             <line>10</line>
             <line>192</line>
-        </file>
-        <file>
-            <url>DownloadErrorLogFiles.php</url>
-            <line>54</line>
         </file>
         <file>
             <url>PEAR/BreakpointDebugging/LockByMkdir.php</url>
@@ -53,11 +53,7 @@
         </file>
         <file>
             <url>PEAR/BreakpointDebugging.php</url>
-            <line>528</line>
-        </file>
-        <file>
-            <url>PEAR/BreakpointDebugging/Error.php</url>
-            <line>575</line>
+            <line>133</line>
         </file>
         <file>
             <url>BreakpointDebugging_MySetting.php</url>
