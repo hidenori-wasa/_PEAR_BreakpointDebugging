@@ -222,15 +222,10 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      */
     public $tmpParams;
 
-//    /**
-//     * @var string Unit test mode.
-//     */
-//    static $unitTestMode;
-
     /**
      * @var string Browser execution pass.
      */
-    static $browserPass = '"C:\Program Files\Mozilla Firefox\firefox.exe"';
+    private static $_browserPass = 'C:\Program Files\Mozilla Firefox\firefox.exe';
 
     /**
      * Limits private property setting.
@@ -245,18 +240,97 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
         parent::setXebugExists($property);
     }
 
-//    /**
-//     * Limits private property setting.
-//     *
-//     * @param bool $property Same as property.
-//     *
-//     * @return void
-//     */
-//    static function setOs($property)
-//    {
-//        B::limitInvokerFilePaths('BreakpointDebugging.php');
-//        self::$_os = $property;
-//    }
+    /**
+     * Limits private property setting.
+     *
+     * @param bool $property Same as property.
+     *
+     * @return void
+     */
+    static function setUserName($property)
+    {
+        B::limitInvokerFilePaths('./PEAR_Setting/BreakpointDebugging_MySetting.php');
+        parent::setUserName($property);
+    }
+
+    /**
+     * Limits private property setting.
+     *
+     * @param bool $property Same as property.
+     *
+     * @return void
+     */
+    static function setMaxLogFileByteSize($property)
+    {
+        B::limitInvokerFilePaths('./PEAR_Setting/BreakpointDebugging_MySetting.php');
+        parent::setMaxLogFileByteSize($property);
+    }
+
+    /**
+     * Limits private property setting.
+     *
+     * @param bool $property Same as property.
+     *
+     * @return void
+     */
+    static function setMaxLogParamNestingLevel($property)
+    {
+        B::limitInvokerFilePaths('./PEAR_Setting/BreakpointDebugging_MySetting.php');
+        parent::setMaxLogParamNestingLevel($property);
+    }
+
+    /**
+     * Limits private property setting.
+     *
+     * @param bool $property Same as property.
+     *
+     * @return void
+     */
+    static function setMaxLogElementNumber($property)
+    {
+        B::limitInvokerFilePaths('./PEAR_Setting/BreakpointDebugging_MySetting.php');
+        parent::setMaxLogElementNumber($property);
+    }
+
+    /**
+     * Limits private property setting.
+     *
+     * @param bool $property Same as property.
+     *
+     * @return void
+     */
+    static function setMaxLogStringSize($property)
+    {
+        B::limitInvokerFilePaths('./PEAR_Setting/BreakpointDebugging_MySetting.php');
+        parent::setMaxLogStringSize($property);
+    }
+
+    /**
+     * Limits private property setting.
+     *
+     * @param bool $property Same as property.
+     *
+     * @return void
+     */
+    static function setWorkDir($property)
+    {
+        B::limitInvokerFilePaths('./PEAR_Setting/BreakpointDebugging_MySetting.php');
+        parent::setWorkDir($property);
+    }
+
+    /**
+     * Limits private property setting.
+     *
+     * @param bool $property Same as property.
+     *
+     * @return void
+     */
+    static function setBrowserPass($property)
+    {
+        B::limitInvokerFilePaths('./PEAR_Setting/BreakpointDebugging_MySetting_Option.php');
+        self::$_browserPass = $property;
+    }
+
     /**
      * This constructer create object only one time.
      *
@@ -264,9 +338,10 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      */
     function __construct()
     {
-        self::assert(func_num_args() === 0, 1);
-
         parent::__construct();
+
+        B::limitInvokerFilePaths('BreakpointDebugging.php');
+        self::assert(func_num_args() === 0, 1);
 
         static $createOnlyOneTime = false;
 
@@ -314,7 +389,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      *
      * @return Same as parent.
      */
-    final static function convertMbString($string)
+    final static function convertMbString()
     {
         $string = func_get_arg(0);
 
@@ -421,7 +496,6 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
             }
         }
 
-        //if (B::$xdebugExists) {
         if (B::getXebugExists()) {
             xdebug_break(); // Breakpoint. See local variable value by doing step execution here.
             // Push stop button if is thought error message.
@@ -437,81 +511,73 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      * Limits the invoker file paths.
      *
      * @param mixed $invokerFileNames Invoker file paths.
+     * @param bool  $enableUnitTest   Is this enable in unit test?
+     *
+     * @return void
      */
-    static function limitInvokerFilePaths($invokerFilePaths)
+    static function limitInvokerFilePaths($invokerFilePaths, $enableUnitTest = false)
     {
         global $_BreakpointDebugging_EXE_MODE;
+        static $includePaths;
+        static $storeCall = array ();
 
-//        if ($_BreakpointDebugging_EXE_MODE & self::UNIT_TEST) {
-//            return;
-//        }
         $callStack = debug_backtrace();
-        if (!array_key_exists(1, $callStack)
-        || !array_key_exists('file', $callStack[1])) {
-            throw new \BreakpointDebugging_ErrorException('Array element does not exist.', 1);
-            //B::exceptionHandler(new \BreakpointDebugging_ErrorException('Array element does not exist.'));
-            //exit;
-        }
-        $filePath = $callStack[1]['file'];
-        //$filePath = $callStack[2]['file'];
-        if ($_BreakpointDebugging_EXE_MODE & self::UNIT_TEST
-        && strripos($filePath, 'test.php') === strlen($filePath) - strlen('test.php')) {
+        // Skips same limiting.
+        $storeCallKey = $callStack[0]['file'] . '>' . $callStack[0]['line'];
+        if (array_key_exists($storeCallKey, $storeCall)) {
             return;
         }
+        $storeCall[$storeCallKey] = true;
 
-        $trimsPath = function($filePath) {
-            //if (B::$os === 'WIN') {
-            if (B::getOs() === 'WIN') {
-                $filePath = str_replace('\\', '/', $filePath);
-                $filePath = strtolower($filePath);
-            }
-            return $filePath;
-        };
-
-        $filePath = $trimsPath($filePath);
-        $includePaths = ini_get('include_path');
-        //if (B::$os === 'WIN') {
+        if (!array_key_exists(1, $callStack)
+        || !array_key_exists('file', $callStack[1])
+        || !array_key_exists('line', $callStack[1])) {
+            throw new \BreakpointDebugging_ErrorException('Array element does not exist.', 1);
+        }
+        $fullFilePath = $callStack[1]['file'];
+        if (!$enableUnitTest
+        && $_BreakpointDebugging_EXE_MODE & self::UNIT_TEST
+        && strripos($fullFilePath, 'test.php') === strlen($fullFilePath) - strlen('test.php')) {
+            return;
+        }
         if (B::getOs() === 'WIN') {
-            $includePaths = $trimsPath($includePaths);
-            $includePaths = explode(';', $includePaths);
-        } else {
-            $includePaths = explode(':', $includePaths);
+            $fullFilePath = strtolower($fullFilePath);
         }
-        //do {
-        foreach ($includePaths as $includePath) {
-            $includePath = $trimsPath(realpath($includePath)) . '/';
-            if (strpos($filePath, $includePath) === 0) {
-                //$filePath = substr($filePath, strlen($includePath));
-                //break 2;
-                $filePaths[] = substr($filePath, strlen($includePath));
+        if (!isset($includePaths)) {
+            $includePaths = ini_get('include_path');
+            if (B::getOs() === 'WIN') {
+                $includePaths = strtolower($includePaths);
             }
+            $includePaths = explode(PATH_SEPARATOR, $includePaths);
         }
-        //throw new \BreakpointDebugging_ErrorException('Coding error.');
-        //} while (false);
-        //$checkInvokerFilePath = function($invokerFilePath, $filePath, $trimsPath) {
-        $checkInvokerFilePath = function($invokerFilePath, $filePaths, $trimsPath) {
+        $checkInvokerFilePath = function($includePaths, $invokerFilePath, $fullFilePath) {
             B::assert(is_string($invokerFilePath));
-            $invokerFilePath = $trimsPath($invokerFilePath);
-            do {
-                foreach ($filePaths as $filePath) {
-                    if ($filePath === $invokerFilePath) {
-                        break 2;
-                    }
+            foreach ($includePaths as $includePath) {
+                $invokerFullFilePath = realpath("$includePath/$invokerFilePath");
+                if ($invokerFullFilePath === false) {
+                    continue;
                 }
-                throw new \BreakpointDebugging_ErrorException('The file which invokes "set<property name>()" class method is not correct.', 2);
-                //B::exceptionHandler(new \BreakpointDebugging_ErrorException('Invoker is not correct.'));
-                //exit;
-            } while (false);
+                if (B::getOs() === 'WIN') {
+                    $invokerFullFilePath = strtolower($invokerFullFilePath);
+                }
+                if ($fullFilePath === $invokerFullFilePath) {
+                    return true;
+                }
+            }
+            return false;
         };
         if (is_array($invokerFilePaths)) {
             foreach ($invokerFilePaths as $invokerFilePath) {
-                //$checkInvokerFilePath($invokerFilePath, $filePath, $trimsPath);
-                $checkInvokerFilePath($invokerFilePath, $filePaths, $trimsPath);
+                if ($checkInvokerFilePath($includePaths, $invokerFilePath, $fullFilePath)) {
+                    return;
+                }
             }
         } else {
-            //$checkInvokerFilePath($invokerFilePaths, $filePath, $trimsPath);
-            $checkInvokerFilePath($invokerFilePaths, $filePaths, $trimsPath);
+            if ($checkInvokerFilePath($includePaths, $invokerFilePaths, $fullFilePath)) {
+                return;
+            }
         }
+        throw new \BreakpointDebugging_ErrorException('The file which invokes "set<property name>()" class method is not correct.', 2);
     }
 
     /**
@@ -569,6 +635,12 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      */
     static function internalAssert($expression, $id)
     {
+        self::limitInvokerFilePaths(array (
+            './tests/PEAR/BreakpointDebugging-InAllCaseTest.php',
+            'BreakpointDebugging.php',
+            'BreakpointDebugging_Option.php',
+            'BreakpointDebugging/Error.php',
+            'BreakpointDebugging/Lock.php'), true);
         if (func_num_args() !== 2 || !is_bool($expression) || $expression === false || !is_int($id)) {
             self::internal('Assertion failed.', $id);
         }
@@ -649,7 +721,6 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
                 $backTrace = debug_backtrace();
                 $baseName = basename($backTrace[0]['file']);
                 $cmpName = '_MySetting_Option.php';
-                //if (B::$os === 'WIN') {
                 if (B::getOs() === 'WIN') {
                     $baseName = strtolower($baseName);
                     $cmpName = strtolower($cmpName);
@@ -842,7 +913,6 @@ EOD;
      * @param array  $unitTestCommands Commands of unit tests.
      *                                 Debugs its unit test file if array element is one.
      *                                 Does continuation unit tests if array element is more than one.
-     * @param string $currentDir       Unit test current directory.
      *
      * @return void
      *
@@ -857,7 +927,7 @@ EOD;
      *     '--stop-on-failure BreakpointDebugging/LockTest.php',
      * );
      * // Executes unit tests.
-     * B::executeUnitTest($unitTestCommands, __DIR__);
+     * B::executeUnitTest($unitTestCommands);
      * ?>
      *
      * @Example of unit test file.
@@ -895,33 +965,31 @@ EOD;
      *              try {
      *                  B::assert(true, 1);
      *                  B::assert(false, 2);
-     *              } catch (\BreakpointDebugging_ErrorException $e) {
+     *              } catch (\PHPUnit_Framework_Error $e) {
      *                  $this->assertTrue(strripos($e->getMessage(), 'CLASS=SomethingTest FUNCTION=testSomething_B ID=2'));
      *                  return;
      *              }
      *              $this->fail();
      *          }
-     *
      *      }
      */
-    static function executeUnitTest($unitTestCommands, $currentDir)
+    static function executeUnitTest($unitTestCommands)
     {
         global $_BreakpointDebugging_EXE_MODE;
 
         self::isUnitTestExeMode(true);
 
-        self::assert(func_num_args() === 2, 3);
+        self::assert(func_num_args() === 1, 3);
         self::assert(is_array($unitTestCommands), 1);
-        self::assert(is_string($currentDir), 2);
-        self::assert(count($unitTestCommands) >= 1);
+        self::assert(count($unitTestCommands) >= 1, 4);
 
-        //B::$unitTestMode = count($unitTestCommands) === 1 ? 'DEBUG' : 'ALL';
-        //if (B::$unitTestMode === 'DEBUG') {
+        $unitTestCurrentDir = debug_backtrace();
+        $unitTestCurrentDir = dirname($unitTestCurrentDir[0]['file']);
         if (count($unitTestCommands) === 1) {
             $command = $unitTestCommands[0];
             $commandElements = explode(' ', $command);
             $testFileName = array_pop($commandElements);
-            array_push($commandElements, "$currentDir/$testFileName");
+            array_push($commandElements, "$unitTestCurrentDir/$testFileName");
             array_unshift($commandElements, 'dummy');
             include_once 'PHPUnit/Autoload.php';
             $pPHPUnit_TextUI_Command = new \PHPUnit_TextUI_Command;
@@ -930,13 +998,11 @@ EOD;
             // Uses "PHPUnit" error handler.
             restore_error_handler();
             echo $pPHPUnit_TextUI_Command->run($commandElements, true);
-            //} else if (B::$unitTestMode === 'ALL') {
         } else {
             if ($_BreakpointDebugging_EXE_MODE & (B::REMOTE_DEBUG | B::RELEASE)) {
                 exit('<pre>Executes on "local server only" because continuation unit test requires many load on remote server.</pre>');
             }
             // In case of extending test class except "\BreakpointDebugging_UnitTestOverriding" class.
-            //if (B::$os === 'WIN') { // In case of Windows.
             if (B::getOs() === 'WIN') { // In case of Windows.
                 $phpunit = 'phpunit.bat';
             } else { // In case of Unix.
@@ -947,7 +1013,11 @@ EOD;
                     if ($phpunit) {
                         break;
                     }
-                    $phpunit = `export PATH=/opt/lampp/bin:/opt/local/bin:/usr/bin:/usr/bin/X11:/usr/share/php;which phpunit`;
+
+                    //$phpunit = `export PATH=/opt/lampp/bin:/opt/local/bin:/usr/bin:/usr/bin/X11:/usr/share/php;which phpunit`;
+                    $userName = B::getUserName();
+                    $phpunit = `sudo -u $userName which phpunit`;
+
                     $phpunit = trim($phpunit);
                     if ($phpunit) {
                         break;
@@ -967,7 +1037,6 @@ EOD;
                 // If test file name contains '_'.
                 if (strpos($testFileName, '_') !== false) {
                     echo "You must change its array element and its file name into '-' because '$testFileName' contains '_'." . PHP_EOL;
-                    //if (B::$xdebugExists) {
                     if (B::getXebugExists()) {
                         xdebug_break();
                     }
@@ -975,7 +1044,7 @@ EOD;
                 }
                 echo $testFileName . PHP_EOL;
                 // Executes unit test command.
-                echo `$phpunit $commandOptions $currentDir/$testFileName`;
+                echo `"$phpunit" $commandOptions "$unitTestCurrentDir/$testFileName"`;
                 echo '//////////////////////////////////////////////////////////////////////////' . PHP_EOL;
             }
             echo '</pre>';
@@ -987,7 +1056,6 @@ EOD;
      *
      * @param string $unitTestFilePath Relative path of unit test file.
      * @param mixed  $classFilePaths   It is relative path of class which see the code coverage, and its current directory must be project directory.
-     * @param string $currentDir       Unit test current directory.
      *
      * @example
      *      <?php
@@ -995,22 +1063,24 @@ EOD;
      *      require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
      *      use \BreakpointDebugging as B;
      *      // Makes up code coverage report, then displays in browser.
-     *      B::displayCodeCoverageReport('BreakpointDebugging-InAllCaseTest.php', 'PEAR/BreakpointDebugging.php', __DIR__);
-     *      B::displayCodeCoverageReport('BreakpointDebugging/LockByFileExistingTest.php', array ('PEAR/BreakpointDebugging/Lock.php', 'PEAR/BreakpointDebugging/LockByFileExisting.php'), __DIR__);
+     *      B::displayCodeCoverageReport('BreakpointDebugging-InAllCaseTest.php', 'PEAR/BreakpointDebugging.php');
+     *      B::displayCodeCoverageReport('BreakpointDebugging/LockByFileExistingTest.php', array ('PEAR/BreakpointDebugging/Lock.php', 'PEAR/BreakpointDebugging/LockByFileExisting.php'));
      *          .
      *          .
      *          .
      */
-    static function displayCodeCoverageReport($unitTestFilePath, $classFilePaths, $currentDir)
+    static function displayCodeCoverageReport($unitTestFilePath, $classFilePaths)
     {
-        $workDir = self::$workDir;
-        echo '<pre>' . `phpunit --coverage-html $workDir/CodeCoverageReport $currentDir/$unitTestFilePath` . '</pre>';
+        $unitTestCurrentDir = debug_backtrace();
+        $unitTestCurrentDir = dirname($unitTestCurrentDir[0]['file']);
+        $workDir = self::getWorkDir();
+        echo '<pre>' . `phpunit --coverage-html "$workDir/CodeCoverageReport" "$unitTestCurrentDir/$unitTestFilePath"` . '</pre>';
 
         $displayBrowser = function($classFilePath, $browserPass, $workDir) {
             $classFilePath = str_replace(array ('/', '\\'), '_', $classFilePath);
-            `$browserPass "file:///$workDir/CodeCoverageReport/$classFilePath.html"`;
+            `"$browserPass" "file:///$workDir/CodeCoverageReport/$classFilePath.html"`;
         };
-        $browserPass = self::$browserPass;
+        $browserPass = self::$_browserPass;
         if (is_array($classFilePaths)) {
             foreach ($classFilePaths as $classFilePath) {
                 $displayBrowser($classFilePath, $browserPass, $workDir);
@@ -1041,8 +1111,10 @@ EOD;
         $paramNumber = count($params);
         $propertyNameToSend = '$_BreakpointDebugging->tmpParams';
         $callStackInfo = debug_backtrace();
-        echo "<pre>Executed function LINE: {$callStackInfo[0]['line']}    FILE: {$callStackInfo[0]['file']}</pre>";
-        echo 'NAME = ' . $functionName . '(';
+        echo '<pre><b>Executed function information.</b></br></br>';
+        echo "<b>FILE</b> = {$callStackInfo[0]['file']}</br>";
+        echo "<b>LINE</b> = {$callStackInfo[0]['line']}</br>";
+        echo '<b>NAME</b> = ' . $functionName . '(';
         $paramString = array ();
         for ($count = 0; $count < $paramNumber; $count++) {
             $paramString[] = $propertyNameToSend . '[' . $count . ']';
@@ -1050,14 +1122,14 @@ EOD;
         }
         echo ')';
         $code = $functionName . '(' . implode(',', $paramString) . ')';
-        $return = eval('global $_BreakpointDebugging; $return = ' . $code . '; echo "<br/><br/>RETURN = "; var_dump($return); echo "<br/>"; return $return;');
+        $return = eval('global $_BreakpointDebugging; $return = ' . $code . '; echo "<br/><b>RETURN</b> = "; var_dump($return); return $return;');
+        echo '//////////////////////////////////////////////////////////////////////////////////////';
         return $return;
     }
 
 }
 
 // When "Xdebug" does not exist.
-//if (!B::$xdebugExists) {
 if (!B::getXebugExists()) {
     if ($_BreakpointDebugging_EXE_MODE & (B::LOCAL_DEBUG | B::LOCAL_DEBUG_OF_RELEASE)) { // In case of local host.
         exit(

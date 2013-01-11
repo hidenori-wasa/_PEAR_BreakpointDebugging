@@ -1783,4 +1783,46 @@ abstract class PHPUnit_Framework_TestCase extends PHPUnit_Framework_Assert imple
         return $this->inIsolation;
     }
 
+    protected function getOutputCallback()
+    {
+        return $this->outputCallback;
+    }
+
+    protected function getLocale()
+    {
+        return $this->locale;
+    }
+
+    protected function setIniSettings($value)
+    {
+        \BreakpointDebugging::limitInvokerFilePaths('BreakpointDebugging/UnitTestOverriding.php', true);
+        $this->iniSettings = $value;
+    }
+
+    protected function getIniSettings()
+    {
+        return $this->iniSettings;
+    }
+
+    protected function setOutputExpectedRegex($value)
+    {
+        \BreakpointDebugging::limitInvokerFilePaths('BreakpointDebugging/UnitTestOverriding.php', true);
+        $this->outputExpectedRegex = $value;
+    }
+
+    protected function getOutputExpectedRegex()
+    {
+        return $this->outputExpectedRegex;
+    }
+
+    protected function setOutputExpectedString($value)
+    {
+        \BreakpointDebugging::limitInvokerFilePaths('BreakpointDebugging/UnitTestOverriding.php', true);
+        $this->outputExpectedString = $value;
+    }
+
+    protected function getOutputExpectedString()
+    {
+        return $this->outputExpectedString;
+    }
 }

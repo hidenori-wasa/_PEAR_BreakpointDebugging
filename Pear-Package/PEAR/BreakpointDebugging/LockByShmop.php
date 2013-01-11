@@ -4,7 +4,7 @@
  * Class which locks php-code by shared memory operation.
  *
  * This class requires "shmop" extension.
- * We can synchronize applications by setting the same directory to "B::$workDir" of "BreakpointDebugging_MySetting.php".
+ * We can synchronize applications by setting the same directory to "B::setWorkDir(<work directory>)" of "BreakpointDebugging_MySetting.php".
  *
  * @example of usage.
  *      $lockByShmop = &\BreakpointDebugging_LockByShmop::singleton(); // Creates a lock instance.
@@ -125,7 +125,7 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
     static function &singleton($timeout = 60, $expire = 300, $sleepMicroSeconds = 100000)
     {
         B::assert(extension_loaded('shmop'), 1);
-        return parent::singletonBase('\\' . __CLASS__, B::$workDir . '/LockByShmop.txt', $timeout, $expire, $sleepMicroSeconds);
+        return parent::singletonBase('\\' . __CLASS__, B::getWorkDir() . '/LockByShmop.txt', $timeout, $expire, $sleepMicroSeconds);
     }
 
     /**

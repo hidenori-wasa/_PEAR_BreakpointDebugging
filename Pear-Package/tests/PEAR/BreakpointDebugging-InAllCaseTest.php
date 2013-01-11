@@ -48,7 +48,8 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
         static $isRegister = false;
 
         B::registerNotFixedLocation($isRegister);
-        $notFixedLocation = $_BreakpointDebugging->notFixedLocations[count($_BreakpointDebugging->notFixedLocations) - 1];
+        $notFixedLocations = $_BreakpointDebugging->getNotFixedLocations();
+        $notFixedLocation = $notFixedLocations[count($notFixedLocations) - 1];
         $this->assertTrue($notFixedLocation['function'] === 'testRegisterNotFixedLocation');
         $this->assertTrue($notFixedLocation['class'] === 'BreakpointDebugging_InAllCaseTest');
         $this->assertTrue(!array_key_exists('file', $notFixedLocation));
@@ -65,7 +66,8 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
         $values = array ('TEST_CONST' => BreakpointDebugging_InAllCaseTest::TEST_CONST, '$testString' => $testString);
         B::addValuesToTrace($values);
         $line = __LINE__ - 1;
-        $valuesToTrace = $_BreakpointDebugging->valuesToTrace[__FILE__][$line];
+        $valuesToTraces = $_BreakpointDebugging->getValuesToTrace();
+        $valuesToTrace = $valuesToTraces[__FILE__][$line];
         $this->assertTrue($valuesToTrace['function'] === 'testAddValuesToTrace');
         $this->assertTrue($valuesToTrace['class'] === 'BreakpointDebugging_InAllCaseTest');
         $this->assertTrue(!array_key_exists('file', $valuesToTrace));
@@ -107,13 +109,12 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
      */
     public function testMkdir()
     {
-        $testDirName = B::$workDir . '/TestMkDir';
+        $testDirName = B::getWorkDir() . '/TestMkDir';
         if (is_dir($testDirName)) {
             rmdir($testDirName);
         }
         B::mkdir($testDirName, 0700);
         $this->assertTrue(is_dir($testDirName));
-        //if (B::$os === 'WIN') {
         if (B::getOs() === 'WIN') {
             $this->markTestSkipped('Cannot test file permission in case of windows.');
         }
@@ -126,14 +127,13 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
      */
     public function testFopen()
     {
-        $testFileName = B::$workDir . '/TestFopen.txt';
+        $testFileName = B::getWorkDir() . '/TestFopen.txt';
         if (is_file($testFileName)) {
             unlink($testFileName);
         }
         $pFile = B::fopen($testFileName, 'w+b', 0700);
         fclose($pFile);
         $this->assertTrue(is_file($testFileName));
-        //if (B::$os === 'WIN') {
         if (B::getOs() === 'WIN') {
             $this->markTestSkipped('Cannot test file permission in case of windows.');
         }
@@ -150,7 +150,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
         for ($count = 0; $count <= 400; $count++) {
             $intArray[] = $count;
         }
-        $pFile = fopen(B::$workDir . '/test.bin', 'w+b');
+        $pFile = fopen(B::getWorkDir() . '/test.bin', 'w+b');
         fwrite($pFile, B::compressIntArray($intArray));
         fwrite($pFile, B::compressIntArray($intArray));
         fflush($pFile);

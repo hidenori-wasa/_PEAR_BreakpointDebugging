@@ -230,7 +230,7 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
             '--stop-on-failure --strict ExampleTest.php',
         );
         // Executes unit tests.
-        B::executeUnitTest($testFileNames, __DIR__);
+        B::executeUnitTest($testFileNames);
 
         ob_clean();
     }
@@ -243,18 +243,18 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
      */
     public function testExecuteUnitTest_B()
     {
-        B::executeUnitTest(1, __DIR__);
+        B::executeUnitTest(1);
     }
 
     /**
      * @covers \BreakpointDebugging<extended>
      *
-     * @expectedException        \PHPUnit_Framework_Error_Warning
-     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=executeUnitTest ID=2
+     * @expectedException        \PHPUnit_Framework_Error
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=executeUnitTest ID=4
      */
     public function testExecuteUnitTest_C()
     {
-        B::executeUnitTest(array (), 1);
+        B::executeUnitTest(array ());
     }
 
     /**
@@ -265,7 +265,7 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
      */
     public function testExecuteUnitTest_D()
     {
-        B::executeUnitTest('dummy', 'dummy', 'dummy');
+        B::executeUnitTest('dummy', 'dummy');
     }
 
 }

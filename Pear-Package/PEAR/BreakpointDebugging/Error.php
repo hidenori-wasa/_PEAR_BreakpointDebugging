@@ -102,7 +102,6 @@ final class BreakpointDebugging_Error
     /**
      * @var array Call stack information.
      */
-    //public $callStackInfo;
     private $_callStackInfo;
 
     /**
@@ -118,13 +117,11 @@ final class BreakpointDebugging_Error
     /**
      * @var array HTML tags.
      */
-    //public $tags;
     private $_tags;
 
     /**
      * @var object Locking object.
      */
-    //public $lockByFileExisting;
     private $_lockByFileExisting;
 
     /**
@@ -138,19 +135,7 @@ final class BreakpointDebugging_Error
 
         B::limitInvokerFilePaths('BreakpointDebugging.php');
 
-        //$setTags = function ($object) {
         $setTags = function ($tags) {
-//            $object->_tags['font']['caution'] = '';
-//            $object->_tags['font']['bool'] = '';
-//            $object->_tags['font']['int'] = '';
-//            $object->_tags['font']['float'] = '';
-//            $object->_tags['font']['string'] = '';
-//            $object->_tags['font']['null'] = '';
-//            $object->_tags['font']['resource'] = '';
-//            $object->_tags['font']['=>'] = '';
-//            $object->_tags['/font'] = '';
-//            $object->_tags['small'] = '';
-//            $object->_tags['/small'] = '';
             $tags['font']['caution'] = '';
             $tags['font']['bool'] = '';
             $tags['font']['int'] = '';
@@ -168,7 +153,6 @@ final class BreakpointDebugging_Error
         if ($_BreakpointDebugging_EXE_MODE & (B::RELEASE | B::LOCAL_DEBUG_OF_RELEASE)) { // In case of the logging.
             $this->_isLogging = true;
             $this->_mark = '#';
-            //$setTags($this);
             $setTags($this->_tags);
             $this->_tags['pre'] = '';
             $this->_tags['/pre'] = PHP_EOL . PHP_EOL;
@@ -180,7 +164,6 @@ final class BreakpointDebugging_Error
             $this->_isLogging = false;
             $this->_mark = '&diams;';
             // When "Xdebug" exists.
-            //if (B::$xdebugExists) {
             if (B::getXebugExists()) {
                 $this->_tags['pre'] = '<pre class=\'xdebug-var-dump\' dir=\'ltr\'>';
                 $this->_tags['font']['caution'] = '<font color=\'#ff0000\'>';
@@ -196,7 +179,6 @@ final class BreakpointDebugging_Error
                 $this->_tags['/small'] = '</small>';
             } else { // When "Xdebug" does not exist.
                 $this->_tags['pre'] = '<pre>';
-                //$setTags($this);
                 $setTags($this->_tags);
             }
             $this->_tags['/pre'] = '</pre>';
@@ -255,7 +237,7 @@ final class BreakpointDebugging_Error
         global $_BreakpointDebugging;
         $paramNumber = func_num_args();
 
-        $valuesToTraceFiles = &$_BreakpointDebugging->valuesToTrace;
+        $valuesToTraceFiles = $_BreakpointDebugging->getValuesToTrace();
         $onceFlag = false;
         if (!is_array($valuesToTraceFiles)) {
             return;
@@ -304,9 +286,9 @@ final class BreakpointDebugging_Error
         B::internalAssert(is_int($tabNumber), 4);
 
         $isOverMaxLogElementNumber = false;
-        if (count($array) > B::$maxLogElementNumber) {
+        if (count($array) > B::getMaxLogElementNumber()) {
             $isOverMaxLogElementNumber = true;
-            $array = array_slice($array, 0, B::$maxLogElementNumber, true);
+            $array = array_slice($array, 0, B::getMaxLogElementNumber(), true);
         }
         $tabs = str_repeat("\t", $tabNumber);
         $onceFlag2 = false;
@@ -327,7 +309,7 @@ final class BreakpointDebugging_Error
         $this->_loggedArrays[] = $array;
         $this->_logBufferWriting($pTmpLog, PHP_EOL . $tabs . $paramName . $this->_tags['font']['=>'] . ' => ' . $this->_tags['/font'] . $this->_tags['b'] . 'array #' . count($this->_loggedArrays) . $this->_tags['/b'] . ' (');
         // Beyond max log param nesting level.
-        if ($tabNumber >= B::$maxLogParamNestingLevel) {
+        if ($tabNumber >= B::getMaxLogParamNestingLevel()) {
             $this->_logBufferWriting($pTmpLog, PHP_EOL . $tabs . "\t...");
         } else {
             foreach ($array as $paramName => $paramValue) {
@@ -387,7 +369,7 @@ final class BreakpointDebugging_Error
         $this->_loggedObjects[] = $object;
         $this->_logBufferWriting($pTmpLog, PHP_EOL . $tabs . $paramName . $this->_tags['font']['=>'] . ' => ' . $this->_tags['/font'] . $this->_tags['b'] . 'class object #' . count($this->_loggedObjects) . ' ' . $this->_tags['/b'] . $this->_tags['i'] . $className . $this->_tags['/i'] . PHP_EOL . $tabs . '{');
         // Beyond max log param nesting level.
-        if ($tabNumber >= B::$maxLogParamNestingLevel) {
+        if ($tabNumber >= B::getMaxLogParamNestingLevel()) {
             $this->_logBufferWriting($pTmpLog, PHP_EOL . $tabs . "\t...");
         } else {
             foreach ($constants as $constName => $constValue) {
@@ -462,8 +444,8 @@ final class BreakpointDebugging_Error
                 }
             }
 
-            if (B::$isInternal) { // Has been called from internal method.
-                B::$isInternal = false;
+            if (B::getIsInternal()) { // Has been called from internal method.
+                B::setIsInternal(false);
                 // Array top is set to location which "self::internalException()" is called  because this location is registered to logging.
                 unset($callStackInfo[0]);
             } else {
@@ -550,7 +532,6 @@ final class BreakpointDebugging_Error
                 $errorKind = 'E_DEPRECATED';
                 break;
             default:
-                //B::internalAssert(false, 5);
                 throw new \BreakpointDebugging_ErrorException('', 5);
                 break;
         }
@@ -559,8 +540,8 @@ final class BreakpointDebugging_Error
         $prependLog = $this->_convertMbString($prependLog);
 
         $this->_callStackInfo = debug_backtrace();
-        if (B::$isInternal) { // Has been called from internal method.
-            B::$isInternal = false;
+        if (B::getIsInternal()) { // Has been called from internal method.
+            B::setIsInternal(false);
             // Deletes location which triggers error because this handler must not log this location.
             unset($this->_callStackInfo[0], $this->_callStackInfo[1], $this->_callStackInfo[2]);
         } else {
@@ -637,8 +618,8 @@ final class BreakpointDebugging_Error
 
         array_key_exists('function', $backTrace) ? $func = $backTrace['function'] : $func = '';
         array_key_exists('class', $backTrace) ? $class = $backTrace['class'] : $class = '';
-        if (is_array($_BreakpointDebugging->notFixedLocations)) {
-            foreach ($_BreakpointDebugging->notFixedLocations as $notFixedLocation) {
+        if (is_array($_BreakpointDebugging->getNotFixedLocations())) {
+            foreach ($_BreakpointDebugging->getNotFixedLocations() as $notFixedLocation) {
                 array_key_exists('function', $notFixedLocation) ? $noFixFunc = $notFixedLocation['function'] : $noFixFunc = '';
                 array_key_exists('class', $notFixedLocation) ? $noFixClass = $notFixedLocation['class'] : $noFixClass = '';
                 array_key_exists('file', $notFixedLocation) ? $noFixFile = $notFixedLocation['file'] : $noFixFile = '';
@@ -694,7 +675,7 @@ final class BreakpointDebugging_Error
             $this->_lockByFileExisting = &\BreakpointDebugging_LockByFileExisting::internalSingleton();
             $this->_lockByFileExisting->lock();
             // When "ErrorLog" directory does not exist.
-            $errorLogDirectory = B::$workDir . '/ErrorLog/';
+            $errorLogDirectory = B::getWorkDir() . '/ErrorLog/';
             if (!is_dir($errorLogDirectory)) {
                 // Makes directory, sets permission and sets own user.
                 B::mkdir($errorLogDirectory, 0700);
@@ -716,7 +697,6 @@ final class BreakpointDebugging_Error
 
             // Gets current error log file name.
             $currentErrorLogFileName = substr(trim(fgets($pVarConfFile)), strlen($this->_keyOfCurrentErrorLogFileName));
-            //if (B::$os === 'WIN') { // In case of Windows.
             if (B::getOs() === 'WIN') { // In case of Windows.
                 $this->_errorLogFilePath = strtolower($errorLogDirectory . $currentErrorLogFileName);
             } else { // In case of Unix.
@@ -748,7 +728,6 @@ final class BreakpointDebugging_Error
                 if (empty($call) || !array_key_exists('file', $call) || !array_key_exists('line', $call)) {
                     continue;
                 }
-                //if (B::$os === 'WIN') { // In case of Windows.
                 if (B::getOs() === 'WIN') { // In case of Windows.
                     $path = strtolower($call['file']);
                 } else { // In case of Unix.
@@ -842,7 +821,7 @@ final class BreakpointDebugging_Error
         if ($_BreakpointDebugging_EXE_MODE & (B::RELEASE | B::LOCAL_DEBUG_OF_RELEASE)) {
             // When log file size exceeds.
             $errorLogFileStatus = fstat($this->_pErrorLogFile);
-            if ($errorLogFileStatus['size'] > B::$maxLogFileByteSize) {
+            if ($errorLogFileStatus['size'] > B::getMaxLogFileByteSize()) {
                 // Gets next error log file name.
                 $nextNumber = substr($currentErrorLogFileName, strlen($this->_prefixOfErrorLogFileName), 1) + 1;
                 if ($nextNumber > 8) {
@@ -907,40 +886,32 @@ final class BreakpointDebugging_Error
 
         $prefix = PHP_EOL . str_repeat("\t", $tabNumber);
         $this->_logBufferWriting($pTmpLog, $prefix . $paramName . $this->_tags['font']['=>'] . ' => ' . $this->_tags['/font']);
-        //$tag = function ($self, $type, $paramValue) {
         $tag = function ($tags, $type, $paramValue) {
-            //return $self->_tags['small'] . $type . $self->_tags['/small'] . ' ' . $self->_tags['font'][$type] . $paramValue . $self->_tags['/font'];
             return $tags['small'] . $type . $tags['/small'] . ' ' . $tags['font'][$type] . $paramValue . $tags['/font'];
         };
         if (is_null($paramValue)) {
-            //$this->_logBufferWriting($pTmpLog, $tag($this, 'null', 'null'));
             $this->_logBufferWriting($pTmpLog, $tag($this->_tags, 'null', 'null'));
         } else if (is_bool($paramValue)) {
-            //$this->_logBufferWriting($pTmpLog, $tag($this, 'bool', $paramValue ? 'true' : 'false'));
             $this->_logBufferWriting($pTmpLog, $tag($this->_tags, 'bool', $paramValue ? 'true' : 'false'));
         } else if (is_int($paramValue)) {
-            //$this->_logBufferWriting($pTmpLog, $tag($this, 'int', $paramValue));
             $this->_logBufferWriting($pTmpLog, $tag($this->_tags, 'int', $paramValue));
         } else if (is_float($paramValue)) {
-            //$this->_logBufferWriting($pTmpLog, $tag($this, 'float', $paramValue));
             $this->_logBufferWriting($pTmpLog, $tag($this->_tags, 'float', $paramValue));
         } else if (is_string($paramValue)) {
             $paramValue = $this->_convertMbString($paramValue);
             $strlen = strlen($paramValue);
             $isOverMaxLogStringSize = false;
-            if ($strlen > B::$maxLogStringSize) {
+            if ($strlen > B::getMaxLogElementNumber()) {
                 $isOverMaxLogStringSize = true;
-                $paramValue = substr($paramValue, 0, B::$maxLogStringSize);
+                $paramValue = substr($paramValue, 0, B::getMaxLogElementNumber());
             }
             $paramValue = '"' . $paramValue . '"';
             if (!$this->_isLogging) {
                 $paramValue = htmlspecialchars($paramValue, ENT_QUOTES, 'UTF-8');
             }
             if ($isOverMaxLogStringSize === false) {
-                //$this->_logBufferWriting($pTmpLog, $tag($this, 'string', $paramValue) . $this->_tags['i'] . ' (length=' . $strlen . ')' . $this->_tags['/i']);
                 $this->_logBufferWriting($pTmpLog, $tag($this->_tags, 'string', $paramValue) . $this->_tags['i'] . ' (length=' . $strlen . ')' . $this->_tags['/i']);
             } else {
-                //$this->_logBufferWriting($pTmpLog, $tag($this, 'string', $paramValue) . $this->_tags['i'] . '... (length=' . $strlen . ')' . $this->_tags['/i']);
                 $this->_logBufferWriting($pTmpLog, $tag($this->_tags, 'string', $paramValue) . $this->_tags['i'] . '... (length=' . $strlen . ')' . $this->_tags['/i']);
             }
         } else if (is_resource($paramValue)) {
@@ -949,7 +920,6 @@ final class BreakpointDebugging_Error
             $this->_tags['font']['resource'] . $paramValue . $this->_tags['/font'];
             $this->_logBufferWriting($pTmpLog, $tmp);
         } else {
-            //B::internalAssert(false, 2);
             throw new \BreakpointDebugging_ErrorException('', 2);
         }
     }
@@ -971,7 +941,7 @@ final class BreakpointDebugging_Error
         $paramCount = 0;
         foreach ($backtraceParams as $paramName => $paramValue) {
             $paramCount++;
-            if ($paramCount > B::$maxLogElementNumber) {
+            if ($paramCount > B::getMaxLogElementNumber()) {
                 $tmp = PHP_EOL . str_repeat("\t", $tabNumber);
                 $this->_logBufferWriting($pTmpLog, $tmp . ',');
                 $tmp = $tmp . "\t.";
@@ -1062,7 +1032,6 @@ final class BreakpointDebugging_Error
                 }
                 break;
             default:
-                //B::internalAssert(false, 2);
                 throw new \BreakpointDebugging_ErrorException('', 2);
         }
         $pTmpLog = null;
@@ -1113,7 +1082,6 @@ final class BreakpointDebugging_Error
                 }
                 break;
             default:
-                //B::internalAssert(false, 2);
                 throw new \BreakpointDebugging_ErrorException('', 2);
         }
     }
@@ -1181,7 +1149,6 @@ final class BreakpointDebugging_Error
                 }
                 break;
             default:
-                //B::internalAssert(false, 1);
                 throw new \BreakpointDebugging_ErrorException('', 1);
         }
         $this->_logPointerClosing($pTmpLog2);

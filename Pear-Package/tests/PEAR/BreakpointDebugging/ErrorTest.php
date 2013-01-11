@@ -16,7 +16,7 @@ class BreakpointDebugging_ErrorTest extends \BreakpointDebugging_UnitTestOverrid
 
     function setUp()
     {
-        $errorLogDirectory = B::$workDir . '/ErrorLog/';
+        $errorLogDirectory = B::getWorkDir() . '/ErrorLog/';
         if (!is_dir($errorLogDirectory)) {
             return;
         }
@@ -39,7 +39,7 @@ class BreakpointDebugging_ErrorTest extends \BreakpointDebugging_UnitTestOverrid
     private function _getFileNumber($fileName)
     {
         $fileName = str_replace('\\', '/', $fileName);
-        $pFile = fopen(B::$workDir . '/ErrorLog/ErrorLog.var.conf', 'rb');
+        $pFile = fopen(B::getWorkDir() . '/ErrorLog/ErrorLog.var.conf', 'rb');
         fgets($pFile);
         while ($readFileLine = fgets($pFile)) {
             $readFileName = substr($readFileLine, 0, strrpos($readFileLine, '?'));
@@ -50,7 +50,6 @@ class BreakpointDebugging_ErrorTest extends \BreakpointDebugging_UnitTestOverrid
             }
         }
         fclose($pFile);
-        //B::assert(false, 1);
         throw new \BreakpointDebugging_ErrorException('', 1);
     }
 
@@ -89,7 +88,7 @@ class BreakpointDebugging_ErrorTest extends \BreakpointDebugging_UnitTestOverrid
         test1_();
         $line3 = __LINE__ - 1;
 
-        $binData1 = file_get_contents(B::$workDir . "/ErrorLog/{$parentFileNumber}.bin");
+        $binData1 = file_get_contents(B::getWorkDir() . "/ErrorLog/{$parentFileNumber}.bin");
 
         $cmpBinData1 = rtrim(B::compressIntArray(array ($parentFileNumber, $line__, $thisFileNumber, $lineParent)), PHP_EOL);
         $this->assertTrue(strpos($binData1, $cmpBinData1) !== false);
@@ -97,7 +96,7 @@ class BreakpointDebugging_ErrorTest extends \BreakpointDebugging_UnitTestOverrid
         $cmpBinData1 = rtrim(B::compressIntArray(array ($parentFileNumber, $lineA_, $parentFileNumber, $lineB_, $parentFileNumber, $lineC_, $thisFileNumber, $lineParent)), PHP_EOL);
         $this->assertTrue(strpos($binData1, $cmpBinData1) !== false);
 
-        $binData2 = file_get_contents(B::$workDir . "/ErrorLog/{$thisFileNumber}.bin");
+        $binData2 = file_get_contents(B::getWorkDir() . "/ErrorLog/{$thisFileNumber}.bin");
 
         $cmpBinData2 = rtrim(B::compressIntArray(array ($thisFileNumber, $line)), PHP_EOL);
         $this->assertTrue(strpos($binData2, $cmpBinData2) !== false);
@@ -150,7 +149,7 @@ class BreakpointDebugging_ErrorTest extends \BreakpointDebugging_UnitTestOverrid
         test1();
         $line3 = __LINE__ - 1;
 
-        $binData1 = file_get_contents(B::$workDir . "/ErrorLog/{$parentFileNumber}.bin");
+        $binData1 = file_get_contents(B::getWorkDir() . "/ErrorLog/{$parentFileNumber}.bin");
 
         $cmpBinData1 = rtrim(B::compressIntArray(array ($parentFileNumber, $line_, $thisFileNumber, $lineParent)), PHP_EOL);
         $this->assertTrue(strpos($binData1, $cmpBinData1) !== false);
@@ -158,7 +157,7 @@ class BreakpointDebugging_ErrorTest extends \BreakpointDebugging_UnitTestOverrid
         $cmpBinData1 = rtrim(B::compressIntArray(array ($parentFileNumber, $lineA, $parentFileNumber, $lineB, $parentFileNumber, $lineC, $thisFileNumber, $lineParent)), PHP_EOL);
         $this->assertTrue(strpos($binData1, $cmpBinData1) !== false);
 
-        $binData2 = file_get_contents(B::$workDir . "/ErrorLog/{$thisFileNumber}.bin");
+        $binData2 = file_get_contents(B::getWorkDir() . "/ErrorLog/{$thisFileNumber}.bin");
 
         $cmpBinData2 = rtrim(B::compressIntArray(array ($thisFileNumber, $line)), PHP_EOL);
         $this->assertTrue(strpos($binData2, $cmpBinData2) !== false);

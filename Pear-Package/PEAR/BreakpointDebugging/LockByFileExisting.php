@@ -4,7 +4,7 @@
  * Class which locks php-code by file existing.
  *
  * This class is required for environment where "flock()" doesn't exist.
- * We can synchronize applications by setting the same directory to "B::$workDir" of "BreakpointDebugging_MySetting.php".
+ * We can synchronize applications by setting the same directory to "B::setWorkDir(<work directory>)" of "BreakpointDebugging_MySetting.php".
  *
  * @example of usage.
  *      $lockByFileExisting = &\BreakpointDebugging_LockByFileExisting::singleton(); // Creates a lock instance.
@@ -79,7 +79,7 @@ final class BreakpointDebugging_LockByFileExisting extends \BreakpointDebugging_
      */
     static function &singleton($timeout = 60, $expire = 300, $sleepMicroSeconds = 100000)
     {
-        return parent::singletonBase('\\' . __CLASS__, B::$workDir . '/LockByFileExisting.txt', $timeout, $expire, $sleepMicroSeconds);
+        return parent::singletonBase('\\' . __CLASS__, B::getWorkDir() . '/LockByFileExisting.txt', $timeout, $expire, $sleepMicroSeconds);
     }
 
     /**
@@ -89,7 +89,7 @@ final class BreakpointDebugging_LockByFileExisting extends \BreakpointDebugging_
      */
     static function &internalSingleton()
     {
-        return parent::singletonBase('\\' . __CLASS__, B::$workDir . '/LockByFileExistingOfInternal.txt', 60, 300, 100000, true);
+        return parent::singletonBase('\\' . __CLASS__, B::getWorkDir() . '/LockByFileExistingOfInternal.txt', 60, 300, 100000, true);
     }
 
     /**

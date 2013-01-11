@@ -3,7 +3,7 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/1">
         <file>
             <url>PEAR_Setting/BreakpointDebugging_MySetting_Option.php</url>
-            <line>68</line>
+            <line>71</line>
         </file>
         <file>
             <url>PEAR/Validate/MySQLi.php</url>
@@ -50,10 +50,6 @@
         <file>
             <url>PEAR/BreakpointDebugging/LockByShmop_Bug.php</url>
             <line>62</line>
-        </file>
-        <file>
-            <url>PEAR/BreakpointDebugging.php</url>
-            <line>133</line>
         </file>
         <file>
             <url>BreakpointDebugging_MySetting.php</url>

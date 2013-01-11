@@ -147,7 +147,6 @@ abstract class BreakpointDebugging_Lock
      */
     function __clone()
     {
-        //B::internalAssert(false, 1);
         throw new \BreakpointDebugging_ErrorException('Prevents duplicating an instance.', 1);
         // @codeCoverageIgnoreStart
     }

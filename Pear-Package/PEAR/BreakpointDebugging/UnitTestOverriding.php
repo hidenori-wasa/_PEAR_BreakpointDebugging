@@ -78,6 +78,49 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
          *      {
          *          return $this->inIsolation;
          *      }
+         *
+         *      protected function getOutputCallback()
+         *      {
+         *          return $this->outputCallback;
+         *      }
+         *
+         *      protected function getLocale()
+         *      {
+         *          return $this->locale;
+         *      }
+         *
+         *      protected function setIniSettings($value)
+         *      {
+         *          \BreakpointDebugging::limitInvokerFilePaths('BreakpointDebugging/UnitTestOverriding.php', true);
+         *          $this->iniSettings = $value;
+         *      }
+         *
+         *      protected function getIniSettings()
+         *      {
+         *          return $this->iniSettings;
+         *      }
+         *
+         *      protected function setOutputExpectedRegex($value)
+         *      {
+         *          \BreakpointDebugging::limitInvokerFilePaths('BreakpointDebugging/UnitTestOverriding.php', true);
+         *          $this->outputExpectedRegex = $value;
+         *      }
+         *
+         *      protected function getOutputExpectedRegex()
+         *      {
+         *          return $this->outputExpectedRegex;
+         *      }
+         *
+         *      protected function setOutputExpectedString($value)
+         *      {
+         *          \BreakpointDebugging::limitInvokerFilePaths('BreakpointDebugging/UnitTestOverriding.php', true);
+         *          $this->outputExpectedString = $value;
+         *      }
+         *
+         *      protected function getOutputExpectedString()
+         *      {
+         *          return $this->outputExpectedString;
+         *      }
          */
         public function runBare()
         {
@@ -128,13 +171,9 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
                 $this->status = PHPUnit_Runner_BaseTestRunner::STATUS_SKIPPED;
                 $this->statusMessage = $e->getMessage();
             } catch (PHPUnit_Framework_AssertionFailedError $e) {
-                //$this->status = PHPUnit_Runner_BaseTestRunner::STATUS_FAILURE;
-                //$this->statusMessage = $e->getMessage();
                 B::exceptionHandler($e);
                 exit;
             } catch (Exception $e) {
-                //$this->status = PHPUnit_Runner_BaseTestRunner::STATUS_ERROR;
-                //$this->statusMessage = $e->getMessage();
                 B::exceptionHandler($e);
                 exit;
             }
@@ -148,20 +187,15 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
                     $this->tearDownAfterClass();
                 }
             } catch (Exception $_e) {
-                //if (!isset($e)) {
-                //    $e = $_e;
-                //}
                 B::exceptionHandler($e);
                 exit;
             }
 
             // Stop output buffering.
-            if ($this->outputCallback === FALSE) {
+            if ($this->getOutputCallback() === FALSE) {
                 $this->output = ob_get_contents();
             } else {
-                $this->output = call_user_func_array(
-                $this->outputCallback, array (ob_get_contents())
-                );
+                $this->output = call_user_func_array($this->getOutputCallback(), array (ob_get_contents()));
             }
 
             ob_end_clean();
@@ -187,28 +221,28 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
             }
 
             // Clean up INI settings.
-            foreach ($this->iniSettings as $varName => $oldValue) {
+            foreach ($this->getIniSettings() as $varName => $oldValue) {
                 ini_set($varName, $oldValue);
             }
 
-            $this->iniSettings = array ();
+            $this->setIniSettings(array ());
 
             // Clean up locale settings.
-            foreach ($this->locale as $category => $locale) {
+            foreach ($this->getLocale() as $category => $locale) {
                 setlocale($category, $locale);
             }
 
             // Perform assertion on output.
             if (!isset($e)) {
                 try {
-                    if ($this->outputExpectedRegex !== NULL) {
+                    if ($this->getOutputExpectedRegex() !== NULL) {
                         $this->hasPerformedExpectationsOnOutput = TRUE;
-                        $this->assertRegExp($this->outputExpectedRegex, $this->output);
-                        $this->outputExpectedRegex = NULL;
-                    } else if ($this->outputExpectedString !== NULL) {
+                        $this->assertRegExp($this->getOutputExpectedRegex(), $this->output);
+                        $this->setOutputExpectedRegex(NULL);
+                    } else if ($this->getOutputExpectedString() !== NULL) {
                         $this->hasPerformedExpectationsOnOutput = TRUE;
-                        $this->assertEquals($this->outputExpectedString, $this->output);
-                        $this->outputExpectedString = NULL;
+                        $this->assertEquals($this->getOutputExpectedString(), $this->output);
+                        $this->setOutputExpectedString(NULL);
                     }
                 } catch (Exception $_e) {
                     $e = $_e;
@@ -279,7 +313,7 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
                 try {
                     $this->assertThat($e, new PHPUnit_Framework_Constraint_Exception($this->getExpectedException()));
                 } catch (Exception $dummy) {
-                    echo '<pre><b>This test mistook "@expectedException" annotation value.</b></pre>';
+                    echo '<pre><b>Is error, or this test mistook "@expectedException" annotation value.</b></pre>';
                     B::exceptionHandler($e);
                     exit;
                 }
@@ -317,8 +351,8 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
 
         protected function setUp()
         {
-            B::setPropertyForTest('\BreakpointDebugging', '$onceErrorDispFlag', false);
-            B::$isInternal = false;
+            B::setPropertyForTest('\BreakpointDebugging_InAllCase', '$_onceErrorDispFlag', false);
+            B::setIsInternal(false);
         }
 
         /**
@@ -378,8 +412,8 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
     {
         protected function setUp()
         {
-            B::setPropertyForTest('\BreakpointDebugging', '$onceErrorDispFlag', false);
-            B::$isInternal = false;
+            B::setPropertyForTest('\BreakpointDebugging_InAllCase', '$_onceErrorDispFlag', false);
+            B::setIsInternal(false);
         }
 
     }
