@@ -519,19 +519,20 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
     {
         global $_BreakpointDebugging_EXE_MODE;
         static $includePaths;
-        static $storeCall = array ();
+        static $invokingLocations = array ();
 
         $callStack = debug_backtrace();
-        // Skips same limiting.
-        $storeCallKey = $callStack[0]['file'] . '>' . $callStack[0]['line'];
-        if (array_key_exists($storeCallKey, $storeCall)) {
-            return;
+        // Makes invoking location information.
+        $invokingLocation = $callStack[0]['line'] . '>' . $callStack[0]['file'];
+        if (array_key_exists($invokingLocation, $invokingLocations)) {
+            // Skips same.
+            return true;
         }
-        $storeCall[$storeCallKey] = true;
+        // Stores the invoking location information.
+        $invokingLocations[$invokingLocation] = true;
 
         if (!array_key_exists(1, $callStack)
-        || !array_key_exists('file', $callStack[1])
-        || !array_key_exists('line', $callStack[1])) {
+        || !array_key_exists('file', $callStack[1])) {
             throw new \BreakpointDebugging_ErrorException('Array element does not exist.', 1);
         }
         $fullFilePath = $callStack[1]['file'];

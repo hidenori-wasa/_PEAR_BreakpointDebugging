@@ -135,7 +135,7 @@ final class BreakpointDebugging_Error
 
         B::limitInvokerFilePaths('BreakpointDebugging.php');
 
-        $setTags = function ($tags) {
+        $setTags = function (&$tags) {
             $tags['font']['caution'] = '';
             $tags['font']['bool'] = '';
             $tags['font']['int'] = '';
