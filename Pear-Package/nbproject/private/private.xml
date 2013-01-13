@@ -44,10 +44,6 @@
             <line>207</line>
         </file>
         <file>
-            <url>index.php</url>
-            <line>0</line>
-        </file>
-        <file>
             <url>PEAR/BreakpointDebugging/LockByShmop_Bug.php</url>
             <line>62</line>
         </file>

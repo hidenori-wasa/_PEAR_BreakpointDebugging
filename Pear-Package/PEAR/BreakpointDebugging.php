@@ -218,7 +218,7 @@ abstract class BreakpointDebugging_InAllCase
     }
 
     /**
-     * Sets private property. We must invoke extended class method instead of this.
+     * Sets private property.
      *
      * @param $property Same as property.
      *
@@ -226,6 +226,7 @@ abstract class BreakpointDebugging_InAllCase
      */
     static function setUserName($property)
     {
+        B::limitAccess('BreakpointDebugging_Option.php');
         self::$_userName = $property;
     }
 
@@ -248,6 +249,7 @@ abstract class BreakpointDebugging_InAllCase
      */
     static function setMaxLogFileByteSize($property)
     {
+        B::limitAccess('BreakpointDebugging_Option.php');
         self::$_maxLogFileByteSize = $property;
     }
 
@@ -270,6 +272,7 @@ abstract class BreakpointDebugging_InAllCase
      */
     static function setMaxLogParamNestingLevel($property)
     {
+        B::limitAccess('BreakpointDebugging_Option.php');
         self::$_maxLogParamNestingLevel = $property;
     }
 
@@ -292,6 +295,7 @@ abstract class BreakpointDebugging_InAllCase
      */
     static function setMaxLogElementNumber($property)
     {
+        B::limitAccess('BreakpointDebugging_Option.php');
         self::$_maxLogElementNumber = $property;
     }
 
@@ -314,6 +318,7 @@ abstract class BreakpointDebugging_InAllCase
      */
     static function setMaxLogStringSize($property)
     {
+        B::limitAccess('BreakpointDebugging_Option.php');
         self::$_maxLogStringSize = $property;
     }
 
@@ -336,6 +341,7 @@ abstract class BreakpointDebugging_InAllCase
      */
     static function setWorkDir($property)
     {
+        B::limitAccess('BreakpointDebugging_Option.php');
         self::$_workDir = $property;
     }
 
@@ -378,6 +384,7 @@ abstract class BreakpointDebugging_InAllCase
      */
     static function setIsInternal($property)
     {
+        B::limitAccess('BreakpointDebugging_Option.php');
         self::$_isInternal = $property;
     }
 
@@ -411,6 +418,8 @@ abstract class BreakpointDebugging_InAllCase
      */
     static function iniCheck($phpIniVariable, $cmpValue, $errorMessage)
     {
+        B::limitAccess('BreakpointDebugging_Option.php');
+
         $value = (string) ini_get($phpIniVariable);
         $cmpResult = false;
         if (is_array($cmpValue)) {
@@ -764,6 +773,10 @@ abstract class BreakpointDebugging_InAllCase
      */
     final static function internalException($message, $id)
     {
+        B::limitAccess(array (
+            'BreakpointDebugging/Error.php',
+            'BreakpointDebugging/LockByFileExisting.php'));
+
         self::internal($message, $id);
     }
 
@@ -837,7 +850,7 @@ if ($_BreakpointDebugging_EXE_MODE === BreakpointDebugging_InAllCase::RELEASE) {
          *
          * @return void
          */
-        static function limitInvokerFilePaths()
+        static function limitAccess()
         {
 
         }

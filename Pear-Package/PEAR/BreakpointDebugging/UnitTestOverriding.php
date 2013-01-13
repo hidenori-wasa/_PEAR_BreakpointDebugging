@@ -91,7 +91,7 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
          *
          *      protected function setIniSettings($value)
          *      {
-         *          \BreakpointDebugging::limitInvokerFilePaths('BreakpointDebugging/UnitTestOverriding.php', true);
+         *          \BreakpointDebugging::limitAccess('BreakpointDebugging/UnitTestOverriding.php', true);
          *          $this->iniSettings = $value;
          *      }
          *
@@ -102,7 +102,7 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
          *
          *      protected function setOutputExpectedRegex($value)
          *      {
-         *          \BreakpointDebugging::limitInvokerFilePaths('BreakpointDebugging/UnitTestOverriding.php', true);
+         *          \BreakpointDebugging::limitAccess('BreakpointDebugging/UnitTestOverriding.php', true);
          *          $this->outputExpectedRegex = $value;
          *      }
          *
@@ -113,7 +113,7 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
          *
          *      protected function setOutputExpectedString($value)
          *      {
-         *          \BreakpointDebugging::limitInvokerFilePaths('BreakpointDebugging/UnitTestOverriding.php', true);
+         *          \BreakpointDebugging::limitAccess('BreakpointDebugging/UnitTestOverriding.php', true);
          *          $this->outputExpectedString = $value;
          *      }
          *

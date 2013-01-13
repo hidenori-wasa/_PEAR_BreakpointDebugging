@@ -1795,7 +1795,7 @@ abstract class PHPUnit_Framework_TestCase extends PHPUnit_Framework_Assert imple
 
     protected function setIniSettings($value)
     {
-        \BreakpointDebugging::limitInvokerFilePaths('BreakpointDebugging/UnitTestOverriding.php', true);
+        \BreakpointDebugging::limitAccess('BreakpointDebugging/UnitTestOverriding.php', true);
         $this->iniSettings = $value;
     }
 
@@ -1806,7 +1806,7 @@ abstract class PHPUnit_Framework_TestCase extends PHPUnit_Framework_Assert imple
 
     protected function setOutputExpectedRegex($value)
     {
-        \BreakpointDebugging::limitInvokerFilePaths('BreakpointDebugging/UnitTestOverriding.php', true);
+        \BreakpointDebugging::limitAccess('BreakpointDebugging/UnitTestOverriding.php', true);
         $this->outputExpectedRegex = $value;
     }
 
@@ -1817,7 +1817,7 @@ abstract class PHPUnit_Framework_TestCase extends PHPUnit_Framework_Assert imple
 
     protected function setOutputExpectedString($value)
     {
-        \BreakpointDebugging::limitInvokerFilePaths('BreakpointDebugging/UnitTestOverriding.php', true);
+        \BreakpointDebugging::limitAccess('BreakpointDebugging/UnitTestOverriding.php', true);
         $this->outputExpectedString = $value;
     }
 

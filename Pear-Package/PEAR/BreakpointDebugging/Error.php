@@ -133,7 +133,7 @@ final class BreakpointDebugging_Error
     {
         global $_BreakpointDebugging_EXE_MODE;
 
-        B::limitInvokerFilePaths('BreakpointDebugging.php');
+        B::limitAccess('BreakpointDebugging.php');
 
         $setTags = function (&$tags) {
             $tags['font']['caution'] = '';
@@ -901,9 +901,11 @@ final class BreakpointDebugging_Error
             $paramValue = $this->_convertMbString($paramValue);
             $strlen = strlen($paramValue);
             $isOverMaxLogStringSize = false;
-            if ($strlen > B::getMaxLogElementNumber()) {
+            //if ($strlen > B::getMaxLogElementNumber()) {
+            if ($strlen > B::getMaxLogStringSize()) {
                 $isOverMaxLogStringSize = true;
-                $paramValue = substr($paramValue, 0, B::getMaxLogElementNumber());
+                //$paramValue = substr($paramValue, 0, B::getMaxLogElementNumber());
+                $paramValue = substr($paramValue, 0, B::getMaxLogStringSize());
             }
             $paramValue = '"' . $paramValue . '"';
             if (!$this->_isLogging) {

@@ -104,7 +104,7 @@ function BreakpointDebugging_setExecutionMode()
         } else { // In case of Unix.
             // ini_set('include_path', '.:/opt/lampp/lib/php:/opt/lampp/lib/php/PEAR');
             // ini_set('include_path', '.:./PEAR:/opt/lampp/lib/php:/opt/lampp/lib/php/PEAR');
-            ini_set('include_path', '.:./PEAR:/opt/lampp/lib/php');
+            ini_set('include_path', '.:./PEAR');
         }
     } else { // In case of local.
         if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') { // In case of Windows.

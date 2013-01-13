@@ -236,7 +236,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      */
     static function setXebugExists($property)
     {
-        B::limitInvokerFilePaths('BreakpointDebugging.php');
+        B::limitAccess('BreakpointDebugging.php');
         parent::setXebugExists($property);
     }
 
@@ -249,7 +249,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      */
     static function setUserName($property)
     {
-        B::limitInvokerFilePaths('./PEAR_Setting/BreakpointDebugging_MySetting.php');
+        B::limitAccess('./PEAR_Setting/BreakpointDebugging_MySetting.php');
         parent::setUserName($property);
     }
 
@@ -262,7 +262,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      */
     static function setMaxLogFileByteSize($property)
     {
-        B::limitInvokerFilePaths('./PEAR_Setting/BreakpointDebugging_MySetting.php');
+        B::limitAccess('./PEAR_Setting/BreakpointDebugging_MySetting.php');
         parent::setMaxLogFileByteSize($property);
     }
 
@@ -275,7 +275,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      */
     static function setMaxLogParamNestingLevel($property)
     {
-        B::limitInvokerFilePaths('./PEAR_Setting/BreakpointDebugging_MySetting.php');
+        B::limitAccess('./PEAR_Setting/BreakpointDebugging_MySetting.php');
         parent::setMaxLogParamNestingLevel($property);
     }
 
@@ -288,7 +288,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      */
     static function setMaxLogElementNumber($property)
     {
-        B::limitInvokerFilePaths('./PEAR_Setting/BreakpointDebugging_MySetting.php');
+        B::limitAccess('./PEAR_Setting/BreakpointDebugging_MySetting.php');
         parent::setMaxLogElementNumber($property);
     }
 
@@ -301,7 +301,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      */
     static function setMaxLogStringSize($property)
     {
-        B::limitInvokerFilePaths('./PEAR_Setting/BreakpointDebugging_MySetting.php');
+        B::limitAccess('./PEAR_Setting/BreakpointDebugging_MySetting.php');
         parent::setMaxLogStringSize($property);
     }
 
@@ -314,8 +314,23 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      */
     static function setWorkDir($property)
     {
-        B::limitInvokerFilePaths('./PEAR_Setting/BreakpointDebugging_MySetting.php');
+        B::limitAccess('./PEAR_Setting/BreakpointDebugging_MySetting.php');
         parent::setWorkDir($property);
+    }
+
+    /**
+     * Limits private property setting.
+     *
+     * @param bool $property Same as property.
+     *
+     * @return void
+     */
+    static function setIsInternal($property)
+    {
+        B::limitAccess(array (
+            'BreakpointDebugging/Error.php',
+            'BreakpointDebugging/UnitTestOverriding.php'));
+        parent::setIsInternal($property);
     }
 
     /**
@@ -327,7 +342,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      */
     static function setBrowserPass($property)
     {
-        B::limitInvokerFilePaths('./PEAR_Setting/BreakpointDebugging_MySetting_Option.php');
+        B::limitAccess('./PEAR_Setting/BreakpointDebugging_MySetting_Option.php');
         self::$_browserPass = $property;
     }
 
@@ -340,7 +355,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
     {
         parent::__construct();
 
-        B::limitInvokerFilePaths('BreakpointDebugging.php');
+        B::limitAccess('BreakpointDebugging.php');
         self::assert(func_num_args() === 0, 1);
 
         static $createOnlyOneTime = false;
@@ -515,7 +530,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      *
      * @return void
      */
-    static function limitInvokerFilePaths($invokerFilePaths, $enableUnitTest = false)
+    static function limitAccess($invokerFilePaths, $enableUnitTest = false)
     {
         global $_BreakpointDebugging_EXE_MODE;
         static $includePaths;
@@ -523,17 +538,19 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
 
         $callStack = debug_backtrace();
         // Makes invoking location information.
-        $invokingLocation = $callStack[0]['line'] . '>' . $callStack[0]['file'];
-        if (array_key_exists($invokingLocation, $invokingLocations)) {
+        $file = $callStack[0]['file'];
+        $line = $callStack[0]['line'];
+        if (array_key_exists($file, $invokingLocations)
+        && array_key_exists($line, $invokingLocations[$file])) {
             // Skips same.
             return true;
         }
         // Stores the invoking location information.
-        $invokingLocations[$invokingLocation] = true;
+        $invokingLocations[$file][$line] = true;
 
         if (!array_key_exists(1, $callStack)
         || !array_key_exists('file', $callStack[1])) {
-            throw new \BreakpointDebugging_ErrorException('Array element does not exist.', 1);
+            throw new \BreakpointDebugging_ErrorException('This class method cannot use in top page.', 1);
         }
         $fullFilePath = $callStack[1]['file'];
         if (!$enableUnitTest
@@ -578,7 +595,15 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
                 return;
             }
         }
-        throw new \BreakpointDebugging_ErrorException('The file which invokes "set<property name>()" class method is not correct.', 2);
+        $class = '';
+        $function = '';
+        if (array_key_exists('class', $callStack[1])) {
+            $class = $callStack[1]['class'] . '::';
+        }
+        if (array_key_exists('function', $callStack[1])) {
+            $function = $callStack[1]['function'];
+        }
+        throw new \BreakpointDebugging_ErrorException("'$class$function()' must not invoke in '$fullFilePath' file.", 2);
     }
 
     /**
@@ -636,7 +661,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      */
     static function internalAssert($expression, $id)
     {
-        self::limitInvokerFilePaths(array (
+        self::limitAccess(array (
             './tests/PEAR/BreakpointDebugging-InAllCaseTest.php',
             'BreakpointDebugging.php',
             'BreakpointDebugging_Option.php',

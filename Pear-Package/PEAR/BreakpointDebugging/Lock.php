@@ -48,10 +48,7 @@
  * @version  SVN: $Id$
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-// @codeCoverageIgnoreStart
-require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
-
-// @codeCoverageIgnoreEnd
+//require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
 
 use \BreakpointDebugging as B;
 
@@ -250,6 +247,8 @@ abstract class BreakpointDebugging_Lock
      */
     static function forceUnlocking()
     {
+        B::limitAccess('BreakpointDebugging/Error.php');
+
         if (is_object(self::$_internalInstance)) {
             while (self::$_internalInstance->lockCount > 0) {
                 self::$_internalInstance->unlock();
