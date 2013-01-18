@@ -22,7 +22,7 @@ The dependences
         if array parameter element of "\BreakpointDebugging::executeUnitTest()" is one.
         Therefore, we can execute unit test with remote server without installing "PHPUnit".
 
-How to do my code sniff.
+How to sniff my code.
     I customized code sniff because "which" statement indent is "PEAR" special.
     Therefore, default doesn't fit "IDE".
     Please, change following file.

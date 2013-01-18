@@ -215,154 +215,17 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
     /**
      * @var array Setting option filenames.
      */
-    private $_onceFlag = array ();
+    private static $_onceFlag;
 
     /**
-     * @var array Temporary parameter array.
+     * @var mixed Temporary variable.
      */
-    public $tmpParams;
+    public static $tmp;
 
     /**
      * @var string Browser execution pass.
      */
     private static $_browserPass = 'C:\Program Files\Mozilla Firefox\firefox.exe';
-
-    /**
-     * Limits private property setting.
-     *
-     * @param bool $property Same as property.
-     *
-     * @return void
-     */
-    static function setXebugExists($property)
-    {
-        B::limitAccess('BreakpointDebugging.php');
-        parent::setXebugExists($property);
-    }
-
-    /**
-     * Limits private property setting.
-     *
-     * @param bool $property Same as property.
-     *
-     * @return void
-     */
-    static function setUserName($property)
-    {
-        B::limitAccess('./PEAR_Setting/BreakpointDebugging_MySetting.php');
-        parent::setUserName($property);
-    }
-
-    /**
-     * Limits private property setting.
-     *
-     * @param bool $property Same as property.
-     *
-     * @return void
-     */
-    static function setMaxLogFileByteSize($property)
-    {
-        B::limitAccess('./PEAR_Setting/BreakpointDebugging_MySetting.php');
-        parent::setMaxLogFileByteSize($property);
-    }
-
-    /**
-     * Limits private property setting.
-     *
-     * @param bool $property Same as property.
-     *
-     * @return void
-     */
-    static function setMaxLogParamNestingLevel($property)
-    {
-        B::limitAccess('./PEAR_Setting/BreakpointDebugging_MySetting.php');
-        parent::setMaxLogParamNestingLevel($property);
-    }
-
-    /**
-     * Limits private property setting.
-     *
-     * @param bool $property Same as property.
-     *
-     * @return void
-     */
-    static function setMaxLogElementNumber($property)
-    {
-        B::limitAccess('./PEAR_Setting/BreakpointDebugging_MySetting.php');
-        parent::setMaxLogElementNumber($property);
-    }
-
-    /**
-     * Limits private property setting.
-     *
-     * @param bool $property Same as property.
-     *
-     * @return void
-     */
-    static function setMaxLogStringSize($property)
-    {
-        B::limitAccess('./PEAR_Setting/BreakpointDebugging_MySetting.php');
-        parent::setMaxLogStringSize($property);
-    }
-
-    /**
-     * Limits private property setting.
-     *
-     * @param bool $property Same as property.
-     *
-     * @return void
-     */
-    static function setWorkDir($property)
-    {
-        B::limitAccess('./PEAR_Setting/BreakpointDebugging_MySetting.php');
-        parent::setWorkDir($property);
-    }
-
-    /**
-     * Limits private property setting.
-     *
-     * @param bool $property Same as property.
-     *
-     * @return void
-     */
-    static function setIsInternal($property)
-    {
-        B::limitAccess(array (
-            'BreakpointDebugging/Error.php',
-            'BreakpointDebugging/UnitTestOverriding.php'));
-        parent::setIsInternal($property);
-    }
-
-    /**
-     * Limits private property setting.
-     *
-     * @param bool $property Same as property.
-     *
-     * @return void
-     */
-    static function setBrowserPass($property)
-    {
-        B::limitAccess('./PEAR_Setting/BreakpointDebugging_MySetting_Option.php');
-        self::$_browserPass = $property;
-    }
-
-    /**
-     * This constructer create object only one time.
-     *
-     * @return void
-     */
-    function __construct()
-    {
-        parent::__construct();
-
-        B::limitAccess('BreakpointDebugging.php');
-        self::assert(func_num_args() === 0, 1);
-
-        static $createOnlyOneTime = false;
-
-        self::assert($createOnlyOneTime === false, 1);
-        $createOnlyOneTime = true;
-    }
 
     /**
      * If "Apache HTTP Server" does not support "suEXEC", this method displays security warning.
@@ -378,6 +241,77 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
         if (trim(`echo \$USER`) === 'root') {
             echo 'Security warning: Recommends to change to "Apache HTTP Server" which Supported "suEXEC" because this "Apache HTTP Server" is executed by "root" user.<br/>';
         }
+    }
+
+    /**
+     * Gets a static property value.
+     *
+     * @param string $propertyName Static property name.
+     *
+     * @return mixed Static property value.
+     */
+    static function getStatic($propertyName)
+    {
+        return parent::getStatic($propertyName);
+    }
+
+    /**
+     * Sets a static property value.
+     *
+     * @param string $propertyName Static property name.
+     * @param mixed  $value        Static property value.
+     *
+     * @return void
+     */
+    static function setStatic($propertyName, $value)
+    {
+        switch ($propertyName) {
+            case '$_xebugExists':
+                self::limitAccess('BreakpointDebugging.php');
+                break;
+            case '$_userName':
+                self::limitAccess('./PEAR_Setting/BreakpointDebugging_MySetting.php');
+                break;
+            case '$_maxLogFileByteSize':
+                self::limitAccess('./PEAR_Setting/BreakpointDebugging_MySetting.php');
+                break;
+            case '$_maxLogParamNestingLevel':
+                self::limitAccess('./PEAR_Setting/BreakpointDebugging_MySetting.php');
+                break;
+            case '$_maxLogElementNumber':
+                self::limitAccess('./PEAR_Setting/BreakpointDebugging_MySetting.php');
+                break;
+            case '$_maxLogStringSize':
+                self::limitAccess('./PEAR_Setting/BreakpointDebugging_MySetting.php');
+                break;
+            case '$_workDir':
+                self::limitAccess('./PEAR_Setting/BreakpointDebugging_MySetting.php');
+                break;
+            case '$_isInternal':
+                self::limitAccess(array (
+                    'BreakpointDebugging/Error.php',
+                    'BreakpointDebugging/UnitTestOverriding.php'));
+                break;
+            case '$_browserPass':
+                self::limitAccess('./PEAR_Setting/BreakpointDebugging_MySetting_Option.php');
+                break;
+            default :
+                throw new \BreakpointDebugging_ErrorException(__CLASS__ . "::$propertyName property does not exist.");
+        }
+        parent::setStatic($propertyName, $value);
+    }
+
+    /**
+     * Limits private property setting.
+     *
+     * @param bool $property Same as property.
+     *
+     * @return void
+     */
+    static function setXebugExists($property)
+    {
+        self::limitAccess('BreakpointDebugging.php');
+        parent::setXebugExists($property);
     }
 
     /**
@@ -511,7 +445,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
             }
         }
 
-        if (B::getXebugExists()) {
+        if (self::getXebugExists()) {
             xdebug_break(); // Breakpoint. See local variable value by doing step execution here.
             // Push stop button if is thought error message.
         }
@@ -558,12 +492,12 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
         && strripos($fullFilePath, 'test.php') === strlen($fullFilePath) - strlen('test.php')) {
             return;
         }
-        if (B::getOs() === 'WIN') {
+        if (self::getStatic('$_os') === 'WIN') {
             $fullFilePath = strtolower($fullFilePath);
         }
         if (!isset($includePaths)) {
             $includePaths = ini_get('include_path');
-            if (B::getOs() === 'WIN') {
+            if (self::getStatic('$_os') === 'WIN') {
                 $includePaths = strtolower($includePaths);
             }
             $includePaths = explode(PATH_SEPARATOR, $includePaths);
@@ -575,7 +509,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
                 if ($invokerFullFilePath === false) {
                     continue;
                 }
-                if (B::getOs() === 'WIN') {
+                if (B::getStatic('$_os') === 'WIN') {
                     $invokerFullFilePath = strtolower($invokerFullFilePath);
                 }
                 if ($fullFilePath === $invokerFullFilePath) {
@@ -735,7 +669,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      */
     static function iniSet($phpIniVariable, $setValue, $doCheck = true)
     {
-        global $_BreakpointDebugging_EXE_MODE, $_BreakpointDebugging;
+        global $_BreakpointDebugging_EXE_MODE;
         self::assert(func_num_args() <= 3, 1);
         self::assert($phpIniVariable !== 'error_log', 2);
         self::assert(is_string($setValue), 3);
@@ -747,21 +681,21 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
                 $backTrace = debug_backtrace();
                 $baseName = basename($backTrace[0]['file']);
                 $cmpName = '_MySetting_Option.php';
-                if (B::getOs() === 'WIN') {
+                if (self::getStatic('$_os') === 'WIN') {
                     $baseName = strtolower($baseName);
                     $cmpName = strtolower($cmpName);
                 }
                 $cmpNameLength = strlen($cmpName);
                 if (!substr_compare($baseName, $cmpName, 0 - $cmpNameLength, $cmpNameLength, true)) {
                     $notExistFlag = true;
-                    foreach ($_BreakpointDebugging->_onceFlag as $cmpName) {
+                    foreach (self::$_onceFlag as $cmpName) {
                         if (!strcmp($baseName, $cmpName)) {
                             $notExistFlag = false;
                             break;
                         }
                     }
                     if ($notExistFlag) {
-                        $_BreakpointDebugging->_onceFlag[] = $baseName;
+                        self::$_onceFlag[] = $baseName;
                         $packageName = substr($baseName, 0, 0 - $cmpNameLength);
                         echo <<<EOD
 <pre>
@@ -1029,7 +963,7 @@ EOD;
                 exit('<pre>Executes on "local server only" because continuation unit test requires many load on remote server.</pre>');
             }
             // In case of extending test class except "\BreakpointDebugging_UnitTestOverriding" class.
-            if (B::getOs() === 'WIN') { // In case of Windows.
+            if (self::getStatic('$_os') === 'WIN') { // In case of Windows.
                 $phpunit = 'phpunit.bat';
             } else { // In case of Unix.
                 // Command execution path by "bash" differs because "Apache" is root user in case of default, therefore uses full path for command.
@@ -1041,7 +975,7 @@ EOD;
                     }
 
                     //$phpunit = `export PATH=/opt/lampp/bin:/opt/local/bin:/usr/bin:/usr/bin/X11:/usr/share/php;which phpunit`;
-                    $userName = B::getUserName();
+                    $userName = self::getStatic('$_userName');
                     $phpunit = `sudo -u $userName which phpunit`;
 
                     $phpunit = trim($phpunit);
@@ -1063,7 +997,7 @@ EOD;
                 // If test file name contains '_'.
                 if (strpos($testFileName, '_') !== false) {
                     echo "You must change its array element and its file name into '-' because '$testFileName' contains '_'." . PHP_EOL;
-                    if (B::getXebugExists()) {
+                    if (self::getXebugExists()) {
                         xdebug_break();
                     }
                     return;
@@ -1099,7 +1033,7 @@ EOD;
     {
         $unitTestCurrentDir = debug_backtrace();
         $unitTestCurrentDir = dirname($unitTestCurrentDir[0]['file']);
-        $workDir = self::getWorkDir();
+        $workDir = self::getStatic('$_workDir');
         echo '<pre>' . `phpunit --coverage-html "$workDir/CodeCoverageReport" "$unitTestCurrentDir/$unitTestFilePath"` . '</pre>';
 
         $displayBrowser = function($classFilePath, $browserPass, $workDir) {
@@ -1125,17 +1059,17 @@ EOD;
      *
      * @return Executed function result.
      *
-     * @example $return = $_BreakpointDebugging->displayVerification('function_name', func_get_args());
-     *          $return = $_BreakpointDebugging->displayVerification('function_name', array($object, $resource, &$reference));
+     * @example $return = \BreakpointDebugging::displayVerification('function_name', func_get_args());
+     *          $return = \BreakpointDebugging::displayVerification('function_name', array($object, $resource, &$reference));
      */
-    function displayVerification($functionName, $params)
+    static function displayVerification($functionName, $params)
     {
         self::assert(is_string($functionName), 1);
         self::assert(is_array($params), 2);
 
-        $this->tmpParams = $params;
+        self::$tmp = $params;
         $paramNumber = count($params);
-        $propertyNameToSend = '$_BreakpointDebugging->tmpParams';
+        $propertyNameToSend = '\BreakpointDebugging::$tmp';
         $callStackInfo = debug_backtrace();
         echo '<pre><b>Executed function information.</b></br></br>';
         echo "<b>FILE</b> = {$callStackInfo[0]['file']}</br>";
@@ -1148,7 +1082,7 @@ EOD;
         }
         echo ')';
         $code = $functionName . '(' . implode(',', $paramString) . ')';
-        $return = eval('global $_BreakpointDebugging; $return = ' . $code . '; echo "<br/><b>RETURN</b> = "; var_dump($return); return $return;');
+        $return = eval('$return = ' . $code . '; echo "<br/><b>RETURN</b> = "; var_dump($return); return $return;');
         echo '//////////////////////////////////////////////////////////////////////////////////////';
         return $return;
     }

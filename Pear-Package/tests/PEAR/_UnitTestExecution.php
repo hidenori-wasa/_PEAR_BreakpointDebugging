@@ -10,13 +10,13 @@ use \BreakpointDebugging as B;
 $testFileNames = array (
     // '--stop-on-failure ExampleTest.php',
     // '--stop-on-failure BreakpointDebugging-ExceptionTest.php',
-    '--stop-on-failure BreakpointDebugging-InAllCaseTest.php',
+    // '--stop-on-failure BreakpointDebugging-InAllCaseTest.php',
     // '--stop-on-failure BreakpointDebugging/ErrorTest.php',
     // '--stop-on-failure BreakpointDebugging/LockByFileExistingTest.php',
     // '--stop-on-failure BreakpointDebugging/LockByFlockTest.php',
     // '--stop-on-failure BreakpointDebugging/LockByShmopTest.php',
     // '--stop-on-failure BreakpointDebugging/OverrideClassTest.php',
-    // '--stop-on-failure BreakpointDebuggingTest.php',
+    '--stop-on-failure BreakpointDebuggingTest.php',
 );
 // Executes unit tests.
 B::executeUnitTest($testFileNames);

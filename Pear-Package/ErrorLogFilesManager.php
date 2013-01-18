@@ -74,7 +74,7 @@ if (empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] === 'off') {
 // Locks error log files.
 $lockByFileExisting = &\BreakpointDebugging_LockByFileExisting::internalSingleton();
 $lockByFileExisting->lock();
-$errorLogDirectory = B::getWorkDir() . '/ErrorLog/';
+$errorLogDirectory = B::getStatic('$_workDir') . '/ErrorLog/';
 if (!is_dir($errorLogDirectory)) {
     echo 'Error log directory does not exist.';
     goto END_LABEL;

@@ -4,7 +4,7 @@
  * Class which locks php-code by "flock()".
  *
  * This class has to be environment which can use "flock()".
- * We can synchronize applications by setting the same directory to "B::setWorkDir(<work directory>)" of "BreakpointDebugging_MySetting.php".
+ * We can synchronize applications by setting the same directory to "B::setStatic('$_workDir', <work directory>)" of "BreakpointDebugging_MySetting.php".
  *
  * @example of usage.
  *      $lockByFlock = &\BreakpointDebugging_LockByFlock::singleton(); // Creates a lock instance.
@@ -78,7 +78,7 @@ final class BreakpointDebugging_LockByFlock extends \BreakpointDebugging_Lock
      */
     static function &singleton($timeout = 60, $sleepMicroSeconds = 100000)
     {
-        return parent::singletonBase('\\' . __CLASS__, B::getWorkDir() . '/LockByFlock.txt', $timeout, 0, $sleepMicroSeconds);
+        return parent::singletonBase('\\' . __CLASS__, B::getStatic('$_workDir') . '/LockByFlock.txt', $timeout, 0, $sleepMicroSeconds);
     }
 
     /**

@@ -37,7 +37,7 @@
         <file>
             <url>tests/PEAR/BreakpointDebuggingTest.php</url>
             <line>10</line>
-            <line>192</line>
+            <line>188</line>
         </file>
         <file>
             <url>PEAR/BreakpointDebugging/LockByMkdir.php</url>
@@ -46,6 +46,10 @@
         <file>
             <url>PEAR/BreakpointDebugging/LockByShmop_Bug.php</url>
             <line>62</line>
+        </file>
+        <file>
+            <url>PEAR/BreakpointDebugging.php</url>
+            <line>180</line>
         </file>
         <file>
             <url>BreakpointDebugging_MySetting.php</url>

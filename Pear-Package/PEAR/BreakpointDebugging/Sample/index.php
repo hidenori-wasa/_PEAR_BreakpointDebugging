@@ -14,14 +14,14 @@ $testNumber = 2;
 
 if ($testNumber === 1) {
     // Registers the function being not fixed.
-    static $isRegister;
+    static $isRegister = false;
     B::registerNotFixedLocation($isRegister);
     // SJIS + UTF-8
     var_dump(B::convertMbString("\x95\xB6\x8E\x9A \xE6\x96\x87\xE5\xAD\x97 "));
     echo 'Is not displayed.';
 } else if ($testNumber === 2) {
     // Registers the function being not fixed.
-    static $isRegister;
+    static $isRegister = false;
     B::registerNotFixedLocation($isRegister);
     function fnThrow()
     {
@@ -37,7 +37,7 @@ if ($testNumber === 1) {
     function fnTestB()
     {
         // Registers the function being not fixed.
-        static $isRegister;
+        static $isRegister = false;
         B::registerNotFixedLocation($isRegister);
         global $object, $array, $varietyObject;
         define('TEST_CONST', '<TEST CONST>');

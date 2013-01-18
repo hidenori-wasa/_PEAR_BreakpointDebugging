@@ -137,9 +137,9 @@ function BreakpointDebugging_mySetting()
     $SMTP = '<Your SMTP server>';
     $sendmailFrom = '<Your Windows mail address>';
     // Please, set your username.
-    B::setUserName('root'); // Example: 'hidenori'
+    B::setStatic('$_userName', 'root'); // Example: 'hidenori'
     // PHP It limits directory which opens a file.
-    if (B::getOs() === 'WIN') { // In case of Windows.
+    if (B::getStatic('$_os') === 'WIN') { // In case of Windows.
         $openBasedir = 'C:\xampp\;.\\';
     } else { // In case of Unix.
         $openBasedir = '/opt/lampp/:./';
@@ -149,14 +149,14 @@ function BreakpointDebugging_mySetting()
     // Maximum file-capacity secures 16 K margin but it may exceed with low probability.
     $maxLogMBSize = 1;
     // This code has been fixed.
-    B::setMaxLogFileByteSize(($maxLogMBSize << 17) - 2048);
-    B::assert((B::getMaxLogFileByteSize() + 2048) % 4096 === 0, 1);
+    B::setStatic('$_maxLogFileByteSize', ($maxLogMBSize << 17) - 2048);
+    B::assert((B::getStatic('$_maxLogFileByteSize') + 2048) % 4096 === 0, 1);
     // Maximum log parameter nesting level. Default is 20. (1-100)
-    // B::setMaxLogParamNestingLevel(20);
+    // B::setStatic('$_maxLogParamNestingLevel', 20);
     // Maximum count of elements in log. ( Count of parameter or array elements ) Default is 50. (1-100)
-    // B::setMaxLogElementNumber(50);
+    // B::setStatic('$_maxLogElementNumber', 50);
     // Maximum string type byte-count of log. Default is 3000. (1-)
-    // B::setMaxLogStringSize(3000);
+    // B::setStatic('$_maxLogStringSize', 3000);
     // Inner form of the browser of the default: HTML text, character sets = UTF8.
     // header('Content-type: text/html; charset=utf-8');
     // Set "mbstring.detect_order = UTF-8, UTF-7, ASCII, EUC-JP,SJIS, eucJP-win, SJIS-win, JIS, ISO-2022-JP" of "php.ini" file because this is purpose to define default value of character code detection.
@@ -164,12 +164,12 @@ function BreakpointDebugging_mySetting()
     B::assert($result, 2);
     // This is work directory. "php_error_*.log" file is created in this directory.
     // Warning: When you use existing log, it is destroyed if it is not "UTF-8". It is necessary to be a single character sets.
-    B::setWorkDir('./Work');
-    if (!is_dir(B::getWorkDir())) {
-        B::mkdir(B::getWorkDir(), 0700);
+    B::setStatic('$_workDir', './Work');
+    if (!is_dir(B::getStatic('$_workDir'))) {
+        B::mkdir(B::getStatic('$_workDir'), 0700);
     }
-    B::setWorkDir(realpath(B::getWorkDir()));
-    B::assert(B::getWorkDir() !== false, 3);
+    B::setStatic('$_workDir', realpath(B::getStatic('$_workDir')));
+    B::assert(B::getStatic('$_workDir') !== false, 3);
     // ### <=== Item setting.
     //
     ////////////////////////////////////////////////////////////////////////////////

@@ -7,6 +7,17 @@
  * This class does not use "phpunit" command to debug its unit test file
  * if array parameter element of "\BreakpointDebugging::executeUnitTest()" is one.
  * Therefore, we can execute unit test with remote server without installing "PHPUnit".
+ * Please, add following into "\PHPUnit_Framework_TestCase" class.
+ *      function __get($propertyName)
+ *      {
+ *          return $this->$propertyName;
+ *      }
+ *
+ *      function __set($propertyName, $value)
+ *      {
+ *          \BreakpointDebugging::limitAccess('BreakpointDebugging/UnitTestOverriding.php', true);
+ *          $this->$propertyName = $value;
+ *      }
  *
  * PHP version 5.3
  *
@@ -72,55 +83,6 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
          * Overrides "\PHPUnit_Framework_TestCase::runBare()" to display call stack when error occurred.
          *
          * @return void
-         *
-         * Please, add following into "\PHPUnit_Framework_TestCase" class.
-         *      protected function getInIsolation()
-         *      {
-         *          return $this->inIsolation;
-         *      }
-         *
-         *      protected function getOutputCallback()
-         *      {
-         *          return $this->outputCallback;
-         *      }
-         *
-         *      protected function getLocale()
-         *      {
-         *          return $this->locale;
-         *      }
-         *
-         *      protected function setIniSettings($value)
-         *      {
-         *          \BreakpointDebugging::limitAccess('BreakpointDebugging/UnitTestOverriding.php', true);
-         *          $this->iniSettings = $value;
-         *      }
-         *
-         *      protected function getIniSettings()
-         *      {
-         *          return $this->iniSettings;
-         *      }
-         *
-         *      protected function setOutputExpectedRegex($value)
-         *      {
-         *          \BreakpointDebugging::limitAccess('BreakpointDebugging/UnitTestOverriding.php', true);
-         *          $this->outputExpectedRegex = $value;
-         *      }
-         *
-         *      protected function getOutputExpectedRegex()
-         *      {
-         *          return $this->outputExpectedRegex;
-         *      }
-         *
-         *      protected function setOutputExpectedString($value)
-         *      {
-         *          \BreakpointDebugging::limitAccess('BreakpointDebugging/UnitTestOverriding.php', true);
-         *          $this->outputExpectedString = $value;
-         *      }
-         *
-         *      protected function getOutputExpectedString()
-         *      {
-         *          return $this->outputExpectedString;
-         *      }
          */
         public function runBare()
         {
@@ -128,7 +90,7 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
 
             // Backup the $GLOBALS array and static attributes.
             if ($this->runTestInSeparateProcess !== TRUE &&
-            $this->getInIsolation() !== TRUE) {
+            $this->inIsolation !== TRUE) {
                 if ($this->backupGlobals === NULL ||
                 $this->backupGlobals === TRUE) {
                     PHPUnit_Util_GlobalState::backupGlobals(
@@ -152,7 +114,7 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
             clearstatcache();
 
             try {
-                if ($this->getInIsolation()) {
+                if ($this->inIsolation) {
                     $this->setUpBeforeClass();
                 }
 
@@ -183,7 +145,7 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
             try {
                 $this->tearDown();
 
-                if ($this->getInIsolation()) {
+                if ($this->inIsolation) {
                     $this->tearDownAfterClass();
                 }
             } catch (Exception $_e) {
@@ -192,10 +154,10 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
             }
 
             // Stop output buffering.
-            if ($this->getOutputCallback() === FALSE) {
+            if ($this->outputCallback === FALSE) {
                 $this->output = ob_get_contents();
             } else {
-                $this->output = call_user_func_array($this->getOutputCallback(), array (ob_get_contents()));
+                $this->output = call_user_func_array($this->outputCallback, array (ob_get_contents()));
             }
 
             ob_end_clean();
@@ -206,7 +168,7 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
 
             // Restore the $GLOBALS array and static attributes.
             if ($this->runTestInSeparateProcess !== TRUE &&
-            $this->getInIsolation() !== TRUE) {
+            $this->inIsolation !== TRUE) {
                 if ($this->backupGlobals === NULL ||
                 $this->backupGlobals === TRUE) {
                     PHPUnit_Util_GlobalState::restoreGlobals(
@@ -221,28 +183,28 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
             }
 
             // Clean up INI settings.
-            foreach ($this->getIniSettings() as $varName => $oldValue) {
+            foreach ($this->iniSettings as $varName => $oldValue) {
                 ini_set($varName, $oldValue);
             }
 
-            $this->setIniSettings(array ());
+            $this->iniSettings = array ();
 
             // Clean up locale settings.
-            foreach ($this->getLocale() as $category => $locale) {
+            foreach ($this->locale as $category => $locale) {
                 setlocale($category, $locale);
             }
 
             // Perform assertion on output.
             if (!isset($e)) {
                 try {
-                    if ($this->getOutputExpectedRegex() !== NULL) {
+                    if ($this->outputExpectedRegex !== NULL) {
                         $this->hasPerformedExpectationsOnOutput = TRUE;
-                        $this->assertRegExp($this->getOutputExpectedRegex(), $this->output);
-                        $this->setOutputExpectedRegex(NULL);
-                    } else if ($this->getOutputExpectedString() !== NULL) {
+                        $this->assertRegExp($this->outputExpectedRegex, $this->output);
+                        $this->outputExpectedRegex = NULL;
+                    } else if ($this->outputExpectedString !== NULL) {
                         $this->hasPerformedExpectationsOnOutput = TRUE;
-                        $this->assertEquals($this->getOutputExpectedString(), $this->output);
-                        $this->setOutputExpectedString(NULL);
+                        $this->assertEquals($this->outputExpectedString, $this->output);
+                        $this->outputExpectedString = NULL;
                     }
                 } catch (Exception $_e) {
                     $e = $_e;
@@ -260,27 +222,6 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
          *
          * @return mixed
          * @throws RuntimeException
-         *
-         * Please, add following into "\PHPUnit_Framework_TestCase" class.
-         *      protected function getData()
-         *      {
-         *          return $this->data;
-         *      }
-         *
-         *      protected function getDependencyInput()
-         *      {
-         *          return $this->dependencyInput;
-         *      }
-         *
-         *      protected function getExpectedExceptionMessage()
-         *      {
-         *          return $this->expectedExceptionMessage;
-         *      }
-         *
-         *      protected function getExpectedExceptionCode()
-         *      {
-         *          return $this->expectedExceptionCode;
-         *      }
          */
         protected function runTest()
         {
@@ -297,7 +238,7 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
             }
 
             try {
-                $testResult = $method->invokeArgs($this, array_merge($this->getData(), $this->getDependencyInput()));
+                $testResult = $method->invokeArgs($this, array_merge($this->data, $this->dependencyInput));
             } catch (Exception $e) {
                 // If "\PHPUnit_Framework_Assert::markTestIncomplete()" was called, or if "\PHPUnit_Framework_Assert::markTestSkipped()" was called.
                 if ($e instanceof PHPUnit_Framework_IncompleteTest || $e instanceof PHPUnit_Framework_SkippedTest) {
@@ -319,7 +260,7 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
                 }
                 // "@expectedExceptionMessage" annotation should be success.
                 try {
-                    $expectedExceptionMessage = $this->getExpectedExceptionMessage();
+                    $expectedExceptionMessage = $this->expectedExceptionMessage;
                     if (is_string($expectedExceptionMessage) && !empty($expectedExceptionMessage)) {
                         $this->assertThat($e, new PHPUnit_Framework_Constraint_ExceptionMessage($expectedExceptionMessage));
                     }
@@ -330,8 +271,8 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
                 }
                 // "@expectedExceptionCode" annotation should be success.
                 try {
-                    if ($this->getExpectedExceptionCode() !== NULL) {
-                        $this->assertThat($e, new PHPUnit_Framework_Constraint_ExceptionCode($this->getExpectedExceptionCode()));
+                    if ($this->expectedExceptionCode !== NULL) {
+                        $this->assertThat($e, new PHPUnit_Framework_Constraint_ExceptionCode($this->expectedExceptionCode));
                     }
                 } catch (Exception $dummy) {
                     echo '<pre><b>Is error, or this test mistook "@expectedExceptionCode" annotation value.</b></pre>';
@@ -352,7 +293,7 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
         protected function setUp()
         {
             B::setPropertyForTest('\BreakpointDebugging_InAllCase', '$_onceErrorDispFlag', false);
-            B::setIsInternal(false);
+            B::setStatic('$_isInternal', false);
         }
 
         /**
@@ -413,7 +354,7 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
         protected function setUp()
         {
             B::setPropertyForTest('\BreakpointDebugging_InAllCase', '$_onceErrorDispFlag', false);
-            B::setIsInternal(false);
+            B::setStatic('$_isInternal', false);
         }
 
     }

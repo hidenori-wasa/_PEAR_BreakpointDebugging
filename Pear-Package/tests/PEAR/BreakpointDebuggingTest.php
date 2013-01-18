@@ -171,8 +171,6 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
      */
     public function testSetPropertyForTest_B()
     {
-        global $_BreakpointDebugging;
-
         $pBreakpointDebuggingTestExample = new \BreakpointDebuggingTestExample();
 
         B::setPropertyForTest($pBreakpointDebuggingTestExample, '$privateStaticBase', 'change'); // Private static property of base class.
@@ -186,8 +184,6 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
      */
     public function testSetPropertyForTest_C()
     {
-        global $_BreakpointDebugging;
-
         $pBreakpointDebuggingTestExample = new \BreakpointDebuggingTestExample();
 
         B::setPropertyForTest($pBreakpointDebuggingTestExample, '$privateAutoBase', 'change'); // Private auto property of base class.
@@ -206,11 +202,9 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
      */
     public function testDisplayVerification()
     {
-        global $_BreakpointDebugging;
-
         $mandate = "January 01 2000";
         ob_start();
-        $return = $_BreakpointDebugging->displayVerification('sscanf', array ($mandate, "%s %d %d", &$month, &$day, &$year));
+        $return = B::displayVerification('sscanf', array ($mandate, "%s %d %d", &$month, &$day, &$year));
         $this->assertTrue($return === 3);
         $this->assertTrue($month === 'January');
         $this->assertTrue($day === 1);

@@ -1758,71 +1758,14 @@ abstract class PHPUnit_Framework_TestCase extends PHPUnit_Framework_Assert imple
 
     }
 
-    protected function getData()
+    function __get($propertyName)
     {
-        return $this->data;
+        return $this->$propertyName;
     }
 
-    protected function getDependencyInput()
-    {
-        return $this->dependencyInput;
-    }
-
-    protected function getExpectedExceptionMessage()
-    {
-        return $this->expectedExceptionMessage;
-    }
-
-    protected function getExpectedExceptionCode()
-    {
-        return $this->expectedExceptionCode;
-    }
-
-    protected function getInIsolation()
-    {
-        return $this->inIsolation;
-    }
-
-    protected function getOutputCallback()
-    {
-        return $this->outputCallback;
-    }
-
-    protected function getLocale()
-    {
-        return $this->locale;
-    }
-
-    protected function setIniSettings($value)
+    function __set($propertyName, $value)
     {
         \BreakpointDebugging::limitAccess('BreakpointDebugging/UnitTestOverriding.php', true);
-        $this->iniSettings = $value;
-    }
-
-    protected function getIniSettings()
-    {
-        return $this->iniSettings;
-    }
-
-    protected function setOutputExpectedRegex($value)
-    {
-        \BreakpointDebugging::limitAccess('BreakpointDebugging/UnitTestOverriding.php', true);
-        $this->outputExpectedRegex = $value;
-    }
-
-    protected function getOutputExpectedRegex()
-    {
-        return $this->outputExpectedRegex;
-    }
-
-    protected function setOutputExpectedString($value)
-    {
-        \BreakpointDebugging::limitAccess('BreakpointDebugging/UnitTestOverriding.php', true);
-        $this->outputExpectedString = $value;
-    }
-
-    protected function getOutputExpectedString()
-    {
-        return $this->outputExpectedString;
+        $this->$propertyName = $value;
     }
 }

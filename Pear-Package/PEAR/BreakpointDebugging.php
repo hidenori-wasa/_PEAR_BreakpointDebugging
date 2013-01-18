@@ -116,6 +116,11 @@ abstract class BreakpointDebugging_InAllCase
     const UNIT_TEST = 16;
 
     /**
+     * @var array Static properties reference.
+     */
+    private static $_staticProperties;
+
+    /**
      * @var bool "Xdebug" existing-flag.
      */
     private static $_xdebugExists;
@@ -168,12 +173,12 @@ abstract class BreakpointDebugging_InAllCase
     /**
      * @var array Locations to be not Fixed.
      */
-    private $_notFixedLocations = array ();
+    private static $_notFixedLocations;
 
     /**
      * @var array Values to trace.
      */
-    private $_valuesToTrace = array ();
+    private static $_valuesToTrace;
 
     /**
      * @var bool Once error display flag.
@@ -186,15 +191,47 @@ abstract class BreakpointDebugging_InAllCase
     private static $_isInternal = false;
 
     /**
-     * Sets private property. We must invoke extended class method instead of this.
+     * Initializes static properties.
+     */
+    function __construct()
+    {
+        self::$_os = strtoupper(substr(PHP_OS, 0, 3));
+        self::$_staticProperties['$_os'] = &self::$_os;
+        self::$_staticProperties['$_userName'] = &self::$_userName;
+        self::$_staticProperties['$_maxLogFileByteSize'] = &self::$_maxLogFileByteSize;
+        self::$_staticProperties['$_maxLogParamNestingLevel'] = &self::$_maxLogParamNestingLevel;
+        self::$_staticProperties['$_maxLogElementNumber'] = &self::$_maxLogElementNumber;
+        self::$_staticProperties['$_maxLogStringSize'] = &self::$_maxLogStringSize;
+        self::$_staticProperties['$_workDir'] = &self::$_workDir;
+        self::$_staticProperties['$_isInternal'] = &self::$_isInternal;
+        self::$_staticProperties['$_valuesToTrace'] = &self::$_valuesToTrace;
+        self::$_staticProperties['$_notFixedLocations'] = &self::$_notFixedLocations;
+    }
+
+    /**
+     * Gets a static property value.
      *
-     * @param $property Same as property.
+     * @param string $propertyName Static property name.
+     *
+     * @return mixed Static property value.
+     */
+    static function getStatic($propertyName)
+    {
+        return self::$_staticProperties[$propertyName];
+    }
+
+    /**
+     * Sets a static property value.
+     *
+     * @param string $propertyName Static property name.
+     * @param mixed  $value        Static property value.
      *
      * @return void
      */
-    static function setXebugExists($property)
+    static function setStatic($propertyName, $value)
     {
-        self::$_xdebugExists = $property;
+        B::limitAccess('BreakpointDebugging_Option.php');
+        self::$_staticProperties[$propertyName] = $value;
     }
 
     /**
@@ -208,202 +245,15 @@ abstract class BreakpointDebugging_InAllCase
     }
 
     /**
-     * Gets private property.
-     *
-     * @return Same as property.
-     */
-    static function getOs()
-    {
-        return self::$_os;
-    }
-
-    /**
-     * Sets private property.
-     *
-     * @param $property Same as property.
-     *
-     * @return void
-     */
-    static function setUserName($property)
-    {
-        B::limitAccess('BreakpointDebugging_Option.php');
-        self::$_userName = $property;
-    }
-
-    /**
-     * Gets private property.
-     *
-     * @return Same as property.
-     */
-    static function getUserName()
-    {
-        return self::$_userName;
-    }
-
-    /**
      * Sets private property. We must invoke extended class method instead of this.
      *
      * @param $property Same as property.
      *
      * @return void
      */
-    static function setMaxLogFileByteSize($property)
+    static function setXebugExists($property)
     {
-        B::limitAccess('BreakpointDebugging_Option.php');
-        self::$_maxLogFileByteSize = $property;
-    }
-
-    /**
-     * Gets private property.
-     *
-     * @return Same as property.
-     */
-    static function getMaxLogFileByteSize()
-    {
-        return self::$_maxLogFileByteSize;
-    }
-
-    /**
-     * Sets private property. We must invoke extended class method instead of this.
-     *
-     * @param $property Same as property.
-     *
-     * @return void
-     */
-    static function setMaxLogParamNestingLevel($property)
-    {
-        B::limitAccess('BreakpointDebugging_Option.php');
-        self::$_maxLogParamNestingLevel = $property;
-    }
-
-    /**
-     * Gets private property.
-     *
-     * @return Same as property.
-     */
-    static function getMaxLogParamNestingLevel()
-    {
-        return self::$_maxLogParamNestingLevel;
-    }
-
-    /**
-     * Sets private property. We must invoke extended class method instead of this.
-     *
-     * @param $property Same as property.
-     *
-     * @return void
-     */
-    static function setMaxLogElementNumber($property)
-    {
-        B::limitAccess('BreakpointDebugging_Option.php');
-        self::$_maxLogElementNumber = $property;
-    }
-
-    /**
-     * Gets private property.
-     *
-     * @return Same as property.
-     */
-    static function getMaxLogElementNumber()
-    {
-        return self::$_maxLogElementNumber;
-    }
-
-    /**
-     * Sets private property. We must invoke extended class method instead of this.
-     *
-     * @param $property Same as property.
-     *
-     * @return void
-     */
-    static function setMaxLogStringSize($property)
-    {
-        B::limitAccess('BreakpointDebugging_Option.php');
-        self::$_maxLogStringSize = $property;
-    }
-
-    /**
-     * Gets private property.
-     *
-     * @return Same as property.
-     */
-    static function getMaxLogStringSize()
-    {
-        return self::$_maxLogStringSize;
-    }
-
-    /**
-     * Sets private property. We must invoke extended class method instead of this.
-     *
-     * @param $property Same as property.
-     *
-     * @return void
-     */
-    static function setWorkDir($property)
-    {
-        B::limitAccess('BreakpointDebugging_Option.php');
-        self::$_workDir = $property;
-    }
-
-    /**
-     * Gets private property.
-     *
-     * @return Same as property.
-     */
-    static function getWorkDir()
-    {
-        return self::$_workDir;
-    }
-
-    /**
-     * Gets private property.
-     *
-     * @return Same as property.
-     */
-    function getNotFixedLocations()
-    {
-        return $this->_notFixedLocations;
-    }
-
-    /**
-     * Gets private property.
-     *
-     * @return Same as property.
-     */
-    function getValuesToTrace()
-    {
-        return $this->_valuesToTrace;
-    }
-
-    /**
-     * Sets private property. We must invoke extended class method instead of this.
-     *
-     * @param $property Same as property.
-     *
-     * @return void
-     */
-    static function setIsInternal($property)
-    {
-        B::limitAccess('BreakpointDebugging_Option.php');
-        self::$_isInternal = $property;
-    }
-
-    /**
-     * Gets private property.
-     *
-     * @return Same as property.
-     */
-    static function getIsInternal()
-    {
-        return self::$_isInternal;
-    }
-
-    /**
-     * Constructs instance.
-     */
-    function __construct()
-    {
-        self::$_os = strtoupper(substr(PHP_OS, 0, 3));
+        self::$_xdebugExists = $property;
     }
 
     /**
@@ -467,8 +317,6 @@ abstract class BreakpointDebugging_InAllCase
         }
         $isRegister = true;
 
-        global $_BreakpointDebugging;
-
         $backTrace = debug_backtrace();
         // In case of scope of method or function or included file.
         if (array_key_exists(1, $backTrace)) {
@@ -476,7 +324,8 @@ abstract class BreakpointDebugging_InAllCase
         } else { // In case of scope of start page file.
             $backTrace2['file'] = &$backTrace[0]['file'];
         }
-        $_BreakpointDebugging->_notFixedLocations[] = $backTrace2;
+        self::$_notFixedLocations[] = $backTrace2;
+        self::setStatic('$_notFixedLocations', self::$_notFixedLocations);
     }
 
     /**
@@ -490,8 +339,6 @@ abstract class BreakpointDebugging_InAllCase
      */
     final static function addValuesToTrace($values)
     {
-        global $_BreakpointDebugging;
-
         B::assert(func_num_args() === 1, 1);
         B::assert(is_array($values), 2);
 
@@ -515,8 +362,9 @@ abstract class BreakpointDebugging_InAllCase
         } else { // In case of scope of start page file.
             $backTrace2['file'] = &$backTrace[0]['file'];
         }
-        $_BreakpointDebugging->_valuesToTrace[$file][$line] = $backTrace2;
-        $_BreakpointDebugging->_valuesToTrace[$file][$line]['values'] = $values;
+        self::$_valuesToTrace[$file][$line] = $backTrace2;
+        self::$_valuesToTrace[$file][$line]['values'] = $values;
+        self::setStatic('$_valuesToTrace', self::$_valuesToTrace);
     }
 
     /**
@@ -781,20 +629,14 @@ abstract class BreakpointDebugging_InAllCase
     }
 
     /**
-     * Calls "__destructor()" of other object for debug by keeping "$_BreakpointDebugging".
+     * Debugs by calling "__destructor()" of all object.
      *
      * @return void
      */
     final static function shutdown()
     {
-        global $_BreakpointDebugging;
-
         foreach ($GLOBALS as &$variable) {
             if (is_object($variable)) {
-                // Excludes this object.
-                if ($variable === $_BreakpointDebugging) {
-                    continue;
-                }
                 if (is_callable(array ($variable, '__destruct'))) {
                     // Calls "__destruct" class method.
                     $variable = null;
