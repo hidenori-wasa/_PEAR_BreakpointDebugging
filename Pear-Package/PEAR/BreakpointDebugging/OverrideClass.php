@@ -132,13 +132,12 @@ class BreakpointDebugging_OverrideClass
     /**
      * @var object Native class object.
      */
-    public $pr_pNativeClass;
+    protected $pNativeClass;
 
-    /**
-     * @var array This sends parameters to eval().
-     */
-    static $tmpParams;
-
+//    /**
+//     * @var array This sends parameters to eval().
+//     */
+//    static $tmpParams;
     /**
      * This constructor holds native class object.
      *
@@ -146,9 +145,9 @@ class BreakpointDebugging_OverrideClass
      *
      * @return void
      */
-    function __construct($pNativeClass)
+    protected function __construct($pNativeClass)
     {
-        $this->pr_pNativeClass = $pNativeClass;
+        $this->pNativeClass = $pNativeClass;
     }
 
     /**
@@ -160,8 +159,8 @@ class BreakpointDebugging_OverrideClass
      */
     final function __get($propertyName)
     {
-        B::assert(property_exists($this->pr_pNativeClass, $propertyName), 1);
-        return $this->pr_pNativeClass->$propertyName;
+        B::assert(property_exists($this->pNativeClass, $propertyName), 1);
+        return $this->pNativeClass->$propertyName;
     }
 
     /**
@@ -174,8 +173,8 @@ class BreakpointDebugging_OverrideClass
      */
     final function __set($propertyName, $setValue)
     {
-        B::assert(property_exists($this->pr_pNativeClass, $propertyName), 1);
-        $this->pr_pNativeClass->$propertyName = $setValue;
+        B::assert(property_exists($this->pNativeClass, $propertyName), 1);
+        $this->pNativeClass->$propertyName = $setValue;
     }
 
     /**
@@ -192,7 +191,7 @@ class BreakpointDebugging_OverrideClass
         //          Then, in case of the variable length parameter, method must be changed signature.
         //          For example, How to call MySQLi_STMT::bind_param().
         //              bind_param(array ($format, &$variable1, &$variable2));
-        return call_user_func_array(array ($this->pr_pNativeClass, $methodName), $params);
+        return call_user_func_array(array ($this->pNativeClass, $methodName), $params);
     }
 
     /**
@@ -226,14 +225,17 @@ class BreakpointDebugging_OverrideClass
      * @example $pNativeClass = self::newArray('\class_name', func_get_args());
      *           $pNativeClass = self::newArray('\class_name', array ($object, $resource, &$reference));
      */
-    final static function newArray($className, $params)
+    final protected static function newArray($className, $params)
     {
         B::assert(is_string($className), 1);
 
-        self::$tmpParams = $params;
+        //self::$tmpParams = $params;
+        B::$tmp = $params;
         $paramNumber = count($params);
         $paramString = array ();
-        $propertyNameToSend = 'BreakpointDebugging_OverrideClass::$tmpParams';
+        //$propertyNameToSend = 'BreakpointDebugging_OverrideClass::$tmpParams';
+        $propertyNameToSend = '\BreakpointDebugging::$tmp';
+
         for ($count = 0; $count < $paramNumber; $count++) {
             $paramString[] = $propertyNameToSend . '[' . $count . ']';
         }

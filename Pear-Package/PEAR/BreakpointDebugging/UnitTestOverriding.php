@@ -26,7 +26,7 @@
  * 2. Copyrighters do not take responsibility for this file code.
  *
  * LICENSE:
- * Copyright (c) 2012, Hidenori Wasa
+ * Copyright (c) 2012-2013, Hidenori Wasa
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -89,20 +89,21 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
             $this->numAssertions = 0;
 
             // Backup the $GLOBALS array and static attributes.
-            if ($this->runTestInSeparateProcess !== TRUE &&
-            $this->inIsolation !== TRUE) {
-                if ($this->backupGlobals === NULL ||
-                $this->backupGlobals === TRUE) {
+            if ($this->runTestInSeparateProcess !== TRUE
+                && $this->inIsolation !== TRUE
+            ) {
+                if ($this->backupGlobals === NULL
+                    || $this->backupGlobals === TRUE
+                ) {
                     PHPUnit_Util_GlobalState::backupGlobals(
-                    $this->backupGlobalsBlacklist
+                        $this->backupGlobalsBlacklist
                     );
                 }
 
-                if (version_compare(PHP_VERSION, '5.3', '>') &&
-                $this->backupStaticAttributes === TRUE) {
-                    PHPUnit_Util_GlobalState::backupStaticAttributes(
-                    $this->backupStaticAttributesBlacklist
-                    );
+                if (version_compare(PHP_VERSION, '5.3', '>')
+                    && $this->backupStaticAttributes === TRUE
+                ) {
+                    PHPUnit_Util_GlobalState::backupStaticAttributes($this->backupStaticAttributesBlacklist);
                 }
             }
 
@@ -133,10 +134,10 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
                 $this->status = PHPUnit_Runner_BaseTestRunner::STATUS_SKIPPED;
                 $this->statusMessage = $e->getMessage();
             } catch (PHPUnit_Framework_AssertionFailedError $e) {
-                B::exceptionHandler($e);
+                B::exceptionHandler($e); // Displays error call stack information.
                 exit;
             } catch (Exception $e) {
-                B::exceptionHandler($e);
+                B::exceptionHandler($e); // Displays error call stack information.
                 exit;
             }
 
@@ -144,12 +145,11 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
             // caught and passed on when no exception was raised before.
             try {
                 $this->tearDown();
-
                 if ($this->inIsolation) {
                     $this->tearDownAfterClass();
                 }
             } catch (Exception $_e) {
-                B::exceptionHandler($e);
+                B::exceptionHandler($e); // Displays error call stack information.
                 exit;
             }
 
@@ -167,17 +167,18 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
             clearstatcache();
 
             // Restore the $GLOBALS array and static attributes.
-            if ($this->runTestInSeparateProcess !== TRUE &&
-            $this->inIsolation !== TRUE) {
-                if ($this->backupGlobals === NULL ||
-                $this->backupGlobals === TRUE) {
-                    PHPUnit_Util_GlobalState::restoreGlobals(
-                    $this->backupGlobalsBlacklist
-                    );
+            if ($this->runTestInSeparateProcess !== TRUE
+                && $this->inIsolation !== TRUE
+            ) {
+                if ($this->backupGlobals === NULL
+                    || $this->backupGlobals === TRUE
+                ) {
+                    PHPUnit_Util_GlobalState::restoreGlobals($this->backupGlobalsBlacklist);
                 }
 
-                if (version_compare(PHP_VERSION, '5.3', '>') &&
-                $this->backupStaticAttributes === TRUE) {
+                if (version_compare(PHP_VERSION, '5.3', '>')
+                    && $this->backupStaticAttributes === TRUE
+                ) {
                     PHPUnit_Util_GlobalState::restoreStaticAttributes();
                 }
             }
@@ -241,13 +242,15 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
                 $testResult = $method->invokeArgs($this, array_merge($this->data, $this->dependencyInput));
             } catch (Exception $e) {
                 // If "\PHPUnit_Framework_Assert::markTestIncomplete()" was called, or if "\PHPUnit_Framework_Assert::markTestSkipped()" was called.
-                if ($e instanceof PHPUnit_Framework_IncompleteTest || $e instanceof PHPUnit_Framework_SkippedTest) {
+                if ($e instanceof PHPUnit_Framework_IncompleteTest
+                    || $e instanceof PHPUnit_Framework_SkippedTest
+                ) {
                     throw $e;
                 }
                 // If "@expectedException" annotation is not string.
                 if (!is_string($this->getExpectedException())) {
                     echo '<pre><b>It is error if this test has been not using "@expectedException" annotation, or it requires "@expectedException" annotation.</b></pre>';
-                    B::exceptionHandler($e);
+                    B::exceptionHandler($e); // Displays error call stack information.
                     exit;
                 }
                 // "@expectedException" annotation should be success.
@@ -255,18 +258,20 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
                     $this->assertThat($e, new PHPUnit_Framework_Constraint_Exception($this->getExpectedException()));
                 } catch (Exception $dummy) {
                     echo '<pre><b>Is error, or this test mistook "@expectedException" annotation value.</b></pre>';
-                    B::exceptionHandler($e);
+                    B::exceptionHandler($e); // Displays error call stack information.
                     exit;
                 }
                 // "@expectedExceptionMessage" annotation should be success.
                 try {
                     $expectedExceptionMessage = $this->expectedExceptionMessage;
-                    if (is_string($expectedExceptionMessage) && !empty($expectedExceptionMessage)) {
+                    if (is_string($expectedExceptionMessage)
+                        && !empty($expectedExceptionMessage)
+                    ) {
                         $this->assertThat($e, new PHPUnit_Framework_Constraint_ExceptionMessage($expectedExceptionMessage));
                     }
                 } catch (Exception $dummy) {
                     echo '<pre><b>Is error, or this test mistook "@expectedExceptionMessage" annotation value.</b></pre>';
-                    B::exceptionHandler($e);
+                    B::exceptionHandler($e); // Displays error call stack information.
                     exit;
                 }
                 // "@expectedExceptionCode" annotation should be success.
@@ -276,7 +281,7 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
                     }
                 } catch (Exception $dummy) {
                     echo '<pre><b>Is error, or this test mistook "@expectedExceptionCode" annotation value.</b></pre>';
-                    B::exceptionHandler($e);
+                    B::exceptionHandler($e); // Displays error call stack information.
                     exit;
                 }
                 return;
@@ -290,6 +295,11 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
             return $testResult;
         }
 
+        /**
+         * Sets up initializing which is needed at least in unit test.
+         *
+         * @return void
+         */
         protected function setUp()
         {
             B::setPropertyForTest('\BreakpointDebugging_InAllCase', '$_onceErrorDispFlag', false);
@@ -297,10 +307,10 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
         }
 
         /**
-         * Overrides "\PHPUnit_Framework_Assert::assertTrue()" to display call stack when assertion failed.
+         * Overrides "\PHPUnit_Framework_Assert::assertTrue()" to display error call stack information.
          *
-         * @param  bool   $condition Conditional expression.
-         * @param  string $message   Error message.
+         * @param bool   $condition Conditional expression.
+         * @param string $message   Error message.
          *
          * @return void
          */
@@ -312,15 +322,17 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
             try {
                 parent::assertTrue($condition, $message);
             } catch (\Exception $e) {
-                B::exceptionHandler($e);
+                B::exceptionHandler($e); // Displays error call stack information.
                 exit;
             }
         }
 
         /**
-         * Overrides "\PHPUnit_Framework_Assert::fail()" to display call stack.
+         * Overrides "\PHPUnit_Framework_Assert::fail()" to display error call stack information.
          *
-         * @param  string $message
+         * @param string $message The fail message.
+         *
+         * @return void
          * @throws PHPUnit_Framework_AssertionFailedError
          */
         public static function fail($message = '')
@@ -330,7 +342,7 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
             try {
                 parent::fail($message);
             } catch (\Exception $e) {
-                B::exceptionHandler($e);
+                B::exceptionHandler($e); // Displays error call stack information.
                 exit;
             }
         }
@@ -351,6 +363,11 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
      */
     class BreakpointDebugging_UnitTestOverriding extends \PHPUnit_Framework_TestCase
     {
+        /**
+         * Sets up initializing which is needed at least in unit test.
+         *
+         * @return void
+         */
         protected function setUp()
         {
             B::setPropertyForTest('\BreakpointDebugging_InAllCase', '$_onceErrorDispFlag', false);

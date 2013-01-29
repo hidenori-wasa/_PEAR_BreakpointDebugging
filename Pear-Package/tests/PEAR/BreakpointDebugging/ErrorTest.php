@@ -16,6 +16,7 @@ class BreakpointDebugging_ErrorTest extends \BreakpointDebugging_UnitTestOverrid
 
     function setUp()
     {
+        parent::setUp();
         $errorLogDirectory = B::getStatic('$_workDir') . '/ErrorLog/';
         if (!is_dir($errorLogDirectory)) {
             return;
@@ -115,7 +116,7 @@ class BreakpointDebugging_ErrorTest extends \BreakpointDebugging_UnitTestOverrid
         self::$error = new \BreakpointDebugging_Error();
         function errorHandler()
         {
-            BreakpointDebugging_ErrorTest::$error->errorHandler2(E_USER_ERROR, '', B::$prependErrorLog);
+            BreakpointDebugging_ErrorTest::$error->errorHandler2(E_USER_ERROR, '', B::$prependErrorLog, debug_backtrace());
         }
 
         function trigger_error2()

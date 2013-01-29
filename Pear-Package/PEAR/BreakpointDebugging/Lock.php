@@ -121,6 +121,10 @@ abstract class BreakpointDebugging_Lock
     {
         static $currentClassName = null;
 
+        B::assert(is_int($timeout) && 0 <= $timeout);
+        B::assert(is_int($expire) && 0 <= $expire);
+        B::assert(is_int($sleepMicroSeconds) && 0 <= $sleepMicroSeconds);
+
         if ($isInternal) {
             if (self::$_internalInstance === null) {
                 self::$_internalInstance = new $className($lockFilePath, $timeout, $expire, $sleepMicroSeconds);
@@ -247,7 +251,9 @@ abstract class BreakpointDebugging_Lock
      */
     static function forceUnlocking()
     {
-        B::limitAccess('BreakpointDebugging/Error.php');
+        B::limitAccess(array (
+            'BreakpointDebugging/Error.php',
+            'BreakpointDebugging/Error_Option.php'));
 
         if (is_object(self::$_internalInstance)) {
             while (self::$_internalInstance->lockCount > 0) {

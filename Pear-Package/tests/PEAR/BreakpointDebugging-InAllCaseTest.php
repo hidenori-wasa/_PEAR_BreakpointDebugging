@@ -26,6 +26,33 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
     /**
      * @covers \BreakpointDebugging_InAllCase<extended>
      */
+    function test__construct()
+    {
+        new \BreakpointDebugging();
+    }
+
+    /**
+     * @covers \BreakpointDebugging_InAllCase<extended>
+     */
+    function testSetAndGetStatic()
+    {
+        B::setStatic('$_userName', 'hidenori');
+        $this->assertTrue(B::getStatic('$_userName') === 'hidenori');
+    }
+
+    /**
+     * @covers \BreakpointDebugging_InAllCase<extended>
+     */
+    function testSetAndGetXebugExists()
+    {
+        B::setXebugExists(false);
+        $this->assertTrue(B::getXebugExists() === false);
+        B::setXebugExists(true);
+    }
+
+    /**
+     * @covers \BreakpointDebugging_InAllCase<extended>
+     */
     public function testIniCheck()
     {
         ob_start();
@@ -36,7 +63,21 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
         $this->assertTrue(ob_get_contents() !== '');
         ob_clean();
         B::iniCheck('xdebug.remote_host', array ('Other1', 'Other2'), 'Test message 3.');
-        $this->assertTrue(ob_get_clean() === '');
+        $this->assertTrue(ob_get_contents() === '');
+        ob_clean();
+        B::iniCheck('safe_mode', array ('', 'On'), 'Test message 4.');
+        $this->assertTrue(ob_get_clean() !== '');
+    }
+
+    /**
+     * @covers \BreakpointDebugging_InAllCase<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_InAllCase FUNCTION=iniCheck ID=2
+     */
+    public function testIniCheck_B()
+    {
+        B::iniCheck('safe_mode', array (123), 'Test message.');
     }
 
     /**
@@ -46,6 +87,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
     {
         static $isRegister = false;
 
+        B::registerNotFixedLocation($isRegister);
         B::registerNotFixedLocation($isRegister);
         $notFixedLocations = B::getStatic('$_notFixedLocations');
         $notFixedLocation = $notFixedLocations[count($notFixedLocations) - 1];
@@ -113,7 +155,8 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
         B::mkdir($testDirName, 0700);
         $this->assertTrue(is_dir($testDirName));
         if (B::getStatic('$_os') === 'WIN') {
-            $this->markTestSkipped('Cannot test file permission in case of windows.');
+            //$this->markTestSkipped('Cannot test file permission in case of windows.');
+            return;
         }
         clearstatcache();
         $this->assertTrue(substr(sprintf('%o', fileperms($testDirName)), -4) === '0700');
@@ -132,7 +175,8 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
         fclose($pFile);
         $this->assertTrue(is_file($testFileName));
         if (B::getStatic('$_os') === 'WIN') {
-            $this->markTestSkipped('Cannot test file permission in case of windows.');
+            //$this->markTestSkipped('Cannot test file permission in case of windows.');
+            return;
         }
         clearstatcache();
         $this->assertTrue(substr(sprintf('%o', fileperms($testFileName)), -4) === '0700');

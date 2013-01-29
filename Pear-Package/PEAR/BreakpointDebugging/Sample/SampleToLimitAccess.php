@@ -13,6 +13,7 @@
 use \BreakpointDebugging as B;
 use \TestClass as T;
 
+chdir('../../../');
 require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
 
 B::isUnitTestExeMode(false); // Checks the execution mode.
@@ -88,7 +89,7 @@ abstract class BaseTestClass
      */
     function __set($propertyName, $value)
     {
-        B::limitAccess('SampleToLimitAccess.php');
+        B::limitAccess('BreakpointDebugging/Sample/SampleToLimitAccess.php');
         $this->$propertyName = $value;
     }
 
@@ -114,13 +115,31 @@ abstract class BaseTestClass
      */
     static function setStatic($propertyName, $value)
     {
-        B::limitAccess('SampleToLimitAccess.php');
+        B::limitAccess('BreakpointDebugging/Sample/SampleToLimitAccess.php');
         self::$_staticProperties[$propertyName] = $value;
+    }
+
+    function somthingBase($testValue)
+    {
+        $this->_autoA = $testValue;
+        B::assert($this->_autoA === $testValue);
+        $this->_autoB = $testValue;
+        B::assert($this->_autoB === $testValue);
+        // $this->_notExist = $testValue;
+        // B::assert($this->_notExist === $testValue);
+
+        self::$_staticA = $testValue;
+        B::assert(self::$_staticA === $testValue);
+        self::$_staticB = $testValue;
+        B::assert(self::$_staticB === $testValue);
+        // self::$_notExist = $testValue;
+        // B::assert(self::$_notExist === $testValue);
     }
 
 }
 
 global $_BreakpointDebugging_EXE_MODE;
+// if ($_BreakpointDebugging_EXE_MODE === B::RELEASE) { // Actual "php" code.
 if ($_BreakpointDebugging_EXE_MODE === B::LOCAL_DEBUG_OF_RELEASE) {
     /**
      * Dummy.
@@ -174,18 +193,6 @@ if ($_BreakpointDebugging_EXE_MODE === B::LOCAL_DEBUG_OF_RELEASE) {
         }
 
         /**
-         * Gets a static property value.
-         *
-         * @param string $propertyName Static property name.
-         *
-         * @return mixed Static property value.
-         */
-        static function getStatic($propertyName)
-        {
-            return parent::getStatic($propertyName);
-        }
-
-        /**
          * Sets a static property value.
          *
          * @param string $propertyName Static property name.
@@ -208,6 +215,23 @@ if ($_BreakpointDebugging_EXE_MODE === B::LOCAL_DEBUG_OF_RELEASE) {
             parent::setStatic($propertyName, $value);
         }
 
+        function somthing($testValue)
+        {
+            $this->_autoA = $testValue;
+            B::assert($this->_autoA === $testValue);
+            $this->_autoB = $testValue;
+            B::assert($this->_autoB === $testValue);
+            // $this->_notExist = $testValue;
+            // B::assert($this->_notExist === $testValue);
+
+            T::setStatic('$_staticA', $testValue);
+            B::assert(T::getStatic('$_staticA') === $testValue);
+            T::setStatic('$_staticB', $testValue);
+            B::assert(T::getStatic('$_staticB') === $testValue);
+            // T::setStatic('$_notExist', $testValue);
+            // B::assert(T::getStatic('$_notExist') === $testValue);
+        }
+
     }
 
 }
@@ -221,8 +245,8 @@ foreach ($testValues as $testValue) {
     B::assert($pTestClass->_autoA === $testValue);
     $pTestClass->_autoB = $testValue;
     B::assert($pTestClass->_autoB === $testValue);
-    // $pTestClass->autoC = $testValue;
-    // $pTestClass->autoC;
+    // $pTestClass->_notExist = $testValue;
+    // $pTestClass->_notExist;
 
     T::setStatic('$_staticA', $testValue);
     B::assert(T::getStatic('$_staticA') === $testValue);
@@ -230,8 +254,11 @@ foreach ($testValues as $testValue) {
     T::setStatic('$_staticB', $testValue);
     B::assert(T::getStatic('$_staticB') === $testValue);
     B::assert(T::$_staticB === $testValue);
-    // T::setStatic('$_staticC', $testValue);
-    // T::getStatic('$_staticC');
+    // T::setStatic('$_notExist', $testValue);
+    // T::getStatic('$_notExist');
+
+    $pTestClass->somthingBase($testValue);
+    $pTestClass->somthing($testValue);
 }
 
 echo '<pre>END.</pre>';

@@ -10,7 +10,7 @@
  * 2. Copyrighters do not take responsibility for this file code.
  *
  * LICENSE:
- * Copyright (c) 2012, Hidenori Wasa
+ * Copyright (c) 2012-2013, Hidenori Wasa
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -59,9 +59,9 @@ abstract class BreakpointDebugging_Exception_InAllCase extends \PEAR_Exception
     /**
      * Constructs instance.
      *
-     * @param string $message                Exception message.
-     * @param int    $id                     Exception identification number.
-     * @param object $previous               Previous exception.
+     * @param string $message  Exception message.
+     * @param int    $id       Exception identification number.
+     * @param object $previous Previous exception.
      *
      * @return void
      */
@@ -116,9 +116,14 @@ abstract class BreakpointDebugging_InAllCase
     const UNIT_TEST = 16;
 
     /**
+     * @var mixed Temporary variable.
+     */
+    static $tmp;
+
+    /**
      * @var array Static properties reference.
      */
-    private static $_staticProperties;
+    protected static $staticProperties;
 
     /**
      * @var bool "Xdebug" existing-flag.
@@ -195,17 +200,24 @@ abstract class BreakpointDebugging_InAllCase
      */
     function __construct()
     {
+        B::limitAccess(
+            array (
+                'BreakpointDebugging.php',
+                'BreakpointDebugging_Option.php',
+            )
+        );
+
         self::$_os = strtoupper(substr(PHP_OS, 0, 3));
-        self::$_staticProperties['$_os'] = &self::$_os;
-        self::$_staticProperties['$_userName'] = &self::$_userName;
-        self::$_staticProperties['$_maxLogFileByteSize'] = &self::$_maxLogFileByteSize;
-        self::$_staticProperties['$_maxLogParamNestingLevel'] = &self::$_maxLogParamNestingLevel;
-        self::$_staticProperties['$_maxLogElementNumber'] = &self::$_maxLogElementNumber;
-        self::$_staticProperties['$_maxLogStringSize'] = &self::$_maxLogStringSize;
-        self::$_staticProperties['$_workDir'] = &self::$_workDir;
-        self::$_staticProperties['$_isInternal'] = &self::$_isInternal;
-        self::$_staticProperties['$_valuesToTrace'] = &self::$_valuesToTrace;
-        self::$_staticProperties['$_notFixedLocations'] = &self::$_notFixedLocations;
+        self::$staticProperties['$_os'] = &self::$_os;
+        self::$staticProperties['$_userName'] = &self::$_userName;
+        self::$staticProperties['$_maxLogFileByteSize'] = &self::$_maxLogFileByteSize;
+        self::$staticProperties['$_maxLogParamNestingLevel'] = &self::$_maxLogParamNestingLevel;
+        self::$staticProperties['$_maxLogElementNumber'] = &self::$_maxLogElementNumber;
+        self::$staticProperties['$_maxLogStringSize'] = &self::$_maxLogStringSize;
+        self::$staticProperties['$_workDir'] = &self::$_workDir;
+        self::$staticProperties['$_isInternal'] = &self::$_isInternal;
+        self::$staticProperties['$_valuesToTrace'] = &self::$_valuesToTrace;
+        self::$staticProperties['$_notFixedLocations'] = &self::$_notFixedLocations;
     }
 
     /**
@@ -217,7 +229,7 @@ abstract class BreakpointDebugging_InAllCase
      */
     static function getStatic($propertyName)
     {
-        return self::$_staticProperties[$propertyName];
+        return self::$staticProperties[$propertyName];
     }
 
     /**
@@ -230,8 +242,13 @@ abstract class BreakpointDebugging_InAllCase
      */
     static function setStatic($propertyName, $value)
     {
-        B::limitAccess('BreakpointDebugging_Option.php');
-        self::$_staticProperties[$propertyName] = $value;
+        B::limitAccess(
+            array (
+                'BreakpointDebugging.php',
+                'BreakpointDebugging_Option.php'
+            )
+        );
+        self::$staticProperties[$propertyName] = $value;
     }
 
     /**
@@ -247,13 +264,13 @@ abstract class BreakpointDebugging_InAllCase
     /**
      * Sets private property. We must invoke extended class method instead of this.
      *
-     * @param $property Same as property.
+     * @param bool $value Same as property.
      *
      * @return void
      */
-    static function setXebugExists($property)
+    static function setXebugExists($value)
     {
-        self::$_xdebugExists = $property;
+        self::$_xdebugExists = $value;
     }
 
     /**
@@ -283,9 +300,9 @@ abstract class BreakpointDebugging_InAllCase
                 }
             }
         } else {
-            if (!is_string($cmpValue)) {
-                throw new \BreakpointDebugging_ErrorException('', 3);
-            }
+            //if (!is_string($cmpValue)) {
+            //    throw new \BreakpointDebugging_ErrorException('', 3);
+            //}
             if ($value !== $cmpValue) {
                 $cmpResult = true;
             }
@@ -322,7 +339,9 @@ abstract class BreakpointDebugging_InAllCase
         if (array_key_exists(1, $backTrace)) {
             $backTrace2 = &$backTrace[1];
         } else { // In case of scope of start page file.
+            // @codeCoverageIgnoreStart
             $backTrace2['file'] = &$backTrace[0]['file'];
+            // @codeCoverageIgnoreEnd
         }
         self::$_notFixedLocations[] = $backTrace2;
         self::setStatic('$_notFixedLocations', self::$_notFixedLocations);
@@ -348,19 +367,25 @@ abstract class BreakpointDebugging_InAllCase
             // The file name to call.
             $file = &$callInfo['file'];
         } else {
+            // @codeCoverageIgnoreStart
             return;
+            // @codeCoverageIgnoreEnd
         }
         if (array_key_exists('line', $callInfo)) {
             // The line number to call.
             $line = &$callInfo['line'];
         } else {
+            // @codeCoverageIgnoreStart
             return;
+            // @codeCoverageIgnoreEnd
         }
         // In case of scope of method or function or included file.
         if (array_key_exists(1, $backTrace)) {
             $backTrace2 = &$backTrace[1];
         } else { // In case of scope of start page file.
+            // @codeCoverageIgnoreStart
             $backTrace2['file'] = &$backTrace[0]['file'];
+            // @codeCoverageIgnoreEnd
         }
         self::$_valuesToTrace[$file][$line] = $backTrace2;
         self::$_valuesToTrace[$file][$line]['values'] = $values;
@@ -380,7 +405,9 @@ abstract class BreakpointDebugging_InAllCase
     {
         // Analyzes character sets of character string.
         $charSet = mb_detect_encoding($string);
-        if ($charSet === 'UTF-8' || $charSet === 'ASCII') {
+        if ($charSet === 'UTF-8'
+            || $charSet === 'ASCII'
+        ) {
             return $string;
         } else if ($charSet === false) {
             self::$_onceErrorDispFlag = true;
@@ -461,9 +488,11 @@ abstract class BreakpointDebugging_InAllCase
                 $diff = 0x7D * (int) ($int / 0x7D);
                 $byte = $int - $diff;
                 // Changes end of line character.
-                if ($byte === "\n") { // For data reading by "fgets()" in Windows and Unix.
+                //if ($byte === "\n") { // For data reading by "fgets()" in Windows and Unix.
+                if ($byte === ord("\n")) { // For data reading by "fgets()" in Windows and Unix.
                     $tmpBytes .= chr(0x7E | $delimiter);
-                } else if ($byte === "\r") { // For line feed of Windows.
+                    //} else if ($byte === "\r") { // For line feed of Windows.
+                } else if ($byte === ord("\r")) { // For line feed of Windows.
                     $tmpBytes .= chr(0x7F | $delimiter);
                 } else {
                     $tmpBytes .= chr($byte | $delimiter);
@@ -497,9 +526,11 @@ abstract class BreakpointDebugging_InAllCase
             $tmpByte = $compressByte & 0x7F;
             // Changes to end of line character.
             if ($tmpByte === 0x7E) {
-                $tmpByte = "\n";
+                //$tmpByte = "\n";
+                $tmpByte = ord("\n");
             } else if ($tmpByte === 0x7F) {
-                $tmpByte = "\r";
+                //$tmpByte = "\r";
+                $tmpByte = ord("\r");
             }
             // This changes from 126 number to decimal number.
             $int = $int * 0x7D + $tmpByte;
@@ -545,9 +576,12 @@ abstract class BreakpointDebugging_InAllCase
             $callStack = $pException->getTrace();
             $call = array_key_exists(0, $callStack) ? $callStack[0] : array ();
             if ((array_key_exists('class', $call) && $call['class'] === 'BreakpointDebugging_InAllCase')
-            && (array_key_exists('function', $call) && $call['function'] === 'internal')) { // In case of direct call from "BreakpointDebugging_InAllCase::internal()".
+                && (array_key_exists('function', $call) && $call['function'] === 'internal')
+            ) { // In case of direct call from "BreakpointDebugging_InAllCase::internal()".
                 \PHPUnit_Util_ErrorHandler::handleError($pException->getCode(), $pException->getMessage(), $pException->getFile(), $pException->getLine());
+                // @codeCoverageIgnoreStart
             }
+            // @codeCoverageIgnoreEnd
         }
         // For call stack display.
         if (method_exists('\BreakpointDebugging', 'changeExecutionModeForUnitTest')) {
@@ -578,7 +612,7 @@ abstract class BreakpointDebugging_InAllCase
             $storeExeMode = B::changeExecutionModeForUnitTest();
         }
         $error = new \BreakpointDebugging_Error();
-        $error->errorHandler2($errorNumber, $errorMessage, self::$prependErrorLog);
+        $error->errorHandler2($errorNumber, $errorMessage, self::$prependErrorLog, debug_backtrace());
         if ($storeExeMode & B::UNIT_TEST) {
             $_BreakpointDebugging_EXE_MODE = $storeExeMode;
         }
@@ -598,18 +632,22 @@ abstract class BreakpointDebugging_InAllCase
         global $_BreakpointDebugging_EXE_MODE;
 
         if (self::$_onceErrorDispFlag) {
+            // @codeCoverageIgnoreStart
             return;
+            // @codeCoverageIgnoreEnd
         }
         // Is internal method.
         self::$_isInternal = true;
         self::$_onceErrorDispFlag = true;
         self::exceptionHandler(new \BreakpointDebugging_ErrorException($message, $id, null, 2));
+        // @codeCoverageIgnoreStart
         if ($_BreakpointDebugging_EXE_MODE & self::REMOTE_DEBUG) { // In case of remote debug.
             // Remote debug must end immediately to avoid eternal execution.
             exit;
         }
     }
 
+    // @codeCoverageIgnoreEnd
     /**
      * Calls exception handler inside global error handling or global exception handling. (For this package developer).
      *
@@ -621,13 +659,18 @@ abstract class BreakpointDebugging_InAllCase
      */
     final static function internalException($message, $id)
     {
-        B::limitAccess(array (
-            'BreakpointDebugging/Error.php',
-            'BreakpointDebugging/LockByFileExisting.php'));
+        B::limitAccess(
+            array (
+                'BreakpointDebugging/Error.php',
+                'BreakpointDebugging/LockByFileExisting.php'
+            )
+        );
 
         self::internal($message, $id);
+        // @codeCoverageIgnoreStart
     }
 
+    // @codeCoverageIgnoreEnd
     /**
      * Debugs by calling "__destructor()" of all object.
      *
@@ -651,7 +694,7 @@ global $_BreakpointDebugging_EXE_MODE;
 
 if ($_BreakpointDebugging_EXE_MODE === BreakpointDebugging_InAllCase::RELEASE) { // In case of release.
     /**
-     * Own package exception.
+     * Dummy class for release.
      *
      * @category PHP
      * @package  BreakpointDebugging
@@ -666,7 +709,7 @@ if ($_BreakpointDebugging_EXE_MODE === BreakpointDebugging_InAllCase::RELEASE) {
     }
 
     /**
-     * This class executes error or exception handling, and it is only in case of release mode.
+     * The class for release.
      *
      * @category PHP
      * @package  BreakpointDebugging
@@ -674,6 +717,7 @@ if ($_BreakpointDebugging_EXE_MODE === BreakpointDebugging_InAllCase::RELEASE) {
      * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
      * @version  Release: @package_version@
      * @link     http://pear.php.net/package/BreakpointDebugging
+     * @codeCoverageIgnore
      */
     final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
     {

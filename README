@@ -37,5 +37,4 @@ How to sniff my code.
 Notice
     "Pear-Package" directory is project directory of "NetBeans IDE 7.1.2 for Windows".
 
-    I have been limiting access of class properties and class methods.
     I have been coding the files of unit test with code coverage report.
