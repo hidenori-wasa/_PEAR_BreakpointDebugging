@@ -6,6 +6,10 @@
             <line>71</line>
         </file>
         <file>
+            <url>tests/PEAR/BreakpointDebugging/ErrorTest.php</url>
+            <line>90</line>
+        </file>
+        <file>
             <url>PEAR/Validate/MySQLi.php</url>
             <line>389</line>
         </file>
@@ -31,17 +35,12 @@
             <line>195</line>
         </file>
         <file>
-            <url>PEAR/BreakpointDebugging/LockByMkdir.php</url>
-            <line>207</line>
-        </file>
-        <file>
-            <url>tests/PEAR/BreakpointDebuggingTest.php</url>
-            <line>10</line>
-            <line>188</line>
-        </file>
-        <file>
             <url>DownloadErrorLogFiles.php</url>
             <line>54</line>
+        </file>
+        <file>
+            <url>PEAR/BreakpointDebugging/LockByMkdir.php</url>
+            <line>207</line>
         </file>
         <file>
             <url>PEAR/BreakpointDebugging/LockByShmop_Bug.php</url>

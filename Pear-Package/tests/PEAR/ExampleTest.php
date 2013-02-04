@@ -9,7 +9,7 @@ B::isUnitTestExeMode(true);
 class ExampleTest extends \BreakpointDebugging_UnitTestOverriding
 {
     /**
-     * @expectedException        PHPUnit_Framework_Error
+     * @expectedException        BreakpointDebugging_ErrorException
      * @expectedExceptionMessage CLASS=ExampleTest FUNCTION=_something ID=123
      * @expectedExceptionCode    123
      */

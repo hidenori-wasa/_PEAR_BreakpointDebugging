@@ -32,43 +32,805 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
 {
     /**
      * @covers \BreakpointDebugging<extended>
+     */
+    function test__constructThen__destruct()
+    {
+        global $_BreakpointDebugging_EXE_MODE;
+
+        $breakpointDebugging = new \BreakpointDebugging();
+        // Calls "__destruct()".
+        $breakpointDebugging = null;
+
+        $breakpointDebugging = new \BreakpointDebugging();
+        $storeExeMode = $_BreakpointDebugging_EXE_MODE;
+        $_BreakpointDebugging_EXE_MODE = B::REMOTE_DEBUG;
+        // Calls "__destruct()".
+        $breakpointDebugging = null;
+        $_BreakpointDebugging_EXE_MODE = $storeExeMode;
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
      *
-     * @expectedException        \PHPUnit_Framework_Error
-     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=breakpoint ID=1
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=__construct
+     */
+    function test__construct()
+    {
+        $breakpointDebugging = new \BreakpointDebugging('notExist');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     */
+    function testGetAndSetStatic()
+    {
+        $_userName = B::getStatic('$_userName');
+        $this->assertTrue($_userName !== 'hidenori');
+        B::setStatic('$_userName', 'hidenori');
+        $this->assertTrue(B::getStatic('$_userName') === 'hidenori');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \PHPUnit_Framework_Error_Warning
+     * @expectedExceptionMessage Missing argument 1 for BreakpointDebugging::getStatic()
+     */
+    function testGetStatic_A()
+    {
+        B::getStatic();
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=getStatic ID=1
+     */
+    function testGetStatic_B()
+    {
+        B::getStatic('dummy', 'notExitst');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \PHPUnit_Framework_Error_Warning
+     * @expectedExceptionMessage Missing argument 2 for BreakpointDebugging::setStatic()
+     */
+    function testSetStatic_A()
+    {
+        B::setStatic('dummy');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=setStatic ID=1
+     */
+    function testSetStatic_B()
+    {
+        B::setStatic('$_userName', 'dummy', 'notExitst');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \PHPUnit_Framework_Error_Notice
+     * @expectedExceptionMessage Undefined index: 123>limits
+     */
+    function testSetStatic_C()
+    {
+        B::setStatic(123, 'dummy');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     */
+    function testGetXebugExists_A()
+    {
+        B::getXebugExists();
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=getXebugExists
+     */
+    function testGetXebugExists_B()
+    {
+        B::getXebugExists('notExist');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     */
+    function testSetXebugExists_A()
+    {
+        B::setXebugExists(false);
+        B::setXebugExists(true);
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \PHPUnit_Framework_Error_Warning
+     * @expectedExceptionMessage Missing argument 1 for BreakpointDebugging::setXebugExists()
+     */
+    function testSetXebugExists_B()
+    {
+        B::setXebugExists();
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=setXebugExists ID=1
+     */
+    function testSetXebugExists_C()
+    {
+        B::setXebugExists('dummy', 'notExist');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=setXebugExists ID=2
+     */
+    function testSetXebugExists_D()
+    {
+        B::setXebugExists('incorrectType');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     */
+    function testIniCheck_A()
+    {
+        B::iniCheck('safe_mode', '', '');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \PHPUnit_Framework_Error_Warning
+     * @expectedExceptionMessage Missing argument 3 for BreakpointDebugging::iniCheck()
+     */
+    function testIniCheck_B()
+    {
+        B::iniCheck('dummy', 'dummy');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=iniCheck ID=1
+     */
+    function testIniCheck_C()
+    {
+        B::iniCheck('dummy', 'dummy', 'dummy', 'notExist');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=iniCheck ID=2
+     */
+    function testIniCheck_D()
+    {
+        B::iniCheck(123, 'dummy', 'dummy');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=iniCheck ID=3
+     */
+    function testIniCheck_E()
+    {
+        B::iniCheck('dummy', 123, 'dummy');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=iniCheck ID=4
+     */
+    function testIniCheck_F()
+    {
+        B::iniCheck('dummy', 'dummy', 123);
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     */
+    function testConvertMbString_A()
+    {
+        B::convertMbString('A character string.');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \PHPUnit_Framework_Error_Warning
+     * @expectedExceptionMessage Missing argument 1 for BreakpointDebugging::convertMbString()
+     */
+    function testConvertMbString_B()
+    {
+        B::convertMbString();
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=convertMbString ID=1
+     */
+    function testConvertMbString_C()
+    {
+        B::convertMbString('dummy', 'notExist');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=convertMbString ID=2
+     */
+    function testConvertMbString_D()
+    {
+        B::convertMbString(123);
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     */
+    function testMkdir_A()
+    {
+        $testDir = B::getStatic('$_workDir') . '/TestMkDir';
+        if (is_dir($testDir)) {
+            rmdir($testDir);
+        }
+        B::mkdir($testDir);
+        rmdir($testDir);
+        B::mkdir($testDir, 0700);
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \PHPUnit_Framework_Error_Warning
+     * @expectedExceptionMessage Missing argument 1 for BreakpointDebugging::mkdir()
+     */
+    function testMkdir_B()
+    {
+        B::mkdir();
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=mkdir ID=1
+     */
+    function testMkdir_C()
+    {
+        B::mkdir('dummy', 'dummy', 'notExist');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=mkdir ID=2
+     */
+    function testMkdir_D()
+    {
+        B::mkdir(123);
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=mkdir ID=3
+     */
+    function testMkdir_E()
+    {
+        B::mkdir('dummy', 'incorrectType');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     */
+    function testFopen_A()
+    {
+        $testFileName = B::getStatic('$_workDir') . '/TestFile.txt';
+        $pFile = B::fopen($testFileName, 'wb', 0700);
+        fclose($pFile);
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \PHPUnit_Framework_Error_Warning
+     * @expectedExceptionMessage Missing argument 3 for BreakpointDebugging::fopen()
+     */
+    function testFopen_B()
+    {
+        B::fopen('dummy', 'dummy');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=fopen ID=1
+     */
+    function testFopen_C()
+    {
+        B::fopen('dummy', 'dummy', 'dummy', 'notExist');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=fopen ID=2
+     */
+    function testFopen_D()
+    {
+        B::fopen(123, 'dummy', 'dummy');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=fopen ID=3
+     */
+    function testFopen_E()
+    {
+        B::fopen('dummy', 123, 'dummy');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=fopen ID=4
+     */
+    function testFopen_F()
+    {
+        B::fopen('dummy', 'dummy', 'incorrectType');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=fopen ID=4
+     */
+    function testFopen_G()
+    {
+        B::fopen('dummy', 'dummy', -1);
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=fopen ID=4
+     */
+    function testFopen_H()
+    {
+        B::fopen('dummy', 'dummy', 01000);
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     */
+    function testCompressIntArray_A()
+    {
+        B::compressIntArray(array (1, 2));
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \PHPUnit_Framework_Error_Warning
+     * @expectedExceptionMessage Missing argument 1 for BreakpointDebugging::compressIntArray()
+     */
+    function testCompressIntArray_B()
+    {
+        B::compressIntArray();
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=compressIntArray ID=1
+     */
+    function testCompressIntArray_C()
+    {
+        B::compressIntArray('dummy', 'notExist');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=compressIntArray ID=2
+     */
+    function testCompressIntArray_D()
+    {
+        B::compressIntArray('incorrectType');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     */
+    function testDecompressIntArray_A()
+    {
+        B::decompressIntArray(false);
+        B::decompressIntArray('A character string.');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \PHPUnit_Framework_Error_Warning
+     * @expectedExceptionMessage Missing argument 1 for BreakpointDebugging::decompressIntArray()
+     */
+    function testDecompressIntArray_B()
+    {
+        B::decompressIntArray();
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=decompressIntArray ID=1
+     */
+    function testDecompressIntArray_C()
+    {
+        B::decompressIntArray('dummy', 'notExist');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=decompressIntArray ID=2
+     */
+    function testDecompressIntArray_D()
+    {
+        B::decompressIntArray(123);
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     */
+    function testExceptionHandler_A()
+    {
+        ob_start();
+        B::exceptionHandler(new \Exception());
+        ob_end_clean();
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \PHPUnit_Framework_Error_Warning
+     * @expectedExceptionMessage Missing argument 1 for BreakpointDebugging::exceptionHandler()
+     */
+    function testExceptionHandler_B()
+    {
+        B::exceptionHandler();
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=exceptionHandler ID=1
+     */
+    function testExceptionHandler_C()
+    {
+        B::exceptionHandler('dummy', 'notExist');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=exceptionHandler ID=2
+     */
+    function testExceptionHandler_D()
+    {
+        B::exceptionHandler('incorrectType');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     */
+    function testErrorHandler_A()
+    {
+        ob_start();
+        B::errorHandler(E_USER_ERROR, 'dummy');
+        ob_end_clean();
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \PHPUnit_Framework_Error_Warning
+     * @expectedExceptionMessage Missing argument 2 for BreakpointDebugging::errorHandler()
+     */
+    function testErrorHandler_B()
+    {
+        B::errorHandler('dummy');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=errorHandler ID=1
+     */
+    function testErrorHandler_C()
+    {
+        B::errorHandler('dummy', 'dummy', 'notExitst');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=errorHandler ID=2
+     */
+    function testErrorHandler_D()
+    {
+        B::errorHandler('incorrectType', 'dummy');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=errorHandler ID=3
+     */
+    function testErrorHandler_E()
+    {
+        B::errorHandler(123, 123);
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
      */
     public function testBreakpoint_A()
     {
-        B::breakpoint('dummy', 'dummy', 'dummy');
+        B::breakpoint('dummy', array ());
     }
 
     /**
      * @covers \BreakpointDebugging<extended>
      *
-     * @expectedException        \PHPUnit_Framework_Error
-     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=breakpoint ID=2
+     * @expectedException        \PHPUnit_Framework_Error_Warning
+     * @expectedExceptionMessage Missing argument 2 for BreakpointDebugging::breakpoint()
      */
     public function testBreakpoint_B()
     {
-        B::breakpoint(1, array ());
+        B::breakpoint('dummy');
     }
 
     /**
      * @covers \BreakpointDebugging<extended>
      *
-     * @expectedException        \PHPUnit_Framework_Error
-     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=breakpoint ID=3
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=breakpoint ID=1
      */
     public function testBreakpoint_C()
     {
-        B::breakpoint('', 1);
+        B::breakpoint('dummy', 'dummy', 'notExist');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=breakpoint ID=2
+     */
+    public function testBreakpoint_D()
+    {
+        B::breakpoint(123, array ());
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=breakpoint ID=3
+     */
+    public function testBreakpoint_E()
+    {
+        B::breakpoint('dummy', 123);
+    }
+
+    function limitAccess_A1()
+    {
+        B::limitAccess('tests/PEAR/BreakpointDebuggingTest.php');
+    }
+
+    function limitAccess_A2()
+    {
+        B::limitAccess('tests/PEAR/BreakpointDebuggingTest.php', true);
+    }
+
+    function limitAccess_A3()
+    {
+        $includePaths = B::getStatic('$_includePaths');
+        B::setStatic('$_includePaths', null);
+        B::limitAccess('tests/PEAR/BreakpointDebuggingTest.php');
+        B::setStatic('$_includePaths', $includePaths);
+    }
+
+    function limitAccess_A4()
+    {
+        $includePaths = B::getStatic('$_includePaths');
+        B::setStatic('$_includePaths', null);
+        B::limitAccess('tests/PEAR/BreakpointDebuggingTest.php', true);
+        B::setStatic('$_includePaths', $includePaths);
     }
 
     /**
      * @covers \BreakpointDebugging<extended>
      */
-    public function testBreakpoint_D()
+    function testLimitAccess_A()
     {
-        B::breakpoint('', array ());
+        $this->limitAccess_A1();
+        $this->limitAccess_A2();
+        $this->limitAccess_A3();
+        $this->limitAccess_A4();
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \PHPUnit_Framework_Error_Warning
+     * @expectedExceptionMessage Missing argument 1 for BreakpointDebugging::limitAccess()
+     */
+    function testLimitAccess_B()
+    {
+        B::limitAccess();
+    }
+
+    function limitAccess_C()
+    {
+        B::limitAccess('dummy', 'dummy', 'notExist');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=limitAccess ID=1
+     */
+    function testLimitAccess_C()
+    {
+        $this->limitAccess_C();
+    }
+
+    function limitAccess_D()
+    {
+        B::limitAccess(123, 'dummy');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=limitAccess ID=2
+     */
+    function testLimitAccess_D()
+    {
+        $this->limitAccess_D();
+    }
+
+    function limitAccess_E()
+    {
+        B::limitAccess('dummy', 'incorrectType');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=limitAccess ID=3
+     */
+    function testLimitAccess_E()
+    {
+        $this->limitAccess_E();
+    }
+
+    function limitAccess_F()
+    {
+        B::limitAccess('NotExistPath', true);
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebuggingTest FUNCTION=limitAccess_F ID=4
+     */
+    function testLimitAccess_F()
+    {
+        $this->limitAccess_F();
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     */
+    public function testAssert_A()
+    {
+        B::assert(true);
+        B::assert(true, 123);
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \PHPUnit_Framework_Error_Warning
+     * @expectedExceptionMessage Missing argument 1 for BreakpointDebugging::assert()
+     */
+    public function testAssert_B()
+    {
+        B::assert();
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebuggingTest FUNCTION=testAssert_C ID=1
+     */
+    public function testAssert_C()
+    {
+        B::assert('dummy', 'dummy', 'notExist');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebuggingTest FUNCTION=testAssert_D ID=2
+     */
+    public function testAssert_D()
+    {
+        B::assert('incorrectType');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebuggingTest FUNCTION=testAssert_E ID=3
+     */
+    public function testAssert_E()
+    {
+        B::assert(true, 'incorrectType');
     }
 
     /**
@@ -76,10 +838,76 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
      */
     public function testConvertMbStringForDebug()
     {
+        global $_BreakpointDebugging_EXE_MODE;
+
         $testArray = array (2, "\xE6\x96\x87\xE5\xAD\x97 ");
         $debugValues = B::convertMbStringForDebug('SJIS', 1, $testArray, "\xE6\x96\x87\xE5\xAD\x97 ");
         $cmpArray = array (1, array (2, "\x95\xB6\x8E\x9A "), "\x95\xB6\x8E\x9A ");
         $this->assertTrue($debugValues === $cmpArray);
+
+        $storeExeMode = $_BreakpointDebugging_EXE_MODE;
+        $_BreakpointDebugging_EXE_MODE = B::REMOTE_DEBUG | B::UNIT_TEST;
+        B::convertMbStringForDebug('SJIS', 1, $testArray, "\xE6\x96\x87\xE5\xAD\x97 ");
+        $_BreakpointDebugging_EXE_MODE = $storeExeMode;
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     */
+    public function testIniSet_A()
+    {
+        global $_BreakpointDebugging_EXE_MODE;
+
+        B::iniSet('default_charset', 'sjis');
+        B::iniSet('default_charset', 'sjis');
+        $storeExeMode = $_BreakpointDebugging_EXE_MODE;
+        $_BreakpointDebugging_EXE_MODE = B::REMOTE_DEBUG | B::UNIT_TEST;
+        B::iniSet('default_charset', 'utf8');
+        $_BreakpointDebugging_EXE_MODE = $storeExeMode;
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \PHPUnit_Framework_Error_Warning
+     * @expectedExceptionMessage Missing argument 2 for BreakpointDebugging::iniSet()
+     */
+    public function testIniSet_B()
+    {
+        B::iniSet('dummy');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=iniSet ID=1
+     */
+    public function testIniSet_C()
+    {
+        B::iniSet('dummy', 'dummy', 'dummy', 'notExist');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=iniSet ID=2
+     */
+    public function testIniSet_D()
+    {
+        B::iniSet('error_log', 'dummy');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=iniSet ID=3
+     */
+    public function testIniSet_E()
+    {
+        B::iniSet(123, 'dummy');
     }
 
     /**
@@ -88,22 +916,42 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
      * @expectedException        \BreakpointDebugging_ErrorException
      * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=iniSet ID=4
      */
-    public function testIniSet_A()
+    public function testIniSet_F()
     {
-        // First parameter does not exist.
-        B::iniSet('not_exist', 'true');
+        B::iniSet('dummy', 123);
     }
 
     /**
      * @covers \BreakpointDebugging<extended>
      *
-     * @expectedException        \PHPUnit_Framework_Error
-     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=iniSet ID=3
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=iniSet ID=5
      */
-    public function testIniSet_B()
+    public function testIniSet_G()
     {
-        // Second parameter is not character string.
-        B::iniSet('default_charset', 8);
+        B::iniSet('dummy', 'dummy', 'incorrectType');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=iniSet ID=6
+     */
+    public function testIniSet_H()
+    {
+        B::iniSet('doc_root', 'dummy');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=iniSet ID=6
+     */
+    public function testIniSet_I()
+    {
+        B::iniSet('not_exist', 'true');
     }
 
     /**
@@ -115,16 +963,83 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
 
         $this->assertTrue(B::getPropertyForTest('BreakpointDebuggingTestExample', 'CONSTANT_TEST') === 123); // Constant property.
         $this->assertTrue(B::getPropertyForTest('BreakpointDebuggingTestExample', '$privateStatic') === 'private static'); // Private static property.
+        $this->assertTrue(B::getPropertyForTest($pBreakpointDebuggingTestExample, '$privateStatic') === 'private static'); // Private static property.
         $this->assertTrue(B::getPropertyForTest($pBreakpointDebuggingTestExample, '$privateAuto') === 'private auto'); // Private auto property.
     }
 
     /**
      * @covers \BreakpointDebugging<extended>
      *
-     * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=getPropertyForTest
+     * @expectedException        \PHPUnit_Framework_Error_Warning
+     * @expectedExceptionMessage Missing argument 2 for BreakpointDebugging::getPropertyForTest()
      */
     public function testGetPropertyForTest_B()
+    {
+        B::getPropertyForTest('dummy');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=getPropertyForTest ID=1
+     */
+    public function testGetPropertyForTest_C()
+    {
+        B::getPropertyForTest('dummy', 'dummy', 'notExist');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=getPropertyForTest ID=2
+     */
+    public function testGetPropertyForTest_D()
+    {
+        B::getPropertyForTest('dummy', 123);
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=getPropertyForTest ID=3
+     */
+    public function testGetPropertyForTest_E()
+    {
+        B::getPropertyForTest(123, 'dummy');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \PHPUnit_Framework_Error_Warning
+     * @expectedExceptionMessage failed to open stream: No such file or directory
+     */
+    public function testGetPropertyForTest_F()
+    {
+        B::getPropertyForTest('notExistClassName', 'dummy');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=getPropertyForTest ID=4
+     */
+    public function testGetPropertyForTest_G()
+    {
+        B::getPropertyForTest('BreakpointDebuggingTestExample', 'notExistPropertyName');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=getPropertyForTest ID=4
+     */
+    public function testGetPropertyForTest_H()
     {
         B::getPropertyForTest('BreakpointDebuggingTestExample', '$privateStaticBase'); // Private static property of base class.
     }
@@ -135,7 +1050,7 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
      * @expectedException        \BreakpointDebugging_ErrorException
      * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=getPropertyForTest
      */
-    public function testGetPropertyForTest_C()
+    public function testGetPropertyForTest_I()
     {
         $pBreakpointDebuggingTestExample = new \BreakpointDebuggingTestExample();
 
@@ -166,10 +1081,54 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
     /**
      * @covers \BreakpointDebugging<extended>
      *
-     * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=setPropertyForTest
+     * @expectedException        \PHPUnit_Framework_Error_Warning
+     * @expectedExceptionMessage Missing argument 3 for BreakpointDebugging::setPropertyForTest()
      */
-    public function testSetPropertyForTest_B()
+    function testSetPropertyForTest_B()
+    {
+        B::setPropertyForTest('dummy', 'dummy');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=setPropertyForTest ID=1
+     */
+    function testSetPropertyForTest_C()
+    {
+        B::setPropertyForTest('dummy', 'dummy', 'dummy', 'notExist');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=setPropertyForTest ID=2
+     */
+    function testSetPropertyForTest_D()
+    {
+        B::setPropertyForTest('dummy', 123, 'dummy');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=setPropertyForTest ID=3
+     */
+    function testSetPropertyForTest_E()
+    {
+        B::setPropertyForTest(123, 'dummy', 'dummy');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=setPropertyForTest ID=4
+     */
+    function testSetPropertyForTest_F()
     {
         $pBreakpointDebuggingTestExample = new \BreakpointDebuggingTestExample();
 
@@ -180,9 +1139,9 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
      * @covers \BreakpointDebugging<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=setPropertyForTest
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=setPropertyForTest ID=4
      */
-    public function testSetPropertyForTest_C()
+    public function testSetPropertyForTest_G()
     {
         $pBreakpointDebuggingTestExample = new \BreakpointDebuggingTestExample();
 
@@ -191,25 +1150,72 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
 
     /**
      * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=setPropertyForTest ID=4
      */
-    public function testCheckUnitTestExeMode()
+    public function testSetPropertyForTest_H()
     {
-        B::isUnitTestExeMode(true);
+        $pBreakpointDebuggingTestExample = new \BreakpointDebuggingTestExample();
+
+        B::setPropertyForTest($pBreakpointDebuggingTestExample, '$notExistPropertyName', 'change');
     }
 
     /**
      * @covers \BreakpointDebugging<extended>
      */
-    public function testDisplayVerification()
+    public function testIsUnitTestExeMode_A()
     {
-        $mandate = "January 01 2000";
-        ob_start();
-        $return = B::displayVerification('sscanf', array ($mandate, "%s %d %d", &$month, &$day, &$year));
-        $this->assertTrue($return === 3);
-        $this->assertTrue($month === 'January');
-        $this->assertTrue($day === 1);
-        $this->assertTrue($year === 2000);
-        $this->assertTrue(ob_get_clean() !== '');
+        global $_BreakpointDebugging_EXE_MODE;
+
+        B::isUnitTestExeMode(true);
+
+        if (!array_key_exists('SERVER_ADDR', $_SERVER)) {
+            $storeServer = null;
+        } else {
+            $storeServer = $_SERVER['SERVER_ADDR'];
+        }
+        $_SERVER['SERVER_ADDR'] = '127.0.0.2';
+
+        $storeExeMode = $_BreakpointDebugging_EXE_MODE;
+        $_BreakpointDebugging_EXE_MODE = B::REMOTE_DEBUG | B::UNIT_TEST;
+        B::isUnitTestExeMode(true);
+        $_BreakpointDebugging_EXE_MODE = $storeExeMode;
+
+        $_SERVER['SERVER_ADDR'] = $storeServer;
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \PHPUnit_Framework_Error_Warning
+     * @expectedExceptionMessage Missing argument 1 for BreakpointDebugging::isUnitTestExeMode()
+     */
+    public function testIsUnitTestExeMode_B()
+    {
+        B::isUnitTestExeMode();
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=isUnitTestExeMode ID=1
+     */
+    public function testIsUnitTestExeMode_C()
+    {
+        B::isUnitTestExeMode('dummy', 'notExist');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=isUnitTestExeMode ID=2
+     */
+    public function testIsUnitTestExeMode_D()
+    {
+        B::isUnitTestExeMode('incorrectType');
     }
 
     /**
@@ -223,7 +1229,12 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
             '--stop-on-failure --strict ExampleTest.php',
             '--stop-on-failure --strict ExampleTest.php',
         );
-        // Executes unit tests.
+        B::executeUnitTest($testFileNames);
+
+        $testFileNames = array (
+            '--stop-on-failure --strict Example_Test.php',
+            '--stop-on-failure --strict Example_Test.php',
+        );
         B::executeUnitTest($testFileNames);
 
         ob_clean();
@@ -232,34 +1243,174 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
     /**
      * @covers \BreakpointDebugging<extended>
      *
-     * @expectedException        \PHPUnit_Framework_Error
-     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=executeUnitTest ID=1
+     * @expectedException        \PHPUnit_Framework_Error_Warning
+     * @expectedExceptionMessage Missing argument 1 for BreakpointDebugging::executeUnitTest()
      */
     public function testExecuteUnitTest_B()
     {
-        B::executeUnitTest(1);
+        B::executeUnitTest();
     }
 
     /**
      * @covers \BreakpointDebugging<extended>
      *
-     * @expectedException        \PHPUnit_Framework_Error
-     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=executeUnitTest ID=4
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=executeUnitTest ID=1
      */
     public function testExecuteUnitTest_C()
+    {
+        B::executeUnitTest('dummy', 'notExist');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=executeUnitTest ID=2
+     */
+    public function testExecuteUnitTest_D()
+    {
+        B::executeUnitTest('incorrectType');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=executeUnitTest ID=3
+     */
+    public function testExecuteUnitTest_E()
     {
         B::executeUnitTest(array ());
     }
 
     /**
      * @covers \BreakpointDebugging<extended>
-     *
-     * @expectedException        \PHPUnit_Framework_Error
-     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=executeUnitTest ID=3
      */
-    public function testExecuteUnitTest_D()
+    public function testExecuteUnitTest_F()
     {
-        B::executeUnitTest('dummy', 'dummy');
+        $testFileNames = array (
+            '--stop-on-failure --strict NotExistTest.php',
+            '--stop-on-failure --strict NotExistTest.php',
+        );
+        ob_start();
+        // Executes unit tests.
+        B::executeUnitTest($testFileNames);
+        ob_end_clean();
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     */
+    public function testDisplayCodeCoverageReport_A()
+    {
+        ob_start();
+        B::displayCodeCoverageReport('BreakpointDebugging/OverrideClassTest.php', 'PEAR/BreakpointDebugging/OverrideClass.php');
+        B::displayCodeCoverageReport('BreakpointDebugging/OverrideClassTest.php', array ('PEAR/BreakpointDebugging/OverrideClass.php'));
+        ob_end_clean();
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \PHPUnit_Framework_Error_Warning
+     * @expectedExceptionMessage Missing argument 2 for BreakpointDebugging::displayCodeCoverageReport()
+     */
+    public function testDisplayCodeCoverageReport_B()
+    {
+        B::displayCodeCoverageReport('dummy');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=displayCodeCoverageReport ID=1
+     */
+    public function testDisplayCodeCoverageReport_C()
+    {
+        B::displayCodeCoverageReport('dummy', 'dummy', 'notExist');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=displayCodeCoverageReport ID=2
+     */
+    public function testDisplayCodeCoverageReport_D()
+    {
+        B::displayCodeCoverageReport(123, 'dummy');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=displayCodeCoverageReport ID=3
+     */
+    public function testDisplayCodeCoverageReport_E()
+    {
+        B::displayCodeCoverageReport('dummy', 123);
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     */
+    public function testDisplayVerification_A()
+    {
+        $mandate = "January 01 2000";
+        ob_start();
+        $return = B::displayVerification('sscanf', array ($mandate, "%s %d %d", &$month, &$day, &$year));
+        $this->assertTrue($return === 3);
+        $this->assertTrue($month === 'January');
+        $this->assertTrue($day === 1);
+        $this->assertTrue($year === 2000);
+        $this->assertTrue(ob_get_clean() !== '');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \PHPUnit_Framework_Error_Warning
+     * @expectedExceptionMessage Missing argument 2 for BreakpointDebugging::displayVerification()
+     */
+    public function testDisplayVerification_B()
+    {
+        B::displayVerification('dummy');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=displayVerification ID=1
+     */
+    public function testDisplayVerification_C()
+    {
+        B::displayVerification('dummy', 'dummy', 'notExist');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=displayVerification ID=2
+     */
+    public function testDisplayVerification_D()
+    {
+        B::displayVerification(123, 'dummy');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=displayVerification ID=3
+     */
+    public function testDisplayVerification_E()
+    {
+        B::displayVerification('dummy', 'incorrectType');
     }
 
 }

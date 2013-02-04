@@ -166,15 +166,15 @@ class BreakpointDebugging_Exception extends \BreakpointDebugging_Exception_InAll
     {
         global $_BreakpointDebugging_EXE_MODE;
 
-        B::internalAssert(func_num_args() <= 4, 1);
-        B::internalAssert(is_string($message), 2);
-        B::internalAssert(is_int($id) || $id === null, 3);
-        B::internalAssert($previous instanceof \Exception || $previous === null, 5);
-        B::internalAssert(mb_detect_encoding($message, 'utf8', true) !== false, 6);
+        B::assert(func_num_args() <= 4, 1);
+        B::assert(is_string($message), 2);
+        B::assert(is_int($id) || $id === null, 3);
+        B::assert($previous instanceof \Exception || $previous === null, 5);
+        B::assert(mb_detect_encoding($message, 'utf8', true) !== false, 6);
 
         // Adds "[[[CLASS=<class name>] FUNCTION=<function name>] ID=<identification number>]" to message in case of unit test.
         if ($_BreakpointDebugging_EXE_MODE & B::UNIT_TEST) {
-            B::internalAssert(is_int($omissionCallStackLevel) && $omissionCallStackLevel >= 0, 7);
+            B::assert(is_int($omissionCallStackLevel) && $omissionCallStackLevel >= 0, 7);
 
             if ($id === null) {
                 $idString = '';
@@ -217,23 +217,29 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      */
     private static $_onceFlag;
 
-//    /**
-//     * @var mixed Temporary variable.
-//     */
-//    //public static $tmp;
-//    static $tmp;
-
     /**
      * @var string Browser execution pass.
      */
     private static $_browserPass = 'C:\Program Files\Mozilla Firefox\firefox.exe';
 
     /**
-     * Initializes static properties.
+     * @var string Include-paths.
+     */
+    private static $_includePaths;
+
+    /**
+     * Limits static properties accessing.
      */
     function __construct()
     {
+        B::limitAccess('BreakpointDebugging.php');
+
+        B::assert(func_num_args() === 0);
+
         parent::__construct();
+
+        self::$staticProperties['$_includePaths'] = &self::$_includePaths;
+        self::$staticProperties['$_includePaths>limits'] = '';
 
         $tmp = './PEAR_Setting/BreakpointDebugging_MySetting.php';
         self::$staticProperties['$_userName>limits'] = $tmp;
@@ -242,11 +248,11 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
         self::$staticProperties['$_maxLogElementNumber>limits'] = $tmp;
         self::$staticProperties['$_maxLogStringSize>limits'] = $tmp;
         self::$staticProperties['$_workDir>limits'] = $tmp;
-        $tmp = array (
+        self::$staticProperties['$_onceErrorDispFlag>limits'] = 'BreakpointDebugging/UnitTestOverriding.php';
+        self::$staticProperties['$_callingExceptionHandlerDirectly>limits'] = array (
             'BreakpointDebugging/Error.php',
             'BreakpointDebugging/UnitTestOverriding.php'
         );
-        self::$staticProperties['$_isInternal>limits'] = $tmp;
         $tmp = 'BreakpointDebugging.php';
         self::$staticProperties['$_valuesToTrace>limits'] = $tmp;
         self::$staticProperties['$_notFixedLocations>limits'] = $tmp;
@@ -263,9 +269,26 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
         if ($_BreakpointDebugging_EXE_MODE & ~B::REMOTE_DEBUG) {
             return;
         }
-        if (trim(`echo \$USER`) === 'root') {
+        if (B::getStatic('$_os') !== 'WIN'
+            && trim(`echo \$USER`) === 'root'
+        ) {
             echo '<pre>Security warning: Recommends to change to "Apache HTTP Server" which Supported "suEXEC" because this "Apache HTTP Server" is executed by "root" user.</pre>';
         }
+    }
+
+    /**
+     * For debug.
+     *
+     * @param string $propertyName Same as parent.
+     *
+     * @return Same as parent.
+     */
+    static function getStatic($propertyName)
+    {
+        self::assert(func_num_args() === 1, 1);
+        self::assert(is_string($propertyName), 2);
+
+        return parent::getStatic($propertyName);
     }
 
     /**
@@ -279,20 +302,11 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
     static function setStatic($propertyName, $value)
     {
         self::limitAccess(self::$staticProperties[$propertyName . '>limits']);
-        parent::setStatic($propertyName, $value);
-    }
 
-    /**
-     * Limits private property setting.
-     *
-     * @param bool $value Same as property.
-     *
-     * @return void
-     */
-    static function setXebugExists($value)
-    {
-        self::limitAccess('BreakpointDebugging.php');
-        parent::setXebugExists($value);
+        self::assert(func_num_args() === 2, 1);
+        self::assert(is_string($propertyName), 2);
+
+        parent::setStatic($propertyName, $value);
     }
 
     /**
@@ -300,12 +314,41 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      *
      * @return Same as parent.
      */
-    final static function iniCheck()
+    static function getXebugExists()
     {
-        $phpIniVariable = func_get_arg(0);
-        $cmpValue = func_get_arg(1);
-        $errorMessage = func_get_arg(2);
+        self::assert(func_num_args() === 0);
 
+        return parent::getXebugExists();
+    }
+
+    /**
+     * For debug.
+     *
+     * @param bool $value Same as parent.
+     *
+     * @return Same as parent.
+     */
+    static function setXebugExists($value)
+    {
+        self::limitAccess('BreakpointDebugging.php');
+
+        self::assert(func_num_args() === 1, 1);
+        self::assert(is_bool($value), 2);
+
+        parent::setXebugExists($value);
+    }
+
+    /**
+     * For debug.
+     *
+     * @param string $phpIniVariable Same as parent.
+     * @param mixed  $cmpValue       Same as parent.
+     * @param string $errorMessage   Same as parent.
+     *
+     * @return Same as parent.
+     */
+    static function iniCheck($phpIniVariable, $cmpValue, $errorMessage)
+    {
         self::assert(func_num_args() === 3, 1);
         self::assert(is_string($phpIniVariable), 2);
         self::assert(is_string($cmpValue) || is_array($cmpValue), 3);
@@ -317,12 +360,12 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
     /**
      * For debug.
      *
+     * @param string $string Same as parent.
+     *
      * @return Same as parent.
      */
-    final static function convertMbString()
+    static function convertMbString($string)
     {
-        $string = func_get_arg(0);
-
         self::assert(func_num_args() === 1, 1);
         self::assert(is_string($string), 2);
 
@@ -332,13 +375,30 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
     /**
      * For debug.
      *
+     * @param string $name       Same as parent.
+     * @param int    $permission Same as parent.
+     *
      * @return Same as parent.
      */
-    final static function mkdir()
+    protected static function setOwner($name, $permission)
     {
-        $dirName = func_get_arg(0);
-        $permission = func_get_arg(1);
+        self::assert(func_num_args() === 2, 1);
+        self::assert(is_string($name), 2);
+        self::assert(is_int($permission), 3);
 
+        parent::setOwner($name, $permission);
+    }
+
+    /**
+     * For debug.
+     *
+     * @param stirng $dirName    Same as parent.
+     * @param int    $permission Same as parent.
+     *
+     * @return Same as parent.
+     */
+    static function mkdir($dirName, $permission = 0777)
+    {
         self::assert(func_num_args() <= 2, 1);
         self::assert(is_string($dirName), 2);
         self::assert(is_int($permission), 3);
@@ -349,18 +409,18 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
     /**
      * For debug.
      *
+     * @param stirng $fileName   Same as parent.
+     * @param stirng $mode       Same as parent.
+     * @param int    $permission Same as parent.
+     *
      * @return Same as parent.
      */
-    final static function fopen()
+    static function fopen($fileName, $mode, $permission)
     {
-        $fileName = func_get_arg(0);
-        $mode = func_get_arg(1);
-        $permission = func_get_arg(2);
-
         self::assert(func_num_args() === 3, 1);
         self::assert(is_string($fileName), 2);
         self::assert(is_string($mode), 3);
-        self::assert(is_int($permission), 4);
+        self::assert(is_int($permission) && 0 <= $permission && $permission <= 0777, 4);
 
         return parent::fopen($fileName, $mode, $permission);
     }
@@ -368,12 +428,12 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
     /**
      * For debug.
      *
+     * @param array $intArray Same as parent.
+     *
      * @return Same as parent.
      */
-    final static function compressIntArray()
+    static function compressIntArray($intArray)
     {
-        $intArray = func_get_arg(0);
-
         self::assert(func_num_args() === 1, 1);
         self::assert(is_array($intArray), 2);
 
@@ -383,16 +443,78 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
     /**
      * For debug.
      *
+     * @param mixed $compressBytes Same as parent.
+     *
      * @return Same as parent.
      */
-    final static function decompressIntArray()
+    static function decompressIntArray($compressBytes)
     {
-        $compressBytes = func_get_arg(0);
-
         self::assert(func_num_args() === 1, 1);
         self::assert(is_string($compressBytes) || $compressBytes === false, 2);
 
         return parent::decompressIntArray($compressBytes);
+    }
+
+    /**
+     * For debug.
+     *
+     * @param object $pException Same as parent.
+     *
+     * @return Same as parent.
+     */
+    static function exceptionHandler($pException)
+    {
+        global $_BreakpointDebugging_EXE_MODE;
+
+        self::assert(func_num_args() === 1, 1);
+        self::assert($pException instanceof \Exception, 2);
+
+        if ($_BreakpointDebugging_EXE_MODE & self::UNIT_TEST) {
+            $callStack = $pException->getTrace();
+            $call = array_key_exists(0, $callStack) ? $callStack[0] : array ();
+            if ((array_key_exists('class', $call) && $call['class'] === 'BreakpointDebugging_InAllCase')
+                && (array_key_exists('function', $call) && $call['function'] === 'callExceptionHandlerDirectly')
+            ) { // In case of direct call from "BreakpointDebugging_InAllCase::callExceptionHandlerDirectly()".
+                throw $pException;
+                // @codeCoverageIgnoreStart
+            }
+            // @codeCoverageIgnoreEnd
+        }
+        // For call stack display.
+        $storeExeMode = B::changeExecutionModeForUnitTest();
+
+        parent::exceptionHandler($pException);
+
+        if ($storeExeMode & B::UNIT_TEST) {
+            $_BreakpointDebugging_EXE_MODE = $storeExeMode;
+        }
+    }
+
+    /**
+     * For debug.
+     *
+     * @param int    $errorNumber  Same as parent.
+     * @param string $errorMessage Same as parent.
+     *
+     * @return Same as parent.
+     */
+    static function errorHandler($errorNumber, $errorMessage)
+    {
+        global $_BreakpointDebugging_EXE_MODE;
+
+        self::assert(func_num_args() === 2, 1);
+        self::assert(is_int($errorNumber), 2);
+        self::assert(is_string($errorMessage), 3);
+
+        // For call stack display.
+        $storeExeMode = B::changeExecutionModeForUnitTest();
+
+        parent::errorHandler($errorNumber, $errorMessage);
+
+        if ($storeExeMode & B::UNIT_TEST) {
+            $_BreakpointDebugging_EXE_MODE = $storeExeMode;
+        }
+        return true;
     }
 
     ///////////////////////////// For package user. /////////////////////////////
@@ -410,9 +532,9 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
     {
         global $_BreakpointDebugging_EXE_MODE;
 
-        B::internalAssert(func_num_args() === 2, 1);
-        B::internalAssert(is_string($message), 2);
-        B::internalAssert(is_array($callStackInfo), 3);
+        B::assert(func_num_args() === 2, 1);
+        B::assert(is_string($message), 2);
+        B::assert(is_array($callStackInfo), 3);
 
         reset($callStackInfo);
         if (!empty($callStackInfo)) {
@@ -432,8 +554,10 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
         }
 
         if ($_BreakpointDebugging_EXE_MODE & self::REMOTE_DEBUG) {
+            // @codeCoverageIgnoreStart
             // Remote debug must end immediately to avoid eternal execution.
             exit;
+            // @codeCoverageIgnoreEnd
         }
     }
 
@@ -448,7 +572,11 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      */
     private static function _checkInvokerFilePath($includePaths, $invokerFilePath, $fullFilePath)
     {
-        B::assert(is_string($invokerFilePath));
+        B::assert(func_num_args() === 3, 1);
+        B::assert(is_array($includePaths), 2);
+        B::assert(is_string($invokerFilePath), 3);
+        B::assert(is_string($fullFilePath), 4);
+
         foreach ($includePaths as $includePath) {
             $invokerFullFilePath = realpath("$includePath/$invokerFilePath");
             if ($invokerFullFilePath === false) {
@@ -475,66 +603,76 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
     static function limitAccess($invokerFilePaths, $enableUnitTest = false)
     {
         global $_BreakpointDebugging_EXE_MODE;
-        static $includePaths;
         static $invokingLocations = array ();
 
         $callStack = debug_backtrace();
         // Makes invoking location information.
-        $file = $callStack[1]['file'];
-        $line = $callStack[1]['line'];
-        if (array_key_exists($file, $invokingLocations)
-            && array_key_exists($line, $invokingLocations[$file])
+        $count = count($callStack);
+        for ($key = 1; $key < $count; $key++) {
+            if (array_key_exists('file', $callStack[$key])) {
+                break;
+            }
+            // @codeCoverageIgnoreStart
+        }
+        // @codeCoverageIgnoreEnd
+        $fullFilePath = $callStack[$key]['file'];
+        $line = $callStack[$key]['line'];
+        if (array_key_exists($fullFilePath, $invokingLocations)
+            && array_key_exists($line, $invokingLocations[$fullFilePath])
         ) {
             // Skips same.
             return true;
         }
         // Stores the invoking location information.
-        $invokingLocations[$file][$line] = true;
+        $invokingLocations[$fullFilePath][$line] = true;
 
-        if (!array_key_exists(1, $callStack)
-            || !array_key_exists('file', $callStack[1])
-        ) {
-            throw new \BreakpointDebugging_ErrorException('This class method cannot use in top page.', 1);
-        }
-        $fullFilePath = $callStack[1]['file'];
+        self::assert(func_num_args() <= 2, 1);
+        self::assert(is_array($invokerFilePaths) || is_string($invokerFilePaths), 2);
+        self::assert(is_bool($enableUnitTest), 3);
+
         if (!$enableUnitTest
             && $_BreakpointDebugging_EXE_MODE & self::UNIT_TEST
             && strripos($fullFilePath, 'test.php') === strlen($fullFilePath) - strlen('test.php')
         ) {
             return;
         }
+
         if (B::getStatic('$_os') === 'WIN') {
             $fullFilePath = strtolower($fullFilePath);
         }
-        if (!isset($includePaths)) {
-            $includePaths = ini_get('include_path');
+        if (!isset(self::$_includePaths)) {
+            self::$_includePaths = ini_get('include_path');
             if (B::getStatic('$_os') === 'WIN') {
-                $includePaths = strtolower($includePaths);
+                self::$_includePaths = strtolower(self::$_includePaths);
             }
-            $includePaths = explode(PATH_SEPARATOR, $includePaths);
+            self::$_includePaths = explode(PATH_SEPARATOR, self::$_includePaths);
         }
         if (is_array($invokerFilePaths)) {
             foreach ($invokerFilePaths as $invokerFilePath) {
-                if (self::_checkInvokerFilePath($includePaths, $invokerFilePath, $fullFilePath)) {
+                if (self::_checkInvokerFilePath(self::$_includePaths, $invokerFilePath, $fullFilePath)) {
                     return;
                 }
             }
+            // @codeCoverageIgnoreStart
         } else {
-            if (self::_checkInvokerFilePath($includePaths, $invokerFilePaths, $fullFilePath)) {
+            // @codeCoverageIgnoreEnd
+            if (self::_checkInvokerFilePath(self::$_includePaths, $invokerFilePaths, $fullFilePath)) {
                 return;
             }
         }
         $class = '';
         $function = '';
-        if (array_key_exists('class', $callStack[1])) {
-            $class = $callStack[1]['class'] . '::';
+        if (array_key_exists('class', $callStack[$key])) {
+            $class = $callStack[$key]['class'] . '::';
         }
-        if (array_key_exists('function', $callStack[1])) {
-            $function = $callStack[1]['function'];
+        if (array_key_exists('function', $callStack[$key])) {
+            $function = $callStack[$key]['function'];
         }
-        throw new \BreakpointDebugging_ErrorException("'$class$function()' must not invoke in '$fullFilePath' file.", 2);
+        self::callExceptionHandlerDirectly("'$class$function()' must not invoke in '$fullFilePath' file.", 4);
+        // @codeCoverageIgnoreStart
     }
 
+    // @codeCoverageIgnoreEnd
     /**
      * Changes execution mode for purpose which displays unit test error.
      *
@@ -544,20 +682,18 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
     {
         global $_BreakpointDebugging_EXE_MODE;
 
+        self::assert(func_num_args() === 0);
+
         $original = $_BreakpointDebugging_EXE_MODE;
-        if ($_BreakpointDebugging_EXE_MODE === (B::LOCAL_DEBUG_OF_RELEASE | B::UNIT_TEST)) {
-            $_BreakpointDebugging_EXE_MODE = B::LOCAL_DEBUG;
-        } else if ($_BreakpointDebugging_EXE_MODE === (B::RELEASE | B::UNIT_TEST)) {
-            $_BreakpointDebugging_EXE_MODE = B::REMOTE_DEBUG;
-        }
+        $_BreakpointDebugging_EXE_MODE &= ~B::UNIT_TEST;
         return $original;
     }
 
     /**
      * Throws exception if assertion is false. Also, has identification code for unit test.
      *
-     * @param type $assertion Assertion.
-     * @param type $id        Identification number inside function.
+     * @param bool $assertion Assertion.
+     * @param int  $id        Exception identification number inside function.
      *
      * @return void
      * @usage
@@ -568,64 +704,43 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      */
     static function assert($assertion, $id = 0)
     {
+        if (func_num_args() > 2) {
+            self::callExceptionHandlerDirectly('Parameter number mistake.', 1);
+            // @codeCoverageIgnoreStart
+        }
+        // @codeCoverageIgnoreEnd
         if (!is_bool($assertion)) {
-            throw new \BreakpointDebugging_ErrorException('First parameter mistake.', 1);
+            self::callExceptionHandlerDirectly('Assertion must be bool.', 2);
+            // @codeCoverageIgnoreStart
         }
+        // @codeCoverageIgnoreEnd
         if (!is_int($id)) {
-            throw new \BreakpointDebugging_ErrorException('Second parameter mistake.', 2);
+            self::callExceptionHandlerDirectly('Exception identification number must be integer.', 3);
+            // @codeCoverageIgnoreStart
         }
+        // @codeCoverageIgnoreEnd
 
         if (!$assertion) {
-            self::internal('Assertion failed.', $id);
+            self::callExceptionHandlerDirectly('Assertion failed.', $id);
+            // @codeCoverageIgnoreStart
         }
-    }
-
-    /**
-     * Asserts inside global error handling or global exception handling. (For this package developer).
-     *
-     * @param bool $expression Judgment expression.
-     * @param int  $id         Exception identification number.
-     *
-     * @return void
-     * @example \BreakpointDebugging::internalAssert($expression, 1);
-     */
-    static function internalAssert($expression, $id)
-    {
-        self::limitAccess(
-            array (
-            './tests/PEAR/BreakpointDebugging-InAllCaseTest.php',
-            'BreakpointDebugging.php',
-            'BreakpointDebugging_Option.php',
-            'BreakpointDebugging/Error.php',
-            'BreakpointDebugging/Error_Option.php',
-            'BreakpointDebugging/Lock.php'
-            )
-            , true
-        );
-        if (func_num_args() !== 2
-            || !is_bool($expression)
-            || $expression === false
-            || !is_int($id)
-        ) {
-            self::internal('Assertion failed.', $id);
-        }
+        // @codeCoverageIgnoreEnd
     }
 
     /**
      * This changes a character sets to display a multibyte character string with local window of debugger, and this returns it.
      *
-     * @param array $params Character set string to want to display, and Some variables.
-     *
      * @return array Some changed variables.
      *
      * @example $gDebugValue = \BreakpointDebugging::convertMbStringForDebug('SJIS', $scalar1, $array2, $scalar2);
      */
-    static function convertMbStringForDebug($params)
+    static function convertMbStringForDebug()
     {
         global $_BreakpointDebugging_EXE_MODE;
 
         // In case of local.
         if ($_BreakpointDebugging_EXE_MODE & (self::LOCAL_DEBUG | self::LOCAL_DEBUG_OF_RELEASE)) {
+            // Character set string to want to display, and Some variables.
             $mbStringArray = func_get_args();
             $mbParamArray = array_slice($mbStringArray, 1);
             return self::_convertMbStringForDebugSubroop($mbStringArray[0], $mbParamArray);
@@ -644,22 +759,23 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
     {
         global $_BreakpointDebugging_EXE_MODE;
 
-        // In case of local.
-        if ($_BreakpointDebugging_EXE_MODE & (self::LOCAL_DEBUG | self::LOCAL_DEBUG_OF_RELEASE)) {
-            $displayMbStringArray = array ();
-            $count = 0;
-            foreach ($mbParamArray as $mbString) {
-                if (is_array($mbString)) {
-                    $displayMbStringArray[$count] = self::_convertMbStringForDebugSubroop($charSet, $mbString);
-                } else if (is_string($mbString)) {
-                    $displayMbStringArray[$count] = mb_convert_encoding($mbString, $charSet, 'auto');
-                } else {
-                    $displayMbStringArray[$count] = $mbString;
-                }
-                $count++;
+        self::assert(func_num_args() === 2, 1);
+        self::assert(is_string($charSet), 2);
+        self::assert(is_array($mbParamArray), 3);
+
+        $displayMbStringArray = array ();
+        $count = 0;
+        foreach ($mbParamArray as $mbString) {
+            if (is_array($mbString)) {
+                $displayMbStringArray[$count] = self::_convertMbStringForDebugSubroop($charSet, $mbString);
+            } else if (is_string($mbString)) {
+                $displayMbStringArray[$count] = mb_convert_encoding($mbString, $charSet, 'auto');
+            } else {
+                $displayMbStringArray[$count] = $mbString;
             }
-            return $displayMbStringArray;
+            $count++;
         }
+        return $displayMbStringArray;
     }
 
     /**
@@ -675,9 +791,12 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
     static function iniSet($phpIniVariable, $setValue, $doCheck = true)
     {
         global $_BreakpointDebugging_EXE_MODE;
+
         self::assert(func_num_args() <= 3, 1);
         self::assert($phpIniVariable !== 'error_log', 2);
-        self::assert(is_string($setValue), 3);
+        self::assert(is_string($phpIniVariable), 3);
+        self::assert(is_string($setValue), 4);
+        self::assert(is_bool($doCheck), 5);
 
         $getValue = ini_get($phpIniVariable);
         if ($setValue !== $getValue) {
@@ -694,6 +813,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
                 }
                 $cmpNameLength = strlen($cmpName);
                 if (!substr_compare($baseName, $cmpName, 0 - $cmpNameLength, $cmpNameLength, true)) {
+                    // @codeCoverageIgnoreStart
                     $notExistFlag = true;
                     foreach (self::$_onceFlag as $cmpName) {
                         if (!strcmp($baseName, $cmpName)) {
@@ -718,9 +838,10 @@ EOD;
 </pre>
 EOD;
                 }
+                // @codeCoverageIgnoreEnd
             }
             if (ini_set($phpIniVariable, $setValue) === false) {
-                throw new \BreakpointDebugging_ErrorException('"ini_set()" failed.', 4);
+                throw new \BreakpointDebugging_ErrorException('"ini_set()" failed.', 6);
             }
         }
     }
@@ -740,10 +861,15 @@ EOD;
      */
     static function getPropertyForTest($objectOrClassName, $propertyName)
     {
+        self::assert(func_num_args() === 2, 1);
+        self::assert(is_string($propertyName), 2);
+
         if (is_object($objectOrClassName)) {
             $className = get_class($objectOrClassName);
-        } else {
+        } else if (is_string($objectOrClassName)) {
             $className = $objectOrClassName;
+        } else {
+            throw new \BreakpointDebugging_ErrorException('Parameter1 must be object or string.', 3);
         }
         $classReflection = new \ReflectionClass($className);
         $propertyReflections = $classReflection->getProperties();
@@ -766,7 +892,7 @@ EOD;
             }
             return $constValue;
         }
-        throw new \BreakpointDebugging_ErrorException('"' . $className . '::' . $propertyName . '" property does not exist.');
+        throw new \BreakpointDebugging_ErrorException('"' . $className . '::' . $propertyName . '" property does not exist.', 4);
     }
 
     /**
@@ -784,10 +910,15 @@ EOD;
      */
     static function setPropertyForTest($objectOrClassName, $propertyName, $value)
     {
+        self::assert(func_num_args() === 3, 1);
+        self::assert(is_string($propertyName), 2);
+
         if (is_object($objectOrClassName)) {
             $className = get_class($objectOrClassName);
-        } else {
+        } else if (is_string($objectOrClassName)) {
             $className = $objectOrClassName;
+        } else {
+            throw new \BreakpointDebugging_ErrorException('Parameter1 must be object or string.', 3);
         }
         $classReflection = new \ReflectionClass($className);
         $propertyReflections = $classReflection->getProperties();
@@ -805,7 +936,7 @@ EOD;
                 return;
             }
         }
-        throw new \BreakpointDebugging_ErrorException('"' . $className . '::' . $propertyName . '" property does not exist.');
+        throw new \BreakpointDebugging_ErrorException('"' . $className . '::' . $propertyName . '" property does not exist.', 4);
     }
 
     /**
@@ -832,27 +963,38 @@ EOD;
         global $_BreakpointDebugging_EXE_MODE;
         $isFalse = false;
 
+        self::assert(func_num_args() === 1, 1);
+        self::assert(is_bool($isUnitTest), 2);
+
         if (!isset($_SERVER['SERVER_ADDR'])
             || $_SERVER['SERVER_ADDR'] === '127.0.0.1'
         ) { // In case of command or local host.
-            if ($_BreakpointDebugging_EXE_MODE === (B::LOCAL_DEBUG_OF_RELEASE | B::UNIT_TEST)) {
+            if ($_BreakpointDebugging_EXE_MODE === (B::LOCAL_DEBUG | B::UNIT_TEST)) {
                 $isFalse = !$isUnitTest;
             } else {
+                // @codeCoverageIgnoreStart
                 $isFalse = $isUnitTest;
+                // @codeCoverageIgnoreEnd
             }
         } else {
-            if ($_BreakpointDebugging_EXE_MODE === (B::RELEASE | B::UNIT_TEST)) {
+            if ($_BreakpointDebugging_EXE_MODE === (B::REMOTE_DEBUG | B::UNIT_TEST)) {
                 $isFalse = !$isUnitTest;
             } else {
+                // @codeCoverageIgnoreStart
                 $isFalse = $isUnitTest;
+                // @codeCoverageIgnoreEnd
             }
         }
         if ($isUnitTest
             && $isFalse
         ) {
+            // @codeCoverageIgnoreStart
             exit('<pre>You must set "$_BreakpointDebugging_EXE_MODE = $setExecutionMode(\'UNIT_TEST\');" into "./PEAR_Setting/BreakpointDebugging_MySetting.php".</pre>');
+            // @codeCoverageIgnoreEnd
         } else if ($isFalse) {
+            // @codeCoverageIgnoreStart
             exit('<pre>You must not set "$_BreakpointDebugging_EXE_MODE = $setExecutionMode(\'UNIT_TEST\');" into "./PEAR_Setting/BreakpointDebugging_MySetting.php".</pre>');
+            // @codeCoverageIgnoreEnd
         }
     }
 
@@ -936,7 +1078,7 @@ EOD;
      *              try {
      *                  B::assert(true, 1);
      *                  B::assert(false, 2);
-     *              } catch (\PHPUnit_Framework_Error $e) {
+     *              } catch (\BreakpointDebugging_ErrorException $e) {
      *                  $this->assertTrue(strripos($e->getMessage(), 'CLASS=SomethingTest FUNCTION=testSomething_B ID=2'));
      *                  return;
      *              }
@@ -950,13 +1092,14 @@ EOD;
 
         self::isUnitTestExeMode(true);
 
-        self::assert(func_num_args() === 1, 3);
-        self::assert(is_array($unitTestCommands), 1);
-        self::assert(count($unitTestCommands) >= 1, 4);
+        self::assert(func_num_args() === 1, 1);
+        self::assert(is_array($unitTestCommands), 2);
+        self::assert(!empty($unitTestCommands), 3);
 
         $unitTestCurrentDir = debug_backtrace();
         $unitTestCurrentDir = dirname($unitTestCurrentDir[0]['file']);
         if (count($unitTestCommands) === 1) {
+            // @codeCoverageIgnoreStart
             $command = $unitTestCommands[0];
             $commandElements = explode(' ', $command);
             $testFileName = array_pop($commandElements);
@@ -970,8 +1113,11 @@ EOD;
             restore_error_handler();
             echo $pPHPUnit_TextUI_Command->run($commandElements, true);
         } else {
+            // @codeCoverageIgnoreEnd
             if ($_BreakpointDebugging_EXE_MODE & (B::REMOTE_DEBUG | B::RELEASE)) {
+                // @codeCoverageIgnoreStart
                 exit('<pre>Executes on "local server only" because continuation unit test requires many load on remote server.</pre>');
+                // @codeCoverageIgnoreEnd
             }
             // In case of extending test class except "\BreakpointDebugging_UnitTestOverriding" class.
             if (B::getStatic('$_os') === 'WIN') { // In case of Windows.
@@ -1033,10 +1179,26 @@ EOD;
      */
     private static function _displayCodeCoverageReport($classFilePath, $browserPass, $workDir)
     {
+        global $_BreakpointDebugging_EXE_MODE;
+
+        self::assert(func_num_args() === 3, 1);
+        self::assert(is_string($classFilePath), 2);
+        self::assert(is_string($browserPass), 3);
+        self::assert(is_string($workDir), 4);
+
+        // If unit test.
+        $callStack = debug_backtrace();
+        if (array_key_exists(2, $callStack)
+            && stripos($callStack[2]['function'], 'test') === 0
+        ) {
+            return;
+        }
+        // @codeCoverageIgnoreStart
         $classFilePath = str_replace(array ('/', '\\'), '_', $classFilePath);
         `"$browserPass" "file:///$workDir/CodeCoverageReport/$classFilePath.html"`;
     }
 
+    // @codeCoverageIgnoreEnd
     /**
      * Makes up code coverage report, then displays in browser.
      *
@@ -1058,6 +1220,10 @@ EOD;
      */
     static function displayCodeCoverageReport($unitTestFilePath, $classFilePaths)
     {
+        self::assert(func_num_args() === 2, 1);
+        self::assert(is_string($unitTestFilePath), 2);
+        self::assert(is_string($classFilePaths) || is_array($classFilePaths), 3);
+
         $unitTestCurrentDir = debug_backtrace();
         $unitTestCurrentDir = dirname($unitTestCurrentDir[0]['file']);
         $workDir = B::getStatic('$_workDir');
@@ -1087,8 +1253,9 @@ EOD;
      */
     static function displayVerification($functionName, $params)
     {
-        self::assert(is_string($functionName), 1);
-        self::assert(is_array($params), 2);
+        self::assert(func_num_args() === 2, 1);
+        self::assert(is_string($functionName), 2);
+        self::assert(is_array($params), 3);
 
         self::$tmp = $params;
         $paramNumber = count($params);

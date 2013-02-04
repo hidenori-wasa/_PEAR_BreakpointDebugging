@@ -95,9 +95,7 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
                 if ($this->backupGlobals === NULL
                     || $this->backupGlobals === TRUE
                 ) {
-                    PHPUnit_Util_GlobalState::backupGlobals(
-                        $this->backupGlobalsBlacklist
-                    );
+                    PHPUnit_Util_GlobalState::backupGlobals($this->backupGlobalsBlacklist);
                 }
 
                 if (version_compare(PHP_VERSION, '5.3', '>')
@@ -289,6 +287,7 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
             // In case of success.
             if ($this->getExpectedException() !== NULL) {
                 // "@expectedException" should not exist.
+                echo '<pre>Is error in "' . $class->name . '::' . $name . '".</pre>';
                 $this->assertThat(NULL, new PHPUnit_Framework_Constraint_Exception($this->getExpectedException()));
             }
 
@@ -302,8 +301,8 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
          */
         protected function setUp()
         {
-            B::setPropertyForTest('\BreakpointDebugging_InAllCase', '$_onceErrorDispFlag', false);
-            B::setStatic('$_isInternal', false);
+            B::setStatic('$_onceErrorDispFlag', false);
+            B::setStatic('$_callingExceptionHandlerDirectly', false);
         }
 
         /**
@@ -370,8 +369,8 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
          */
         protected function setUp()
         {
-            B::setPropertyForTest('\BreakpointDebugging_InAllCase', '$_onceErrorDispFlag', false);
-            B::setStatic('$_isInternal', false);
+            B::setStatic('$_onceErrorDispFlag', false);
+            B::setStatic('$_callingExceptionHandlerDirectly', false);
         }
 
     }

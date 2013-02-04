@@ -27,24 +27,29 @@ B::isUnitTestExeMode(false); // Checks the execution mode.
  * @version  Release: @package_version@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-abstract class BaseTestClass
+abstract class TestClass_InAllCase
 {
     /**
      * @var array Static properties reference.
      */
-    private static $_staticProperties;
+    protected static $staticProperties;
+
+    /**
+     * @var array Auto properties reference.
+     */
+    protected $autoProperties;
 
     /**
      * @var mixed Dummy.
      */
     static $_staticA = 'staticA';
-    // private static $_staticA = 'staticA';
+    // private static $_staticA = 'staticA'; // Actual "php" code.
 
     /**
      * @var mixed Dummy.
      */
     static $_staticB = 'staticB';
-    // private static $_staticB = 'staticB';
+    // private static $_staticB = 'staticB'; // Actual "php" code.
 
     /**
      * @var mixed Dummy.
@@ -63,8 +68,15 @@ abstract class BaseTestClass
      */
     function __construct()
     {
-        self::$_staticProperties['$_staticA'] = &self::$_staticA;
-        self::$_staticProperties['$_staticB'] = &self::$_staticB;
+        B::limitAccess(
+            array (
+                'BreakpointDebugging/Sample/SampleToLimitAccess.php',
+                'BreakpointDebugging/Sample/SampleToLimitAccess_Option.php'
+            )
+        );
+
+        self::$staticProperties['$_staticA'] = &self::$_staticA;
+        self::$staticProperties['$_staticB'] = &self::$_staticB;
     }
 
     /**
@@ -89,7 +101,13 @@ abstract class BaseTestClass
      */
     function __set($propertyName, $value)
     {
-        B::limitAccess('BreakpointDebugging/Sample/SampleToLimitAccess.php');
+        B::limitAccess(
+            array (
+                'BreakpointDebugging/Sample/SampleToLimitAccess.php',
+                'BreakpointDebugging/Sample/SampleToLimitAccess_Option.php'
+            )
+        );
+
         $this->$propertyName = $value;
     }
 
@@ -102,7 +120,7 @@ abstract class BaseTestClass
      */
     static function getStatic($propertyName)
     {
-        return self::$_staticProperties[$propertyName];
+        return self::$staticProperties[$propertyName];
     }
 
     /**
@@ -115,31 +133,44 @@ abstract class BaseTestClass
      */
     static function setStatic($propertyName, $value)
     {
-        B::limitAccess('BreakpointDebugging/Sample/SampleToLimitAccess.php');
-        self::$_staticProperties[$propertyName] = $value;
+        B::limitAccess(
+            array (
+                'BreakpointDebugging/Sample/SampleToLimitAccess.php',
+                'BreakpointDebugging/Sample/SampleToLimitAccess_Option.php'
+            )
+        );
+
+        self::$staticProperties[$propertyName] = $value;
     }
 
-    function somthingBase($testValue)
+    /**
+     * Something.
+     *
+     * @param mixed $testValue The test value.
+     *
+     * @return void
+     */
+    function somthingInAllCase($testValue)
     {
         $this->_autoA = $testValue;
         B::assert($this->_autoA === $testValue);
         $this->_autoB = $testValue;
         B::assert($this->_autoB === $testValue);
         // $this->_notExist = $testValue;
-        // B::assert($this->_notExist === $testValue);
+        // $this->_notExist;
 
         self::$_staticA = $testValue;
         B::assert(self::$_staticA === $testValue);
         self::$_staticB = $testValue;
         B::assert(self::$_staticB === $testValue);
         // self::$_notExist = $testValue;
-        // B::assert(self::$_notExist === $testValue);
+        // self::$_notExist;
     }
 
 }
 
 global $_BreakpointDebugging_EXE_MODE;
-// if ($_BreakpointDebugging_EXE_MODE === B::RELEASE) { // Actual "php" code.
+// if ($_BreakpointDebugging_EXE_MODE === B::RELEASE) { // In case of release. // Actual "php" code.
 if ($_BreakpointDebugging_EXE_MODE === B::LOCAL_DEBUG_OF_RELEASE) {
     /**
      * Dummy.
@@ -151,89 +182,24 @@ if ($_BreakpointDebugging_EXE_MODE === B::LOCAL_DEBUG_OF_RELEASE) {
      * @version  Release: @package_version@
      * @link     http://pear.php.net/package/BreakpointDebugging
      */
-    class TestClass extends \BaseTestClass
-    {
-
-    }
-
-} else {
-    /**
-     * Dummy.
-     *
-     * @category PHP
-     * @package  BreakpointDebugging
-     * @author   Hidenori Wasa <public@hidenori-wasa.com>
-     * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
-     * @version  Release: @package_version@
-     * @link     http://pear.php.net/package/BreakpointDebugging
-     */
-    class TestClass extends \BaseTestClass
+    class TestClass extends \TestClass_InAllCase
     {
         /**
-         * Sets a auto property value.
+         * Dummy.
          *
-         * @param string $propertyName Auto property name.
-         * @param mixed  $value        Auto property value.
+         * @param mixed $testValue Dummy.
          *
          * @return void
          */
-        function __set($propertyName, $value)
-        {
-            switch ($propertyName) {
-                case '_autoA':
-                    // B::limitAccess('...');
-                    break;
-                case '_autoB':
-                    // B::limitAccess('...');
-                    break;
-                default :
-                    throw new \BreakpointDebugging_ErrorException(__CLASS__ . "::$$propertyName property does not exist.");
-            }
-            parent::__set($propertyName, $value);
-        }
-
-        /**
-         * Sets a static property value.
-         *
-         * @param string $propertyName Static property name.
-         * @param mixed  $value        Static property value.
-         *
-         * @return void
-         */
-        static function setStatic($propertyName, $value)
-        {
-            switch ($propertyName) {
-                case '$_staticA':
-                    // B::limitAccess('...');
-                    break;
-                case '$_staticB':
-                    // B::limitAccess('...');
-                    break;
-                default :
-                    throw new \BreakpointDebugging_ErrorException(__CLASS__ . "::$propertyName property does not exist.");
-            }
-            parent::setStatic($propertyName, $value);
-        }
-
         function somthing($testValue)
         {
-            $this->_autoA = $testValue;
-            B::assert($this->_autoA === $testValue);
-            $this->_autoB = $testValue;
-            B::assert($this->_autoB === $testValue);
-            // $this->_notExist = $testValue;
-            // B::assert($this->_notExist === $testValue);
 
-            T::setStatic('$_staticA', $testValue);
-            B::assert(T::getStatic('$_staticA') === $testValue);
-            T::setStatic('$_staticB', $testValue);
-            B::assert(T::getStatic('$_staticB') === $testValue);
-            // T::setStatic('$_notExist', $testValue);
-            // B::assert(T::getStatic('$_notExist') === $testValue);
         }
 
     }
 
+} else { // In case of not release.
+    include_once __DIR__ . '/SampleToLimitAccess_Option.php';
 }
 
 $pTestClass = new T();
@@ -257,7 +223,7 @@ foreach ($testValues as $testValue) {
     // T::setStatic('$_notExist', $testValue);
     // T::getStatic('$_notExist');
 
-    $pTestClass->somthingBase($testValue);
+    $pTestClass->somthingInAllCase($testValue);
     $pTestClass->somthing($testValue);
 }
 

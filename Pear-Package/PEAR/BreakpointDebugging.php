@@ -191,22 +191,23 @@ abstract class BreakpointDebugging_InAllCase
     private static $_onceErrorDispFlag = false;
 
     /**
-     * @var bool Is it internal method?
+     * @var bool Calling exception handler directly?
      */
-    private static $_isInternal = false;
+    private static $_callingExceptionHandlerDirectly = false;
+
+    /**
+     * @var string The project work directory.
+     */
+    private static $_pwd;
 
     /**
      * Initializes static properties.
      */
     function __construct()
     {
-        B::limitAccess(
-            array (
-                'BreakpointDebugging.php',
-                'BreakpointDebugging_Option.php',
-            )
-        );
+        B::limitAccess('BreakpointDebugging_Option.php');
 
+        self::$_pwd = getcwd();
         self::$_os = strtoupper(substr(PHP_OS, 0, 3));
         self::$staticProperties['$_os'] = &self::$_os;
         self::$staticProperties['$_userName'] = &self::$_userName;
@@ -215,7 +216,8 @@ abstract class BreakpointDebugging_InAllCase
         self::$staticProperties['$_maxLogElementNumber'] = &self::$_maxLogElementNumber;
         self::$staticProperties['$_maxLogStringSize'] = &self::$_maxLogStringSize;
         self::$staticProperties['$_workDir'] = &self::$_workDir;
-        self::$staticProperties['$_isInternal'] = &self::$_isInternal;
+        self::$staticProperties['$_onceErrorDispFlag'] = &self::$_onceErrorDispFlag;
+        self::$staticProperties['$_callingExceptionHandlerDirectly'] = &self::$_callingExceptionHandlerDirectly;
         self::$staticProperties['$_valuesToTrace'] = &self::$_valuesToTrace;
         self::$staticProperties['$_notFixedLocations'] = &self::$_notFixedLocations;
     }
@@ -229,6 +231,8 @@ abstract class BreakpointDebugging_InAllCase
      */
     static function getStatic($propertyName)
     {
+        B::limitAccess('BreakpointDebugging_Option.php');
+
         return self::$staticProperties[$propertyName];
     }
 
@@ -242,12 +246,8 @@ abstract class BreakpointDebugging_InAllCase
      */
     static function setStatic($propertyName, $value)
     {
-        B::limitAccess(
-            array (
-                'BreakpointDebugging.php',
-                'BreakpointDebugging_Option.php'
-            )
-        );
+        B::limitAccess('BreakpointDebugging_Option.php');
+
         self::$staticProperties[$propertyName] = $value;
     }
 
@@ -258,6 +258,8 @@ abstract class BreakpointDebugging_InAllCase
      */
     static function getXebugExists()
     {
+        B::limitAccess('BreakpointDebugging_Option.php');
+
         return self::$_xdebugExists;
     }
 
@@ -300,9 +302,6 @@ abstract class BreakpointDebugging_InAllCase
                 }
             }
         } else {
-            //if (!is_string($cmpValue)) {
-            //    throw new \BreakpointDebugging_ErrorException('', 3);
-            //}
             if ($value !== $cmpValue) {
                 $cmpResult = true;
             }
@@ -325,8 +324,8 @@ abstract class BreakpointDebugging_InAllCase
      */
     final static function registerNotFixedLocation(&$isRegister)
     {
-        B::assert(func_num_args() === 1, 1);
-        B::assert(is_bool($isRegister), 2);
+        B::assert(func_num_args() === 1);
+        B::assert(is_bool($isRegister));
 
         // When it has been registered.
         if ($isRegister) {
@@ -344,7 +343,7 @@ abstract class BreakpointDebugging_InAllCase
             // @codeCoverageIgnoreEnd
         }
         self::$_notFixedLocations[] = $backTrace2;
-        self::setStatic('$_notFixedLocations', self::$_notFixedLocations);
+        B::setStatic('$_notFixedLocations', self::$_notFixedLocations);
     }
 
     /**
@@ -358,8 +357,8 @@ abstract class BreakpointDebugging_InAllCase
      */
     final static function addValuesToTrace($values)
     {
-        B::assert(func_num_args() === 1, 1);
-        B::assert(is_array($values), 2);
+        B::assert(func_num_args() === 1);
+        B::assert(is_array($values));
 
         $backTrace = debug_backtrace();
         $callInfo = &$backTrace[0];
@@ -389,7 +388,7 @@ abstract class BreakpointDebugging_InAllCase
         }
         self::$_valuesToTrace[$file][$line] = $backTrace2;
         self::$_valuesToTrace[$file][$line]['values'] = $values;
-        self::setStatic('$_valuesToTrace', self::$_valuesToTrace);
+        B::setStatic('$_valuesToTrace', self::$_valuesToTrace);
     }
 
     /**
@@ -403,6 +402,8 @@ abstract class BreakpointDebugging_InAllCase
      */
     static function convertMbString($string)
     {
+        B::limitAccess('BreakpointDebugging_Option.php');
+
         // Analyzes character sets of character string.
         $charSet = mb_detect_encoding($string);
         if ($charSet === 'UTF-8'
@@ -424,7 +425,7 @@ abstract class BreakpointDebugging_InAllCase
      *
      * @return void
      */
-    final private static function _setOwner($name, $permission)
+    protected static function setOwner($name, $permission)
     {
         if (self::$_os === 'WIN') { // In case of Windows.
             return;
@@ -447,8 +448,10 @@ abstract class BreakpointDebugging_InAllCase
      */
     static function mkdir($dirName, $permission = 0777)
     {
+        B::limitAccess('BreakpointDebugging_Option.php');
+
         if (mkdir($dirName)) {
-            self::_setOwner($dirName, $permission);
+            B::setOwner($dirName, $permission);
         }
     }
 
@@ -463,9 +466,11 @@ abstract class BreakpointDebugging_InAllCase
      */
     static function fopen($fileName, $mode, $permission)
     {
+        B::limitAccess('BreakpointDebugging_Option.php');
+
         $pFile = fopen($fileName, $mode);
         if ($pFile) {
-            self::_setOwner($fileName, $permission);
+            B::setOwner($fileName, $permission);
         }
         return $pFile;
     }
@@ -480,19 +485,19 @@ abstract class BreakpointDebugging_InAllCase
      */
     static function compressIntArray($intArray)
     {
+        B::limitAccess('BreakpointDebugging_Option.php');
+
         $compressBytes = '';
         foreach ($intArray as $int) {
-            B::internalAssert(preg_match('`^[0-9]$ | ^[1-9][0-9]+$`xX', $int) === 1, 1);
+            B::assert(preg_match('`^[0-9]$ | ^[1-9][0-9]+$`xX', $int) === 1, 1);
             for ($diff = 1, $delimiter = 0x80, $tmpBytes = ''; $diff; $int = $diff / 0x7D) {
                 // This changes from decimal number to 126 number.
                 $diff = 0x7D * (int) ($int / 0x7D);
                 $byte = $int - $diff;
                 // Changes end of line character.
-                //if ($byte === "\n") { // For data reading by "fgets()" in Windows and Unix.
-                if ($byte === ord("\n")) { // For data reading by "fgets()" in Windows and Unix.
+                if ($byte === 0xA) { // Changes "\n" to read a data by "fgets()" in Windows and Unix.
                     $tmpBytes .= chr(0x7E | $delimiter);
-                    //} else if ($byte === "\r") { // For line feed of Windows.
-                } else if ($byte === ord("\r")) { // For line feed of Windows.
+                } else if ($byte === 0xD) { // Changes "\r" to read a data by "fgets()" in Windows.
                     $tmpBytes .= chr(0x7F | $delimiter);
                 } else {
                     $tmpBytes .= chr($byte | $delimiter);
@@ -515,6 +520,8 @@ abstract class BreakpointDebugging_InAllCase
      */
     static function decompressIntArray($compressBytes)
     {
+        B::limitAccess('BreakpointDebugging_Option.php');
+
         $compressBytes = trim($compressBytes, PHP_EOL);
         $intArray = array ();
         $int = 0;
@@ -526,11 +533,9 @@ abstract class BreakpointDebugging_InAllCase
             $tmpByte = $compressByte & 0x7F;
             // Changes to end of line character.
             if ($tmpByte === 0x7E) {
-                //$tmpByte = "\n";
-                $tmpByte = ord("\n");
+                $tmpByte = 0xA; // "\n".
             } else if ($tmpByte === 0x7F) {
-                //$tmpByte = "\r";
-                $tmpByte = ord("\r");
+                $tmpByte = 0xD; // "\r".
             }
             // This changes from 126 number to decimal number.
             $int = $int * 0x7D + $tmpByte;
@@ -568,31 +573,12 @@ abstract class BreakpointDebugging_InAllCase
      *
      * @return void
      */
-    final static function exceptionHandler($pException)
+    static function exceptionHandler($pException)
     {
-        global $_BreakpointDebugging_EXE_MODE;
-
-        if ($_BreakpointDebugging_EXE_MODE & self::UNIT_TEST) {
-            $callStack = $pException->getTrace();
-            $call = array_key_exists(0, $callStack) ? $callStack[0] : array ();
-            if ((array_key_exists('class', $call) && $call['class'] === 'BreakpointDebugging_InAllCase')
-                && (array_key_exists('function', $call) && $call['function'] === 'internal')
-            ) { // In case of direct call from "BreakpointDebugging_InAllCase::internal()".
-                \PHPUnit_Util_ErrorHandler::handleError($pException->getCode(), $pException->getMessage(), $pException->getFile(), $pException->getLine());
-                // @codeCoverageIgnoreStart
-            }
-            // @codeCoverageIgnoreEnd
-        }
-        // For call stack display.
-        if (method_exists('\BreakpointDebugging', 'changeExecutionModeForUnitTest')) {
-            $storeExeMode = B::changeExecutionModeForUnitTest();
-        }
+        B::limitAccess('BreakpointDebugging_Option.php');
 
         $error = new \BreakpointDebugging_Error();
         $error->exceptionHandler2($pException, self::$prependExceptionLog);
-        if ($storeExeMode & B::UNIT_TEST) {
-            $_BreakpointDebugging_EXE_MODE = $storeExeMode;
-        }
     }
 
     /**
@@ -603,19 +589,13 @@ abstract class BreakpointDebugging_InAllCase
      *
      * @return bool Without system log (true).
      */
-    final static function errorHandler($errorNumber, $errorMessage)
+    static function errorHandler($errorNumber, $errorMessage)
     {
-        global $_BreakpointDebugging_EXE_MODE;
+        B::limitAccess('BreakpointDebugging_Option.php');
 
-        // For call stack display.
-        if (method_exists('\BreakpointDebugging', 'changeExecutionModeForUnitTest')) {
-            $storeExeMode = B::changeExecutionModeForUnitTest();
-        }
         $error = new \BreakpointDebugging_Error();
         $error->errorHandler2($errorNumber, $errorMessage, self::$prependErrorLog, debug_backtrace());
-        if ($storeExeMode & B::UNIT_TEST) {
-            $_BreakpointDebugging_EXE_MODE = $storeExeMode;
-        }
+
         return true;
     }
 
@@ -627,24 +607,18 @@ abstract class BreakpointDebugging_InAllCase
      *
      * @return void
      */
-    final protected static function internal($message, $id)
+    protected static function callExceptionHandlerDirectly($message, $id)
     {
-        global $_BreakpointDebugging_EXE_MODE;
-
         if (self::$_onceErrorDispFlag) {
             // @codeCoverageIgnoreStart
             return;
             // @codeCoverageIgnoreEnd
         }
-        // Is internal method.
-        self::$_isInternal = true;
+        // Is this method.
+        self::$_callingExceptionHandlerDirectly = true;
         self::$_onceErrorDispFlag = true;
-        self::exceptionHandler(new \BreakpointDebugging_ErrorException($message, $id, null, 2));
+        B::exceptionHandler(new \BreakpointDebugging_ErrorException($message, $id, null, 2));
         // @codeCoverageIgnoreStart
-        if ($_BreakpointDebugging_EXE_MODE & self::REMOTE_DEBUG) { // In case of remote debug.
-            // Remote debug must end immediately to avoid eternal execution.
-            exit;
-        }
     }
 
     // @codeCoverageIgnoreEnd
@@ -652,7 +626,7 @@ abstract class BreakpointDebugging_InAllCase
      * Calls exception handler inside global error handling or global exception handling. (For this package developer).
      *
      * @param string $message Exception message.
-     * @param int    $id      Exception identification number.
+     * @param int    $id      Exception identification number inside function.
      *
      * @return void
      * @example \BreakpointDebugging::internalException($message, 1);
@@ -666,7 +640,11 @@ abstract class BreakpointDebugging_InAllCase
             )
         );
 
-        self::internal($message, $id);
+        B::assert(func_num_args() === 2);
+        B::assert(is_string($message));
+        B::assert(is_int($id));
+
+        B::callExceptionHandlerDirectly($message, $id);
         // @codeCoverageIgnoreStart
     }
 
@@ -675,17 +653,12 @@ abstract class BreakpointDebugging_InAllCase
      * Debugs by calling "__destructor()" of all object.
      *
      * @return void
+     * @codeCoverageIgnore
      */
     final static function shutdown()
     {
-        foreach ($GLOBALS as &$variable) {
-            if (is_object($variable)) {
-                if (is_callable(array ($variable, '__destruct'))) {
-                    // Calls "__destruct" class method.
-                    $variable = null;
-                }
-            }
-        }
+        // Keeps the project work directory at "__destruct".
+        chdir(self::$_pwd);
     }
 
 }
@@ -747,16 +720,6 @@ if ($_BreakpointDebugging_EXE_MODE === BreakpointDebugging_InAllCase::RELEASE) {
          * @return void
          */
         static function assert()
-        {
-
-        }
-
-        /**
-         * Empties in release.
-         *
-         * @return void
-         */
-        static function internalAssert()
         {
 
         }

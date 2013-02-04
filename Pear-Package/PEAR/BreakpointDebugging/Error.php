@@ -438,8 +438,8 @@ abstract class BreakpointDebugging_Error_InAllCase
                 }
             }
 
-            if (B::getStatic('$_isInternal')) { // Has been called from internal method.
-                B::setStatic('$_isInternal', false);
+            if (B::getStatic('$_callingExceptionHandlerDirectly')) { // Has been called from "BreakpointDebugging_InAllCase::callExceptionHandlerDirectly()" method.
+                B::setStatic('$_callingExceptionHandlerDirectly', false);
                 // Array top is set to location which "self::internalException()" is called  because this location is registered to logging.
                 unset($callStackInfo[0]);
             } else {
@@ -530,8 +530,8 @@ abstract class BreakpointDebugging_Error_InAllCase
         $prependLog = $this->convertMbString($prependLog);
 
         $this->_callStackInfo = $callStack;
-        if (B::getStatic('$_isInternal')) { // Has been called from internal method.
-            B::setStatic('$_isInternal', false);
+        if (B::getStatic('$_callingExceptionHandlerDirectly')) { // Has been called from "BreakpointDebugging_InAllCase::callExceptionHandlerDirectly()" method.
+            B::setStatic('$_callingExceptionHandlerDirectly', false);
             // Deletes location which triggers error because this handler must not log this location.
             unset($this->_callStackInfo[0], $this->_callStackInfo[1]);
         } else {

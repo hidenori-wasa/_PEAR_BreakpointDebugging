@@ -67,8 +67,8 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
      */
     protected function setHTMLTags(&$tags)
     {
-        B::internalAssert(func_num_args() === 1, 1);
-        B::internalAssert(is_array($tags), 2);
+        B::assert(func_num_args() === 1, 1);
+        B::assert(is_array($tags), 2);
 
         parent::setHTMLTags($tags);
     }
@@ -82,10 +82,8 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
      */
     protected function convertMbString($string)
     {
-        //$string = func_get_arg(0);
-
-        B::internalAssert(func_num_args() === 1, 1);
-        B::internalAssert(is_string($string), 2);
+        B::assert(func_num_args() === 1, 1);
+        B::assert(is_string($string), 2);
 
         return parent::convertMbString($string);
     }
@@ -105,14 +103,14 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
      */
     protected function addFunctionValuesToLog(&$pTmpLog2, &$pTmpLog, &$onceFlag2, $func, $class, $line, $tabs = '')
     {
-        B::internalAssert(func_num_args() <= 7, 1);
-        B::internalAssert(is_array($pTmpLog2) || is_resource($pTmpLog2) || $pTmpLog2 === null, 2);
-        B::internalAssert(is_array($pTmpLog) || is_resource($pTmpLog) || $pTmpLog === null, 3);
-        B::internalAssert(is_bool($onceFlag2), 4);
-        B::internalAssert(is_string($func), 5);
-        B::internalAssert(is_string($class), 6);
-        B::internalAssert(is_string($line) || is_int($line), 7);
-        B::internalAssert(is_string($tabs), 8);
+        B::assert(func_num_args() <= 7, 1);
+        B::assert(is_array($pTmpLog2) || is_resource($pTmpLog2) || $pTmpLog2 === null, 2);
+        B::assert(is_array($pTmpLog) || is_resource($pTmpLog) || $pTmpLog === null, 3);
+        B::assert(is_bool($onceFlag2), 4);
+        B::assert(is_string($func), 5);
+        B::assert(is_string($class), 6);
+        B::assert(is_string($line) || is_int($line), 7);
+        B::assert(is_string($tabs), 8);
 
         parent::addFunctionValuesToLog($pTmpLog2, $pTmpLog, $onceFlag2, $func, $class, $line, $tabs);
     }
@@ -129,11 +127,11 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
      */
     protected function reflectArray(&$pTmpLog, $paramName, $array, $tabNumber = 1)
     {
-        B::internalAssert(func_num_args() <= 4, 1);
-        B::internalAssert(is_array($pTmpLog) || is_resource($pTmpLog), 2);
-        B::internalAssert(is_string($paramName) || is_int($paramName), 3);
-        B::internalAssert(is_array($array), 4);
-        B::internalAssert(is_int($tabNumber), 5);
+        B::assert(func_num_args() <= 4, 1);
+        B::assert(is_array($pTmpLog) || is_resource($pTmpLog), 2);
+        B::assert(is_string($paramName) || is_int($paramName), 3);
+        B::assert(is_array($array), 4);
+        B::assert(is_int($tabNumber), 5);
 
         parent::reflectArray($pTmpLog, $paramName, $array, $tabNumber);
     }
@@ -152,11 +150,11 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
     {
         $className = get_class($object);
 
-        B::internalAssert(func_num_args() <= 4, 1);
-        B::internalAssert(is_string($paramName) || is_int($paramName), 2);
-        B::internalAssert(is_object($object), 3);
-        B::internalAssert(is_string($className), 4);
-        B::internalAssert(is_int($tabNumber), 5);
+        B::assert(func_num_args() <= 4, 1);
+        B::assert(is_string($paramName) || is_int($paramName), 2);
+        B::assert(is_object($object), 3);
+        B::assert(is_string($className), 4);
+        B::assert(is_int($tabNumber), 5);
 
         parent::reflectObject($pTmpLog, $paramName, $object, $tabNumber);
     }
@@ -171,9 +169,9 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
      */
     function exceptionHandler2($pException, $prependLog)
     {
-        B::internalAssert(func_num_args() === 2, 1);
-        B::internalAssert($pException instanceof \Exception, 2);
-        B::internalAssert(is_string($prependLog), 3);
+        B::assert(func_num_args() === 2, 1);
+        B::assert($pException instanceof \Exception, 2);
+        B::assert(is_string($prependLog), 3);
 
         // Forces unlocking to avoid lock-count assertion error if forces a exit.
         \BreakpointDebugging_Lock::forceUnlocking();
@@ -192,11 +190,11 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
      */
     function errorHandler2($errorNumber, $errorMessage, $prependLog, $callStack)
     {
-        B::internalAssert(func_num_args() === 4, 1);
-        B::internalAssert(is_int($errorNumber), 2);
-        B::internalAssert(is_string($errorMessage), 3);
-        B::internalAssert(is_string($prependLog), 4);
-        B::internalAssert(is_array($callStack), 5);
+        B::assert(func_num_args() === 4, 1);
+        B::assert(is_int($errorNumber), 2);
+        B::assert(is_string($errorMessage), 3);
+        B::assert(is_string($prependLog), 4);
+        B::assert(is_array($callStack), 5);
 
         parent::errorHandler2($errorNumber, $errorMessage, $prependLog, $callStack);
     }
@@ -214,12 +212,12 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
      */
     protected function addParameterHeaderToLog(&$pTmpLog, $file, $line, $func, $class)
     {
-        B::internalAssert(func_num_args() === 5, 1);
-        B::internalAssert(is_array($pTmpLog) || is_resource($pTmpLog) || $pTmpLog === null, 2);
-        B::internalAssert(is_string($file), 3);
-        B::internalAssert(is_string($line) || is_int($line), 4);
-        B::internalAssert(is_string($func), 5);
-        B::internalAssert(is_string($class), 6);
+        B::assert(func_num_args() === 5, 1);
+        B::assert(is_array($pTmpLog) || is_resource($pTmpLog) || $pTmpLog === null, 2);
+        B::assert(is_string($file), 3);
+        B::assert(is_string($line) || is_int($line), 4);
+        B::assert(is_string($func), 5);
+        B::assert(is_string($class), 6);
 
         parent::addParameterHeaderToLog($pTmpLog, $file, $line, $func, $class);
     }
@@ -240,15 +238,15 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
      */
     protected function outputFixedFunctionToLogging($backTrace, &$pTmpLog, &$onceFlag2, &$func, &$class, $file, $line, $tabs = '')
     {
-        B::internalAssert(func_num_args() <= 8, 1);
-        B::internalAssert(is_array($backTrace), 2);
-        B::internalAssert(is_array($pTmpLog) || is_resource($pTmpLog) || $pTmpLog === null, 3);
-        B::internalAssert(is_bool($onceFlag2), 4);
-        B::internalAssert(is_null($func) || is_string($func), 5);
-        B::internalAssert(is_null($class) || is_string($class), 6);
-        B::internalAssert(is_string($file), 7);
-        B::internalAssert(is_string($line) || is_int($line), 8);
-        B::internalAssert(is_string($tabs), 9);
+        B::assert(func_num_args() <= 8, 1);
+        B::assert(is_array($backTrace), 2);
+        B::assert(is_array($pTmpLog) || is_resource($pTmpLog) || $pTmpLog === null, 3);
+        B::assert(is_bool($onceFlag2), 4);
+        B::assert(is_null($func) || is_string($func), 5);
+        B::assert(is_null($class) || is_string($class), 6);
+        B::assert(is_string($file), 7);
+        B::assert(is_string($line) || is_int($line), 8);
+        B::assert(is_string($tabs), 9);
 
         parent::outputFixedFunctionToLogging($backTrace, $pTmpLog, $onceFlag2, $func, $class, $file, $line, $tabs);
     }
@@ -264,14 +262,10 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
      */
     protected function outputErrorCallStackLog2($errorKind, $errorMessage, $prependLog = '')
     {
-        //$errorKind = func_get_arg(0);
-        //$errorMessage = func_get_arg(1);
-        //$prependLog = func_get_arg(2);
-
-        B::internalAssert(func_num_args() <= 3, 1);
-        B::internalAssert(is_string($errorKind), 2);
-        B::internalAssert(is_string($errorMessage), 3);
-        B::internalAssert(is_string($prependLog), 4);
+        B::assert(func_num_args() <= 3, 1);
+        B::assert(is_string($errorKind), 2);
+        B::assert(is_string($errorMessage), 3);
+        B::assert(is_string($prependLog), 4);
 
         parent::outputErrorCallStackLog2($errorKind, $errorMessage, $prependLog);
     }
@@ -287,9 +281,9 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
      */
     protected function getParamInfo($tags, $type, $paramValue)
     {
-        B::internalAssert(func_num_args() === 3, 1);
-        B::internalAssert(is_array($tags), 2);
-        B::internalAssert(is_string($type), 3);
+        B::assert(func_num_args() === 3, 1);
+        B::assert(is_array($tags), 2);
+        B::assert(is_string($type), 3);
 
         return parent::getParamInfo($tags, $type, $paramValue);
     }
@@ -306,10 +300,10 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
      */
     protected function getTypeAndValue(&$pTmpLog, $paramName, $paramValue, $tabNumber)
     {
-        B::internalAssert(func_num_args() === 4, 1);
-        B::internalAssert(is_array($pTmpLog) || is_resource($pTmpLog) || $pTmpLog === null, 2);
-        B::internalAssert(is_string($paramName) || is_int($paramName), 3);
-        B::internalAssert(is_int($tabNumber), 4);
+        B::assert(func_num_args() === 4, 1);
+        B::assert(is_array($pTmpLog) || is_resource($pTmpLog) || $pTmpLog === null, 2);
+        B::assert(is_string($paramName) || is_int($paramName), 3);
+        B::assert(is_int($tabNumber), 4);
 
         parent::getTypeAndValue($pTmpLog, $paramName, $paramValue, $tabNumber);
     }
@@ -325,10 +319,10 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
      */
     protected function searchDebugBacktraceArgsToString(&$pTmpLog, $backtraceParams, $tabNumber = 1)
     {
-        B::internalAssert(func_num_args() <= 3, 1);
-        B::internalAssert(is_array($pTmpLog) || is_resource($pTmpLog) || $pTmpLog === null, 2);
-        B::internalAssert(is_array($backtraceParams), 3);
-        B::internalAssert(is_int($tabNumber), 4);
+        B::assert(func_num_args() <= 3, 1);
+        B::assert(is_array($pTmpLog) || is_resource($pTmpLog) || $pTmpLog === null, 2);
+        B::assert(is_array($backtraceParams), 3);
+        B::assert(is_int($tabNumber), 4);
 
         parent::searchDebugBacktraceArgsToString($pTmpLog, $backtraceParams, $tabNumber);
     }
@@ -340,7 +334,7 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
      */
     protected function logPointerOpening()
     {
-        B::internalAssert(func_num_args() === 0, 1);
+        B::assert(func_num_args() === 0, 1);
 
         return parent::logPointerOpening();
     }
@@ -354,8 +348,8 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
      */
     protected function logPointerClosing(&$pTmpLog)
     {
-        B::internalAssert(func_num_args() === 1, 1);
-        B::internalAssert(is_array($pTmpLog) || is_resource($pTmpLog) || $pTmpLog === null, 2);
+        B::assert(func_num_args() === 1, 1);
+        B::assert(is_array($pTmpLog) || is_resource($pTmpLog) || $pTmpLog === null, 2);
 
         parent::logPointerClosing($pTmpLog);
     }
@@ -369,8 +363,8 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
      */
     protected function logWriting(&$pTmpLog)
     {
-        B::internalAssert(func_num_args() === 1, 1);
-        B::internalAssert(is_array($pTmpLog) || is_resource($pTmpLog), 2);
+        B::assert(func_num_args() === 1, 1);
+        B::assert(is_array($pTmpLog) || is_resource($pTmpLog), 2);
 
         global $_BreakpointDebugging_EXE_MODE;
 
@@ -414,9 +408,9 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
     {
         global $_BreakpointDebugging_EXE_MODE;
 
-        B::internalAssert(func_num_args() === 2, 1);
-        B::internalAssert(is_array($pLogBuffer) || is_resource($pLogBuffer) || $pLogBuffer === null, 2);
-        B::internalAssert(is_string($log), 3);
+        B::assert(func_num_args() === 2, 1);
+        B::assert(is_array($pLogBuffer) || is_resource($pLogBuffer) || $pLogBuffer === null, 2);
+        B::assert(is_string($log), 3);
 
         switch ($_BreakpointDebugging_EXE_MODE & ~B::UNIT_TEST) {
             case B::LOCAL_DEBUG_OF_RELEASE:
@@ -461,10 +455,10 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
     {
         global $_BreakpointDebugging_EXE_MODE;
 
-        B::internalAssert(func_num_args() === 2, 1);
-        B::internalAssert(is_array($pTmpLog) || is_resource($pTmpLog) || $pTmpLog === null, 2);
-        B::internalAssert(is_array($pTmpLog2) || is_resource($pTmpLog2), 3);
-        B::internalAssert($pTmpLog2 !== null, 4);
+        B::assert(func_num_args() === 2, 1);
+        B::assert(is_array($pTmpLog) || is_resource($pTmpLog) || $pTmpLog === null, 2);
+        B::assert(is_array($pTmpLog2) || is_resource($pTmpLog2), 3);
+        B::assert($pTmpLog2 !== null, 4);
 
         switch ($_BreakpointDebugging_EXE_MODE & ~B::UNIT_TEST) {
             case B::LOCAL_DEBUG_OF_RELEASE:

@@ -14,6 +14,21 @@ class BreakpointDebugging_ErrorTest extends \BreakpointDebugging_UnitTestOverrid
 {
     static $error;
 
+    static function changeExeMode()
+    {
+        global $_BreakpointDebugging_EXE_MODE;
+
+        $storeExeMode = $_BreakpointDebugging_EXE_MODE;
+        if ($_BreakpointDebugging_EXE_MODE & B::LOCAL_DEBUG) {
+            $_BreakpointDebugging_EXE_MODE = B::LOCAL_DEBUG_OF_RELEASE | B::UNIT_TEST;
+        } else if ($_BreakpointDebugging_EXE_MODE & B::REMOTE_DEBUG) {
+            $_BreakpointDebugging_EXE_MODE = B::RELEASE | B::UNIT_TEST;
+        } else {
+            $this->fail();
+        }
+        return $storeExeMode;
+    }
+
     function setUp()
     {
         parent::setUp();
@@ -59,7 +74,7 @@ class BreakpointDebugging_ErrorTest extends \BreakpointDebugging_UnitTestOverrid
      */
     public function testExceptionHandler2()
     {
-        global $line1_, $line2_, $lineA_, $lineB_;
+        global $line1_, $line2_, $lineA_, $lineB_, $_BreakpointDebugging_EXE_MODE;
 
         self::$error = new \BreakpointDebugging_Error();
 
@@ -70,10 +85,12 @@ class BreakpointDebugging_ErrorTest extends \BreakpointDebugging_UnitTestOverrid
         $thisFileNumber = $this->_getFileNumber(__FILE__);
         function test2_()
         {
-            global $line1_;
+            global $line1_, $_BreakpointDebugging_EXE_MODE;
 
+            $storeExeMode = BreakpointDebugging_ErrorTest::changeExeMode();
             BreakpointDebugging_ErrorTest::$error->exceptionHandler2(new \Exception(), B::$prependExceptionLog);
             $line1_ = __LINE__ - 1;
+            $_BreakpointDebugging_EXE_MODE = $storeExeMode;
         }
 
         function test1_()
@@ -84,8 +101,10 @@ class BreakpointDebugging_ErrorTest extends \BreakpointDebugging_UnitTestOverrid
             $line2_ = __LINE__ - 1;
         }
 
+        $storeExeMode = self::changeExeMode();
         BreakpointDebugging_ErrorTest::$error->exceptionHandler2(new \Exception(), B::$prependExceptionLog);
         $line = __LINE__ - 1;
+        $_BreakpointDebugging_EXE_MODE = $storeExeMode;
         test1_();
         $line3 = __LINE__ - 1;
 
@@ -116,7 +135,11 @@ class BreakpointDebugging_ErrorTest extends \BreakpointDebugging_UnitTestOverrid
         self::$error = new \BreakpointDebugging_Error();
         function errorHandler()
         {
+            global $_BreakpointDebugging_EXE_MODE;
+
+            $storeExeMode = BreakpointDebugging_ErrorTest::changeExeMode();
             BreakpointDebugging_ErrorTest::$error->errorHandler2(E_USER_ERROR, '', B::$prependErrorLog, debug_backtrace());
+            $_BreakpointDebugging_EXE_MODE = $storeExeMode;
         }
 
         function trigger_error2()

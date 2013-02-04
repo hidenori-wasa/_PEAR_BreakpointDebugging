@@ -155,7 +155,6 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
         B::mkdir($testDirName, 0700);
         $this->assertTrue(is_dir($testDirName));
         if (B::getStatic('$_os') === 'WIN') {
-            //$this->markTestSkipped('Cannot test file permission in case of windows.');
             return;
         }
         clearstatcache();
@@ -175,7 +174,6 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
         fclose($pFile);
         $this->assertTrue(is_file($testFileName));
         if (B::getStatic('$_os') === 'WIN') {
-            //$this->markTestSkipped('Cannot test file permission in case of windows.');
             return;
         }
         clearstatcache();
@@ -245,18 +243,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
     /**
      * @covers \BreakpointDebugging_InAllCase<extended>
      *
-     * @expectedException        \PHPUnit_Framework_Error
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_InAllCaseTest FUNCTION=testInternalAssert ID=1
-     */
-    public function testInternalAssert()
-    {
-        B::internalAssert(false, 1);
-    }
-
-    /**
-     * @covers \BreakpointDebugging_InAllCase<extended>
-     *
-     * @expectedException        \PHPUnit_Framework_Error
+     * @expectedException        \BreakpointDebugging_ErrorException
      * @expectedExceptionMessage CLASS=BreakpointDebugging_InAllCaseTest FUNCTION=testInternalException ID=1
      */
     public function testInternalException()

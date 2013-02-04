@@ -132,7 +132,7 @@ abstract class BreakpointDebugging_Lock
             return self::$_internalInstance;
         } else {
             // Synchronous class has to be any one of derived classes because dead-lock occurs.
-            B::internalAssert($currentClassName === null || $currentClassName === $className, 1);
+            B::assert($currentClassName === null || $currentClassName === $className, 1);
             $currentClassName = $className;
             if (self::$_instance === null) {
                 self::$_instance = new $className($lockFilePath, $timeout, $expire, $sleepMicroSeconds);
@@ -177,7 +177,7 @@ abstract class BreakpointDebugging_Lock
     function __destruct()
     {
         $lockCount = $this->lockCount;
-        // Unlocks all. We must unlock before "B::internalAssert" because if we execute unit test, it throws exception.
+        // Unlocks all. We must unlock before "B::assert" because if we execute unit test, it throws exception.
         while ($this->lockCount > 0) {
             $this->unlock();
         }
@@ -186,7 +186,7 @@ abstract class BreakpointDebugging_Lock
             // Closes the shared memory.
             shmop_close(self::$sharedMemoryID);
         }
-        B::internalAssert($lockCount <= 0, 1);
+        B::assert($lockCount <= 0, 1);
     }
 
     /**
@@ -214,7 +214,7 @@ abstract class BreakpointDebugging_Lock
         $this->lockingLoop();
         set_error_handler('\BreakpointDebugging::errorHandler', -1);
 
-        B::internalAssert($this->lockCount === 0, 1);
+        B::assert($this->lockCount === 0, 1);
         $this->lockCount++;
     }
 
@@ -237,7 +237,7 @@ abstract class BreakpointDebugging_Lock
             return;
         }
         $this->lockCount--;
-        B::internalAssert($this->lockCount === 0, 1);
+        B::assert($this->lockCount === 0, 1);
 
         restore_error_handler();
         $this->unlockingLoop();
@@ -251,9 +251,12 @@ abstract class BreakpointDebugging_Lock
      */
     static function forceUnlocking()
     {
-        B::limitAccess(array (
-            'BreakpointDebugging/Error.php',
-            'BreakpointDebugging/Error_Option.php'));
+        B::limitAccess(
+            array (
+                'BreakpointDebugging/Error.php',
+                'BreakpointDebugging/Error_Option.php'
+            )
+        );
 
         if (is_object(self::$_internalInstance)) {
             while (self::$_internalInstance->lockCount > 0) {

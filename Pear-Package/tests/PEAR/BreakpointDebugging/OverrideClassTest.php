@@ -100,20 +100,6 @@ class BreakpointDebugging_OverrideClassTest extends \BreakpointDebugging_UnitTes
         ob_end_clean();
     }
 
-//    /**
-//     * @covers \BreakpointDebugging_OverrideClass<extended>
-//     */
-//    public function testNewArray()
-//    {
-//        global $object, $array;
-//
-//        $reference = 10;
-//        $pr_nativeClassName = B::getPropertyForTest('NativeClassOverriding', '$pr_nativeClassName');
-//        // Creates "\NativeClass" instance.
-//        $pNativeClass = NativeClassOverriding::newArray($pr_nativeClassName, array ($object, $array, tmpfile(), &$reference));
-//        $this->assertTrue($pNativeClass instanceof $pr_nativeClassName);
-//    }
-
     /**
      * @covers \BreakpointDebugging_OverrideClass<extended>
      *

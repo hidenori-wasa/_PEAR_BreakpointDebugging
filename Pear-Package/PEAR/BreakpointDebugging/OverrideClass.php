@@ -134,10 +134,6 @@ class BreakpointDebugging_OverrideClass
      */
     protected $pNativeClass;
 
-//    /**
-//     * @var array This sends parameters to eval().
-//     */
-//    static $tmpParams;
     /**
      * This constructor holds native class object.
      *
@@ -229,13 +225,10 @@ class BreakpointDebugging_OverrideClass
     {
         B::assert(is_string($className), 1);
 
-        //self::$tmpParams = $params;
         B::$tmp = $params;
         $paramNumber = count($params);
         $paramString = array ();
-        //$propertyNameToSend = 'BreakpointDebugging_OverrideClass::$tmpParams';
         $propertyNameToSend = '\BreakpointDebugging::$tmp';
-
         for ($count = 0; $count < $paramNumber; $count++) {
             $paramString[] = $propertyNameToSend . '[' . $count . ']';
         }

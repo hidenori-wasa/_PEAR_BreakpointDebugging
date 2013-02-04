@@ -58,35 +58,35 @@ function BreakpointDebugging_setExecutionMode()
     global $_BreakpointDebugging_EXE_MODE;
 
     $setExecutionMode = function ($executionMode) {
-        /**
-         * @see "### Debug mode constant number ###" of class "BreakpointDebugging_InAllCase" in "BreakpointDebugging.php".
-         */
-        // ### Debug mode number ###
-        $LOCAL_DEBUG = 1;
-        $LOCAL_DEBUG_OF_RELEASE = 2;
-        $REMOTE_DEBUG = 4;
-        $RELEASE = 8;
-        $UNIT_TEST = 16;
+            /**
+             * @see "### Debug mode constant number ###" of class "BreakpointDebugging_InAllCase" in "BreakpointDebugging.php".
+             */
+            // ### Debug mode number ###
+            $LOCAL_DEBUG = 1;
+            $LOCAL_DEBUG_OF_RELEASE = 2;
+            $REMOTE_DEBUG = 4;
+            $RELEASE = 8;
+            $UNIT_TEST = 16;
 
-        if (!isset($_SERVER['SERVER_ADDR']) || $_SERVER['SERVER_ADDR'] === '127.0.0.1') { // In case of command or local host.
-            if ($executionMode === 'DEBUG') {
-                return $LOCAL_DEBUG; // Local server debug by breakpoint.
-            } else if ($executionMode === 'RELEASE') {
-                return $LOCAL_DEBUG_OF_RELEASE; // Local server debug by breakpoint and logging.
-            } else if ($executionMode === 'UNIT_TEST') {
-                return $LOCAL_DEBUG_OF_RELEASE | $UNIT_TEST; // Unit test on local server.
+            if (!isset($_SERVER['SERVER_ADDR']) || $_SERVER['SERVER_ADDR'] === '127.0.0.1') { // In case of command or local host.
+                if ($executionMode === 'DEBUG') {
+                    return $LOCAL_DEBUG; // Local server debug by breakpoint.
+                } else if ($executionMode === 'RELEASE') {
+                    return $LOCAL_DEBUG_OF_RELEASE; // Local server debug by breakpoint and logging.
+                } else if ($executionMode === 'UNIT_TEST') {
+                    return $LOCAL_DEBUG | $UNIT_TEST; // Unit test on local server.
+                }
+            } else { // In case of remote.
+                if ($executionMode === 'DEBUG') {
+                    return $REMOTE_DEBUG; // Remote server debug by browser display.
+                } else if ($executionMode === 'RELEASE') {
+                    return $RELEASE; // Remote server release by logging. We must execute "REMOTE_DEBUG" before this, and we must set on last for security.
+                } else if ($executionMode === 'UNIT_TEST') {
+                    return $REMOTE_DEBUG | $UNIT_TEST; // Unit test on remote server.
+                }
             }
-        } else { // In case of remote.
-            if ($executionMode === 'DEBUG') {
-                return $REMOTE_DEBUG; // Remote server debug by browser display.
-            } else if ($executionMode === 'RELEASE') {
-                return $RELEASE; // Remote server release by logging. We must execute "REMOTE_DEBUG" before this, and we must set on last for security.
-            } else if ($executionMode === 'UNIT_TEST') {
-                return $RELEASE | $UNIT_TEST; // Unit test on remote server.
-            }
-        }
-        exit('<pre>You must set "$_BreakpointDebugging_EXE_MODE = $setExecutionMode();" into "./PEAR_Setting/BreakpointDebugging_MySetting.php" because you mistook.</pre>');
-    };
+            exit('<pre>You must set "$_BreakpointDebugging_EXE_MODE = $setExecutionMode();" into "./PEAR_Setting/BreakpointDebugging_MySetting.php" because you mistook.</pre>');
+        };
 
     // ### Execution mode setting. ===>
     // Please, choose a mode.
