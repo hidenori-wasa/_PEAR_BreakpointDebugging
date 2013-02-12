@@ -366,17 +366,7 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
         B::assert(func_num_args() === 1, 1);
         B::assert(is_array($pTmpLog) || is_resource($pTmpLog), 2);
 
-        global $_BreakpointDebugging_EXE_MODE;
-
-        switch ($_BreakpointDebugging_EXE_MODE & ~B::UNIT_TEST) {
-            case B::LOCAL_DEBUG_OF_RELEASE:
-                foreach ($pTmpLog as $log) {
-                    fwrite($this->pErrorLogFile, $log);
-                }
-                break;
-            case B::RELEASE:
-                parent::logWriting($pTmpLog);
-                break;
+        switch (B::getStatic('$exeMode') & ~(B::UNIT_TEST | B::IGNORING_BREAK_POINT)) {
             case B::LOCAL_DEBUG:
                 foreach ($pTmpLog as $log) {
                     echo $log;
@@ -390,8 +380,16 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
                 // Delete temporary file.
                 fclose($pTmpLog);
                 break;
+            case B::LOCAL_DEBUG_OF_RELEASE:
+                foreach ($pTmpLog as $log) {
+                    fwrite($this->pErrorLogFile, $log);
+                }
+                break;
+            case B::RELEASE: // For unit test.
+                parent::logWriting($pTmpLog);
+                break;
             default:
-                throw new \BreakpointDebugging_ErrorException('', 2);
+                B::internalException('', 3);
         }
         $pTmpLog = null;
     }
@@ -406,23 +404,11 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
      */
     protected function logBufferWriting(&$pLogBuffer, $log)
     {
-        global $_BreakpointDebugging_EXE_MODE;
-
         B::assert(func_num_args() === 2, 1);
         B::assert(is_array($pLogBuffer) || is_resource($pLogBuffer) || $pLogBuffer === null, 2);
         B::assert(is_string($log), 3);
 
-        switch ($_BreakpointDebugging_EXE_MODE & ~B::UNIT_TEST) {
-            case B::LOCAL_DEBUG_OF_RELEASE:
-                if ($pLogBuffer === null) {
-                    fwrite($this->pErrorLogFile, $log);
-                } else {
-                    $pLogBuffer[] = $log;
-                }
-                break;
-            case B::RELEASE:
-                parent::logBufferWriting($pLogBuffer, $log);
-                break;
+        switch (B::getStatic('$exeMode') & ~(B::UNIT_TEST | B::IGNORING_BREAK_POINT)) {
             case B::LOCAL_DEBUG:
                 if ($pLogBuffer === null) {
                     echo $log;
@@ -437,8 +423,18 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
                     fwrite($pLogBuffer, $log);
                 }
                 break;
+            case B::LOCAL_DEBUG_OF_RELEASE:
+                if ($pLogBuffer === null) {
+                    fwrite($this->pErrorLogFile, $log);
+                } else {
+                    $pLogBuffer[] = $log;
+                }
+                break;
+            case B::RELEASE: // For unit test.
+                parent::logBufferWriting($pLogBuffer, $log);
+                break;
             default:
-                throw new \BreakpointDebugging_ErrorException('', 2);
+                B::internalException('', 4);
         }
     }
 
@@ -453,30 +449,12 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
      */
     protected function logCombination(&$pTmpLog, &$pTmpLog2)
     {
-        global $_BreakpointDebugging_EXE_MODE;
-
         B::assert(func_num_args() === 2, 1);
         B::assert(is_array($pTmpLog) || is_resource($pTmpLog) || $pTmpLog === null, 2);
         B::assert(is_array($pTmpLog2) || is_resource($pTmpLog2), 3);
         B::assert($pTmpLog2 !== null, 4);
 
-        switch ($_BreakpointDebugging_EXE_MODE & ~B::UNIT_TEST) {
-            case B::LOCAL_DEBUG_OF_RELEASE:
-                if ($pTmpLog === null) {
-                    foreach ($pTmpLog2 as $log) {
-                        fwrite($this->pErrorLogFile, $log);
-                    }
-                } else if (count($pTmpLog) === 0) {
-                    if (count($pTmpLog2) !== 0) {
-                        $pTmpLog = $pTmpLog2;
-                    }
-                } else if (count($pTmpLog2) !== 0) {
-                    $pTmpLog = array_merge($pTmpLog, $pTmpLog2);
-                }
-                break;
-            case B::RELEASE:
-                parent::logCombination($pTmpLog, $pTmpLog2);
-                break;
+        switch (B::getStatic('$exeMode') & ~(B::UNIT_TEST | B::IGNORING_BREAK_POINT)) {
             case B::LOCAL_DEBUG:
                 if ($pTmpLog === null) {
                     echo $pTmpLog2;
@@ -500,8 +478,24 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
                     }
                 }
                 break;
+            case B::LOCAL_DEBUG_OF_RELEASE:
+                if ($pTmpLog === null) {
+                    foreach ($pTmpLog2 as $log) {
+                        fwrite($this->pErrorLogFile, $log);
+                    }
+                } else if (count($pTmpLog) === 0) {
+                    if (count($pTmpLog2) !== 0) {
+                        $pTmpLog = $pTmpLog2;
+                    }
+                } else if (count($pTmpLog2) !== 0) {
+                    $pTmpLog = array_merge($pTmpLog, $pTmpLog2);
+                }
+                break;
+            case B::RELEASE: // For unit test.
+                parent::logCombination($pTmpLog, $pTmpLog2);
+                break;
             default:
-                throw new \BreakpointDebugging_ErrorException('', 1);
+                B::internalException('', 5);
         }
         $this->logPointerClosing($pTmpLog2);
     }

@@ -5,6 +5,9 @@ use \BreakpointDebugging as B;
 function test4()
 {
     global $lineA;
+    static $isRegister = false;
+
+    B::registerNotFixedLocation($isRegister);
 
     trigger_error2();
     $lineA = __LINE__ - 1;

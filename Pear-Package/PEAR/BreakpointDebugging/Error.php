@@ -153,14 +153,12 @@ abstract class BreakpointDebugging_Error_InAllCase
      */
     function __construct()
     {
-        global $_BreakpointDebugging_EXE_MODE;
-
         B::limitAccess('BreakpointDebugging.php');
         B::assert(func_num_args() === 0);
 
         $this->_loggedArrays = array ();
         $this->_loggedObjects = array ();
-        if ($_BreakpointDebugging_EXE_MODE & (B::RELEASE | B::LOCAL_DEBUG_OF_RELEASE)) { // In case of the logging.
+        if (B::getStatic('$exeMode') & (B::RELEASE | B::LOCAL_DEBUG_OF_RELEASE)) { // In case of the logging.
             $this->_isLogging = true;
             $this->_mark = '#';
             $this->setHTMLTags($this->_tags);
@@ -222,7 +220,9 @@ abstract class BreakpointDebugging_Error_InAllCase
             if ($onceFlag) {
                 $onceFlag = false;
                 B::internalException($message, 3);
+                // @codeCoverageIgnoreStart
             }
+            // @codeCoverageIgnoreEnd
             return "### ERROR: {$message} ###";
         }
         return mb_convert_encoding($string, 'UTF-8', $charSet);
@@ -258,7 +258,9 @@ abstract class BreakpointDebugging_Error_InAllCase
                     && $callClass === ''
                     && $paramNumber === 7
                 ) {
+                    // @codeCoverageIgnoreStart
                     continue;
+                    // @codeCoverageIgnoreEnd
                 }
                 if ($func === $callFunc
                     && $class === $callClass
@@ -439,7 +441,8 @@ abstract class BreakpointDebugging_Error_InAllCase
             }
 
             if (B::getStatic('$_callingExceptionHandlerDirectly')) { // Has been called from "BreakpointDebugging_InAllCase::callExceptionHandlerDirectly()" method.
-                B::setStatic('$_callingExceptionHandlerDirectly', false);
+                $callingExceptionHandlerDirectly = &B::refStatic('$_callingExceptionHandlerDirectly');
+                $callingExceptionHandlerDirectly = false;
                 // Array top is set to location which "self::internalException()" is called  because this location is registered to logging.
                 unset($callStackInfo[0]);
             } else {
@@ -468,8 +471,6 @@ abstract class BreakpointDebugging_Error_InAllCase
      */
     function errorHandler2($errorNumber, $errorMessage, $prependLog, $callStack)
     {
-        global $_BreakpointDebugging_EXE_MODE;
-
         // This creates error log.
         switch ($errorNumber) {
             case E_USER_DEPRECATED:
@@ -522,7 +523,7 @@ abstract class BreakpointDebugging_Error_InAllCase
                 $errorKind = 'E_DEPRECATED';
                 break;
             default:
-                throw new \BreakpointDebugging_ErrorException('', 5);
+                B::internalException('', 5);
                 break;
         }
 
@@ -530,23 +531,19 @@ abstract class BreakpointDebugging_Error_InAllCase
         $prependLog = $this->convertMbString($prependLog);
 
         $this->_callStackInfo = $callStack;
-        if (B::getStatic('$_callingExceptionHandlerDirectly')) { // Has been called from "BreakpointDebugging_InAllCase::callExceptionHandlerDirectly()" method.
-            B::setStatic('$_callingExceptionHandlerDirectly', false);
-            // Deletes location which triggers error because this handler must not log this location.
-            unset($this->_callStackInfo[0], $this->_callStackInfo[1]);
-        } else {
-            // Sets location which triggers error to top of call stack array because this handler must log this location.
-            unset($this->_callStackInfo[0]);
-        }
+        // Sets location which triggers error to top of call stack array because this handler must log this location.
+        unset($this->_callStackInfo[0]);
         // Add scope of start page file.
         $this->_callStackInfo[] = array ();
         $this->outputErrorCallStackLog2($errorKind, $errorMessage, $prependLog);
-        if ($_BreakpointDebugging_EXE_MODE === B::RELEASE) { // In case of release.
+        if (B::getStatic('$exeMode') === B::RELEASE) { // In case of release.
+            // @codeCoverageIgnoreStart
             if (isset($endFlag)) {
                 // In case of release mode, we must exit this process when kind is error.
                 exit;
             }
         }
+        // @codeCoverageIgnoreEnd
         B::breakpoint($errorMessage, $this->_callStackInfo);
         // We can do step execution to error location to see variable value even though kind is error.
     }
@@ -646,8 +643,6 @@ abstract class BreakpointDebugging_Error_InAllCase
      */
     protected function outputErrorCallStackLog2($errorKind, $errorMessage, $prependLog = '')
     {
-        global $_BreakpointDebugging_EXE_MODE;
-
         if (!$this->_isLogging) {
             $errorMessage = htmlspecialchars($errorMessage, ENT_QUOTES, 'UTF-8');
             $prependLog = htmlspecialchars($prependLog, ENT_QUOTES, 'UTF-8');
@@ -659,7 +654,7 @@ abstract class BreakpointDebugging_Error_InAllCase
         }
 
         // If this does a log.
-        if ($_BreakpointDebugging_EXE_MODE & (B::RELEASE | B::LOCAL_DEBUG_OF_RELEASE)) {
+        if (B::getStatic('$exeMode') & (B::RELEASE | B::LOCAL_DEBUG_OF_RELEASE)) {
             // Locks the error log files.
             $this->_lockByFileExisting = &\BreakpointDebugging_LockByFileExisting::internalSingleton();
             $this->_lockByFileExisting->lock();
@@ -669,7 +664,6 @@ abstract class BreakpointDebugging_Error_InAllCase
                 // Makes directory, sets permission and sets own user.
                 B::mkdir($errorLogDirectory, 0700);
             }
-            $exceptionMessage = '';
             $varConfFilePath = $errorLogDirectory . $this->_varConfFileName;
             // If variable configuring file exists.
             if (is_file($varConfFilePath)) {
@@ -691,10 +685,7 @@ abstract class BreakpointDebugging_Error_InAllCase
             } else { // In case of Unix.
                 $this->_errorLogFilePath = $errorLogDirectory . $currentErrorLogFileName;
             }
-            if (!is_string($currentErrorLogFileName)) {
-                $exceptionMessage = 'Current error log file name should be string.';
-                goto END_LABEL;
-            }
+            B::assert(is_string($currentErrorLogFileName));
             // When current error log file does not exist.
             if (!is_file($this->_errorLogFilePath)) {
                 // Creates and opens current error log file.
@@ -810,7 +801,7 @@ abstract class BreakpointDebugging_Error_InAllCase
         $this->logBufferWriting($dummy, $this->_tags['/pre']);
 
         // If this does a log.
-        if ($_BreakpointDebugging_EXE_MODE & (B::RELEASE | B::LOCAL_DEBUG_OF_RELEASE)) {
+        if (B::getStatic('$exeMode') & (B::RELEASE | B::LOCAL_DEBUG_OF_RELEASE)) {
             // When log file size exceeds.
             $errorLogFileStatus = fstat($this->pErrorLogFile);
             if ($errorLogFileStatus['size'] > B::getStatic('$_maxLogFileByteSize')) {
@@ -845,9 +836,6 @@ abstract class BreakpointDebugging_Error_InAllCase
             fclose($pVarConfFile);
             // Unlocks the error log files.
             $this->_lockByFileExisting->unlock();
-            if ($exceptionMessage) {
-                B::internalException($exceptionMessage, 6);
-            }
         }
     }
 
@@ -922,7 +910,7 @@ abstract class BreakpointDebugging_Error_InAllCase
                 $this->_tags['font']['resource'] . $paramValue . $this->_tags['/font'];
             $this->logBufferWriting($pTmpLog, $tmp);
         } else {
-            throw new \BreakpointDebugging_ErrorException('', 2);
+            B::internalException('', 2);
         }
     }
 
@@ -964,9 +952,7 @@ abstract class BreakpointDebugging_Error_InAllCase
      */
     protected function logPointerOpening()
     {
-        global $_BreakpointDebugging_EXE_MODE;
-
-        if ($_BreakpointDebugging_EXE_MODE & (B::LOCAL_DEBUG | B::LOCAL_DEBUG_OF_RELEASE)) { // In case of local host.
+        if (B::getStatic('$exeMode') & (B::LOCAL_DEBUG | B::LOCAL_DEBUG_OF_RELEASE)) { // In case of local host.
             return array ();
         } else { // In case of not local debug.
             return tmpfile();
@@ -982,9 +968,7 @@ abstract class BreakpointDebugging_Error_InAllCase
      */
     protected function logPointerClosing(&$pTmpLog)
     {
-        global $_BreakpointDebugging_EXE_MODE;
-
-        if ($_BreakpointDebugging_EXE_MODE & (B::REMOTE_DEBUG | B::RELEASE)) { // In case of remote.
+        if (B::getStatic('$exeMode') & (B::REMOTE_DEBUG | B::RELEASE)) { // In case of remote.
             fclose($pTmpLog);
         }
         $pTmpLog = null;
@@ -1053,9 +1037,7 @@ abstract class BreakpointDebugging_Error_InAllCase
 
 }
 
-global $_BreakpointDebugging_EXE_MODE;
-
-if ($_BreakpointDebugging_EXE_MODE === B::RELEASE) { // In case of release.
+if (B::getStatic('$exeMode') & B::RELEASE) { // In case of release.
     /**
      * Dummy class for release.
      *
@@ -1065,6 +1047,7 @@ if ($_BreakpointDebugging_EXE_MODE === B::RELEASE) { // In case of release.
      * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
      * @version  Release: @package_version@
      * @link     http://pear.php.net/package/BreakpointDebugging
+     * @codeCoverageIgnore
      */
     final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCase
     {

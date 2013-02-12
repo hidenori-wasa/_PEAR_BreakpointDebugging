@@ -38,10 +38,10 @@ class TestClass extends \TestClass_InAllCase
             'BreakpointDebugging/Sample/SampleToLimitAccess.php',
             'BreakpointDebugging/Sample/SampleToLimitAccess_Option.php'
         );
-        self::$staticProperties['$_staticA>limits'] = $tmp;
-        self::$staticProperties['$_staticB>limits'] = $tmp;
-        $this->autoProperties['_autoA>limits'] = $tmp;
-        $this->autoProperties['_autoB>limits'] = $tmp;
+        self::$staticPropertyLimitings['$_staticA'] = $tmp;
+        self::$staticPropertyLimitings['$_staticB'] = $tmp;
+        $this->autoPropertyLimitings['_autoA'] = $tmp;
+        $this->autoPropertyLimitings['_autoB'] = $tmp;
     }
 
     /**
@@ -54,22 +54,23 @@ class TestClass extends \TestClass_InAllCase
      */
     function __set($propertyName, $value)
     {
-        B::limitAccess($this->autoProperties[$propertyName . '>limits']);
+        B::limitAccess($this->autoPropertyLimitings[$propertyName]);
+
         parent::__set($propertyName, $value);
     }
 
     /**
-     * Sets a static property value.
+     * Gets a static property reference.
      *
      * @param string $propertyName Static property name.
-     * @param mixed  $value        Static property value.
      *
-     * @return void
+     * @return mixed& Static property.
      */
-    static function setStatic($propertyName, $value)
+    static function &refStatic($propertyName)
     {
-        B::limitAccess(self::$staticProperties[$propertyName . '>limits']);
-        parent::setStatic($propertyName, $value);
+        B::limitAccess(self::$staticPropertyLimitings[$propertyName]);
+
+        return parent::refStatic($propertyName);
     }
 
     /**
@@ -88,11 +89,13 @@ class TestClass extends \TestClass_InAllCase
         // $this->_notExist = $testValue;
         // $this->_notExist;
 
-        T::setStatic('$_staticA', $testValue);
-        B::assert(T::getStatic('$_staticA') === $testValue);
-        T::setStatic('$_staticB', $testValue);
-        B::assert(T::getStatic('$_staticB') === $testValue);
-        // T::setStatic('$_notExist', $testValue);
+        $staticA = &T::refStatic('$_staticA');
+        $staticA = $testValue;
+        B::assert(T::getStatic('$_staticA') === $staticA);
+        $staticB = &T::refStatic('$_staticB');
+        $staticB = $testValue;
+        B::assert(T::getStatic('$_staticB') === $staticB);
+        // $notExist = &T::refStatic('$_notExist');
         // T::getStatic('$_notExist');
     }
 

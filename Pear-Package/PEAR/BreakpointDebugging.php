@@ -116,6 +116,11 @@ abstract class BreakpointDebugging_InAllCase
     const UNIT_TEST = 16;
 
     /**
+     * @const int Ignoring break point.
+     */
+    const IGNORING_BREAK_POINT = 32;
+
+    /**
      * @var mixed Temporary variable.
      */
     static $tmp;
@@ -124,6 +129,11 @@ abstract class BreakpointDebugging_InAllCase
      * @var array Static properties reference.
      */
     protected static $staticProperties;
+
+    /**
+     * @var array Static property limitings reference.
+     */
+    protected static $staticPropertyLimitings;
 
     /**
      * @var bool "Xdebug" existing-flag.
@@ -201,13 +211,23 @@ abstract class BreakpointDebugging_InAllCase
     private static $_pwd;
 
     /**
+     * @var int Execution mode.
+     */
+    protected static $exeMode;
+
+    /**
      * Initializes static properties.
      */
     function __construct()
     {
+        global $_BreakpointDebugging_EXE_MODE;
+
         B::limitAccess('BreakpointDebugging_Option.php');
 
         self::$_pwd = getcwd();
+        self::$exeMode = $_BreakpointDebugging_EXE_MODE;
+        unset($_BreakpointDebugging_EXE_MODE);
+        self::$staticProperties['$exeMode'] = &self::$exeMode;
         self::$_os = strtoupper(substr(PHP_OS, 0, 3));
         self::$staticProperties['$_os'] = &self::$_os;
         self::$staticProperties['$_userName'] = &self::$_userName;
@@ -237,18 +257,17 @@ abstract class BreakpointDebugging_InAllCase
     }
 
     /**
-     * Sets a static property value.
+     * Gets a static property reference.
      *
      * @param string $propertyName Static property name.
-     * @param mixed  $value        Static property value.
      *
-     * @return void
+     * @return mixed& Static property.
      */
-    static function setStatic($propertyName, $value)
+    static function &refStatic($propertyName)
     {
         B::limitAccess('BreakpointDebugging_Option.php');
 
-        self::$staticProperties[$propertyName] = $value;
+        return self::$staticProperties[$propertyName];
     }
 
     /**
@@ -343,7 +362,6 @@ abstract class BreakpointDebugging_InAllCase
             // @codeCoverageIgnoreEnd
         }
         self::$_notFixedLocations[] = $backTrace2;
-        B::setStatic('$_notFixedLocations', self::$_notFixedLocations);
     }
 
     /**
@@ -388,7 +406,6 @@ abstract class BreakpointDebugging_InAllCase
         }
         self::$_valuesToTrace[$file][$line] = $backTrace2;
         self::$_valuesToTrace[$file][$line]['values'] = $values;
-        B::setStatic('$_valuesToTrace', self::$_valuesToTrace);
     }
 
     /**
@@ -636,6 +653,7 @@ abstract class BreakpointDebugging_InAllCase
         B::limitAccess(
             array (
                 'BreakpointDebugging/Error.php',
+                'BreakpointDebugging/Error_Option.php',
                 'BreakpointDebugging/LockByFileExisting.php'
             )
         );

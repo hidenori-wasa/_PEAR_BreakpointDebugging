@@ -3,7 +3,9 @@
 /**
  * Error log files manager.
  *
- * Procedure1: Please, set "$_BreakpointDebugging_EXE_MODE = $RELEASE;" in "BreakpointDebugging_MySetting.php" file.
+ * Procedure1: Please, set
+ *      "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('RELEASE');"
+ *      in "BreakpointDebugging_MySetting.php" file.
  * Procedure2: Please, register your IP address to "$myIPAddress".
  * Procedure3: Please, upload this page to the project current directory.
  * Procedure4: Please, call this page from browser.
@@ -59,8 +61,9 @@ require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
 use \BreakpointDebugging as B;
 
 // Checks the execution mode.
-if ($_BreakpointDebugging_EXE_MODE !== B::RELEASE) { // In case of not release.
-    exit('<pre>You must set "$_BreakpointDebugging_EXE_MODE = $setExecutionMode(\'RELEASE\');" into "BreakpointDebugging_MySetting.php" file.</pre>');
+//if ($_BreakpointDebugging_EXE_MODE !== B::RELEASE) { // In case of not release.
+if (!(B::getStatic('$exeMode') & B::RELEASE)) { // In case of not release.
+    exit('<pre>You must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'RELEASE\');" into "BreakpointDebugging_MySetting.php" file.</pre>');
 }
 
 // Checks client IP address.

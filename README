@@ -12,12 +12,12 @@ The dependences
         "Xdebug" extension is required because (uses breakpoint,
         displays for fatal error and detects infinity recursive function call).
     Requires "Xdebug" extension if you want above in case of
-    "$_BreakpointDebugging_EXE_MODE = B::REMOTE_DEBUG" mode. (optional).
+        "$_BreakpointDebugging_EXE_MODE = B::REMOTE_DEBUG" mode. (optional).
     Requires "shmop" extension if you use "\BreakpointDebugging_LockByShmop" class. (optional).
     Requires environment which "flock()" enables
-    if you use "\BreakpointDebugging_LockByFlock" class. (optional).
+        if you use "\BreakpointDebugging_LockByFlock" class. (optional).
     Requires "PHPUnit 3.6.11" pear package
-    if you use "\BreakpointDebugging::executeUnitTest()" class method. (optional).
+        if you use "\BreakpointDebugging::executeUnitTest()" class method. (optional).
         However, does not use "phpunit" command to debug its unit test file
         if array parameter element of "\BreakpointDebugging::executeUnitTest()" is one.
         Therefore, we can execute unit test with remote server without installing "PHPUnit".

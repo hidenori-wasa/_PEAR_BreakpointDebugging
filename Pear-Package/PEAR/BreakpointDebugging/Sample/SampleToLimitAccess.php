@@ -35,9 +35,19 @@ abstract class TestClass_InAllCase
     protected static $staticProperties;
 
     /**
+     * @var array Static property limitings reference.
+     */
+    protected static $staticPropertyLimitings;
+
+    /**
      * @var array Auto properties reference.
      */
     protected $autoProperties;
+
+    /**
+     * @var array Auto properties limitings reference.
+     */
+    protected $autoPropertyLimitings;
 
     /**
      * @var mixed Dummy.
@@ -101,12 +111,7 @@ abstract class TestClass_InAllCase
      */
     function __set($propertyName, $value)
     {
-        B::limitAccess(
-            array (
-                'BreakpointDebugging/Sample/SampleToLimitAccess.php',
-                'BreakpointDebugging/Sample/SampleToLimitAccess_Option.php'
-            )
-        );
+        B::limitAccess('BreakpointDebugging/Sample/SampleToLimitAccess_Option.php');
 
         $this->$propertyName = $value;
     }
@@ -124,23 +129,17 @@ abstract class TestClass_InAllCase
     }
 
     /**
-     * Sets a static property value.
+     * Gets a static property reference.
      *
      * @param string $propertyName Static property name.
-     * @param mixed  $value        Static property value.
      *
-     * @return void
+     * @return mixed& Static property.
      */
-    static function setStatic($propertyName, $value)
+    static function &refStatic($propertyName)
     {
-        B::limitAccess(
-            array (
-                'BreakpointDebugging/Sample/SampleToLimitAccess.php',
-                'BreakpointDebugging/Sample/SampleToLimitAccess_Option.php'
-            )
-        );
+        B::limitAccess('BreakpointDebugging/Sample/SampleToLimitAccess_Option.php');
 
-        self::$staticProperties[$propertyName] = $value;
+        return self::$staticProperties[$propertyName];
     }
 
     /**
@@ -169,9 +168,8 @@ abstract class TestClass_InAllCase
 
 }
 
-global $_BreakpointDebugging_EXE_MODE;
-// if ($_BreakpointDebugging_EXE_MODE === B::RELEASE) { // In case of release. // Actual "php" code.
-if ($_BreakpointDebugging_EXE_MODE === B::LOCAL_DEBUG_OF_RELEASE) {
+// if (B::getStatic('$exeMode') & B::RELEASE) { // In case of release. // Actual "php" code.
+if (B::getStatic('$exeMode') & B::LOCAL_DEBUG_OF_RELEASE) {
     /**
      * Dummy.
      *
@@ -214,13 +212,15 @@ foreach ($testValues as $testValue) {
     // $pTestClass->_notExist = $testValue;
     // $pTestClass->_notExist;
 
-    T::setStatic('$_staticA', $testValue);
+    $staticA = &T::refStatic('$_staticA');
+    $staticA = $testValue;
     B::assert(T::getStatic('$_staticA') === $testValue);
-    B::assert(T::$_staticA === $testValue);
-    T::setStatic('$_staticB', $testValue);
+    B::assert(T::$_staticA === $staticA);
+    $staticB = &T::refStatic('$_staticB');
+    $staticB = $testValue;
     B::assert(T::getStatic('$_staticB') === $testValue);
-    B::assert(T::$_staticB === $testValue);
-    // T::setStatic('$_notExist', $testValue);
+    B::assert(T::$_staticB === $staticB);
+    // $notExist = &T::refStatic('$_notExist');
     // T::getStatic('$_notExist');
 
     $pTestClass->somthingInAllCase($testValue);

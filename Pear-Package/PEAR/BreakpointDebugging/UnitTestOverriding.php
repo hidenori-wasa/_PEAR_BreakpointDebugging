@@ -301,8 +301,10 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
          */
         protected function setUp()
         {
-            B::setStatic('$_onceErrorDispFlag', false);
-            B::setStatic('$_callingExceptionHandlerDirectly', false);
+            $onceErrorDispFlag = &B::refStatic('$_onceErrorDispFlag');
+            $onceErrorDispFlag = false;
+            $callingExceptionHandlerDirectly = &B::refStatic('$_callingExceptionHandlerDirectly');
+            $callingExceptionHandlerDirectly = false;
         }
 
         /**
@@ -369,8 +371,10 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
          */
         protected function setUp()
         {
-            B::setStatic('$_onceErrorDispFlag', false);
-            B::setStatic('$_callingExceptionHandlerDirectly', false);
+            $onceErrorDispFlag = &B::refStatic('$_onceErrorDispFlag');
+            $onceErrorDispFlag = false;
+            $callingExceptionHandlerDirectly = &B::refStatic('$_callingExceptionHandlerDirectly');
+            $callingExceptionHandlerDirectly = false;
         }
 
     }

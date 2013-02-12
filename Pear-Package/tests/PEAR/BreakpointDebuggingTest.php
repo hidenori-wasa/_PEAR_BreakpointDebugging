@@ -30,23 +30,28 @@ class BreakpointDebuggingTestExample extends \BreakpointDebuggingTestExampleBase
  */
 class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
 {
+    private static $_exeMode;
+
+    static function setUpBeforeClass()
+    {
+        self::$_exeMode = &B::refStatic('$exeMode');
+    }
+
     /**
      * @covers \BreakpointDebugging<extended>
      */
     function test__constructThen__destruct()
     {
-        global $_BreakpointDebugging_EXE_MODE;
-
         $breakpointDebugging = new \BreakpointDebugging();
         // Calls "__destruct()".
         $breakpointDebugging = null;
 
         $breakpointDebugging = new \BreakpointDebugging();
-        $storeExeMode = $_BreakpointDebugging_EXE_MODE;
-        $_BreakpointDebugging_EXE_MODE = B::REMOTE_DEBUG;
+        $storeExeMode = self::$_exeMode;
+        self::$_exeMode = B::REMOTE_DEBUG | B::UNIT_TEST;
         // Calls "__destruct()".
         $breakpointDebugging = null;
-        $_BreakpointDebugging_EXE_MODE = $storeExeMode;
+        self::$_exeMode = $storeExeMode;
     }
 
     /**
@@ -63,11 +68,12 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
     /**
      * @covers \BreakpointDebugging<extended>
      */
-    function testGetAndSetStatic()
+    function testRefAndGetStatic()
     {
-        $_userName = B::getStatic('$_userName');
-        $this->assertTrue($_userName !== 'hidenori');
-        B::setStatic('$_userName', 'hidenori');
+        $userName = &B::refStatic('$_userName');
+        $this->assertTrue($userName !== 'hidenori');
+        $userName = 'hidenori';
+        $this->assertTrue($userName === 'hidenori');
         $this->assertTrue(B::getStatic('$_userName') === 'hidenori');
     }
 
@@ -97,33 +103,33 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
      * @covers \BreakpointDebugging<extended>
      *
      * @expectedException        \PHPUnit_Framework_Error_Warning
-     * @expectedExceptionMessage Missing argument 2 for BreakpointDebugging::setStatic()
+     * @expectedExceptionMessage Missing argument 1 for BreakpointDebugging::refStatic()
      */
-    function testSetStatic_A()
+    function testRefStatic_A()
     {
-        B::setStatic('dummy');
+        B::refStatic();
     }
 
     /**
      * @covers \BreakpointDebugging<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=setStatic ID=1
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=refStatic ID=1
      */
-    function testSetStatic_B()
+    function testRefStatic_B()
     {
-        B::setStatic('$_userName', 'dummy', 'notExitst');
+        B::refStatic('$_userName', 'notExitst');
     }
 
     /**
      * @covers \BreakpointDebugging<extended>
      *
      * @expectedException        \PHPUnit_Framework_Error_Notice
-     * @expectedExceptionMessage Undefined index: 123>limits
+     * @expectedExceptionMessage Undefined offset: 123
      */
-    function testSetStatic_C()
+    function testRefStatic_C()
     {
-        B::setStatic(123, 'dummy');
+        B::refStatic(123);
     }
 
     /**
@@ -525,7 +531,9 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
     function testExceptionHandler_A()
     {
         ob_start();
+        self::$_exeMode |= B::IGNORING_BREAK_POINT;
         B::exceptionHandler(new \Exception());
+        self::$_exeMode &= ~B::IGNORING_BREAK_POINT;
         ob_end_clean();
     }
 
@@ -568,7 +576,9 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
     function testErrorHandler_A()
     {
         ob_start();
+        self::$_exeMode |= B::IGNORING_BREAK_POINT;
         B::errorHandler(E_USER_ERROR, 'dummy');
+        self::$_exeMode &= ~B::IGNORING_BREAK_POINT;
         ob_end_clean();
     }
 
@@ -581,17 +591,6 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
     function testErrorHandler_B()
     {
         B::errorHandler('dummy');
-    }
-
-    /**
-     * @covers \BreakpointDebugging<extended>
-     *
-     * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=errorHandler ID=1
-     */
-    function testErrorHandler_C()
-    {
-        B::errorHandler('dummy', 'dummy', 'notExitst');
     }
 
     /**
@@ -680,18 +679,20 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
 
     function limitAccess_A3()
     {
-        $includePaths = B::getStatic('$_includePaths');
-        B::setStatic('$_includePaths', null);
+        $includePaths = &B::refStatic('$_includePaths');
+        $storeIncludePaths = $includePaths;
+        $includePaths = null;
         B::limitAccess('tests/PEAR/BreakpointDebuggingTest.php');
-        B::setStatic('$_includePaths', $includePaths);
+        $includePaths = $storeIncludePaths;
     }
 
     function limitAccess_A4()
     {
-        $includePaths = B::getStatic('$_includePaths');
-        B::setStatic('$_includePaths', null);
+        $includePaths = &B::refStatic('$_includePaths');
+        $storeIncludePaths = $includePaths;
+        $includePaths = null;
         B::limitAccess('tests/PEAR/BreakpointDebuggingTest.php', true);
-        B::setStatic('$_includePaths', $includePaths);
+        $includePaths = $storeIncludePaths;
     }
 
     /**
@@ -838,17 +839,15 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
      */
     public function testConvertMbStringForDebug()
     {
-        global $_BreakpointDebugging_EXE_MODE;
-
         $testArray = array (2, "\xE6\x96\x87\xE5\xAD\x97 ");
         $debugValues = B::convertMbStringForDebug('SJIS', 1, $testArray, "\xE6\x96\x87\xE5\xAD\x97 ");
         $cmpArray = array (1, array (2, "\x95\xB6\x8E\x9A "), "\x95\xB6\x8E\x9A ");
         $this->assertTrue($debugValues === $cmpArray);
 
-        $storeExeMode = $_BreakpointDebugging_EXE_MODE;
-        $_BreakpointDebugging_EXE_MODE = B::REMOTE_DEBUG | B::UNIT_TEST;
+        $storeExeMode = self::$_exeMode;
+        self::$_exeMode = B::REMOTE_DEBUG | B::UNIT_TEST;
         B::convertMbStringForDebug('SJIS', 1, $testArray, "\xE6\x96\x87\xE5\xAD\x97 ");
-        $_BreakpointDebugging_EXE_MODE = $storeExeMode;
+        self::$_exeMode = $storeExeMode;
     }
 
     /**
@@ -856,14 +855,13 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
      */
     public function testIniSet_A()
     {
-        global $_BreakpointDebugging_EXE_MODE;
+        B::iniSet('default_charset', 'sjis');
+        B::iniSet('default_charset', 'sjis');
 
-        B::iniSet('default_charset', 'sjis');
-        B::iniSet('default_charset', 'sjis');
-        $storeExeMode = $_BreakpointDebugging_EXE_MODE;
-        $_BreakpointDebugging_EXE_MODE = B::REMOTE_DEBUG | B::UNIT_TEST;
+        $storeExeMode = self::$_exeMode;
+        self::$_exeMode = B::REMOTE_DEBUG | B::UNIT_TEST;
         B::iniSet('default_charset', 'utf8');
-        $_BreakpointDebugging_EXE_MODE = $storeExeMode;
+        self::$_exeMode = $storeExeMode;
     }
 
     /**
@@ -1166,8 +1164,6 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
      */
     public function testIsUnitTestExeMode_A()
     {
-        global $_BreakpointDebugging_EXE_MODE;
-
         B::isUnitTestExeMode(true);
 
         if (!array_key_exists('SERVER_ADDR', $_SERVER)) {
@@ -1177,10 +1173,10 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
         }
         $_SERVER['SERVER_ADDR'] = '127.0.0.2';
 
-        $storeExeMode = $_BreakpointDebugging_EXE_MODE;
-        $_BreakpointDebugging_EXE_MODE = B::REMOTE_DEBUG | B::UNIT_TEST;
+        $storeExeMode = self::$_exeMode;
+        self::$_exeMode = B::REMOTE_DEBUG | B::UNIT_TEST;
         B::isUnitTestExeMode(true);
-        $_BreakpointDebugging_EXE_MODE = $storeExeMode;
+        self::$_exeMode = $storeExeMode;
 
         $_SERVER['SERVER_ADDR'] = $storeServer;
     }
@@ -1237,7 +1233,7 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
         );
         B::executeUnitTest($testFileNames);
 
-        ob_clean();
+        ob_end_clean();
     }
 
     /**

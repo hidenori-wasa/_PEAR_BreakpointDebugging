@@ -23,6 +23,13 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
 {
     const TEST_CONST = 'The test constant.';
 
+    private static $_exeMode;
+
+    static function setUpBeforeClass()
+    {
+        self::$_exeMode = &B::refStatic('$exeMode');
+    }
+
     /**
      * @covers \BreakpointDebugging_InAllCase<extended>
      */
@@ -34,9 +41,11 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
     /**
      * @covers \BreakpointDebugging_InAllCase<extended>
      */
-    function testSetAndGetStatic()
+    function testRefAndGetStatic()
     {
-        B::setStatic('$_userName', 'hidenori');
+        $userName = &B::refStatic('$_userName');
+        $userName = 'hidenori';
+        $this->assertTrue($userName === 'hidenori');
         $this->assertTrue(B::getStatic('$_userName') === 'hidenori');
     }
 
@@ -226,7 +235,9 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
         ob_start();
         $pPrevious = new \Exception('Previous exception.', E_USER_ERROR);
         $pException = new \Exception('Exception.', E_USER_ERROR, $pPrevious);
+        self::$_exeMode |= B::IGNORING_BREAK_POINT;
         B::exceptionHandler($pException);
+        self::$_exeMode &= ~B::IGNORING_BREAK_POINT;
         $this->assertTrue(ob_get_clean() !== '');
     }
 
@@ -236,7 +247,9 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
     public function testErrorHandler()
     {
         ob_start();
+        self::$_exeMode |= B::IGNORING_BREAK_POINT;
         B::errorHandler(E_USER_ERROR, 'Error test.');
+        self::$_exeMode &= ~B::IGNORING_BREAK_POINT;
         $this->assertTrue(ob_get_clean() !== '');
     }
 

@@ -4,7 +4,9 @@
  * Class which locks php-code by shared memory operation.
  *
  * This class requires "shmop" extension.
- * We can synchronize applications by setting the same directory to "B::setStatic('$_workDir', <work directory>)" of "BreakpointDebugging_MySetting.php".
+ * We can synchronize applications by setting the same directory
+ * to "$workDir = &B::refStatic('$_workDir'); $workDir = <work directory>;"
+ * of "BreakpointDebugging_MySetting.php".
  *
  * @example of usage.
  *      $lockByShmop = &\BreakpointDebugging_LockByShmop::singleton(); // Creates a lock instance.

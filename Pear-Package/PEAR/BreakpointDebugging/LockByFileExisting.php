@@ -4,7 +4,9 @@
  * Class which locks php-code by file existing.
  *
  * This class is required for environment where "flock()" doesn't exist.
- * We can synchronize applications by setting the same directory to "B::setStatic('$_workDir', <work directory>)" of "BreakpointDebugging_MySetting.php".
+ * We can synchronize applications by setting the same directory
+ * to "$workDir = &B::refStatic('$_workDir'); $workDir = <work directory>;"
+ * of "BreakpointDebugging_MySetting.php".
  *
  * @example of usage.
  *      $lockByFileExisting = &\BreakpointDebugging_LockByFileExisting::singleton(); // Creates a lock instance.

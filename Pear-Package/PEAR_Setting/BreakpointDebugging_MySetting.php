@@ -57,42 +57,11 @@ function BreakpointDebugging_setExecutionMode()
      */
     global $_BreakpointDebugging_EXE_MODE;
 
-    $setExecutionMode = function ($executionMode) {
-            /**
-             * @see "### Debug mode constant number ###" of class "BreakpointDebugging_InAllCase" in "BreakpointDebugging.php".
-             */
-            // ### Debug mode number ###
-            $LOCAL_DEBUG = 1;
-            $LOCAL_DEBUG_OF_RELEASE = 2;
-            $REMOTE_DEBUG = 4;
-            $RELEASE = 8;
-            $UNIT_TEST = 16;
-
-            if (!isset($_SERVER['SERVER_ADDR']) || $_SERVER['SERVER_ADDR'] === '127.0.0.1') { // In case of command or local host.
-                if ($executionMode === 'DEBUG') {
-                    return $LOCAL_DEBUG; // Local server debug by breakpoint.
-                } else if ($executionMode === 'RELEASE') {
-                    return $LOCAL_DEBUG_OF_RELEASE; // Local server debug by breakpoint and logging.
-                } else if ($executionMode === 'UNIT_TEST') {
-                    return $LOCAL_DEBUG | $UNIT_TEST; // Unit test on local server.
-                }
-            } else { // In case of remote.
-                if ($executionMode === 'DEBUG') {
-                    return $REMOTE_DEBUG; // Remote server debug by browser display.
-                } else if ($executionMode === 'RELEASE') {
-                    return $RELEASE; // Remote server release by logging. We must execute "REMOTE_DEBUG" before this, and we must set on last for security.
-                } else if ($executionMode === 'UNIT_TEST') {
-                    return $REMOTE_DEBUG | $UNIT_TEST; // Unit test on remote server.
-                }
-            }
-            exit('<pre>You must set "$_BreakpointDebugging_EXE_MODE = $setExecutionMode();" into "./PEAR_Setting/BreakpointDebugging_MySetting.php" because you mistook.</pre>');
-        };
-
     // ### Execution mode setting. ===>
     // Please, choose a mode.
-    // $_BreakpointDebugging_EXE_MODE = $setExecutionMode('DEBUG');
-    // $_BreakpointDebugging_EXE_MODE = $setExecutionMode('RELEASE');
-    $_BreakpointDebugging_EXE_MODE = $setExecutionMode('UNIT_TEST');
+    // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('DEBUG');
+    // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('RELEASE');
+    $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('UNIT_TEST');
     // ### <=== Execution mode setting.
     //
     // Reference path setting.
@@ -119,6 +88,45 @@ function BreakpointDebugging_setExecutionMode()
     }
 }
 
+/**
+ * Sets execution mode flags.
+ *
+ * @param string Execution mode.
+ *
+ * @return void
+ */
+function BreakpointDebugging_setExecutionModeFlags($executionMode)
+{
+    /**
+     * @see "### Debug mode constant number ###" of class "BreakpointDebugging_InAllCase" in "BreakpointDebugging.php".
+     */
+    // ### Debug mode number ###
+    $LOCAL_DEBUG = 1;
+    $LOCAL_DEBUG_OF_RELEASE = 2;
+    $REMOTE_DEBUG = 4;
+    $RELEASE = 8;
+    $UNIT_TEST = 16;
+
+    if (!isset($_SERVER['SERVER_ADDR']) || $_SERVER['SERVER_ADDR'] === '127.0.0.1') { // In case of command or local host.
+        if ($executionMode === 'DEBUG') {
+            return $LOCAL_DEBUG; // Local server debug by breakpoint.
+        } else if ($executionMode === 'RELEASE') {
+            return $LOCAL_DEBUG_OF_RELEASE; // Local server debug by breakpoint and logging.
+        } else if ($executionMode === 'UNIT_TEST') {
+            return $LOCAL_DEBUG | $UNIT_TEST; // Unit test on local server.
+        }
+    } else { // In case of remote.
+        if ($executionMode === 'DEBUG') {
+            return $REMOTE_DEBUG; // Remote server debug by browser display.
+        } else if ($executionMode === 'RELEASE') {
+            return $RELEASE; // Remote server release by logging. We must execute "REMOTE_DEBUG" before this, and we must set on last for security.
+        } else if ($executionMode === 'UNIT_TEST') {
+            return $REMOTE_DEBUG | $UNIT_TEST; // Unit test on remote server.
+        }
+    }
+    exit('<pre>You must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags();" into "./PEAR_Setting/BreakpointDebugging_MySetting.php" because you mistook.</pre>');
+}
+
 BreakpointDebugging_setExecutionMode();
 
 require_once 'BreakpointDebugging.php'; // 'BreakpointDebugging.php' must require_once because it is base of all class, and it sets php.ini, and it sets autoload.
@@ -129,34 +137,40 @@ require_once 'BreakpointDebugging.php'; // 'BreakpointDebugging.php' must requir
  */
 function BreakpointDebugging_mySetting()
 {
-    global $_BreakpointDebugging_EXE_MODE;
-
     // ### Item setting. ===>
     $language = 'Japanese';
     $timezone = 'Asia/Tokyo';
     $SMTP = '<Your SMTP server>';
     $sendmailFrom = '<Your Windows mail address>';
     // Please, set your username.
-    B::setStatic('$_userName', 'root'); // Example: 'hidenori'
+    $userName = &B::refStatic('$_userName');
+    $userName = 'root'; // Example: 'hidenori'
     // PHP It limits directory which opens a file.
     if (B::getStatic('$_os') === 'WIN') { // In case of Windows.
-        $openBasedir = 'C:\xampp\;.\\';
+        $openBasedir = 'C:\xampp\;.\\;' . sys_get_temp_dir();
     } else { // In case of Unix.
-        $openBasedir = '/opt/lampp/:./';
+        $openBasedir = '/opt/lampp/:./:' . sys_get_temp_dir();
     }
     // Maximum log file sum mega byte size. Recommendation size is 1 MB.
     // Log file rotation is from "php_error_1.log" file to "php_error_8.log" file.
     // Maximum file-capacity secures 16 K margin but it may exceed with low probability.
     $maxLogMBSize = 1;
     // This code has been fixed.
-    B::setStatic('$_maxLogFileByteSize', ($maxLogMBSize << 17) - 2048);
+    $maxLogFileByteSize = &B::refStatic('$_maxLogFileByteSize');
+    $maxLogFileByteSize = ($maxLogMBSize << 17) - 2048;
     B::assert((B::getStatic('$_maxLogFileByteSize') + 2048) % 4096 === 0, 1);
     // Maximum log parameter nesting level. Default is 20. (1-100)
-    // B::setStatic('$_maxLogParamNestingLevel', 20);
+    // $maxLogParamNestingLevel = &B::refStatic('$_maxLogParamNestingLevel');
+    // $maxLogParamNestingLevel = 20;
+    //
     // Maximum count of elements in log. ( Count of parameter or array elements ) Default is 50. (1-100)
-    // B::setStatic('$_maxLogElementNumber', 50);
+    // $maxLogElementNumber = &B::refStatic('$_maxLogElementNumber');
+    // $maxLogElementNumber = 50;
+    //
     // Maximum string type byte-count of log. Default is 3000. (1-)
-    // B::setStatic('$_maxLogStringSize', 3000);
+    // $maxLogStringSize = &B::refStatic('$_maxLogStringSize');
+    // $maxLogStringSize = 3000;
+    //
     // Inner form of the browser of the default: HTML text, character sets = UTF8.
     // header('Content-type: text/html; charset=utf-8');
     // Set "mbstring.detect_order = UTF-8, UTF-7, ASCII, EUC-JP,SJIS, eucJP-win, SJIS-win, JIS, ISO-2022-JP" of "php.ini" file because this is purpose to define default value of character code detection.
@@ -164,12 +178,13 @@ function BreakpointDebugging_mySetting()
     B::assert($result, 2);
     // This is work directory. "php_error_*.log" file is created in this directory.
     // Warning: When you use existing log, it is destroyed if it is not "UTF-8". It is necessary to be a single character sets.
-    B::setStatic('$_workDir', './Work');
-    if (!is_dir(B::getStatic('$_workDir'))) {
-        B::mkdir(B::getStatic('$_workDir'), 0700);
+    $workDir = &B::refStatic('$_workDir');
+    $workDir = './Work';
+    if (!is_dir($workDir)) {
+        B::mkdir($workDir, 0700);
     }
-    B::setStatic('$_workDir', realpath(B::getStatic('$_workDir')));
-    B::assert(B::getStatic('$_workDir') !== false, 3);
+    $workDir = realpath($workDir);
+    B::assert($workDir !== false, 3);
     // ### <=== Item setting.
     //
     ////////////////////////////////////////////////////////////////////////////////
@@ -184,7 +199,7 @@ function BreakpointDebugging_mySetting()
     /* ### "Unix" Example. ===>
       // PHP It limits directory which opens a file.
       B::iniSet('open_basedir', $openBasedir);
-      if ($_BreakpointDebugging_EXE_MODE & (B::REMOTE_DEBUG | B::RELEASE)) { // In case of remote.
+      if (B::getStatic('$exeMode') & (B::REMOTE_DEBUG | B::RELEASE)) { // In case of remote.
       // Windows e-mail sending server setting.
       B::iniSet('SMTP', $SMTP); // 'smtp.???.com'
       // Windows mail address setting.
@@ -218,7 +233,7 @@ function BreakpointDebugging_mySetting()
     /* ### "Windows" Example. ===>
       // PHP It limits directory which opens a file.
       B::iniSet('open_basedir', $openBasedir);
-      if ($_BreakpointDebugging_EXE_MODE & (B::REMOTE_DEBUG | B::RELEASE)) { // In case of remote.
+      if (B::getStatic('$exeMode') & (B::REMOTE_DEBUG | B::RELEASE)) { // In case of remote.
       // Windows e-mail sending server setting.
       B::iniSet('SMTP', $SMTP); // 'smtp.???.com'
       // Windows mail address setting.
@@ -244,12 +259,12 @@ function BreakpointDebugging_mySetting()
       // This changes "php.ini" file setting into "ignore_user_abort = Off" because it is purpose to end execution of script when client is disconnected.
       B::iniSet('ignore_user_abort', '');
       ### <=== "Windows" Example. */
-    if ($_BreakpointDebugging_EXE_MODE !== B::RELEASE) { // In case of not release.
+    if (B::getStatic('$exeMode') !== B::RELEASE) { // In case of not release.
         include_once './PEAR_Setting/BreakpointDebugging_MySetting_Option.php';
     }
     ////////////////////////////////////////////////////////////////////////////////
     // ### This setting has been Fixed. ###
-    if ($_BreakpointDebugging_EXE_MODE === B::RELEASE) { // In case of release.
+    if (B::getStatic('$exeMode') === B::RELEASE) { // In case of release.
         // When "Xdebug" exists.
         if (extension_loaded('xdebug')) {
             B::iniCheck('xdebug.remote_enable', '0', 'Set "xdebug.remote_enable = 0" of "php.ini" file because is for security.');
