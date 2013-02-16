@@ -59,6 +59,11 @@ use \BreakpointDebugging as B;
 abstract class BreakpointDebugging_Error_InAllCase
 {
     /**
+     * @var array Logged call-stacks.
+     */
+    private $_loggedCallStacks;
+
+    /**
      * @var array Logged arrays.
      */
     private $_loggedArrays;
@@ -102,7 +107,7 @@ abstract class BreakpointDebugging_Error_InAllCase
     /**
      * @var array Call stack information.
      */
-    private $_callStackInfo;
+    private $_callStacks;
 
     /**
      * @var bool Is logging?
@@ -153,48 +158,18 @@ abstract class BreakpointDebugging_Error_InAllCase
      */
     function __construct()
     {
-        B::limitAccess('BreakpointDebugging.php');
-        B::assert(func_num_args() === 0);
-
+        $this->_loggedCallStacks = array ();
         $this->_loggedArrays = array ();
         $this->_loggedObjects = array ();
-        if (B::getStatic('$exeMode') & (B::RELEASE | B::LOCAL_DEBUG_OF_RELEASE)) { // In case of the logging.
-            $this->_isLogging = true;
-            $this->_mark = '#';
-            $this->setHTMLTags($this->_tags);
-            $this->_tags['pre'] = '';
-            $this->_tags['/pre'] = PHP_EOL . PHP_EOL;
-            $this->_tags['i'] = '';
-            $this->_tags['/i'] = '';
-            $this->_tags['b'] = '';
-            $this->_tags['/b'] = '';
-        } else { // In case of not the logging.
-            $this->_isLogging = false;
-            $this->_mark = '&diams;';
-            // When "Xdebug" exists.
-            if (B::getXebugExists()) {
-                $this->_tags['pre'] = '<pre class=\'xdebug-var-dump\' dir=\'ltr\'>';
-                $this->_tags['font']['caution'] = '<font color=\'#ff0000\'>';
-                $this->_tags['font']['bool'] = '<font color=\'#75507b\'>';
-                $this->_tags['font']['int'] = '<font color=\'#4e9a06\'>';
-                $this->_tags['font']['float'] = '<font color=\'#f57900\'>';
-                $this->_tags['font']['string'] = '<font color=\'#cc0000\'>';
-                $this->_tags['font']['null'] = '<font color=\'#3465a4\'>';
-                $this->_tags['font']['resource'] = '<font color=\'#8080ff\'>';
-                $this->_tags['font']['=>'] = '<font color=\'#888a85\'>';
-                $this->_tags['/font'] = '</font>';
-                $this->_tags['small'] = '<small>';
-                $this->_tags['/small'] = '</small>';
-            } else { // When "Xdebug" does not exist.
-                $this->_tags['pre'] = '<pre>';
-                $this->setHTMLTags($this->_tags);
-            }
-            $this->_tags['/pre'] = '</pre>';
-            $this->_tags['i'] = '<i>';
-            $this->_tags['/i'] = '</i>';
-            $this->_tags['b'] = '<b>';
-            $this->_tags['/b'] = '</b>';
-        }
+        $this->_isLogging = true;
+        $this->_mark = '#';
+        $this->setHTMLTags($this->_tags);
+        $this->_tags['pre'] = '';
+        $this->_tags['/pre'] = PHP_EOL . PHP_EOL;
+        $this->_tags['i'] = '';
+        $this->_tags['/i'] = '';
+        $this->_tags['b'] = '';
+        $this->_tags['/b'] = '';
     }
 
     /**
@@ -243,8 +218,6 @@ abstract class BreakpointDebugging_Error_InAllCase
      */
     protected function addFunctionValuesToLog(&$pTmpLog2, &$pTmpLog, &$onceFlag2, $func, $class, $line, $tabs = '')
     {
-        $paramNumber = func_num_args();
-
         $valuesToTraceFiles = B::getStatic('$_valuesToTrace');
         $onceFlag = false;
         if (!is_array($valuesToTraceFiles)) {
@@ -256,7 +229,7 @@ abstract class BreakpointDebugging_Error_InAllCase
                 array_key_exists('class', $trace) ? $callClass = $trace['class'] : $callClass = '';
                 if ($callFunc === ''
                     && $callClass === ''
-                    && $paramNumber === 7
+                    && $tabs !== ''
                 ) {
                     // @codeCoverageIgnoreStart
                     continue;
@@ -306,7 +279,10 @@ abstract class BreakpointDebugging_Error_InAllCase
         // For "Exception::$trace".
         $this->outputFixedFunctionToLogging($array, $pTmpLog2, $onceFlag2, $func, $class, '', '', "\t" . $tabs);
         $this->addFunctionValuesToLog($pTmpLog2, $pTmpLog, $onceFlag2, $func, $class, '', "\t" . $tabs);
-
+        // Deletes eternal nest element.
+        if (array_key_exists('GLOBALS', $array)) {
+            unset($array['GLOBALS']);
+        }
         foreach ($this->_loggedArrays as $loggedArrayNumber => $loggedArray) {
             if ($loggedArray === $array) {
                 // Skips same array.
@@ -323,9 +299,6 @@ abstract class BreakpointDebugging_Error_InAllCase
             $this->logBufferWriting($pTmpLog, PHP_EOL . $tabs . "\t...");
         } else {
             foreach ($array as $paramName => $paramValue) {
-                if ($paramName === 'GLOBALS') {
-                    continue;
-                }
                 if (is_string($paramName)) {
                     $paramName = '\'' . $paramName . '\'';
                 }
@@ -420,43 +393,25 @@ abstract class BreakpointDebugging_Error_InAllCase
         for ($count = 0; $count < $elementNumber; $count++) {
             $pCurrentException = $pExceptions[$count];
             $callStackInfo = $pCurrentException->getTrace();
-            if (array_key_exists($count + 1, $pExceptions)) {
-                $nextCallStackInfo = $pExceptions[$count + 1]->getTrace();
-                $nextCallInfo = $nextCallStackInfo[0];
-                $deleteFlag = false;
-                foreach ($callStackInfo as $callKey => $callInfo) {
-                    if (array_key_exists('line', $callInfo)
-                        && array_key_exists('line', $nextCallInfo)
-                        && $callInfo['line'] === $nextCallInfo['line']
-                        && array_key_exists('file', $callInfo)
-                        && array_key_exists('file', $nextCallInfo)
-                        && $callInfo['file'] === $nextCallInfo['file']
-                    ) {
-                        $deleteFlag = true;
-                    }
-                    if ($deleteFlag) {
-                        unset($callStackInfo[$callKey]);
-                    }
-                }
-            }
-
             if (B::getStatic('$_callingExceptionHandlerDirectly')) { // Has been called from "BreakpointDebugging_InAllCase::callExceptionHandlerDirectly()" method.
+                // @codeCoverageIgnoreStart
                 $callingExceptionHandlerDirectly = &B::refStatic('$_callingExceptionHandlerDirectly');
                 $callingExceptionHandlerDirectly = false;
                 // Array top is set to location which "self::internalException()" is called  because this location is registered to logging.
                 unset($callStackInfo[0]);
             } else {
+                // @codeCoverageIgnoreEnd
                 // Array top is set to location which throws exception because this location is registered to logging.
                 array_unshift($callStackInfo, array ('file' => $pCurrentException->getFile(), 'line' => $pCurrentException->getLine()));
             }
-            $this->_callStackInfo = $callStackInfo;
+            $this->_callStacks = $callStackInfo;
             // Add scope of start page file.
-            $this->_callStackInfo[] = array ();
+            $this->_callStacks[] = array ();
             $errorMessage = $this->convertMbString($pCurrentException->getMessage());
             $this->outputErrorCallStackLog2(get_class($pCurrentException), $errorMessage, $prependLog);
         }
 
-        B::breakpoint($errorMessage, $this->_callStackInfo);
+        B::breakpoint($errorMessage, $this->_callStacks);
     }
 
     /**
@@ -524,17 +479,16 @@ abstract class BreakpointDebugging_Error_InAllCase
                 break;
             default:
                 B::internalException('', 5);
-                break;
         }
 
         $errorMessage = $this->convertMbString($errorMessage);
         $prependLog = $this->convertMbString($prependLog);
 
-        $this->_callStackInfo = $callStack;
+        $this->_callStacks = $callStack;
         // Sets location which triggers error to top of call stack array because this handler must log this location.
-        unset($this->_callStackInfo[0]);
+        unset($this->_callStacks[0]);
         // Add scope of start page file.
-        $this->_callStackInfo[] = array ();
+        $this->_callStacks[] = array ();
         $this->outputErrorCallStackLog2($errorKind, $errorMessage, $prependLog);
         if (B::getStatic('$exeMode') === B::RELEASE) { // In case of release.
             // @codeCoverageIgnoreStart
@@ -544,18 +498,18 @@ abstract class BreakpointDebugging_Error_InAllCase
             }
         }
         // @codeCoverageIgnoreEnd
-        B::breakpoint($errorMessage, $this->_callStackInfo);
+        B::breakpoint($errorMessage, $this->_callStacks);
         // We can do step execution to error location to see variable value even though kind is error.
     }
 
     /**
      * Add parameter header to error log.
      *
-     * @param mixed  &$pTmpLog Error temporary log pointer.
-     * @param string $file     File name.
-     * @param mixed  $line     Line number.
-     * @param string $func     Function name.
-     * @param string $class    Class name.
+     * @param mixed  &$pTmpLog  Error temporary log pointer.
+     * @param string $file      File name.
+     * @param mixed  $line      Line number.
+     * @param string $func      Function name.
+     * @param string $class     Class name.
      *
      * @return void
      */
@@ -587,7 +541,7 @@ abstract class BreakpointDebugging_Error_InAllCase
     /**
      * Output fixed-function to logging.
      *
-     * @param array  $backTrace  Call stack.
+     * @param array  $callStack  The call stack.
      * @param mixed  &$pTmpLog   Error temporary log pointer.
      * @param bool   &$onceFlag2 False means logging parameter header.
      * @param mixed  &$func      Function name of call stack.
@@ -598,23 +552,23 @@ abstract class BreakpointDebugging_Error_InAllCase
      *
      * @return void
      */
-    protected function outputFixedFunctionToLogging($backTrace, &$pTmpLog, &$onceFlag2, &$func, &$class, $file, $line, $tabs = '')
+    protected function outputFixedFunctionToLogging($callStack, &$pTmpLog, &$onceFlag2, &$func, &$class, $file, $line, $tabs = '')
     {
-        $paramNumber = func_num_args();
-
-        array_key_exists('function', $backTrace) ? $func = $backTrace['function'] : $func = '';
-        array_key_exists('class', $backTrace) ? $class = $backTrace['class'] : $class = '';
+        array_key_exists('function', $callStack) ? $func = $callStack['function'] : $func = '';
+        array_key_exists('class', $callStack) ? $class = $callStack['class'] : $class = '';
         if (is_array(B::getStatic('$_notFixedLocations'))) {
             foreach (B::getStatic('$_notFixedLocations') as $notFixedLocation) {
                 array_key_exists('function', $notFixedLocation) ? $noFixFunc = $notFixedLocation['function'] : $noFixFunc = '';
                 array_key_exists('class', $notFixedLocation) ? $noFixClass = $notFixedLocation['class'] : $noFixClass = '';
                 array_key_exists('file', $notFixedLocation) ? $noFixFile = $notFixedLocation['file'] : $noFixFile = '';
-                // $notFixedLocation of file scope is "$noFixFunc === '' && $noFixClass === '' && $paramNumber === 7".
+                // $notFixedLocation of file scope is "$noFixFunc === '' && $noFixClass === '' && $tabs !== ''".
                 if ($noFixFunc === ''
                     && $noFixClass === ''
-                    && $paramNumber === 8
+                    && $tabs !== ''
                 ) {
+                    // @codeCoverageIgnoreStart
                     continue;
+                    // @codeCoverageIgnoreEnd
                 }
                 if ($func === $noFixFunc
                     && $class === $noFixClass
@@ -644,9 +598,11 @@ abstract class BreakpointDebugging_Error_InAllCase
     protected function outputErrorCallStackLog2($errorKind, $errorMessage, $prependLog = '')
     {
         if (!$this->_isLogging) {
+            // @codeCoverageIgnoreStart
             $errorMessage = htmlspecialchars($errorMessage, ENT_QUOTES, 'UTF-8');
             $prependLog = htmlspecialchars($prependLog, ENT_QUOTES, 'UTF-8');
         }
+        // @codeCoverageIgnoreEnd
         if ($errorKind === 'E_NOTICE') {
             // We had better debug by breakpoint than the display screen in case of "E_NOTICE".
             // Also, breakpoint does not exist in case of release mode.
@@ -704,7 +660,7 @@ abstract class BreakpointDebugging_Error_InAllCase
             }
             // The call stack loop.
             $callStackInfoArray = array ();
-            foreach ($this->_callStackInfo as $call) {
+            foreach ($this->_callStacks as $call) {
                 if (empty($call)
                     || !array_key_exists('file', $call)
                     || !array_key_exists('line', $call)
@@ -779,18 +735,34 @@ abstract class BreakpointDebugging_Error_InAllCase
             PHP_EOL . $this->_mark . 'Error message ====>' . $this->_tags['font']['string'] . '\'' . $errorMessage . '\'' . $this->_tags['/font'];
         $this->logBufferWriting($dummy, $tmp);
         // Search array which debug_backtrace() or getTrace() returns, and add a parametric information.
-        foreach ($this->_callStackInfo as $backtraceArrays) {
+        foreach ($this->_callStacks as $callStack) {
             $onceFlag2 = true;
             $pTmpLog2 = $this->logPointerOpening();
-            array_key_exists('file', $backtraceArrays) ? $file = $backtraceArrays['file'] : $file = '';
-            array_key_exists('line', $backtraceArrays) ? $line = $backtraceArrays['line'] : $line = '';
-            $this->outputFixedFunctionToLogging($backtraceArrays, $dummy, $onceFlag2, $func, $class, $file, $line);
-            if (array_key_exists('args', $backtraceArrays)) {
+            foreach ($this->_loggedCallStacks as $loggedCallStackNumber => $loggedCallStack) {
+                if ($loggedCallStack === $callStack) {
+                    // Skips same call stack.
+                    $loggedCallStackNumber++;
+                    $this->logBufferWriting($dummy, PHP_EOL . $this->_tags['b'] . "same function call #$loggedCallStackNumber" . $this->_tags['/b'] . " ...");
+                    $file = '';
+                    $line = '';
+                    goto AFTER_TREATMENT;
+                }
+            }
+            array_key_exists('file', $callStack) ? $file = $callStack['file'] : $file = '';
+            array_key_exists('line', $callStack) ? $line = $callStack['line'] : $line = '';
+
+            $this->_loggedCallStacks[] = $callStack;
+            $this->logBufferWriting($dummy, PHP_EOL . $this->_tags['b'] . 'function call #' . count($this->_loggedCallStacks) . $this->_tags['/b']);
+
+            $this->outputFixedFunctionToLogging($callStack, $dummy, $onceFlag2, $func, $class, $file, $line);
+            if (array_key_exists('args', $callStack)) {
                 // Analyze parameters part of trace array, and return character string.
-                $this->searchDebugBacktraceArgsToString($pTmpLog2, $backtraceArrays['args']);
+                $this->searchDebugBacktraceArgsToString($pTmpLog2, $callStack['args']);
                 $this->logBufferWriting($pTmpLog2, PHP_EOL . ');');
             }
             $this->addFunctionValuesToLog($pTmpLog, $dummy, $onceFlag2, $func, $class, $line);
+
+            AFTER_TREATMENT:
             if ($onceFlag2) {
                 $this->addParameterHeaderToLog($dummy, $file, $line, $func, $class);
             }
@@ -866,9 +838,6 @@ abstract class BreakpointDebugging_Error_InAllCase
     protected function getTypeAndValue(&$pTmpLog, $paramName, $paramValue, $tabNumber)
     {
         if (is_array($paramValue)) {
-            if ($paramName === 'GLOBALS') {
-                return;
-            }
             $this->reflectArray($pTmpLog, $paramName, $paramValue, $tabNumber);
             return;
         } else if (is_object($paramValue)) {
@@ -897,8 +866,10 @@ abstract class BreakpointDebugging_Error_InAllCase
             }
             $paramValue = '"' . $paramValue . '"';
             if (!$this->_isLogging) {
+                // @codeCoverageIgnoreStart
                 $paramValue = htmlspecialchars($paramValue, ENT_QUOTES, 'UTF-8');
             }
+            // @codeCoverageIgnoreEnd
             if ($isOverMaxLogStringSize === false) {
                 $this->logBufferWriting($pTmpLog, $this->getParamInfo($this->_tags, 'string', $paramValue) . $this->_tags['i'] . ' (length=' . $strlen . ')' . $this->_tags['/i']);
             } else {
@@ -910,7 +881,9 @@ abstract class BreakpointDebugging_Error_InAllCase
                 $this->_tags['font']['resource'] . $paramValue . $this->_tags['/font'];
             $this->logBufferWriting($pTmpLog, $tmp);
         } else {
+            // @codeCoverageIgnoreStart
             B::internalException('', 2);
+            // @codeCoverageIgnoreEnd
         }
     }
 
@@ -952,11 +925,7 @@ abstract class BreakpointDebugging_Error_InAllCase
      */
     protected function logPointerOpening()
     {
-        if (B::getStatic('$exeMode') & (B::LOCAL_DEBUG | B::LOCAL_DEBUG_OF_RELEASE)) { // In case of local host.
-            return array ();
-        } else { // In case of not local debug.
-            return tmpfile();
-        }
+        return tmpfile();
     }
 
     /**
@@ -968,9 +937,7 @@ abstract class BreakpointDebugging_Error_InAllCase
      */
     protected function logPointerClosing(&$pTmpLog)
     {
-        if (B::getStatic('$exeMode') & (B::REMOTE_DEBUG | B::RELEASE)) { // In case of remote.
-            fclose($pTmpLog);
-        }
+        fclose($pTmpLog);
         $pTmpLog = null;
     }
 
@@ -1023,20 +990,15 @@ abstract class BreakpointDebugging_Error_InAllCase
     protected function logCombination(&$pTmpLog, &$pTmpLog2)
     {
         rewind($pTmpLog2);
-        if ($pTmpLog === null) {
-            while (!feof($pTmpLog2)) {
-                fwrite($this->pErrorLogFile, fread($pTmpLog2, 4096));
-            }
-        } else {
-            while (!feof($pTmpLog2)) {
-                fwrite($pTmpLog, fread($pTmpLog2, 4096));
-            }
+        while (!feof($pTmpLog2)) {
+            fwrite($pTmpLog, fread($pTmpLog2, 4096));
         }
         $this->logPointerClosing($pTmpLog2);
     }
 
 }
 
+// @codeCoverageIgnoreStart
 if (B::getStatic('$exeMode') & B::RELEASE) { // In case of release.
     /**
      * Dummy class for release.
@@ -1057,5 +1019,6 @@ if (B::getStatic('$exeMode') & B::RELEASE) { // In case of release.
 } else { // In case of not release.
     include_once __DIR__ . '/Error_Option.php';
 }
+// @codeCoverageIgnoreEnd
 
 ?>

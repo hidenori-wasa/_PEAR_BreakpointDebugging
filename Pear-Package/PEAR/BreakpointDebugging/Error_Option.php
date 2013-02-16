@@ -74,6 +74,50 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
     }
 
     /**
+     * Makes HTML tags.
+     *
+     * @return void
+     */
+    function __construct()
+    {
+        B::limitAccess('BreakpointDebugging.php');
+        B::assert(func_num_args() === 0);
+
+        if (B::getStatic('$exeMode') & (B::RELEASE | B::LOCAL_DEBUG_OF_RELEASE)) { // In case of the logging.
+            parent::__construct();
+        } else { // In case of not the logging.
+            $this->_loggedCallStacks = array ();
+            $this->_loggedArrays = array ();
+            $this->_loggedObjects = array ();
+            $this->_isLogging = false;
+            $this->_mark = '&diams;';
+            // When "Xdebug" exists.
+            if (B::getXebugExists()) {
+                $this->_tags['pre'] = '<pre class=\'xdebug-var-dump\' dir=\'ltr\'>';
+                $this->_tags['font']['caution'] = '<font color=\'#ff0000\'>';
+                $this->_tags['font']['bool'] = '<font color=\'#75507b\'>';
+                $this->_tags['font']['int'] = '<font color=\'#4e9a06\'>';
+                $this->_tags['font']['float'] = '<font color=\'#f57900\'>';
+                $this->_tags['font']['string'] = '<font color=\'#cc0000\'>';
+                $this->_tags['font']['null'] = '<font color=\'#3465a4\'>';
+                $this->_tags['font']['resource'] = '<font color=\'#8080ff\'>';
+                $this->_tags['font']['=>'] = '<font color=\'#888a85\'>';
+                $this->_tags['/font'] = '</font>';
+                $this->_tags['small'] = '<small>';
+                $this->_tags['/small'] = '</small>';
+            } else { // When "Xdebug" does not exist.
+                $this->_tags['pre'] = '<pre>';
+                $this->setHTMLTags($this->_tags);
+            }
+            $this->_tags['/pre'] = '</pre>';
+            $this->_tags['i'] = '<i>';
+            $this->_tags['/i'] = '</i>';
+            $this->_tags['b'] = '<b>';
+            $this->_tags['/b'] = '</b>';
+        }
+    }
+
+    /**
      * For debug.
      *
      * @param string $string Same as parent.
@@ -103,7 +147,8 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
      */
     protected function addFunctionValuesToLog(&$pTmpLog2, &$pTmpLog, &$onceFlag2, $func, $class, $line, $tabs = '')
     {
-        B::assert(func_num_args() <= 7, 1);
+        $paramNumber = func_num_args();
+        B::assert($paramNumber <= 7, 1);
         B::assert(is_array($pTmpLog2) || is_resource($pTmpLog2) || $pTmpLog2 === null, 2);
         B::assert(is_array($pTmpLog) || is_resource($pTmpLog) || $pTmpLog === null, 3);
         B::assert(is_bool($onceFlag2), 4);
@@ -336,7 +381,11 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
     {
         B::assert(func_num_args() === 0, 1);
 
-        return parent::logPointerOpening();
+        if (B::getStatic('$exeMode') & (B::LOCAL_DEBUG | B::LOCAL_DEBUG_OF_RELEASE)) { // In case of local host.
+            return array ();
+        } else { // In case of remote host.
+            return parent::logPointerOpening();
+        }
     }
 
     /**
@@ -351,7 +400,14 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
         B::assert(func_num_args() === 1, 1);
         B::assert(is_array($pTmpLog) || is_resource($pTmpLog) || $pTmpLog === null, 2);
 
-        parent::logPointerClosing($pTmpLog);
+        if (B::getStatic('$exeMode') & B::REMOTE_DEBUG) {
+            fclose($pTmpLog);
+            $pTmpLog = null;
+        } else if (B::getStatic('$exeMode') & B::RELEASE) {
+            parent::logPointerClosing($pTmpLog);
+        } else {
+            $pTmpLog = null;
+        }
     }
 
     /**
@@ -450,15 +506,13 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
     protected function logCombination(&$pTmpLog, &$pTmpLog2)
     {
         B::assert(func_num_args() === 2, 1);
-        B::assert(is_array($pTmpLog) || is_resource($pTmpLog) || $pTmpLog === null, 2);
+        B::assert(is_array($pTmpLog) || is_resource($pTmpLog), 2);
         B::assert(is_array($pTmpLog2) || is_resource($pTmpLog2), 3);
         B::assert($pTmpLog2 !== null, 4);
 
         switch (B::getStatic('$exeMode') & ~(B::UNIT_TEST | B::IGNORING_BREAK_POINT)) {
             case B::LOCAL_DEBUG:
-                if ($pTmpLog === null) {
-                    echo $pTmpLog2;
-                } else if (count($pTmpLog) === 0) {
+                if (count($pTmpLog) === 0) {
                     if (count($pTmpLog2) !== 0) {
                         $pTmpLog = $pTmpLog2;
                     }
@@ -468,22 +522,12 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
                 break;
             case B::REMOTE_DEBUG:
                 rewind($pTmpLog2);
-                if ($pTmpLog === null) {
-                    while (!feof($pTmpLog2)) {
-                        echo fread($pTmpLog2, 4096);
-                    }
-                } else {
-                    while (!feof($pTmpLog2)) {
-                        fwrite($pTmpLog, fread($pTmpLog2, 4096));
-                    }
+                while (!feof($pTmpLog2)) {
+                    fwrite($pTmpLog, fread($pTmpLog2, 4096));
                 }
                 break;
             case B::LOCAL_DEBUG_OF_RELEASE:
-                if ($pTmpLog === null) {
-                    foreach ($pTmpLog2 as $log) {
-                        fwrite($this->pErrorLogFile, $log);
-                    }
-                } else if (count($pTmpLog) === 0) {
+                if (count($pTmpLog) === 0) {
                     if (count($pTmpLog2) !== 0) {
                         $pTmpLog = $pTmpLog2;
                     }

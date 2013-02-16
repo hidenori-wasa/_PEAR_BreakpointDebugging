@@ -61,8 +61,7 @@ require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
 use \BreakpointDebugging as B;
 
 // Checks the execution mode.
-//if ($_BreakpointDebugging_EXE_MODE !== B::RELEASE) { // In case of not release.
-if (!(B::getStatic('$exeMode') & B::RELEASE)) { // In case of not release.
+if (B::getStatic('$exeMode') !== B::RELEASE) { // In case of not release.
     exit('<pre>You must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'RELEASE\');" into "BreakpointDebugging_MySetting.php" file.</pre>');
 }
 

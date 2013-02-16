@@ -10,10 +10,22 @@ require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
 use \BreakpointDebugging as B;
 
 B::isUnitTestExeMode(true);
-class nesting
+class example
 {
+    const CONST_TEST = 1; // Tests constant property when unit test reflects object.
+
     public $nestingObject;
 
+}
+
+function testParentException2($nestingArray, $nestingObject, $e)
+{
+    throw new \Exception('Test message.', 0, $e);
+}
+
+function testParentException($nestingArray, $nestingObject, $e, $tmpfile = null, $globals = null, $string = null)
+{
+    testParentException2($nestingArray, $nestingObject, $e);
 }
 
 /**
@@ -33,6 +45,9 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_UnitT
     static function setUpBeforeClass()
     {
         self::$exeMode = &B::refStatic('$exeMode');
+        self::$exeMode = B::RELEASE | B::UNIT_TEST;
+        $maxLogStringSize = &B::refStatic('$_maxLogStringSize');
+        $maxLogStringSize = 8;
     }
 
     function setUp()
@@ -63,29 +78,13 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_UnitT
         B::assert(ob_get_level() === 1);
     }
 
-    static function changeExeMode()
-    {
-        $storeExeMode = self::$exeMode;
-        if (self::$exeMode & B::LOCAL_DEBUG) {
-            self::$exeMode = B::LOCAL_DEBUG_OF_RELEASE | B::UNIT_TEST;
-        } else if (self::$exeMode & B::REMOTE_DEBUG) {
-            self::$exeMode = B::RELEASE | B::UNIT_TEST;
-        } else {
-            $this->fail();
-        }
-        return $storeExeMode;
-    }
-
     /**
      * @covers \BreakpointDebugging_Error<extended>
      */
     function test__construct()
     {
         new \BreakpointDebugging_Error();
-
-        $storeExeMode = self::changeExeMode();
         new \BreakpointDebugging_Error();
-        self::$exeMode = $storeExeMode;
 
         B::setXebugExists(false);
         new \BreakpointDebugging_Error();
@@ -127,25 +126,24 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_UnitT
         $maxLogParamNestingLevel = &B::refStatic('$_maxLogParamNestingLevel');
         $maxLogParamNestingLevel = 2;
         $maxLogElementNumber = &B::refStatic('$_maxLogElementNumber');
-        $maxLogElementNumber = 2;
+        $maxLogElementNumber = 6;
 
         $parentFilePath = __DIR__ . '/testExceptionHandler2_Parent.php';
         include_once $parentFilePath;
         $lineParent = __LINE__ - 1;
+
         $parentFileNumber = $this->_getFileNumber($parentFilePath);
         $thisFileNumber = $this->_getFileNumber(__FILE__);
         function test2_()
         {
             global $line1_;
 
-            $storeExeMode = \BreakpointDebugging_Error_InAllCaseTest::changeExeMode();
             \BreakpointDebugging_Error_InAllCaseTest::$exeMode |= B::IGNORING_BREAK_POINT;
             for ($count = 0; $count < 2; $count++) {
                 \BreakpointDebugging_Error_InAllCaseTest::$error->exceptionHandler2(new \Exception(), B::$prependExceptionLog);
                 $line1_ = __LINE__ - 1;
             }
             \BreakpointDebugging_Error_InAllCaseTest::$exeMode &= ~B::IGNORING_BREAK_POINT;
-            \BreakpointDebugging_Error_InAllCaseTest::$exeMode = $storeExeMode;
         }
 
         function test1_()
@@ -156,12 +154,11 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_UnitT
             $line2_ = __LINE__ - 1;
         }
 
-        $storeExeMode = self::changeExeMode();
         self::$exeMode |= B::IGNORING_BREAK_POINT;
         BreakpointDebugging_Error_InAllCaseTest::$error->exceptionHandler2(new \Exception(), B::$prependExceptionLog);
         $line = __LINE__ - 1;
         self::$exeMode &= ~B::IGNORING_BREAK_POINT;
-        self::$exeMode = $storeExeMode;
+
         test1_();
         $line3 = __LINE__ - 1;
 
@@ -185,26 +182,42 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_UnitT
         new \BreakpointDebugging_Error();
         $valuesToTrace = &B::refStatic('$_valuesToTrace');
         $valuesToTrace = null;
-        function testParentException($nestingArray, $nestingObject)
-        {
-            throw new \Exception();
-        }
 
         ob_start();
+
         // Has parent exception, and tests nesting array parameter, and tests nesting object parameter.
         $nestingArray = array (array ('test1', 'test2', 'test3'));
-        $nestingObject = new \nesting();
+        $nestingObject = new \example();
         $nestingObject->nestingObject = new \stdClass();
         try {
-            testParentException($nestingArray, $nestingObject);
+            testParentException($nestingArray, $nestingObject, null);
         } catch (\Exception $e) {
-            self::$exeMode |= B::IGNORING_BREAK_POINT;
-            self::$error->exceptionHandler2(new \Exception('Test message.', 0, $e), 'Test.');
-            self::$exeMode &= ~B::IGNORING_BREAK_POINT;
+            try {
+                call_user_func_array('testParentException', array ($nestingArray, $nestingObject, $e, tmpfile(), $GLOBALS, '123456789', 'Out of parameter number.'));
+            } catch (\Exception $e) {
+                self::$exeMode |= B::IGNORING_BREAK_POINT;
+                self::$error->exceptionHandler2($e, 'Test.');
+                self::$exeMode &= ~B::IGNORING_BREAK_POINT;
+            }
         }
         // "SJIS" message.
         self::$exeMode |= B::IGNORING_BREAK_POINT;
         self::$error->exceptionHandler2(new \Exception(), "\x95\xB6\x8E\x9A");
+        self::$exeMode &= ~B::IGNORING_BREAK_POINT;
+        // Error log file rotation.
+        self::$exeMode |= B::IGNORING_BREAK_POINT;
+        $maxLogFileByteSize = &B::refStatic('$_maxLogFileByteSize');
+        $storeMaxLogFileByteSize = $maxLogFileByteSize;
+        $maxLogFileByteSize = 1;
+        self::$error->exceptionHandler2(new \Exception(), '');
+        self::$error->exceptionHandler2(new \Exception(), '');
+        self::$error->exceptionHandler2(new \Exception(), '');
+        self::$error->exceptionHandler2(new \Exception(), '');
+        self::$error->exceptionHandler2(new \Exception(), '');
+        self::$error->exceptionHandler2(new \Exception(), '');
+        self::$error->exceptionHandler2(new \Exception(), '');
+        self::$error->exceptionHandler2(new \Exception(), '');
+        $maxLogFileByteSize = $storeMaxLogFileByteSize;
         self::$exeMode &= ~B::IGNORING_BREAK_POINT;
         // Called from "BreakpointDebugging_InAllCase::callExceptionHandlerDirectly()" method.
         try {
@@ -213,6 +226,7 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_UnitT
         } catch (\Exception $e) {
             self::$exeMode &= ~B::IGNORING_BREAK_POINT;
         }
+
         ob_end_clean();
     }
 
@@ -237,9 +251,31 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_UnitT
     {
         ob_start();
         self::$exeMode |= B::IGNORING_BREAK_POINT;
-        // SJIS + UTF-8
+        // Skips "\BreakpointDebugging_Error::convertMbString()" "SJIS + UTF-8" error exception.
         self::$error->exceptionHandler2(new \Exception(), "\x95\xB6\x8E\x9A \xE6\x96\x87\xE5\xAD\x97 ");
         self::$exeMode &= ~B::IGNORING_BREAK_POINT;
+        ob_end_clean();
+    }
+
+    function exceptionHandler2_D()
+    {
+        throw new \Exception();
+    }
+
+    /**
+     * @covers \BreakpointDebugging_Error<extended>
+     */
+    function testExceptionHandler2_D()
+    {
+        ob_start();
+        try {
+            $this->exceptionHandler2_D($GLOBALS);
+        } catch (\Exception $e) {
+            self::$exeMode |= B::IGNORING_BREAK_POINT;
+            // Skips the global variable array.
+            self::$error->exceptionHandler2($e, '');
+            self::$exeMode &= ~B::IGNORING_BREAK_POINT;
+        }
         ob_end_clean();
     }
 
@@ -251,11 +287,9 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_UnitT
         global $line1, $line2, $lineA, $lineB;
         function errorHandler()
         {
-            $storeExeMode = \BreakpointDebugging_Error_InAllCaseTest::changeExeMode();
             \BreakpointDebugging_Error_InAllCaseTest::$exeMode |= B::IGNORING_BREAK_POINT;
             \BreakpointDebugging_Error_InAllCaseTest::$error->errorHandler2(E_USER_ERROR, '', B::$prependErrorLog, debug_backtrace());
             \BreakpointDebugging_Error_InAllCaseTest::$exeMode &= ~B::IGNORING_BREAK_POINT;
-            \BreakpointDebugging_Error_InAllCaseTest::$exeMode = $storeExeMode;
         }
 
         function trigger_error2()
@@ -266,6 +300,7 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_UnitT
         $parentFilePath = __DIR__ . '/testErrorHandler2_Parent.php';
         include_once $parentFilePath;
         $lineParent = __LINE__ - 1;
+
         $parentFileNumber = $this->_getFileNumber($parentFilePath);
         $thisFileNumber = $this->_getFileNumber(__FILE__);
         function test2()
