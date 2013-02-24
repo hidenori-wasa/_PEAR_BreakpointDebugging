@@ -6,6 +6,7 @@ namespace Your_Name;
 
 use \BreakpointDebugging as B;
 
+chdir('../../../');
 require_once './NativeClass.php'; // Test class.
 
 B::isUnitTestExeMode(false); // Checks the execution mode.
@@ -31,7 +32,8 @@ if ($testNumber === 1) {
     function fnTestC()
     {
         // B::assert(false, 1); // This is error location.
-        fnThrow(); // This is exception location.
+        fnThrow($GLOBALS, array ($GLOBALS)); // This is exception location.
+        // fnThrow($GLOBALS); // This is exception location.
     }
 
     function fnTestB()

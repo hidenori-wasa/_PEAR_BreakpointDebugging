@@ -11,8 +11,8 @@ $testFileNames = array (
     // '--stop-on-failure BreakpointDebugging-ExceptionTest.php',
     // '--stop-on-failure BreakpointDebugging-InAllCaseTest.php',
     // '--stop-on-failure BreakpointDebuggingTest.php',
-    '--stop-on-failure BreakpointDebugging/Error-InAllCaseTest.php',
-    // '--stop-on-failure BreakpointDebugging/ErrorTest.php',
+    // '--stop-on-failure BreakpointDebugging/Error-InAllCaseTest.php',
+    '--stop-on-failure BreakpointDebugging/ErrorTest.php',
     // '--stop-on-failure BreakpointDebugging/LockByFileExistingTest.php',
     // '--stop-on-failure BreakpointDebugging/LockByFlockTest.php',
     // '--stop-on-failure BreakpointDebugging/LockByShmopTest.php',
@@ -25,8 +25,8 @@ $testFileNames = array (
 // B::displayCodeCoverageReport('BreakpointDebugging-ExceptionTest.php', 'PEAR/BreakpointDebugging.php'); // OK
 // B::displayCodeCoverageReport('BreakpointDebugging-InAllCaseTest.php', 'PEAR/BreakpointDebugging.php'); // Windows is OK.
 // B::displayCodeCoverageReport('BreakpointDebuggingTest.php', 'PEAR/BreakpointDebugging_Option.php'); // Windows is OK.
-B::displayCodeCoverageReport('BreakpointDebugging/Error-InAllCaseTest.php', 'PEAR/BreakpointDebugging/Error.php'); // Windows is OK.
-// B::displayCodeCoverageReport('BreakpointDebugging/ErrorTest.php', 'PEAR/BreakpointDebugging/Error_Option.php');
+// B::displayCodeCoverageReport('BreakpointDebugging/Error-InAllCaseTest.php', 'PEAR/BreakpointDebugging/Error.php'); // Windows is OK.
+B::displayCodeCoverageReport('BreakpointDebugging/ErrorTest.php', 'PEAR/BreakpointDebugging/Error_Option.php');
 // B::displayCodeCoverageReport('BreakpointDebugging/LockByFileExistingTest.php', array ('PEAR/BreakpointDebugging/Lock.php', 'PEAR/BreakpointDebugging/LockByFileExisting.php'));
 // B::displayCodeCoverageReport('BreakpointDebugging/LockByFlockTest.php', array ('PEAR/BreakpointDebugging/Lock.php', 'PEAR/BreakpointDebugging/LockByFlock.php')); // OK.
 // B::displayCodeCoverageReport('BreakpointDebugging/LockByShmopTest.php', array ('PEAR/BreakpointDebugging/Lock.php', 'PEAR/BreakpointDebugging/LockByShmop.php'));

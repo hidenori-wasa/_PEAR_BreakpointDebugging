@@ -61,17 +61,17 @@ abstract class BreakpointDebugging_Error_InAllCase
     /**
      * @var array Logged call-stacks.
      */
-    private $_loggedCallStacks;
+    private $_loggedCallStacks = array ();
 
     /**
      * @var array Logged arrays.
      */
-    private $_loggedArrays;
+    private $_loggedArrays = array ();
 
     /**
      * @var array Logged objects.
      */
-    private $_loggedObjects;
+    private $_loggedObjects = array ();
 
     /**
      * @var string Variable configuring file name.
@@ -107,22 +107,22 @@ abstract class BreakpointDebugging_Error_InAllCase
     /**
      * @var array Call stack information.
      */
-    private $_callStacks;
+    private $_callStack;
 
     /**
      * @var bool Is logging?
      */
-    private $_isLogging;
+    protected $isLogging;
 
     /**
      * @var string Mark.
      */
-    private $_mark;
+    protected $mark;
 
     /**
      * @var array HTML tags.
      */
-    private $_tags = array ();
+    protected $tags = array ();
 
     /**
      * @var object Locking object.
@@ -158,18 +158,15 @@ abstract class BreakpointDebugging_Error_InAllCase
      */
     function __construct()
     {
-        $this->_loggedCallStacks = array ();
-        $this->_loggedArrays = array ();
-        $this->_loggedObjects = array ();
-        $this->_isLogging = true;
-        $this->_mark = '#';
-        $this->setHTMLTags($this->_tags);
-        $this->_tags['pre'] = '';
-        $this->_tags['/pre'] = PHP_EOL . PHP_EOL;
-        $this->_tags['i'] = '';
-        $this->_tags['/i'] = '';
-        $this->_tags['b'] = '';
-        $this->_tags['/b'] = '';
+        $this->isLogging = true;
+        $this->mark = '#';
+        $this->setHTMLTags($this->tags);
+        $this->tags['pre'] = '';
+        $this->tags['/pre'] = PHP_EOL . PHP_EOL;
+        $this->tags['i'] = '';
+        $this->tags['/i'] = '';
+        $this->tags['b'] = '';
+        $this->tags['/b'] = '';
     }
 
     /**
@@ -246,7 +243,7 @@ abstract class BreakpointDebugging_Error_InAllCase
                     if ($onceFlag) {
                         $this->logBufferWriting($pTmpLog2, PHP_EOL . $tabs . "\t,");
                     } else {
-                        $this->logBufferWriting($pTmpLog2, PHP_EOL . $tabs . $this->_mark . 'Function values ==>');
+                        $this->logBufferWriting($pTmpLog2, PHP_EOL . $tabs . $this->mark . 'Function values ==>');
                         $onceFlag = true;
                     }
                     // Analyze values part of trace array, and return character string.
@@ -279,21 +276,17 @@ abstract class BreakpointDebugging_Error_InAllCase
         // For "Exception::$trace".
         $this->outputFixedFunctionToLogging($array, $pTmpLog2, $onceFlag2, $func, $class, '', '', "\t" . $tabs);
         $this->addFunctionValuesToLog($pTmpLog2, $pTmpLog, $onceFlag2, $func, $class, '', "\t" . $tabs);
-        // Deletes eternal nest element.
-        if (array_key_exists('GLOBALS', $array)) {
-            unset($array['GLOBALS']);
-        }
         foreach ($this->_loggedArrays as $loggedArrayNumber => $loggedArray) {
             if ($loggedArray === $array) {
                 // Skips same array.
                 $loggedArrayNumber++;
-                $this->logBufferWriting($pTmpLog, PHP_EOL . $tabs . $paramName . $this->_tags['font']['=>'] . ' => ' . $this->_tags['/font'] . $this->_tags['b'] . "same array #$loggedArrayNumber" . $this->_tags['/b'] . ' (');
+                $this->logBufferWriting($pTmpLog, PHP_EOL . $tabs . $paramName . $this->tags['font']['=>'] . ' => ' . $this->tags['/font'] . $this->tags['b'] . "same array #$loggedArrayNumber" . $this->tags['/b'] . ' (');
                 $this->logBufferWriting($pTmpLog, PHP_EOL . $tabs . "\t...");
                 goto AFTER_TREATMENT;
             }
         }
         $this->_loggedArrays[] = $array;
-        $this->logBufferWriting($pTmpLog, PHP_EOL . $tabs . $paramName . $this->_tags['font']['=>'] . ' => ' . $this->_tags['/font'] . $this->_tags['b'] . 'array #' . count($this->_loggedArrays) . $this->_tags['/b'] . ' (');
+        $this->logBufferWriting($pTmpLog, PHP_EOL . $tabs . $paramName . $this->tags['font']['=>'] . ' => ' . $this->tags['/font'] . $this->tags['b'] . 'array #' . count($this->_loggedArrays) . $this->tags['/b'] . ' (');
         // Beyond max log param nesting level.
         if ($tabNumber >= B::getStatic('$_maxLogParamNestingLevel')) {
             $this->logBufferWriting($pTmpLog, PHP_EOL . $tabs . "\t...");
@@ -302,7 +295,13 @@ abstract class BreakpointDebugging_Error_InAllCase
                 if (is_string($paramName)) {
                     $paramName = '\'' . $paramName . '\'';
                 }
-                $this->getTypeAndValue($pTmpLog, $paramName, $paramValue, $tabNumber + 1);
+                if (is_array($paramValue)) {
+                    $this->reflectArray($pTmpLog, $paramName, $paramValue, $tabNumber + 1);
+                } else if (is_object($paramValue)) {
+                    $this->reflectObject($pTmpLog, $paramName, $paramValue, $tabNumber + 1);
+                } else {
+                    $this->getTypeAndValue($pTmpLog, $paramName, $paramValue, $tabNumber + 1);
+                }
             }
             if ($isOverMaxLogElementNumber !== false) {
                 $tmp = PHP_EOL . $tabs . "\t\t.";
@@ -336,36 +335,42 @@ abstract class BreakpointDebugging_Error_InAllCase
             if ($loggedObject === $object) {
                 // Skips same object.
                 $loggedObjectNumber++;
-                $this->logBufferWriting($pTmpLog, PHP_EOL . $tabs . $paramName . $this->_tags['font']['=>'] . ' => ' . $this->_tags['/font'] . $this->_tags['b'] . "same class object #$loggedObjectNumber " . $this->_tags['/b'] . $this->_tags['i'] . $className . $this->_tags['/i'] . PHP_EOL . $tabs . '{');
+                $this->logBufferWriting($pTmpLog, PHP_EOL . $tabs . $paramName . $this->tags['font']['=>'] . ' => ' . $this->tags['/font'] . $this->tags['b'] . "same class object #$loggedObjectNumber " . $this->tags['/b'] . $this->tags['i'] . $className . $this->tags['/i'] . PHP_EOL . $tabs . '{');
                 $this->logBufferWriting($pTmpLog, PHP_EOL . $tabs . "\t...");
                 goto AFTER_TREATMENT;
             }
         }
         $this->_loggedObjects[] = $object;
-        $this->logBufferWriting($pTmpLog, PHP_EOL . $tabs . $paramName . $this->_tags['font']['=>'] . ' => ' . $this->_tags['/font'] . $this->_tags['b'] . 'class object #' . count($this->_loggedObjects) . ' ' . $this->_tags['/b'] . $this->_tags['i'] . $className . $this->_tags['/i'] . PHP_EOL . $tabs . '{');
+        $this->logBufferWriting($pTmpLog, PHP_EOL . $tabs . $paramName . $this->tags['font']['=>'] . ' => ' . $this->tags['/font'] . $this->tags['b'] . 'class object #' . count($this->_loggedObjects) . ' ' . $this->tags['/b'] . $this->tags['i'] . $className . $this->tags['/i'] . PHP_EOL . $tabs . '{');
         // Beyond max log param nesting level.
         if ($tabNumber >= B::getStatic('$_maxLogParamNestingLevel')) {
             $this->logBufferWriting($pTmpLog, PHP_EOL . $tabs . "\t...");
         } else {
             foreach ($constants as $constName => $constValue) {
-                $this->getTypeAndValue($pTmpLog, $this->_tags['i'] . 'const ' . $this->_tags['/i'] . $constName, $constValue, $tabNumber + 1);
+                $this->getTypeAndValue($pTmpLog, $this->tags['i'] . 'const ' . $this->tags['/i'] . $constName, $constValue, $tabNumber + 1);
             }
             count($constants) ? $this->logBufferWriting($pTmpLog, PHP_EOL) : null;
             foreach ($propertyReflections as $propertyReflection) {
                 $propertyReflection->setAccessible(true);
-                $paramName = $this->_tags['i'];
+                $paramName = $this->tags['i'];
                 $paramName .= $propertyReflection->isPublic() ? 'public ' : '';
                 $paramName .= $propertyReflection->isPrivate() ? 'private ' : '';
                 $paramName .= $propertyReflection->isProtected() ? 'protected ' : '';
                 $paramName .= $propertyReflection->isStatic() ? 'static ' : '';
-                $paramName .= $this->_tags['/i'];
+                $paramName .= $this->tags['/i'];
                 $paramName .= '$' . $propertyReflection->getName();
                 if ($propertyReflection->isStatic()) {
                     $paramValue = $propertyReflection->getValue($propertyReflection);
                 } else {
                     $paramValue = $propertyReflection->getValue($object);
                 }
-                $this->getTypeAndValue($pTmpLog, $paramName, $paramValue, $tabNumber + 1);
+                if (is_array($paramValue)) {
+                    $this->reflectArray($pTmpLog, $paramName, $paramValue, $tabNumber + 1);
+                } else if (is_object($paramValue)) {
+                    $this->reflectObject($pTmpLog, $paramName, $paramValue, $tabNumber + 1);
+                } else {
+                    $this->getTypeAndValue($pTmpLog, $paramName, $paramValue, $tabNumber + 1);
+                }
             }
         }
         AFTER_TREATMENT:
@@ -404,14 +409,15 @@ abstract class BreakpointDebugging_Error_InAllCase
                 // Array top is set to location which throws exception because this location is registered to logging.
                 array_unshift($callStackInfo, array ('file' => $pCurrentException->getFile(), 'line' => $pCurrentException->getLine()));
             }
-            $this->_callStacks = $callStackInfo;
+            // Clears recursive array element.
+            $this->_callStack = B::clearRecursiveArrayElement($callStackInfo);
             // Add scope of start page file.
-            $this->_callStacks[] = array ();
+            $this->_callStack[] = array ();
             $errorMessage = $this->convertMbString($pCurrentException->getMessage());
             $this->outputErrorCallStackLog2(get_class($pCurrentException), $errorMessage, $prependLog);
         }
 
-        B::breakpoint($errorMessage, $this->_callStacks);
+        B::breakpoint($errorMessage, $this->_callStack);
     }
 
     /**
@@ -484,11 +490,11 @@ abstract class BreakpointDebugging_Error_InAllCase
         $errorMessage = $this->convertMbString($errorMessage);
         $prependLog = $this->convertMbString($prependLog);
 
-        $this->_callStacks = $callStack;
+        $this->_callStack = $callStack;
         // Sets location which triggers error to top of call stack array because this handler must log this location.
-        unset($this->_callStacks[0]);
+        unset($this->_callStack[0]);
         // Add scope of start page file.
-        $this->_callStacks[] = array ();
+        $this->_callStack[] = array ();
         $this->outputErrorCallStackLog2($errorKind, $errorMessage, $prependLog);
         if (B::getStatic('$exeMode') === B::RELEASE) { // In case of release.
             // @codeCoverageIgnoreStart
@@ -498,18 +504,18 @@ abstract class BreakpointDebugging_Error_InAllCase
             }
         }
         // @codeCoverageIgnoreEnd
-        B::breakpoint($errorMessage, $this->_callStacks);
+        B::breakpoint($errorMessage, $this->_callStack);
         // We can do step execution to error location to see variable value even though kind is error.
     }
 
     /**
      * Add parameter header to error log.
      *
-     * @param mixed  &$pTmpLog  Error temporary log pointer.
-     * @param string $file      File name.
-     * @param mixed  $line      Line number.
-     * @param string $func      Function name.
-     * @param string $class     Class name.
+     * @param mixed  &$pTmpLog Error temporary log pointer.
+     * @param string $file     File name.
+     * @param mixed  $line     Line number.
+     * @param string $func     Function name.
+     * @param string $class    Class name.
      *
      * @return void
      */
@@ -517,24 +523,24 @@ abstract class BreakpointDebugging_Error_InAllCase
     {
         if (strripos($file, 'test.php') === strlen($file) - strlen('test.php')) {
             if ($file) {
-                $this->logBufferWriting($pTmpLog, PHP_EOL . $this->_mark . 'Error file =======>' . $this->_tags['b'] . $this->_tags['font']['string'] . '\'' . $file . '\'' . $this->_tags['/font'] . $this->_tags['/b']);
+                $this->logBufferWriting($pTmpLog, PHP_EOL . $this->mark . 'Error file =======>' . $this->tags['b'] . $this->tags['font']['string'] . '\'' . $file . '\'' . $this->tags['/font'] . $this->tags['/b']);
             }
             if ($line) {
-                $this->logBufferWriting($pTmpLog, PHP_EOL . $this->_mark . 'Error line =======>' . $this->_tags['b'] . $this->_tags['font']['int'] . $line . $this->_tags['/font'] . $this->_tags['/b']);
+                $this->logBufferWriting($pTmpLog, PHP_EOL . $this->mark . 'Error line =======>' . $this->tags['b'] . $this->tags['font']['int'] . $line . $this->tags['/font'] . $this->tags['/b']);
             }
         } else {
             if ($file) {
-                $this->logBufferWriting($pTmpLog, PHP_EOL . $this->_mark . 'Error file =======>' . $this->_tags['font']['string'] . '\'' . $file . '\'' . $this->_tags['/font']);
+                $this->logBufferWriting($pTmpLog, PHP_EOL . $this->mark . 'Error file =======>' . $this->tags['font']['string'] . '\'' . $file . '\'' . $this->tags['/font']);
             }
             if ($line) {
-                $this->logBufferWriting($pTmpLog, PHP_EOL . $this->_mark . 'Error line =======>' . $this->_tags['font']['int'] . $line . $this->_tags['/font']);
+                $this->logBufferWriting($pTmpLog, PHP_EOL . $this->mark . 'Error line =======>' . $this->tags['font']['int'] . $line . $this->tags['/font']);
             }
         }
         if ($class) {
-            $this->logBufferWriting($pTmpLog, PHP_EOL . $this->_mark . 'Error class ======>' . $this->_tags['i'] . $class . $this->_tags['/i']);
+            $this->logBufferWriting($pTmpLog, PHP_EOL . $this->mark . 'Error class ======>' . $this->tags['i'] . $class . $this->tags['/i']);
         }
         if ($func) {
-            $this->logBufferWriting($pTmpLog, PHP_EOL . $this->_mark . 'Error function ===>' . $this->_tags['i'] . $func . $this->_tags['/i'] . '( ');
+            $this->logBufferWriting($pTmpLog, PHP_EOL . $this->mark . 'Error function ===>' . $this->tags['i'] . $func . $this->tags['/i'] . '( ');
         }
     }
 
@@ -574,8 +580,8 @@ abstract class BreakpointDebugging_Error_InAllCase
                     && $class === $noFixClass
                     && $file === $noFixFile
                 ) {
-                    $marks = str_repeat($this->_mark, 10);
-                    $this->logBufferWriting($pTmpLog, PHP_EOL . $tabs . $this->_tags['font']['caution'] . $marks . $this->_tags['b'] . ' This function has been not fixed. ' . $this->_tags['/b'] . $marks . $this->_tags['/font']);
+                    $marks = str_repeat($this->mark, 10);
+                    $this->logBufferWriting($pTmpLog, PHP_EOL . $tabs . $this->tags['font']['caution'] . $marks . $this->tags['b'] . ' This function has been not fixed. ' . $this->tags['/b'] . $marks . $this->tags['/font']);
                     if ($onceFlag2) {
                         $onceFlag2 = false;
                         $this->addParameterHeaderToLog($pTmpLog, $noFixFile, $line, $func, $class);
@@ -597,7 +603,7 @@ abstract class BreakpointDebugging_Error_InAllCase
      */
     protected function outputErrorCallStackLog2($errorKind, $errorMessage, $prependLog = '')
     {
-        if (!$this->_isLogging) {
+        if (!$this->isLogging) {
             // @codeCoverageIgnoreStart
             $errorMessage = htmlspecialchars($errorMessage, ENT_QUOTES, 'UTF-8');
             $prependLog = htmlspecialchars($prependLog, ENT_QUOTES, 'UTF-8');
@@ -660,7 +666,7 @@ abstract class BreakpointDebugging_Error_InAllCase
             }
             // The call stack loop.
             $callStackInfoArray = array ();
-            foreach ($this->_callStacks as $call) {
+            foreach ($this->_callStack as $call) {
                 if (empty($call)
                     || !array_key_exists('file', $call)
                     || !array_key_exists('line', $call)
@@ -728,36 +734,38 @@ abstract class BreakpointDebugging_Error_InAllCase
 
         $tmp = date('[Y-m-d H:i:s]') . PHP_EOL;
         $dummy = null;
-        $this->logBufferWriting($dummy, $this->_tags['pre'] . $prependLog);
+        $this->logBufferWriting($dummy, $this->tags['pre'] . $prependLog);
         // Create error log from the argument.
         $tmp .= '/////////////////////////////// CALL STACK BEGIN ///////////////////////////////' .
-            PHP_EOL . $this->_mark . 'Error kind =======>' . $this->_tags['font']['string'] . '\'' . $errorKind . '\'' . $this->_tags['/font'] .
-            PHP_EOL . $this->_mark . 'Error message ====>' . $this->_tags['font']['string'] . '\'' . $errorMessage . '\'' . $this->_tags['/font'];
+            PHP_EOL . $this->mark . 'Error kind =======>' . $this->tags['font']['string'] . '\'' . $errorKind . '\'' . $this->tags['/font'] .
+            PHP_EOL . $this->mark . 'Error message ====>' . $this->tags['font']['string'] . '\'' . $errorMessage . '\'' . $this->tags['/font'];
         $this->logBufferWriting($dummy, $tmp);
         // Search array which debug_backtrace() or getTrace() returns, and add a parametric information.
-        foreach ($this->_callStacks as $callStack) {
+        foreach ($this->_callStack as $call) {
             $onceFlag2 = true;
             $pTmpLog2 = $this->logPointerOpening();
-            foreach ($this->_loggedCallStacks as $loggedCallStackNumber => $loggedCallStack) {
-                if ($loggedCallStack === $callStack) {
+            foreach ($this->_loggedCallStacks as $loggedCallNumber => $loggedCall) {
+                if ($loggedCall === $call) {
                     // Skips same call stack.
-                    $loggedCallStackNumber++;
-                    $this->logBufferWriting($dummy, PHP_EOL . $this->_tags['b'] . "same function call #$loggedCallStackNumber" . $this->_tags['/b'] . " ...");
+                    $loggedCallNumber++;
+                    $this->logBufferWriting($dummy, PHP_EOL . $this->tags['b'] . "same function call #$loggedCallNumber" . $this->tags['/b'] . " ...");
                     $file = '';
                     $line = '';
+                    $func = '';
+                    $class = '';
                     goto AFTER_TREATMENT;
                 }
             }
-            array_key_exists('file', $callStack) ? $file = $callStack['file'] : $file = '';
-            array_key_exists('line', $callStack) ? $line = $callStack['line'] : $line = '';
+            array_key_exists('file', $call) ? $file = $call['file'] : $file = '';
+            array_key_exists('line', $call) ? $line = $call['line'] : $line = '';
 
-            $this->_loggedCallStacks[] = $callStack;
-            $this->logBufferWriting($dummy, PHP_EOL . $this->_tags['b'] . 'function call #' . count($this->_loggedCallStacks) . $this->_tags['/b']);
+            $this->_loggedCallStacks[] = $call;
+            $this->logBufferWriting($dummy, PHP_EOL . $this->tags['b'] . 'function call #' . count($this->_loggedCallStacks) . $this->tags['/b']);
 
-            $this->outputFixedFunctionToLogging($callStack, $dummy, $onceFlag2, $func, $class, $file, $line);
-            if (array_key_exists('args', $callStack)) {
+            $this->outputFixedFunctionToLogging($call, $dummy, $onceFlag2, $func, $class, $file, $line);
+            if (array_key_exists('args', $call)) {
                 // Analyze parameters part of trace array, and return character string.
-                $this->searchDebugBacktraceArgsToString($pTmpLog2, $callStack['args']);
+                $this->searchDebugBacktraceArgsToString($pTmpLog2, $call['args']);
                 $this->logBufferWriting($pTmpLog2, PHP_EOL . ');');
             }
             $this->addFunctionValuesToLog($pTmpLog, $dummy, $onceFlag2, $func, $class, $line);
@@ -770,7 +778,7 @@ abstract class BreakpointDebugging_Error_InAllCase
             $this->logWriting($pTmpLog2);
         }
         $this->logBufferWriting($dummy, '//////////////////////////////// CALL STACK END ////////////////////////////////');
-        $this->logBufferWriting($dummy, $this->_tags['/pre']);
+        $this->logBufferWriting($dummy, $this->tags['/pre']);
 
         // If this does a log.
         if (B::getStatic('$exeMode') & (B::RELEASE | B::LOCAL_DEBUG_OF_RELEASE)) {
@@ -828,16 +836,18 @@ abstract class BreakpointDebugging_Error_InAllCase
     /**
      * Get parameter type and value.
      *
-     * @param mixed &$pTmpLog   Error temporary log pointer.
-     * @param mixed $paramName  Parameter name or number.
-     * @param mixed $paramValue Parameter value.
-     * @param int   $tabNumber  The tab number to indent.
+     * @param mixed &$pTmpLog       Error temporary log pointer.
+     * @param mixed $paramName      Parameter name or number.
+     * @param mixed $paramValue     Parameter value.
+     * @param int   $tabNumber      The tab number to indent.
      *
      * @return void
      */
     protected function getTypeAndValue(&$pTmpLog, $paramName, $paramValue, $tabNumber)
     {
         if (is_array($paramValue)) {
+            // Clears recursive array element.
+            $paramValue = B::clearRecursiveArrayElement($paramValue);
             $this->reflectArray($pTmpLog, $paramName, $paramValue, $tabNumber);
             return;
         } else if (is_object($paramValue)) {
@@ -846,16 +856,16 @@ abstract class BreakpointDebugging_Error_InAllCase
         }
 
         $prefix = PHP_EOL . str_repeat("\t", $tabNumber);
-        $this->logBufferWriting($pTmpLog, $prefix . $paramName . $this->_tags['font']['=>'] . ' => ' . $this->_tags['/font']);
+        $this->logBufferWriting($pTmpLog, $prefix . $paramName . $this->tags['font']['=>'] . ' => ' . $this->tags['/font']);
 
         if (is_null($paramValue)) {
-            $this->logBufferWriting($pTmpLog, $this->getParamInfo($this->_tags, 'null', 'null'));
+            $this->logBufferWriting($pTmpLog, $this->getParamInfo($this->tags, 'null', 'null'));
         } else if (is_bool($paramValue)) {
-            $this->logBufferWriting($pTmpLog, $this->getParamInfo($this->_tags, 'bool', $paramValue ? 'true' : 'false'));
+            $this->logBufferWriting($pTmpLog, $this->getParamInfo($this->tags, 'bool', $paramValue ? 'true' : 'false'));
         } else if (is_int($paramValue)) {
-            $this->logBufferWriting($pTmpLog, $this->getParamInfo($this->_tags, 'int', $paramValue));
+            $this->logBufferWriting($pTmpLog, $this->getParamInfo($this->tags, 'int', $paramValue));
         } else if (is_float($paramValue)) {
-            $this->logBufferWriting($pTmpLog, $this->getParamInfo($this->_tags, 'float', $paramValue));
+            $this->logBufferWriting($pTmpLog, $this->getParamInfo($this->tags, 'float', $paramValue));
         } else if (is_string($paramValue)) {
             $paramValue = $this->convertMbString($paramValue);
             $strlen = strlen($paramValue);
@@ -865,20 +875,20 @@ abstract class BreakpointDebugging_Error_InAllCase
                 $paramValue = substr($paramValue, 0, B::getStatic('$_maxLogStringSize'));
             }
             $paramValue = '"' . $paramValue . '"';
-            if (!$this->_isLogging) {
+            if (!$this->isLogging) {
                 // @codeCoverageIgnoreStart
                 $paramValue = htmlspecialchars($paramValue, ENT_QUOTES, 'UTF-8');
             }
             // @codeCoverageIgnoreEnd
             if ($isOverMaxLogStringSize === false) {
-                $this->logBufferWriting($pTmpLog, $this->getParamInfo($this->_tags, 'string', $paramValue) . $this->_tags['i'] . ' (length=' . $strlen . ')' . $this->_tags['/i']);
+                $this->logBufferWriting($pTmpLog, $this->getParamInfo($this->tags, 'string', $paramValue) . $this->tags['i'] . ' (length=' . $strlen . ')' . $this->tags['/i']);
             } else {
-                $this->logBufferWriting($pTmpLog, $this->getParamInfo($this->_tags, 'string', $paramValue) . $this->_tags['i'] . '... (length=' . $strlen . ')' . $this->_tags['/i']);
+                $this->logBufferWriting($pTmpLog, $this->getParamInfo($this->tags, 'string', $paramValue) . $this->tags['i'] . '... (length=' . $strlen . ')' . $this->tags['/i']);
             }
         } else if (is_resource($paramValue)) {
-            $tmp = $this->_tags['b'] . 'resource' . $this->_tags['/b'] . ' ' .
-                $this->_tags['i'] . get_resource_type($paramValue) . $this->_tags['/i'] . ' ' .
-                $this->_tags['font']['resource'] . $paramValue . $this->_tags['/font'];
+            $tmp = $this->tags['b'] . 'resource' . $this->tags['/b'] . ' ' .
+                $this->tags['i'] . get_resource_type($paramValue) . $this->tags['/i'] . ' ' .
+                $this->tags['font']['resource'] . $paramValue . $this->tags['/font'];
             $this->logBufferWriting($pTmpLog, $tmp);
         } else {
             // @codeCoverageIgnoreStart

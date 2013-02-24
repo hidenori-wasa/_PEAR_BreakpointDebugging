@@ -236,13 +236,13 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
     /**
      * Limits static properties accessing.
      */
-    function __construct()
+    static function singleton()
     {
         B::limitAccess('BreakpointDebugging.php');
 
         B::assert(func_num_args() === 0);
 
-        parent::__construct();
+        parent::singleton();
 
         self::$staticProperties['$_includePaths'] = &self::$_includePaths;
         self::$staticPropertyLimitings['$_includePaths'] = ''; // For unit test.
@@ -266,7 +266,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
     /**
      * If "Apache HTTP Server" does not support "suEXEC", this method displays security warning.
      */
-    function __destruct()
+    static function checkSuperUserExecution()
     {
         // If this is not remote debug.
         if (self::$exeMode & ~B::REMOTE_DEBUG) {
@@ -1280,5 +1280,7 @@ if (!B::getXebugExists()) {
         );
     }
 }
+
+register_shutdown_function('\BreakpointDebugging::checkSuperUserExecution');
 
 ?>

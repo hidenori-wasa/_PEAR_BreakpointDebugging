@@ -212,6 +212,57 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
     /**
      * @covers \BreakpointDebugging_InAllCase<extended>
      */
+    public function testClearRecursiveArrayElement()
+    {
+        $testArray['element'] = 'String.';
+        $testArray['recursive'] = &$testArray;
+        $testArray['component']['recursive'] = &$testArray;
+        $testArray['component']['element'] = 'String.';
+        $testArray['component']['recursive2'] = &$testArray['component'];
+        $testArray['component']['component']['recursive'] = &$testArray['component'];
+        $testArray['component']['component']['GLOBALS'] = $GLOBALS;
+
+        $expectedArray['element'] = 'String.';
+        $expectedArray['recursive'] = B::RECURSIVE_ARRAY;
+        $expectedArray['component']['recursive'] = B::RECURSIVE_ARRAY;
+        $expectedArray['component']['element'] = 'String.';
+        $expectedArray['component']['recursive2'] = B::RECURSIVE_ARRAY;
+        $expectedArray['component']['component']['recursive'] = B::RECURSIVE_ARRAY;
+        $expectedArray['component']['component']['GLOBALS'] = B::OMIT;
+
+
+        $resultArray = B::clearRecursiveArrayElement($testArray);
+        $this->assertTrue($expectedArray['element'] === $resultArray['element']
+            && $expectedArray['recursive'] === $resultArray['recursive']
+            && $expectedArray['component']['recursive'] === $resultArray['component']['recursive']
+            && $expectedArray['component']['element'] === $resultArray['component']['element']
+            && $expectedArray['component']['recursive2'] === $resultArray['component']['recursive2']
+            && $expectedArray['component']['component']['recursive'] === $resultArray['component']['component']['recursive']
+            && $expectedArray['component']['component']['GLOBALS'] === $resultArray['component']['component']['GLOBALS']
+        );
+        $this->assertTrue(is_array($GLOBALS));
+
+        unset($expectedArray);
+        $expectedArray['GLOBALS'] = B::OMIT;
+
+        $resultArray = B::clearRecursiveArrayElement($GLOBALS);
+        $this->assertTrue($expectedArray['GLOBALS'] === $resultArray['GLOBALS']);
+        $this->assertTrue(is_array($GLOBALS));
+
+        unset($testArray);
+        $testArray = array ($GLOBALS);
+
+        unset($expectedArray);
+        $expectedArray[0]['GLOBALS'] = B::OMIT;
+
+        $resultArray = B::clearRecursiveArrayElement($testArray);
+        $this->assertTrue($expectedArray[0]['GLOBALS'] === $resultArray[0]['GLOBALS']);
+        $this->assertTrue(is_array($GLOBALS));
+    }
+
+    /**
+     * @covers \BreakpointDebugging_InAllCase<extended>
+     */
     public function testAutoload()
     {
         global $testAutoload;

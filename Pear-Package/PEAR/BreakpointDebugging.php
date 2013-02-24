@@ -121,6 +121,16 @@ abstract class BreakpointDebugging_InAllCase
     const IGNORING_BREAK_POINT = 32;
 
     /**
+     *  @const string Character string which means recursive array.
+     */
+    const RECURSIVE_ARRAY = '### recursive array! ###';
+
+    /**
+     * @const string Character string which means Omitting.
+     */
+    const OMIT = '### OMITTED GLOBALS ### ...';
+
+    /**
      * @var mixed Temporary variable.
      */
     static $tmp;
@@ -218,7 +228,7 @@ abstract class BreakpointDebugging_InAllCase
     /**
      * Initializes static properties.
      */
-    function __construct()
+    static function singleton()
     {
         global $_BreakpointDebugging_EXE_MODE;
 
@@ -565,6 +575,82 @@ abstract class BreakpointDebugging_InAllCase
         return $intArray;
     }
 
+    /**
+     * Clears recursive array element.
+     *
+     * @param array $parentArray  Parent array to search element.
+     * @param array $parentsArray Array of parents to compare ID.
+     *
+     * @return array Array which changed.
+     */
+    private static function _clearRecursiveArrayElement($parentArray, $parentsArray)
+    {
+        if (count($parentArray) > B::getStatic('$_maxLogElementNumber')) {
+            $parentArray = array_slice($parentArray, 0, B::getStatic('$_maxLogElementNumber'), true);
+            $parentArray[] = ''; // Array element out of area.
+        }
+        if (array_key_exists('GLOBALS', $parentArray)
+            && is_array($parentArray['GLOBALS'])
+        ) {
+            foreach ($parentArray as $childKey => $childArray) {
+                // Changes the 'GLOBALS' nest element.
+                if ($childKey === 'GLOBALS') {
+                    $changingArray['GLOBALS'] = self::OMIT;
+                    continue;
+                }
+                $changingArray[$childKey] = &$parentArray[$childKey];
+            }
+            $parentArray = $changingArray;
+        }
+        // Creates array to change from recursive array to string.
+        $changingArray = $parentArray;
+        // Searches recursive array.
+        foreach ($parentArray as $childKey => $childArray) {
+            // If not recursive array.
+            if (!is_array($childArray)) {
+                continue;
+            }
+            // Stores the child array.
+            $elementStoring = $parentArray[$childKey];
+            // Checks reference of parent arrays by changing from child array to string.
+            $parentArray[$childKey] = self::RECURSIVE_ARRAY;
+            foreach ($parentsArray as $cmpParentArrays) {
+                // If a recursive array.
+                if (!is_array(current($cmpParentArrays))) {
+                    // Deletes recursive array reference.
+                    unset($changingArray[$childKey]);
+                    // Marks recursive array.
+                    $changingArray[$childKey] = self::RECURSIVE_ARRAY;
+                    // Restores child array.
+                    $parentArray[$childKey] = $elementStoring;
+                    continue 2;
+                }
+            }
+            // Restores child array.
+            $parentArray[$childKey] = $elementStoring;
+            // Adds parent array.
+            $parentsArray[][$childKey] = &$parentArray[$childKey];
+            // Calls this function recursively.
+            $changingArray[$childKey] = self::_clearRecursiveArrayElement($parentArray[$childKey], $parentsArray);
+            // Takes out parent array.
+            array_pop($parentsArray);
+        }
+        return $changingArray;
+    }
+
+    /**
+     * Clears recursive array element.
+     *
+     * @param array &$recursiveArray Recursive array.
+     *
+     * @return array Array which changed.
+     */
+    static function clearRecursiveArrayElement(&$recursiveArray)
+    {
+        $parentsArray = array (array (&$recursiveArray));
+        return self::_clearRecursiveArrayElement($recursiveArray, $parentsArray);
+    }
+
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /**
      * Does autoload by path which was divided by name space separator and underscore separator as directory.
@@ -789,8 +875,7 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
     // This sets global error handler.( -1 sets all bits on 1. Therefore, this specifies error, warning and note of all kinds and so on.)
     set_error_handler('\BreakpointDebugging::errorHandler', -1);
 }
-global $_BreakpointDebugging;
-$_BreakpointDebugging = new \BreakpointDebugging();
+\BreakpointDebugging::singleton();
 spl_autoload_register('\BreakpointDebugging::autoload');
 register_shutdown_function('\BreakpointDebugging::shutdown');
 

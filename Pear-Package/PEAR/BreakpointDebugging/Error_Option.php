@@ -83,37 +83,34 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
         B::limitAccess('BreakpointDebugging.php');
         B::assert(func_num_args() === 0);
 
-        if (B::getStatic('$exeMode') & (B::RELEASE | B::LOCAL_DEBUG_OF_RELEASE)) { // In case of the logging.
+        if (B::getStatic('$exeMode') & B::LOCAL_DEBUG_OF_RELEASE) { // In case of logging.
             parent::__construct();
         } else { // In case of not the logging.
-            $this->_loggedCallStacks = array ();
-            $this->_loggedArrays = array ();
-            $this->_loggedObjects = array ();
-            $this->_isLogging = false;
-            $this->_mark = '&diams;';
+            $this->isLogging = false;
+            $this->mark = '&diams;';
             // When "Xdebug" exists.
             if (B::getXebugExists()) {
-                $this->_tags['pre'] = '<pre class=\'xdebug-var-dump\' dir=\'ltr\'>';
-                $this->_tags['font']['caution'] = '<font color=\'#ff0000\'>';
-                $this->_tags['font']['bool'] = '<font color=\'#75507b\'>';
-                $this->_tags['font']['int'] = '<font color=\'#4e9a06\'>';
-                $this->_tags['font']['float'] = '<font color=\'#f57900\'>';
-                $this->_tags['font']['string'] = '<font color=\'#cc0000\'>';
-                $this->_tags['font']['null'] = '<font color=\'#3465a4\'>';
-                $this->_tags['font']['resource'] = '<font color=\'#8080ff\'>';
-                $this->_tags['font']['=>'] = '<font color=\'#888a85\'>';
-                $this->_tags['/font'] = '</font>';
-                $this->_tags['small'] = '<small>';
-                $this->_tags['/small'] = '</small>';
+                $this->tags['pre'] = '<pre class=\'xdebug-var-dump\' dir=\'ltr\'>';
+                $this->tags['font']['caution'] = '<font color=\'#ff0000\'>';
+                $this->tags['font']['bool'] = '<font color=\'#75507b\'>';
+                $this->tags['font']['int'] = '<font color=\'#4e9a06\'>';
+                $this->tags['font']['float'] = '<font color=\'#f57900\'>';
+                $this->tags['font']['string'] = '<font color=\'#cc0000\'>';
+                $this->tags['font']['null'] = '<font color=\'#3465a4\'>';
+                $this->tags['font']['resource'] = '<font color=\'#8080ff\'>';
+                $this->tags['font']['=>'] = '<font color=\'#888a85\'>';
+                $this->tags['/font'] = '</font>';
+                $this->tags['small'] = '<small>';
+                $this->tags['/small'] = '</small>';
             } else { // When "Xdebug" does not exist.
-                $this->_tags['pre'] = '<pre>';
-                $this->setHTMLTags($this->_tags);
+                $this->tags['pre'] = '<pre>';
+                $this->setHTMLTags($this->tags);
             }
-            $this->_tags['/pre'] = '</pre>';
-            $this->_tags['i'] = '<i>';
-            $this->_tags['/i'] = '</i>';
-            $this->_tags['b'] = '<b>';
-            $this->_tags['/b'] = '</b>';
+            $this->tags['/pre'] = '</pre>';
+            $this->tags['i'] = '<i>';
+            $this->tags['/i'] = '</i>';
+            $this->tags['b'] = '<b>';
+            $this->tags['/b'] = '</b>';
         }
     }
 
@@ -158,50 +155,6 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
         B::assert(is_string($tabs), 8);
 
         parent::addFunctionValuesToLog($pTmpLog2, $pTmpLog, $onceFlag2, $func, $class, $line, $tabs);
-    }
-
-    /**
-     * For debug.
-     *
-     * @param mixed &$pTmpLog  Same as parent.
-     * @param mixed $paramName Same as parent.
-     * @param array $array     Same as parent.
-     * @param int   $tabNumber Same as parent.
-     *
-     * @return Same as parent.
-     */
-    protected function reflectArray(&$pTmpLog, $paramName, $array, $tabNumber = 1)
-    {
-        B::assert(func_num_args() <= 4, 1);
-        B::assert(is_array($pTmpLog) || is_resource($pTmpLog), 2);
-        B::assert(is_string($paramName) || is_int($paramName), 3);
-        B::assert(is_array($array), 4);
-        B::assert(is_int($tabNumber), 5);
-
-        parent::reflectArray($pTmpLog, $paramName, $array, $tabNumber);
-    }
-
-    /**
-     * For debug.
-     *
-     * @param mixed  &$pTmpLog  Same as parent.
-     * @param mixed  $paramName Same as parent.
-     * @param object $object    Same as parent.
-     * @param int    $tabNumber Same as parent.
-     *
-     * @return Same as parent.
-     */
-    protected function reflectObject(&$pTmpLog, $paramName, $object, $tabNumber = 1)
-    {
-        $className = get_class($object);
-
-        B::assert(func_num_args() <= 4, 1);
-        B::assert(is_string($paramName) || is_int($paramName), 2);
-        B::assert(is_object($object), 3);
-        B::assert(is_string($className), 4);
-        B::assert(is_int($tabNumber), 5);
-
-        parent::reflectObject($pTmpLog, $paramName, $object, $tabNumber);
     }
 
     /**
@@ -336,16 +289,16 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
     /**
      * For debug.
      *
-     * @param mixed &$pTmpLog   Same as parent.
-     * @param mixed $paramName  Same as parent.
-     * @param mixed $paramValue Same as parent.
-     * @param int   $tabNumber  Same as parent.
+     * @param mixed &$pTmpLog       Same as parent.
+     * @param mixed $paramName      Same as parent.
+     * @param mixed $paramValue     Same as parent.
+     * @param int   $tabNumber      Same as parent.
      *
      * @return Same as parent.
      */
     protected function getTypeAndValue(&$pTmpLog, $paramName, $paramValue, $tabNumber)
     {
-        B::assert(func_num_args() === 4, 1);
+        B::assert(func_num_args() <= 5, 1);
         B::assert(is_array($pTmpLog) || is_resource($pTmpLog) || $pTmpLog === null, 2);
         B::assert(is_string($paramName) || is_int($paramName), 3);
         B::assert(is_int($tabNumber), 4);
@@ -403,8 +356,6 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
         if (B::getStatic('$exeMode') & B::REMOTE_DEBUG) {
             fclose($pTmpLog);
             $pTmpLog = null;
-        } else if (B::getStatic('$exeMode') & B::RELEASE) {
-            parent::logPointerClosing($pTmpLog);
         } else {
             $pTmpLog = null;
         }
@@ -440,9 +391,6 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
                 foreach ($pTmpLog as $log) {
                     fwrite($this->pErrorLogFile, $log);
                 }
-                break;
-            case B::RELEASE: // For unit test.
-                parent::logWriting($pTmpLog);
                 break;
             default:
                 B::internalException('', 3);
@@ -486,9 +434,6 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
                     $pLogBuffer[] = $log;
                 }
                 break;
-            case B::RELEASE: // For unit test.
-                parent::logBufferWriting($pLogBuffer, $log);
-                break;
             default:
                 B::internalException('', 4);
         }
@@ -506,13 +451,14 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
     protected function logCombination(&$pTmpLog, &$pTmpLog2)
     {
         B::assert(func_num_args() === 2, 1);
-        B::assert(is_array($pTmpLog) || is_resource($pTmpLog), 2);
+        B::assert(is_array($pTmpLog) || is_resource($pTmpLog) || $pTmpLog === null, 2);
         B::assert(is_array($pTmpLog2) || is_resource($pTmpLog2), 3);
-        B::assert($pTmpLog2 !== null, 4);
 
         switch (B::getStatic('$exeMode') & ~(B::UNIT_TEST | B::IGNORING_BREAK_POINT)) {
             case B::LOCAL_DEBUG:
-                if (count($pTmpLog) === 0) {
+                if ($pTmpLog === null) {
+                    echo $pTmpLog2;
+                } else if (count($pTmpLog) === 0) {
                     if (count($pTmpLog2) !== 0) {
                         $pTmpLog = $pTmpLog2;
                     }
@@ -522,21 +468,28 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
                 break;
             case B::REMOTE_DEBUG:
                 rewind($pTmpLog2);
-                while (!feof($pTmpLog2)) {
-                    fwrite($pTmpLog, fread($pTmpLog2, 4096));
+                if ($pTmpLog === null) {
+                    while (!feof($pTmpLog2)) {
+                        echo fread($pTmpLog2, 4096);
+                    }
+                } else {
+                    while (!feof($pTmpLog2)) {
+                        fwrite($pTmpLog, fread($pTmpLog2, 4096));
+                    }
                 }
                 break;
             case B::LOCAL_DEBUG_OF_RELEASE:
-                if (count($pTmpLog) === 0) {
+                if ($pTmpLog === null) {
+                    foreach ($pTmpLog2 as $log) {
+                        fwrite($this->pErrorLogFile, $log);
+                    }
+                } else if (count($pTmpLog) === 0) {
                     if (count($pTmpLog2) !== 0) {
                         $pTmpLog = $pTmpLog2;
                     }
                 } else if (count($pTmpLog2) !== 0) {
                     $pTmpLog = array_merge($pTmpLog, $pTmpLog2);
                 }
-                break;
-            case B::RELEASE: // For unit test.
-                parent::logCombination($pTmpLog, $pTmpLog2);
                 break;
             default:
                 B::internalException('', 5);

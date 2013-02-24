@@ -40,29 +40,20 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
     /**
      * @covers \BreakpointDebugging<extended>
      */
-    function test__constructThen__destruct()
+    function testSingleton()
     {
-        $breakpointDebugging = new \BreakpointDebugging();
-        // Calls "__destruct()".
-        $breakpointDebugging = null;
-
-        $breakpointDebugging = new \BreakpointDebugging();
-        $storeExeMode = self::$_exeMode;
-        self::$_exeMode = B::REMOTE_DEBUG | B::UNIT_TEST;
-        // Calls "__destruct()".
-        $breakpointDebugging = null;
-        self::$_exeMode = $storeExeMode;
+        \BreakpointDebugging::singleton();
     }
 
     /**
      * @covers \BreakpointDebugging<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=__construct
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=singleton
      */
-    function test__construct()
+    function testSingleton_B()
     {
-        $breakpointDebugging = new \BreakpointDebugging('notExist');
+        \BreakpointDebugging::singleton('notExist');
     }
 
     /**

@@ -301,6 +301,7 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
          */
         protected function setUp()
         {
+            @unlink(B::getStatic('$_workDir') . '/LockByFileExistingOfInternal.txt');
             $onceErrorDispFlag = &B::refStatic('$_onceErrorDispFlag');
             $onceErrorDispFlag = false;
             $callingExceptionHandlerDirectly = &B::refStatic('$_callingExceptionHandlerDirectly');

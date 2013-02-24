@@ -3,10 +3,6 @@
 chdir(__DIR__ . '/../../../');
 require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
 
-// File to have "use" keyword does not inherit scope into a file including itself,
-// also it does not inherit scope into a file including,
-// and moreover "use" keyword alias has priority over class definition,
-// therefore "use" keyword alias does not be affected by other files.
 use \BreakpointDebugging as B;
 
 B::isUnitTestExeMode(true);
@@ -37,15 +33,10 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_UnitT
     static $error;
     static $exeMode;
 
-    // function test()
-    // {
-    //     exit('<pre>Stops this test.</pre>');
-    // }
-
     static function setUpBeforeClass()
     {
         self::$exeMode = &B::refStatic('$exeMode');
-        self::$exeMode = B::RELEASE | B::UNIT_TEST;
+        self::$exeMode = B::RELEASE | B::UNIT_TEST; // Executes without including "Error_Option.php" file.
         $maxLogStringSize = &B::refStatic('$_maxLogStringSize');
         $maxLogStringSize = 8;
     }
