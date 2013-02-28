@@ -66,18 +66,7 @@ class BreakpointDebugging_ErrorTest extends \BreakpointDebugging_UnitTestOverrid
 
     private function _exceptionHandler2()
     {
-        ob_start();
-
-        self::$exeMode = B::LOCAL_DEBUG | B::UNIT_TEST | B::IGNORING_BREAK_POINT;
-        self::$error->exceptionHandler2(new \Exception(), '');
-
-        self::$exeMode = B::LOCAL_DEBUG_OF_RELEASE | B::UNIT_TEST | B::IGNORING_BREAK_POINT;
-        self::$error->exceptionHandler2(new \Exception(), '');
-
-        self::$exeMode = B::REMOTE_DEBUG | B::UNIT_TEST | B::IGNORING_BREAK_POINT;
-        self::$error->exceptionHandler2(new \Exception(), '');
-
-        ob_end_clean();
+        throw new \Exception();
     }
 
     /**
@@ -85,7 +74,28 @@ class BreakpointDebugging_ErrorTest extends \BreakpointDebugging_UnitTestOverrid
      */
     public function testExceptionHandler2()
     {
-        $this->_exceptionHandler2($GLOBALS);
+        ob_start();
+
+        try {
+            self::$exeMode = B::LOCAL_DEBUG | B::UNIT_TEST | B::IGNORING_BREAK_POINT;
+            $this->_exceptionHandler2($GLOBALS, array ('Test1.'));
+        } catch (\Exception $e) {
+            self::$error->exceptionHandler2($e, '');
+        }
+        try {
+            self::$exeMode = B::LOCAL_DEBUG_OF_RELEASE | B::UNIT_TEST | B::IGNORING_BREAK_POINT;
+            $this->_exceptionHandler2($GLOBALS, array ('Test1.'));
+        } catch (\Exception $e) {
+            self::$error->exceptionHandler2($e, '');
+        }
+        try {
+            self::$exeMode = B::REMOTE_DEBUG | B::UNIT_TEST | B::IGNORING_BREAK_POINT;
+            $this->_exceptionHandler2($GLOBALS, array ('Test1.'));
+        } catch (\Exception $e) {
+            self::$error->exceptionHandler2($e, '');
+        }
+
+        ob_end_clean();
     }
 
     /**

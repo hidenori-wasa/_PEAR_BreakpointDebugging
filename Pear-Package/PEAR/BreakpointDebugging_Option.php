@@ -48,6 +48,9 @@
  *      "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('...');"
  *      into "./PEAR_Setting/BreakpointDebugging_MySetting.php".
  *      Then, use "B::getStatic('$exeMode')" to get value.
+ *      Lastly, you must execute all codes using "\BreakpointDebugging::displayCodeCoverageReport()" before release.
+ *      Then, you must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('RELEASE');".
+ *      Because "XDebug" information is not displayed on 'RELEASE' mode.
  * Procedure 8: Please, if you use "Unix", register your username as
  *      "User" and "Group" into "lampp/apache/conf/httpd.conf".
  *      And, register "export PATH=$PATH:/opt/lampp/bin" into "~/.profile".

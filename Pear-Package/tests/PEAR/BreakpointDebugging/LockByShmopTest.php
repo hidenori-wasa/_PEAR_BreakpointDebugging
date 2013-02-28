@@ -13,7 +13,8 @@ class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_UnitTestO
     function setUp()
     {
         parent::setUp();
-        if ((B::getStatic('$exeMode') & B::RELEASE) && !extension_loaded('shmop')) {
+        //if ((B::getStatic('$exeMode') & B::RELEASE) && !extension_loaded('shmop')) {
+        if ((B::getStatic('$exeMode') & B::REMOTE_DEBUG) && !extension_loaded('shmop')) {
             $this->markTestSkipped('"shmop" extention has been not loaded.');
         }
         // Constructs instance.

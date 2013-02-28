@@ -228,7 +228,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
         $expectedArray['component']['element'] = 'String.';
         $expectedArray['component']['recursive2'] = B::RECURSIVE_ARRAY;
         $expectedArray['component']['component']['recursive'] = B::RECURSIVE_ARRAY;
-        $expectedArray['component']['component']['GLOBALS'] = B::OMIT;
+        $expectedArray['component']['component']['GLOBALS'] = B::GLOBALS_USING;
 
 
         $resultArray = B::clearRecursiveArrayElement($testArray);
@@ -243,7 +243,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
         $this->assertTrue(is_array($GLOBALS));
 
         unset($expectedArray);
-        $expectedArray['GLOBALS'] = B::OMIT;
+        $expectedArray['GLOBALS'] = B::GLOBALS_USING;
 
         $resultArray = B::clearRecursiveArrayElement($GLOBALS);
         $this->assertTrue($expectedArray['GLOBALS'] === $resultArray['GLOBALS']);
@@ -253,7 +253,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
         $testArray = array ($GLOBALS);
 
         unset($expectedArray);
-        $expectedArray[0]['GLOBALS'] = B::OMIT;
+        $expectedArray[0]['GLOBALS'] = B::GLOBALS_USING;
 
         $resultArray = B::clearRecursiveArrayElement($testArray);
         $this->assertTrue($expectedArray[0]['GLOBALS'] === $resultArray[0]['GLOBALS']);

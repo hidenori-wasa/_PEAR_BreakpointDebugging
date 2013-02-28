@@ -123,12 +123,12 @@ abstract class BreakpointDebugging_InAllCase
     /**
      *  @const string Character string which means recursive array.
      */
-    const RECURSIVE_ARRAY = '### recursive array! ###';
+    const RECURSIVE_ARRAY = '### DANGER: You used recursive array! ###';
 
     /**
-     * @const string Character string which means Omitting.
+     * @const string Character string which means using "$GLOBALS".
      */
-    const OMIT = '### OMITTED GLOBALS ### ...';
+    const GLOBALS_USING = '### DANGER: You used "$GLOBALS"! ###';
 
     /**
      * @var mixed Temporary variable.
@@ -589,15 +589,18 @@ abstract class BreakpointDebugging_InAllCase
             $parentArray = array_slice($parentArray, 0, B::getStatic('$_maxLogElementNumber'), true);
             $parentArray[] = ''; // Array element out of area.
         }
+        // If this may be "$GLOBALS".
         if (array_key_exists('GLOBALS', $parentArray)
             && is_array($parentArray['GLOBALS'])
         ) {
+            // Makes array by copying element because must not do "unset()" of "$GLOBALS".
             foreach ($parentArray as $childKey => $childArray) {
-                // Changes the 'GLOBALS' nest element.
+                // Changes the 'GLOBALS' nest element to string.
                 if ($childKey === 'GLOBALS') {
-                    $changingArray['GLOBALS'] = self::OMIT;
+                    $changingArray['GLOBALS'] = self::GLOBALS_USING;
                     continue;
                 }
+                // Does reference copy because may be reference variable.
                 $changingArray[$childKey] = &$parentArray[$childKey];
             }
             $parentArray = $changingArray;
@@ -612,7 +615,7 @@ abstract class BreakpointDebugging_InAllCase
             }
             // Stores the child array.
             $elementStoring = $parentArray[$childKey];
-            // Checks reference of parent arrays by changing from child array to string.
+            // Checks reference of parents array by changing from child array to string.
             $parentArray[$childKey] = self::RECURSIVE_ARRAY;
             foreach ($parentsArray as $cmpParentArrays) {
                 // If a recursive array.
@@ -628,9 +631,9 @@ abstract class BreakpointDebugging_InAllCase
             }
             // Restores child array.
             $parentArray[$childKey] = $elementStoring;
-            // Adds parent array.
+            // Adds current child element to parents array. Also, does reference copy because checks recursive-reference by using this.
             $parentsArray[][$childKey] = &$parentArray[$childKey];
-            // Calls this function recursively.
+            // Clears recursive array element in under hierarchy.
             $changingArray[$childKey] = self::_clearRecursiveArrayElement($parentArray[$childKey], $parentsArray);
             // Takes out parent array.
             array_pop($parentsArray);
@@ -641,7 +644,7 @@ abstract class BreakpointDebugging_InAllCase
     /**
      * Clears recursive array element.
      *
-     * @param array &$recursiveArray Recursive array.
+     * @param array &$recursiveArray Recursive array. Keeps reference to this-variable by reference copy.
      *
      * @return array Array which changed.
      */

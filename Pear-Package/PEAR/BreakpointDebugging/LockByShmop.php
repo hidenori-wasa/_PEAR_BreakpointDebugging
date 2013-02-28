@@ -79,7 +79,7 @@
  * @version  SVN: $Id$
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
+//require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
 
 use \BreakpointDebugging as B;
 
@@ -380,6 +380,8 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
         while (true) {
             shmop_write(self::$sharedMemoryID, '1', $lockFlagLocationOfItself);
             if (shmop_read(self::$sharedMemoryID, $lockFlagLocationOfpartner, 1) === '1') {
+                // @codeCoverageIgnoreStart
+                // Because the following isn't executed in case of single process.
                 shmop_write(self::$sharedMemoryID, '0', $lockFlagLocationOfItself);
                 if (time() - $startTime > $this->timeout) {
                     throw new \BreakpointDebugging_ErrorException('This process has been timeouted.', 1);
@@ -387,6 +389,7 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
                 // Wait micro seconds.
                 usleep($this->sleepMicroSeconds);
                 continue;
+                // @codeCoverageIgnoreEnd
             }
             break;
         }
@@ -417,6 +420,8 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
         shmop_write(self::$sharedMemoryID, '2', self::$_processNumber);
         $startTime = time();
         while (($isSuccess = shmop_read(self::$sharedMemoryID, 0, self::HEXADECIMAL_SIZE) + 0) !== self::$_processNumber) {
+            // @codeCoverageIgnoreStart
+            // Because the following isn't executed in case of single process.
             B::assert($isSuccess !== false, 1);
             if (time() - $startTime > $this->timeout) {
                 throw new \BreakpointDebugging_ErrorException('This process has been timeouted.', 2);
@@ -424,6 +429,7 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
             // Wait micro seconds.
             usleep($this->sleepMicroSeconds);
         }
+        // @codeCoverageIgnoreEnd
     }
 
     /**

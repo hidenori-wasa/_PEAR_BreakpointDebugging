@@ -365,6 +365,8 @@ abstract class BreakpointDebugging_Error_InAllCase
                     $paramValue = $propertyReflection->getValue($object);
                 }
                 if (is_array($paramValue)) {
+                    // Clears recursive array element.
+                    $paramValue = B::clearRecursiveArrayElement($paramValue);
                     $this->reflectArray($pTmpLog, $paramName, $paramValue, $tabNumber + 1);
                 } else if (is_object($paramValue)) {
                     $this->reflectObject($pTmpLog, $paramName, $paramValue, $tabNumber + 1);
@@ -490,7 +492,9 @@ abstract class BreakpointDebugging_Error_InAllCase
         $errorMessage = $this->convertMbString($errorMessage);
         $prependLog = $this->convertMbString($prependLog);
 
-        $this->_callStack = $callStack;
+        //$this->_callStack = $callStack;
+        // Clears recursive array element.
+        $this->_callStack = B::clearRecursiveArrayElement($callStack);
         // Sets location which triggers error to top of call stack array because this handler must log this location.
         unset($this->_callStack[0]);
         // Add scope of start page file.
@@ -836,10 +840,10 @@ abstract class BreakpointDebugging_Error_InAllCase
     /**
      * Get parameter type and value.
      *
-     * @param mixed &$pTmpLog       Error temporary log pointer.
-     * @param mixed $paramName      Parameter name or number.
-     * @param mixed $paramValue     Parameter value.
-     * @param int   $tabNumber      The tab number to indent.
+     * @param mixed &$pTmpLog   Error temporary log pointer.
+     * @param mixed $paramName  Parameter name or number.
+     * @param mixed $paramValue Parameter value.
+     * @param int   $tabNumber  The tab number to indent.
      *
      * @return void
      */

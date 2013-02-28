@@ -110,6 +110,8 @@ final class BreakpointDebugging_LockByFileExisting extends \BreakpointDebugging_
         if (!is_file($lockFilePath)) {
             return;
         }
+        // @codeCoverageIgnoreStart
+        // Because the following isn't executed in case of single process.
         $stat = stat($lockFilePath);
         // Locking flag file is too old.
         if (time() - $stat['mtime'] > $flagFileExpire) {
@@ -120,6 +122,7 @@ final class BreakpointDebugging_LockByFileExisting extends \BreakpointDebugging_
         }
     }
 
+    // @codeCoverageIgnoreEnd
     /**
      * Locking loop.
      *
@@ -129,6 +132,8 @@ final class BreakpointDebugging_LockByFileExisting extends \BreakpointDebugging_
     {
         $startTime = time();
         while (($this->pFile = @B::fopen($this->lockFilePath, 'x+b', 0600)) === false) {
+            // @codeCoverageIgnoreStart
+            // Because the following isn't executed in case of single process.
             if (time() - $startTime > $this->timeout) {
                 B::internalException('This process has been timeouted.', 1);
                 // We do not delete locking flag file here because we cannot lock php code.
@@ -137,6 +142,7 @@ final class BreakpointDebugging_LockByFileExisting extends \BreakpointDebugging_
             // Wait micro seconds.
             usleep($this->sleepMicroSeconds);
         }
+        // @codeCoverageIgnoreEnd
     }
 
     /**
@@ -148,9 +154,12 @@ final class BreakpointDebugging_LockByFileExisting extends \BreakpointDebugging_
     {
         fclose($this->pFile);
         while (@unlink($this->lockFilePath) === false) {
+            // @codeCoverageIgnoreStart
+            // Because the following isn't executed in case of single process.
             // Wait micro seconds.
             usleep($this->sleepMicroSeconds);
         }
+        // @codeCoverageIgnoreEnd
     }
 
 }
