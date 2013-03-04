@@ -453,25 +453,12 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
     protected function logCombination(&$pTmpLog, &$pTmpLog2)
     {
         B::assert(func_num_args() === 2, 1);
-        //B::assert(is_array($pTmpLog) || is_resource($pTmpLog) || $pTmpLog === null, 2);
-        //B::assert(is_array($pTmpLog) || is_resource($pTmpLog), 2);
-        //B::assert(is_array($pTmpLog2) || is_resource($pTmpLog2), 3);
-        //B::assert(is_array($pTmpLog2) || is_resource($pTmpLog2), 3);
 
         switch (B::getStatic('$exeMode') & ~(B::UNIT_TEST | B::IGNORING_BREAK_POINT)) {
             case B::LOCAL_DEBUG:
             case B::LOCAL_DEBUG_OF_RELEASE:
                 B::assert(is_array($pTmpLog));
                 B::assert(is_array($pTmpLog2));
-                //if ($pTmpLog === null) {
-                //    echo $pTmpLog2;
-                //} else if (count($pTmpLog) === 0) {
-                //    if (count($pTmpLog2) !== 0) {
-                //        $pTmpLog = $pTmpLog2;
-                //    }
-                //} else if (count($pTmpLog2) !== 0) {
-                //    $pTmpLog = array_merge($pTmpLog, $pTmpLog2);
-                //}
                 if (count($pTmpLog2) !== 0) {
                     $pTmpLog = array_merge($pTmpLog, $pTmpLog2);
                 }
@@ -480,32 +467,10 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
                 B::assert(is_resource($pTmpLog));
                 B::assert(is_resource($pTmpLog2));
                 rewind($pTmpLog2);
-                //if ($pTmpLog === null) {
-                //    while (!feof($pTmpLog2)) {
-                //        echo fread($pTmpLog2, 4096);
-                //    }
-                //} else {
                 while (!feof($pTmpLog2)) {
                     fwrite($pTmpLog, fread($pTmpLog2, 4096));
                 }
-                //}
                 break;
-//            case B::LOCAL_DEBUG_OF_RELEASE:
-//                B::assert(is_array($pTmpLog));
-//                B::assert(is_array($pTmpLog2));
-//                //if ($pTmpLog === null) {
-//                //    foreach ($pTmpLog2 as $log) {
-//                //        fwrite($this->pErrorLogFile, $log);
-//                //    }
-//                //} else if (count($pTmpLog) === 0) {
-//                //    if (count($pTmpLog2) !== 0) {
-//                //        $pTmpLog = $pTmpLog2;
-//                //    }
-//                //} else
-//                if (count($pTmpLog2) !== 0) {
-//                    $pTmpLog = array_merge($pTmpLog, $pTmpLog2);
-//                }
-//                break;
             // @codeCoverageIgnoreStart
             default:
                 B::internalException('', 5);

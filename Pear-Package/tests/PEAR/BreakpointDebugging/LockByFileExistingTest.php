@@ -164,7 +164,6 @@ class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_Un
      */
     function testSingleton_B()
     {
-        //if ((B::getStatic('$exeMode') & B::RELEASE) && !extension_loaded('shmop')) {
         if ((B::getStatic('$exeMode') & B::REMOTE_DEBUG) && !extension_loaded('shmop')) {
             $this->markTestSkipped('"shmop" extention has been not loaded.');
         }

@@ -166,7 +166,6 @@ class BreakpointDebugging_LockByFlockTest extends \BreakpointDebugging_UnitTestO
      */
     function testSingleton_C()
     {
-        //if ((B::getStatic('$exeMode') & B::RELEASE) && !extension_loaded('shmop')) {
         if ((B::getStatic('$exeMode') & B::REMOTE_DEBUG) && !extension_loaded('shmop')) {
             $this->markTestSkipped('"shmop" extention has been not loaded.');
         }

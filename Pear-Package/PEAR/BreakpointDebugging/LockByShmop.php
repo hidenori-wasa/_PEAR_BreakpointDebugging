@@ -79,8 +79,6 @@
  * @version  SVN: $Id$
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-//require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
-
 use \BreakpointDebugging as B;
 
 /**
@@ -168,7 +166,9 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
                         // var_dump('Shared memory expired.'); // For debug.
                         // Delete shared memory.
                         if (shmop_delete(self::$sharedMemoryID) === false) {
+                            // @codeCoverageIgnoreStart
                             throw new \BreakpointDebugging_ErrorException('This process failed to delete shared memory.', 1);
+                            // @codeCoverageIgnoreEnd
                         }
                         shmop_close(self::$sharedMemoryID);
                         $isContinue = true;
@@ -204,10 +204,12 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
         // Get maximum process number.
         $maximumProcessNumber = shmop_read(self::$sharedMemoryID, self::HEXADECIMAL_SIZE * 2, self::HEXADECIMAL_SIZE) + 0;
         if ($maximumProcessNumber < self::$_processNumber) {
+            // @codeCoverageIgnoreStart
+            // Because the following isn't executed in case of single process.
             // Register maximum process number.
             shmop_write(self::$sharedMemoryID, sprintf('0x%08X', self::$_processNumber), self::HEXADECIMAL_SIZE * 2);
         }
-
+        // @codeCoverageIgnoreEnd
         // Search minimum empty process number.
         while (true) {
             for ($searchLocation = $minimumEmptyProcessNumber; $searchLocation < self::MEMORY_BLOCK_SIZE; $searchLocation++) {
@@ -215,6 +217,8 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
                     break 2;
                 }
             }
+            // @codeCoverageIgnoreStart
+            // Because the following isn't executed in case of single process.
             // Unlock for current process.
             $this->_unlockOn2Processes(self::HEXADECIMAL_SIZE * 4);
             // Unlock php code.
@@ -226,6 +230,7 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
             // Lock for current process.
             $this->_lockOn2Processes(self::HEXADECIMAL_SIZE * 4, self::HEXADECIMAL_SIZE * 4 + 1);
         }
+        // @codeCoverageIgnoreEnd
         // Register minimum empty process number.
         shmop_write(self::$sharedMemoryID, sprintf('0x%08X', $searchLocation), self::HEXADECIMAL_SIZE);
 
@@ -300,7 +305,8 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
         // Open shared memory to read and write.
         $sharedMemoryID = @shmop_open($sharedMemoryKey, 'w', 0, 0);
         set_error_handler('\BreakpointDebugging::errorHandler', -1);
-        if ($sharedMemoryID === false || $sharedMemoryKey === '') {
+        //if ($sharedMemoryID === false || $sharedMemoryKey === '') {
+        if ($sharedMemoryID === false || $sharedMemoryID === null || $sharedMemoryKey === '') {
             return false;
         }
         self::$sharedMemoryID = $sharedMemoryID;
@@ -318,18 +324,28 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
         for ($count = 0; $count < 1000; $count++) {
             $sharedMemoryKey = (microtime(true) * 10000) & 0xFFFFFFFF;
             if ($sharedMemoryKey === -1) {
+                // @codeCoverageIgnoreStart
+                // Because this is a few probability.
                 continue;
+                // @codeCoverageIgnoreEnd
             }
             // It allocates shared memory area as current process number and minimum process number.
             self::$sharedMemoryID = @shmop_open($sharedMemoryKey, 'n', 0600, self::MEMORY_BLOCK_SIZE);
-            if (self::$sharedMemoryID === false) {
+            //if (self::$sharedMemoryID === false) {
+            if (self::$sharedMemoryID === false || self::$sharedMemoryID === null) {
+                // @codeCoverageIgnoreStart
+                // Because this is a few probability.
                 continue;
+                // @codeCoverageIgnoreEnd
             }
             break;
         }
         set_error_handler('\BreakpointDebugging::errorHandler', -1);
         if (self::$sharedMemoryID === false) {
+            // @codeCoverageIgnoreStart
+            // Because this is a few probability.
             throw new \BreakpointDebugging_ErrorException('New shared memory operation opening failed.', 1);
+            // @codeCoverageIgnoreEnd
         }
         // Register shared memory key.
         rewind($this->pFile);
@@ -352,10 +368,13 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
         $maxProcessNumber = shmop_read(self::$sharedMemoryID, self::HEXADECIMAL_SIZE * 2, self::HEXADECIMAL_SIZE) + 0;
         $searchProcessNumbers = shmop_read(self::$sharedMemoryID, 0, $maxProcessNumber + 1);
         for ($searchProcessNumber = $startProcessNumber; $searchProcessNumber <= $maxProcessNumber; $searchProcessNumber++) {
+            // @codeCoverageIgnoreStart
+            // Because the following isn't executed in case of single process.
             if ($searchProcessNumbers[$searchProcessNumber] !== '2') {
                 continue;
             }
             return $searchProcessNumber;
+            // @codeCoverageIgnoreEnd
         }
         for ($searchProcessNumber = self::HEXADECIMAL_SIZE * 4 + 2; $searchProcessNumber < $startProcessNumber; $searchProcessNumber++) {
             if ($searchProcessNumbers[$searchProcessNumber] !== '2') {

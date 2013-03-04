@@ -492,7 +492,6 @@ abstract class BreakpointDebugging_Error_InAllCase
         $errorMessage = $this->convertMbString($errorMessage);
         $prependLog = $this->convertMbString($prependLog);
 
-        //$this->_callStack = $callStack;
         // Clears recursive array element.
         $this->_callStack = B::clearRecursiveArrayElement($callStack);
         // Sets location which triggers error to top of call stack array because this handler must log this location.

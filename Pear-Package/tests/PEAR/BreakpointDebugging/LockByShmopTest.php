@@ -13,7 +13,6 @@ class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_UnitTestO
     function setUp()
     {
         parent::setUp();
-        //if ((B::getStatic('$exeMode') & B::RELEASE) && !extension_loaded('shmop')) {
         if ((B::getStatic('$exeMode') & B::REMOTE_DEBUG) && !extension_loaded('shmop')) {
             $this->markTestSkipped('"shmop" extention has been not loaded.');
         }
@@ -36,6 +35,21 @@ class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_UnitTestO
     function test__clone()
     {
         $tmp = clone $this->LockByShmop;
+    }
+
+    /**
+     * @covers \BreakpointDebugging_LockByShmop<extended>
+     */
+    function testSingleton()
+    {
+        \BreakpointDebugging_LockByShmop::singleton(5, 0);
+
+        $pFile = fopen(B::getStatic('$_workDir') . '/LockByShmop.txt', 'wb');
+        fwrite($pFile, 'dummydummy');
+        fclose($pFile);
+        B::setPropertyForTest('\BreakpointDebugging_Lock', '$_instance', null);
+        \BreakpointDebugging_LockByShmop::singleton(5, 10);
+        unlink(B::getStatic('$_workDir') . '/LockByShmop.txt');
     }
 
     /**
