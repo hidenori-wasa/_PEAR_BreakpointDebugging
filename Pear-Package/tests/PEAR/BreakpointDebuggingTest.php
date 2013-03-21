@@ -1,7 +1,7 @@
 <?php
 
 chdir(__DIR__ . '/../../');
-require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
+require_once './BreakpointDebugging_Including.php';
 
 use \BreakpointDebugging as B;
 
@@ -40,20 +40,20 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
     /**
      * @covers \BreakpointDebugging<extended>
      */
-    function testSingleton()
+    function testInitialize()
     {
-        \BreakpointDebugging::singleton();
+        \BreakpointDebugging::initialize();
     }
 
     /**
      * @covers \BreakpointDebugging<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=singleton
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=initialize
      */
-    function testSingleton_B()
+    function testInitialize_B()
     {
-        \BreakpointDebugging::singleton('notExist');
+        \BreakpointDebugging::initialize('notExist');
     }
 
     /**
@@ -523,7 +523,7 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
     {
         ob_start();
         self::$_exeMode |= B::IGNORING_BREAK_POINT;
-        B::exceptionHandler(new \Exception());
+        B::handleException(new \Exception());
         self::$_exeMode &= ~B::IGNORING_BREAK_POINT;
         ob_end_clean();
     }
@@ -532,33 +532,33 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
      * @covers \BreakpointDebugging<extended>
      *
      * @expectedException        \PHPUnit_Framework_Error_Warning
-     * @expectedExceptionMessage Missing argument 1 for BreakpointDebugging::exceptionHandler()
+     * @expectedExceptionMessage Missing argument 1 for BreakpointDebugging::handleException()
      */
     function testExceptionHandler_B()
     {
-        B::exceptionHandler();
+        B::handleException();
     }
 
     /**
      * @covers \BreakpointDebugging<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=exceptionHandler ID=1
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=handleException ID=1
      */
     function testExceptionHandler_C()
     {
-        B::exceptionHandler('dummy', 'notExist');
+        B::handleException('dummy', 'notExist');
     }
 
     /**
      * @covers \BreakpointDebugging<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=exceptionHandler ID=2
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=handleException ID=2
      */
     function testExceptionHandler_D()
     {
-        B::exceptionHandler('incorrectType');
+        B::handleException('incorrectType');
     }
 
     /**
@@ -568,7 +568,7 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
     {
         ob_start();
         self::$_exeMode |= B::IGNORING_BREAK_POINT;
-        B::errorHandler(E_USER_ERROR, 'dummy');
+        B::handleError(E_USER_ERROR, 'dummy');
         self::$_exeMode &= ~B::IGNORING_BREAK_POINT;
         ob_end_clean();
     }
@@ -577,33 +577,33 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
      * @covers \BreakpointDebugging<extended>
      *
      * @expectedException        \PHPUnit_Framework_Error_Warning
-     * @expectedExceptionMessage Missing argument 2 for BreakpointDebugging::errorHandler()
+     * @expectedExceptionMessage Missing argument 2 for BreakpointDebugging::handleError()
      */
     function testErrorHandler_B()
     {
-        B::errorHandler('dummy');
+        B::handleError('dummy');
     }
 
     /**
      * @covers \BreakpointDebugging<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=errorHandler ID=2
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=handleError ID=2
      */
     function testErrorHandler_D()
     {
-        B::errorHandler('incorrectType', 'dummy');
+        B::handleError('incorrectType', 'dummy');
     }
 
     /**
      * @covers \BreakpointDebugging<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=errorHandler ID=3
+     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=handleError ID=3
      */
     function testErrorHandler_E()
     {
-        B::errorHandler(123, 123);
+        B::handleError(123, 123);
     }
 
     /**

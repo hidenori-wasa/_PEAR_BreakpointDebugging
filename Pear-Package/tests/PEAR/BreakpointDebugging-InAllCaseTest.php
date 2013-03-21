@@ -1,7 +1,7 @@
 <?php
 
 chdir(__DIR__ . '/../../');
-require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
+require_once './BreakpointDebugging_Including.php';
 
 use \BreakpointDebugging as B;
 
@@ -287,7 +287,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
         $pPrevious = new \Exception('Previous exception.', E_USER_ERROR);
         $pException = new \Exception('Exception.', E_USER_ERROR, $pPrevious);
         self::$_exeMode |= B::IGNORING_BREAK_POINT;
-        B::exceptionHandler($pException);
+        B::handleException($pException);
         self::$_exeMode &= ~B::IGNORING_BREAK_POINT;
         $this->assertTrue(ob_get_clean() !== '');
     }
@@ -299,7 +299,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
     {
         ob_start();
         self::$_exeMode |= B::IGNORING_BREAK_POINT;
-        B::errorHandler(E_USER_ERROR, 'Error test.');
+        B::handleError(E_USER_ERROR, 'Error test.');
         self::$_exeMode &= ~B::IGNORING_BREAK_POINT;
         $this->assertTrue(ob_get_clean() !== '');
     }

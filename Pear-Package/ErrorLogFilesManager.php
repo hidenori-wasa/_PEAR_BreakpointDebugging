@@ -5,7 +5,7 @@
  *
  * Procedure1: Please, set
  *      "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('RELEASE');"
- *      in "BreakpointDebugging_MySetting.php" file.
+ *      in "BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php'" file.
  * Procedure2: Please, register your IP address to "$myIPAddress".
  * Procedure3: Please, upload this page to the project current directory.
  * Procedure4: Please, call this page from browser.
@@ -56,13 +56,13 @@
  */
 $myIPAddress = '127.0.0.1'; // Please, enter your IP address.
 //////////////////////////////////////////////////////////////////
-require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
+require_once './BreakpointDebugging_Including.php';
 
 use \BreakpointDebugging as B;
 
 // Checks the execution mode.
 if (B::getStatic('$exeMode') !== B::RELEASE) { // In case of not release.
-    exit('<pre>You must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'RELEASE\');" into "BreakpointDebugging_MySetting.php" file.</pre>');
+    exit('<pre>You must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'RELEASE\');" into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file.</pre>');
 }
 
 // Checks client IP address.

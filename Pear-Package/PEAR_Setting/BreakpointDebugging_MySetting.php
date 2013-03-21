@@ -124,7 +124,7 @@ function BreakpointDebugging_setExecutionModeFlags($executionMode)
             return $REMOTE_DEBUG | $UNIT_TEST; // Unit test on remote server.
         }
     }
-    exit('<pre>You must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags();" into "./PEAR_Setting/BreakpointDebugging_MySetting.php" because you mistook.</pre>');
+    exit('<pre>You must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags();" into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" because you mistook.</pre>');
 }
 
 BreakpointDebugging_setExecutionMode();
@@ -153,24 +153,26 @@ function BreakpointDebugging_mySetting()
     }
     // Maximum log file sum mega byte size. Recommendation size is 1 MB.
     // Log file rotation is from "php_error_1.log" file to "php_error_8.log" file.
-    // Maximum file-capacity secures 16 K margin but it may exceed with low probability.
+    // //Maximum file-capacity secures 16 K margin but it may exceed with low probability.
     $maxLogMBSize = 1;
     // This code has been fixed.
     $maxLogFileByteSize = &B::refStatic('$_maxLogFileByteSize');
-    $maxLogFileByteSize = ($maxLogMBSize << 17) - 2048;
-    B::assert((B::getStatic('$_maxLogFileByteSize') + 2048) % 4096 === 0, 1);
+    //$maxLogFileByteSize = ($maxLogMBSize << 17) - 2048;
+    $maxLogFileByteSize = $maxLogMBSize << 17;
+    //B::assert(($maxLogFileByteSize + 2048) % 4096 === 0);
+    B::assert($maxLogFileByteSize % 4096 === 0);
     // Maximum log parameter nesting level. Default is 20. (1-100)
-    // $maxLogParamNestingLevel = &B::refStatic('$_maxLogParamNestingLevel');
-    // $maxLogParamNestingLevel = 20;
-    //
+    $maxLogParamNestingLevel = &B::refStatic('$_maxLogParamNestingLevel');
+    $maxLogParamNestingLevel = 20;
+    B::assert(1 <= $maxLogParamNestingLevel && $maxLogParamNestingLevel <= 100);
     // Maximum count of elements in log. ( Count of parameter or array elements ) Default is 50. (1-100)
-    // $maxLogElementNumber = &B::refStatic('$_maxLogElementNumber');
-    // $maxLogElementNumber = 50;
-    //
+    $maxLogElementNumber = &B::refStatic('$_maxLogElementNumber');
+    $maxLogElementNumber = 50;
+    B::assert(1 <= $maxLogElementNumber && $maxLogElementNumber <= 100);
     // Maximum string type byte-count of log. Default is 3000. (1-)
-    // $maxLogStringSize = &B::refStatic('$_maxLogStringSize');
-    // $maxLogStringSize = 3000;
-    //
+    $maxLogStringSize = &B::refStatic('$_maxLogStringSize');
+    $maxLogStringSize = 3000;
+    B::assert(1 <= $maxLogStringSize);
     // Inner form of the browser of the default: HTML text, character sets = UTF8.
     // header('Content-type: text/html; charset=utf-8');
     // Set "mbstring.detect_order = UTF-8, UTF-7, ASCII, EUC-JP,SJIS, eucJP-win, SJIS-win, JIS, ISO-2022-JP" of "php.ini" file because this is purpose to define default value of character code detection.
@@ -260,7 +262,7 @@ function BreakpointDebugging_mySetting()
       B::iniSet('ignore_user_abort', '');
       ### <=== "Windows" Example. */
     if (B::getStatic('$exeMode') !== B::RELEASE) { // In case of not release.
-        include_once './PEAR_Setting/BreakpointDebugging_MySetting_Option.php';
+        include_once './' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . '/BreakpointDebugging_MySetting_Option.php';
     }
     ////////////////////////////////////////////////////////////////////////////////
     // ### This setting has been Fixed. ###

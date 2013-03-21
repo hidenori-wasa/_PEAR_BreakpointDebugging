@@ -1,7 +1,7 @@
 <?php
 
 chdir(__DIR__ . '/../../../');
-require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
+require_once './BreakpointDebugging_Including.php';
 
 use \BreakpointDebugging as B;
 
@@ -12,7 +12,7 @@ B::isUnitTestExeMode(true);
  */
 class BreakpointDebugging_ErrorTest extends \BreakpointDebugging_UnitTestOverriding
 {
-    static $error;
+    //static $error;
     static $exeMode;
 
     static function setUpBeforeClass()
@@ -36,7 +36,7 @@ class BreakpointDebugging_ErrorTest extends \BreakpointDebugging_UnitTestOverrid
             }
             rmdir($errorLogDirectory);
         }
-        self::$error = new \BreakpointDebugging_Error();
+        //self::$error = new \BreakpointDebugging_Error();
     }
 
     function tearDown()
@@ -64,7 +64,8 @@ class BreakpointDebugging_ErrorTest extends \BreakpointDebugging_UnitTestOverrid
         B::setXebugExists(true);
     }
 
-    private function _exceptionHandler2()
+    //private function _exceptionHandler2()
+    function exceptionHandler2()
     {
         throw new \Exception();
     }
@@ -76,24 +77,57 @@ class BreakpointDebugging_ErrorTest extends \BreakpointDebugging_UnitTestOverrid
     {
         ob_start();
 
-        try {
-            self::$exeMode = B::LOCAL_DEBUG | B::UNIT_TEST | B::IGNORING_BREAK_POINT;
-            $this->_exceptionHandler2($GLOBALS, array ('Test1.'));
-        } catch (\Exception $e) {
-            self::$error->exceptionHandler2($e, '');
-        }
-        try {
-            self::$exeMode = B::LOCAL_DEBUG_OF_RELEASE | B::UNIT_TEST | B::IGNORING_BREAK_POINT;
-            $this->_exceptionHandler2($GLOBALS, array ('Test1.'));
-        } catch (\Exception $e) {
-            self::$error->exceptionHandler2($e, '');
-        }
-        try {
-            self::$exeMode = B::REMOTE_DEBUG | B::UNIT_TEST | B::IGNORING_BREAK_POINT;
-            $this->_exceptionHandler2($GLOBALS, array ('Test1.'));
-        } catch (\Exception $e) {
-            self::$error->exceptionHandler2($e, '');
-        }
+        $maxLogStringSize = &B::refStatic('$_maxLogStringSize');
+        $maxLogStringSize = 140000;
+
+        $exceptionWithGLOBALS = function ($self) {
+                try {
+                    $self->exceptionHandler2($GLOBALS, array ('Test1.'));
+                } catch (\Exception $e) {
+                    B::handleException($e);
+                }
+            };
+
+        $logfileMaximumCapacityException = function ($self) {
+                try {
+                    $self->exceptionHandler2(str_repeat('1234567890', 14000), array ('Test1.'), 1.1);
+                } catch (\Exception $e) {
+                    B::handleException($e);
+                }
+            };
+
+        self::$exeMode = B::LOCAL_DEBUG | B::UNIT_TEST | B::IGNORING_BREAK_POINT;
+        //try {
+        //    $this->exceptionHandler2($GLOBALS, array ('Test1.'));
+        //} catch (\Exception $e) {
+        //    B::handleException($e);
+        //}
+        $exceptionWithGLOBALS($this);
+        $logfileMaximumCapacityException($this);
+
+        self::$exeMode = B::LOCAL_DEBUG_OF_RELEASE | B::UNIT_TEST | B::IGNORING_BREAK_POINT;
+        //try {
+        //    $this->exceptionHandler2($GLOBALS, array ('Test1.'));
+        //} catch (\Exception $e) {
+        //    B::handleException($e);
+        //}
+        $exceptionWithGLOBALS($this);
+        //self::$exeMode = B::LOCAL_DEBUG_OF_RELEASE | B::UNIT_TEST | B::IGNORING_BREAK_POINT;
+        //try {
+        //    $this->exceptionHandler2(str_repeat('1234567890', 14000), array ('Test1.'));
+        //} catch (\Exception $e) {
+        //    B::handleException($e);
+        //}
+        $logfileMaximumCapacityException($this);
+
+        self::$exeMode = B::REMOTE_DEBUG | B::UNIT_TEST | B::IGNORING_BREAK_POINT;
+        //try {
+        //    $this->exceptionHandler2($GLOBALS, array ('Test1.'));
+        //} catch (\Exception $e) {
+        //    B::handleException($e);
+        //}
+        $exceptionWithGLOBALS($this);
+        $logfileMaximumCapacityException($this);
 
         ob_end_clean();
     }
@@ -107,8 +141,10 @@ class BreakpointDebugging_ErrorTest extends \BreakpointDebugging_UnitTestOverrid
      */
     public function testExceptionHandler2_B()
     {
-        self::$exeMode = B::LOCAL_DEBUG | B::UNIT_TEST | B::IGNORING_BREAK_POINT | 256;
-        self::$error->exceptionHandler2(new \Exception(), '');
+        self::$exeMode = B::LOCAL_DEBUG | B::UNIT_TEST | B::IGNORING_BREAK_POINT
+            | 256;
+        //self::$error->handleException2(new \Exception(), '');
+        B::handleException(new \Exception());
     }
 
     /**
@@ -119,7 +155,8 @@ class BreakpointDebugging_ErrorTest extends \BreakpointDebugging_UnitTestOverrid
         ob_start();
 
         self::$exeMode = B::LOCAL_DEBUG | B::UNIT_TEST | B::IGNORING_BREAK_POINT;
-        self::$error->errorHandler2(E_USER_ERROR, '', B::$prependErrorLog, debug_backtrace());
+        //self::$error->handleError2(E_USER_ERROR, '', B::$prependErrorLog, debug_backtrace());
+        B::handleError(E_USER_ERROR, '');
 
         ob_end_clean();
     }

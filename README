@@ -35,11 +35,6 @@ How to sniff my code.
         phpcs -n <full file path>
 
 Notice
-    "Pear-Package" directory is project directory of "NetBeans IDE 7.1.2 for Windows".
+    "Pear-Package" directory is project directory of "NetBeans IDE 7.3 for Windows".
 
     I have been coding the files of unit test with code coverage report.
-
-Caution
-    Do not use this package because bug may exist yet.
-    Especially, as for logger, the bug of recursive function call is dangerous.
-    It may write log infinitely.

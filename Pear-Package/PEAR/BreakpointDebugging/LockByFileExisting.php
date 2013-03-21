@@ -6,7 +6,7 @@
  * This class is required for environment where "flock()" doesn't exist.
  * We can synchronize applications by setting the same directory
  * to "$workDir = &B::refStatic('$_workDir'); $workDir = <work directory>;"
- * of "BreakpointDebugging_MySetting.php".
+ * of "BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php'".
  *
  * @example of usage.
  *      $lockByFileExisting = &\BreakpointDebugging_LockByFileExisting::singleton(); // Creates a lock instance.
@@ -118,17 +118,17 @@ final class BreakpointDebugging_LockByFileExisting extends \BreakpointDebugging_
             restore_error_handler();
             // Delete locking flag file.
             @unlink($lockFilePath);
-            set_error_handler('\BreakpointDebugging::errorHandler', -1);
+            set_error_handler('\BreakpointDebugging::handleError', -1);
         }
     }
 
     // @codeCoverageIgnoreEnd
     /**
-     * Locking loop.
+     * Loops locking.
      *
      * @return void
      */
-    protected function lockingLoop()
+    protected function loopLocking()
     {
         $startTime = time();
         while (($this->pFile = @B::fopen($this->lockFilePath, 'x+b', 0600)) === false) {
@@ -146,11 +146,11 @@ final class BreakpointDebugging_LockByFileExisting extends \BreakpointDebugging_
     }
 
     /**
-     * Unlocking loop.
+     * Loops unlocking.
      *
      * @return void
      */
-    protected function unlockingLoop()
+    protected function loopUnlocking()
     {
         fclose($this->pFile);
         while (@unlink($this->lockFilePath) === false) {

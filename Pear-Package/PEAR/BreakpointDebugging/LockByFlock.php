@@ -6,7 +6,7 @@
  * This class has to be environment which can use "flock()".
  * We can synchronize applications by setting the same directory
  * to "$workDir = &B::refStatic('$_workDir'); $workDir = <work directory>;"
- * of "BreakpointDebugging_MySetting.php".
+ * of "BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php'".
  *
  * @example of usage.
  *      $lockByFlock = &\BreakpointDebugging_LockByFlock::singleton(); // Creates a lock instance.
@@ -100,21 +100,21 @@ final class BreakpointDebugging_LockByFlock extends \BreakpointDebugging_Lock
     }
 
     /**
-     * Locking loop.
+     * Loops locking.
      *
      * @return void
      */
-    protected function lockingLoop()
+    protected function loopLocking()
     {
         flock($this->pFile, LOCK_EX);
     }
 
     /**
-     * Unlocking loop.
+     * Loops unlocking.
      *
      * @return void
      */
-    protected function unlockingLoop()
+    protected function loopUnlocking()
     {
         flock($this->pFile, LOCK_UN);
     }

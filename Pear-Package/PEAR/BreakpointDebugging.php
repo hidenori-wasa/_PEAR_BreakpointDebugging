@@ -161,12 +161,12 @@ abstract class BreakpointDebugging_InAllCase
     private static $_userName = '';
 
     /**
-     * @var string This prepend to logging when self::exceptionHandler() is called.
+     * @var string This prepend to logging when self::handleException() is called.
      */
     static $prependExceptionLog = '';
 
     /**
-     * @var string This prepend to logging when self::errorHandler() is called.
+     * @var string This prepend to logging when self::handleError() is called.
      */
     static $prependErrorLog = '';
 
@@ -178,17 +178,17 @@ abstract class BreakpointDebugging_InAllCase
     /**
      * @var int Max log parameter nesting level.
      */
-    private static $_maxLogParamNestingLevel = 20;
+    private static $_maxLogParamNestingLevel;
 
     /**
      * @var int Maximum count of elements in log. ( Total of parameters or array elements )
      */
-    private static $_maxLogElementNumber = 50;
+    private static $_maxLogElementNumber;
 
     /**
      * @var int Maximum string type byte-count of log.
      */
-    private static $_maxLogStringSize = 3000;
+    private static $_maxLogStringSize;
 
     /**
      * @var string Work directory of this package.
@@ -228,7 +228,7 @@ abstract class BreakpointDebugging_InAllCase
     /**
      * Initializes static properties.
      */
-    static function singleton()
+    static function initialize()
     {
         global $_BreakpointDebugging_EXE_MODE;
 
@@ -433,8 +433,7 @@ abstract class BreakpointDebugging_InAllCase
 
         // Analyzes character sets of character string.
         $charSet = mb_detect_encoding($string);
-        if ($charSet === 'UTF-8'
-            || $charSet === 'ASCII'
+        if ($charSet === 'UTF-8' || $charSet === 'ASCII'
         ) {
             return $string;
         } else if ($charSet === false) {
@@ -590,8 +589,7 @@ abstract class BreakpointDebugging_InAllCase
             $parentArray[] = ''; // Array element out of area.
         }
         // If this may be "$GLOBALS".
-        if (array_key_exists('GLOBALS', $parentArray)
-            && is_array($parentArray['GLOBALS'])
+        if (array_key_exists('GLOBALS', $parentArray) && is_array($parentArray['GLOBALS'])
         ) {
             // Makes array by copying element because must not do "unset()" of "$GLOBALS".
             foreach ($parentArray as $childKey => $childArray) {
@@ -679,28 +677,28 @@ abstract class BreakpointDebugging_InAllCase
      *
      * @return void
      */
-    static function exceptionHandler($pException)
+    static function handleException($pException)
     {
         B::limitAccess('BreakpointDebugging_Option.php');
 
         $error = new \BreakpointDebugging_Error();
-        $error->exceptionHandler2($pException, self::$prependExceptionLog);
+        $error->handleException2($pException, self::$prependExceptionLog);
     }
 
     /**
-     * Error handler.
+     * Handles an error.
      *
      * @param int    $errorNumber  Error number.
      * @param string $errorMessage Error message.
      *
      * @return bool Without system log (true).
      */
-    static function errorHandler($errorNumber, $errorMessage)
+    static function handleError($errorNumber, $errorMessage)
     {
         B::limitAccess('BreakpointDebugging_Option.php');
 
         $error = new \BreakpointDebugging_Error();
-        $error->errorHandler2($errorNumber, $errorMessage, self::$prependErrorLog, debug_backtrace());
+        $error->handleError2($errorNumber, $errorMessage, self::$prependErrorLog, debug_backtrace());
 
         return true;
     }
@@ -723,7 +721,7 @@ abstract class BreakpointDebugging_InAllCase
         // Is this method.
         self::$_callingExceptionHandlerDirectly = true;
         self::$_onceErrorDispFlag = true;
-        B::exceptionHandler(new \BreakpointDebugging_ErrorException($message, $id, null, 2));
+        B::handleException(new \BreakpointDebugging_ErrorException($message, $id, null, 2));
         // @codeCoverageIgnoreStart
     }
 
@@ -871,14 +869,29 @@ class BreakpointDebugging_ErrorException extends \BreakpointDebugging_Exception
 
 }
 
+/**
+ * "Out of log range" exception.
+ *
+ * @category PHP
+ * @package  BreakpointDebugging
+ * @author   Hidenori Wasa <public@hidenori-wasa.com>
+ * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
+ * @version  Release: @package_version@
+ * @link     http://pear.php.net/package/BreakpointDebugging
+ */
+class BreakpointDebugging_OutOfLogRangeException extends \BreakpointDebugging_Exception
+{
+
+}
+
 // This sets global exception handler.
-set_exception_handler('\BreakpointDebugging::exceptionHandler');
+set_exception_handler('\BreakpointDebugging::handleException');
 // Uses "PHPUnit" error handler in case of command.
 if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
     // This sets global error handler.( -1 sets all bits on 1. Therefore, this specifies error, warning and note of all kinds and so on.)
-    set_error_handler('\BreakpointDebugging::errorHandler', -1);
+    set_error_handler('\BreakpointDebugging::handleError', -1);
 }
-\BreakpointDebugging::singleton();
+\BreakpointDebugging::initialize();
 spl_autoload_register('\BreakpointDebugging::autoload');
 register_shutdown_function('\BreakpointDebugging::shutdown');
 

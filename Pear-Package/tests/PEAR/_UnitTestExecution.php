@@ -1,21 +1,20 @@
 <?php
 
 chdir(__DIR__ . '/../../');
-
-require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
+require_once './BreakpointDebugging_Including.php';
 
 use \BreakpointDebugging as B;
 
 // Please, choose unit tests files by customizing.
 $testFileNames = array (
-    // '--stop-on-failure BreakpointDebugging-ExceptionTest.php',
-    // '--stop-on-failure BreakpointDebugging-InAllCaseTest.php',
-    // '--stop-on-failure BreakpointDebuggingTest.php',
-    // '--stop-on-failure BreakpointDebugging/Error-InAllCaseTest.php',
-    // '--stop-on-failure BreakpointDebugging/ErrorTest.php',
-    // '--stop-on-failure BreakpointDebugging/LockByFileExistingTest.php',
-    // '--stop-on-failure BreakpointDebugging/LockByFlockTest.php',
-    // '--stop-on-failure BreakpointDebugging/LockByShmopTest.php',
+    '--stop-on-failure BreakpointDebugging-ExceptionTest.php',
+    '--stop-on-failure BreakpointDebugging-InAllCaseTest.php',
+    '--stop-on-failure BreakpointDebuggingTest.php',
+    '--stop-on-failure BreakpointDebugging/Error-InAllCaseTest.php',
+    '--stop-on-failure BreakpointDebugging/ErrorTest.php',
+    '--stop-on-failure BreakpointDebugging/LockByFileExistingTest.php',
+    '--stop-on-failure BreakpointDebugging/LockByFlockTest.php',
+    '--stop-on-failure BreakpointDebugging/LockByShmopTest.php',
     '--stop-on-failure BreakpointDebugging/OverrideClassTest.php',
 );
 // Executes unit tests.
@@ -30,6 +29,6 @@ B::executeUnitTest($testFileNames); exit;
 // B::displayCodeCoverageReport('BreakpointDebugging/LockByFileExistingTest.php', array ('PEAR/BreakpointDebugging/Lock.php', 'PEAR/BreakpointDebugging/LockByFileExisting.php')); // OK
 // B::displayCodeCoverageReport('BreakpointDebugging/LockByFlockTest.php', array ('PEAR/BreakpointDebugging/Lock.php', 'PEAR/BreakpointDebugging/LockByFlock.php')); // OK.
 // B::displayCodeCoverageReport('BreakpointDebugging/LockByShmopTest.php', array ('PEAR/BreakpointDebugging/Lock.php', 'PEAR/BreakpointDebugging/LockByShmop.php')); // OK.
-B::displayCodeCoverageReport('BreakpointDebugging/OverrideClassTest.php', 'PEAR/BreakpointDebugging/OverrideClass.php');
+// B::displayCodeCoverageReport('BreakpointDebugging/OverrideClassTest.php', 'PEAR/BreakpointDebugging/OverrideClass.php');
 
 ?>

@@ -1,6 +1,6 @@
 <?php
 
-require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
+require_once './BreakpointDebugging_Including.php';
 
 use \BreakpointDebugging as B;
 
@@ -68,7 +68,7 @@ echo microtime(true) - $start;
 // shmop_read   0.5166440010070 0.55775690078735
 
 fclose($pFile);
-set_error_handler('\BreakpointDebugging::errorHandler', -1);
+set_error_handler('\BreakpointDebugging::handleError', -1);
 exit;
 
 ?>

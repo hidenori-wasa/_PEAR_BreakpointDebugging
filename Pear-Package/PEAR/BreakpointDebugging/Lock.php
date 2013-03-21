@@ -189,11 +189,11 @@ abstract class BreakpointDebugging_Lock
     }
 
     /**
-     * Locking loop.
+     * Loops locking.
      *
      * @return void
      */
-    abstract protected function lockingLoop();
+    abstract protected function loopLocking();
     /**
      * Lock php-code.
      * Permit going through the only process or thread, then other processes or threads have been waited.
@@ -210,19 +210,19 @@ abstract class BreakpointDebugging_Lock
         set_time_limit($this->timeout + 10);
 
         restore_error_handler();
-        $this->lockingLoop();
-        set_error_handler('\BreakpointDebugging::errorHandler', -1);
+        $this->loopLocking();
+        set_error_handler('\BreakpointDebugging::handleError', -1);
 
         B::assert($this->lockCount === 0, 1);
         $this->lockCount++;
     }
 
     /**
-     * Unlocking loop.
+     * Loops unlocking.
      *
      * @return void
      */
-    abstract protected function unlockingLoop();
+    abstract protected function loopUnlocking();
     /**
      * Unlock php-code.
      * This permits going through other processes or threads.
@@ -239,8 +239,8 @@ abstract class BreakpointDebugging_Lock
         B::assert($this->lockCount === 0, 1);
 
         restore_error_handler();
-        $this->unlockingLoop();
-        set_error_handler('\BreakpointDebugging::errorHandler', -1);
+        $this->loopUnlocking();
+        set_error_handler('\BreakpointDebugging::handleError', -1);
     }
 
     /**

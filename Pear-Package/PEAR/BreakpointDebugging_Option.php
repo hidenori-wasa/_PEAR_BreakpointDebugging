@@ -9,9 +9,9 @@
  * ### Environment which can do breakpoint debugging. ###
  * Debugger which can use breakpoint.
  * The present recommendation debugging environment is
- * "WindowsXP Professional" + "NetBeans IDE 7.1.2" + "XAMPP 1.7.3" or
- * "Ubuntu desktop" + "NetBeans IDE 7.1.2" + "XAMPP for Linux 1.7.3a".
- * Do not use version greater than "XAMPP 1.7.3" for "NetBeans IDE 7.1.2"
+ * "WindowsXP Professional" + "NetBeans IDE 7.3" + "XAMPP 1.7.3" or
+ * "Ubuntu desktop" + "NetBeans IDE 7.3" + "XAMPP for Linux 1.7.3a".
+ * Do not use version greater than "XAMPP 1.7.3" for "NetBeans IDE 7.3"
  * because MySQL version causes discordance.
  * Notice: Use "phpMyAdmin" to see database and to execute "MySQL" command.
  *
@@ -37,16 +37,18 @@
  *      "<name or ip of host which debugger exists>"' into "php.ini" file, if remote server supports.
  * Procedure 3: Please, set *.php file format to utf8, but we should create backup of
  *      php files because multibyte strings may be destroyed.
- * Procedure 4: Please, copy BreakpointDebugging_MySetting*.php to "./PEAR_Setting/"
- *      of your project directory.
+ * Procedure 4: Please, copy "BreakpointDebugging_Including.php" into your project directory.
+ * And, copy "BreakpointDebugging_MySetting*.php" to
+ * "const BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME" of your project directory.
  * Procedure 5: Please, edit BreakpointDebugging_MySetting*.php for customize.
  *      Then, it fixes part setting about all debugging modes.
  * Procedure 6: Please, copy following in your project php code.
- *      require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
+ *      require_once './BreakpointDebugging_Including.php';
  * Procedure 7: Please, check debugging-mode using "B::isUnitTestExeMode()" in start page,
  *      and set debugging mode to
  *      "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('...');"
- *      into "./PEAR_Setting/BreakpointDebugging_MySetting.php".
+ *      into "BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php'".
+ *
  *      Then, use "B::getStatic('$exeMode')" to get value.
  *      Lastly, we must execute all codes using "\BreakpointDebugging::displayCodeCoverageReport()" before release.
  *      Then, we must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('RELEASE');".
@@ -178,7 +180,8 @@ class BreakpointDebugging_Exception extends \BreakpointDebugging_Exception_InAll
 
         // Adds "[[[CLASS=<class name>] FUNCTION=<function name>] ID=<identification number>]" to message in case of unit test.
         if (B::getStatic('$exeMode') & B::UNIT_TEST) {
-            B::assert(is_int($omissionCallStackLevel) && $omissionCallStackLevel >= 0, 7);
+            B::assert(is_int($omissionCallStackLevel) && $omissionCallStackLevel
+                >= 0, 7);
 
             if ($id === null) {
                 $idString = '';
@@ -239,18 +242,17 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
     /**
      * Limits static properties accessing.
      */
-    static function singleton()
+    static function initialize()
     {
         B::limitAccess('BreakpointDebugging.php');
 
         B::assert(func_num_args() === 0);
 
-        parent::singleton();
+        parent::initialize();
 
         self::$staticProperties['$_includePaths'] = &self::$_includePaths;
         self::$staticPropertyLimitings['$_includePaths'] = ''; // For unit test.
-
-        $tmp = './PEAR_Setting/BreakpointDebugging_MySetting.php';
+        $tmp = BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php';
         self::$staticPropertyLimitings['$_userName'] = $tmp;
         self::$staticPropertyLimitings['$_maxLogFileByteSize'] = $tmp;
         self::$staticPropertyLimitings['$_maxLogParamNestingLevel'] = $tmp;
@@ -275,8 +277,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
         if (self::$exeMode & ~B::REMOTE_DEBUG) {
             return;
         }
-        if (B::getStatic('$_os') !== 'WIN'
-            && trim(`echo \$USER`) === 'root'
+        if (B::getStatic('$_os') !== 'WIN' && trim(`echo \$USER`) === 'root'
         ) {
             echo '<pre>Security warning: Recommends to change to "Apache HTTP Server" which Supported "suEXEC" because this "Apache HTTP Server" is executed by "root" user.</pre>';
         }
@@ -467,7 +468,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      *
      * @return Same as parent.
      */
-    static function exceptionHandler($pException)
+    static function handleException($pException)
     {
         self::assert(func_num_args() === 1, 1);
         self::assert($pException instanceof \Exception, 2);
@@ -475,16 +476,17 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
         if (self::$exeMode & self::UNIT_TEST) {
             $callStack = $pException->getTrace();
             $call = array_key_exists(0, $callStack) ? $callStack[0] : array ();
+            // In case of direct call from "BreakpointDebugging_InAllCase::callExceptionHandlerDirectly()".
             if ((array_key_exists('class', $call) && $call['class'] === 'BreakpointDebugging_InAllCase')
                 && (array_key_exists('function', $call) && $call['function'] === 'callExceptionHandlerDirectly')
-            ) { // In case of direct call from "BreakpointDebugging_InAllCase::callExceptionHandlerDirectly()".
+            ) {
                 throw $pException;
                 // @codeCoverageIgnoreStart
             }
             // @codeCoverageIgnoreEnd
         }
 
-        parent::exceptionHandler($pException);
+        parent::handleException($pException);
     }
 
     /**
@@ -495,12 +497,12 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      *
      * @return Same as parent.
      */
-    static function errorHandler($errorNumber, $errorMessage)
+    static function handleError($errorNumber, $errorMessage)
     {
         self::assert(is_int($errorNumber), 2);
         self::assert(is_string($errorMessage), 3);
 
-        parent::errorHandler($errorNumber, $errorMessage);
+        parent::handleError($errorNumber, $errorMessage);
 
         return true;
     }
@@ -612,8 +614,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
             $fullFilePath = strtolower($fullFilePath);
         }
         $line = $callStack[$key]['line'];
-        if (array_key_exists($fullFilePath, $invokingLocations)
-            && array_key_exists($line, $invokingLocations[$fullFilePath])
+        if (array_key_exists($fullFilePath, $invokingLocations) && array_key_exists($line, $invokingLocations[$fullFilePath])
         ) {
             // Skips same.
             return true;
@@ -625,9 +626,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
         self::assert(is_array($invokerFilePaths) || is_string($invokerFilePaths), 2);
         self::assert(is_bool($enableUnitTest), 3);
 
-        if (!$enableUnitTest
-            && self::$exeMode & self::UNIT_TEST
-            && (!isset(self::$_unitTestDir)
+        if (!$enableUnitTest && self::$exeMode & self::UNIT_TEST && (!isset(self::$_unitTestDir)
             || strpos($fullFilePath, self::$_unitTestDir) === 0)
         ) {
             return;
@@ -775,8 +774,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
         $getValue = ini_get($phpIniVariable);
         if ($setValue !== $getValue) {
             // In case of remote.
-            if ($doCheck === true
-                && (self::$exeMode & self::REMOTE_DEBUG)
+            if ($doCheck === true && (self::$exeMode & self::REMOTE_DEBUG)
             ) {
                 $backTrace = debug_backtrace();
                 $baseName = basename($backTrace[0]['file']);
@@ -922,10 +920,14 @@ EOD;
      *
      * @example
      *      <?php
+     *
      *      chdir(__DIR__ . '/../../');
-     *      require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
+     *      require_once './BreakpointDebugging_Including.php';
+     *
      *      use \BreakpointDebugging as B;
+     *
      *      B::isUnitTestExeMode(true);
+     *
      *      class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
      *      {
      *          .
@@ -939,8 +941,7 @@ EOD;
         self::assert(func_num_args() === 1, 1);
         self::assert(is_bool($isUnitTest), 2);
 
-        if (!isset($_SERVER['SERVER_ADDR'])
-            || $_SERVER['SERVER_ADDR'] === '127.0.0.1'
+        if (!isset($_SERVER['SERVER_ADDR']) || $_SERVER['SERVER_ADDR'] === '127.0.0.1'
         ) { // In case of command or local host.
             if (self::$exeMode === (B::LOCAL_DEBUG | B::UNIT_TEST)) {
                 $isFalse = !$isUnitTest;
@@ -958,15 +959,14 @@ EOD;
                 // @codeCoverageIgnoreEnd
             }
         }
-        if ($isUnitTest
-            && $isFalse
+        if ($isUnitTest && $isFalse
         ) {
             // @codeCoverageIgnoreStart
-            exit('<pre>You must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'UNIT_TEST\');" into "./PEAR_Setting/BreakpointDebugging_MySetting.php".</pre>');
+            exit('<pre>You must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'UNIT_TEST\');" into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php".</pre>');
             // @codeCoverageIgnoreEnd
         } else if ($isFalse) {
             // @codeCoverageIgnoreStart
-            exit('<pre>You must not set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'UNIT_TEST\');" into "./PEAR_Setting/BreakpointDebugging_MySetting.php".</pre>');
+            exit('<pre>You must not set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'UNIT_TEST\');" into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php".</pre>');
             // @codeCoverageIgnoreEnd
         }
 
@@ -975,10 +975,8 @@ EOD;
         }
 
         $unitTestCurrentDir = debug_backtrace();
-        if (array_key_exists(1, $unitTestCurrentDir)
-            && array_key_exists('class', $unitTestCurrentDir[1])
-            && $unitTestCurrentDir[1]['class'] === 'BreakpointDebugging'
-            && array_key_exists('function', $unitTestCurrentDir[1])
+        if (array_key_exists(1, $unitTestCurrentDir) && array_key_exists('class', $unitTestCurrentDir[1])
+            && $unitTestCurrentDir[1]['class'] === 'BreakpointDebugging' && array_key_exists('function', $unitTestCurrentDir[1])
             && $unitTestCurrentDir[1]['function'] === 'executeUnitTest'
         ) { // Calling from "\BreakpointDebugging::executeUnitTest()".
             $unitTestCurrentDir = dirname($unitTestCurrentDir[1]['file']);
@@ -1028,9 +1026,12 @@ EOD;
      *
      * @Example page which executes unit tests.
      * <?php
+     *
      * chdir(__DIR__ . '/../../');
-     * require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
+     * require_once './BreakpointDebugging_Including.php';
+     *
      * use \BreakpointDebugging as B;
+     *
      * // Please, choose unit tests files by customizing.
      * $unitTestCommands = array (
      *     '--stop-on-failure BreakpointDebuggingTest.php',
@@ -1038,10 +1039,17 @@ EOD;
      * );
      * // Executes unit tests.
      * B::executeUnitTest($unitTestCommands);
+     *
      * ?>
      *
      * @Example of unit test file.
+     *      chdir(__DIR__ . '/../../');
+     *
+     *      require_once './BreakpointDebugging_Including.php';
+     *
      *      use \BreakpointDebugging as B;
+     *
+     *      B::isUnitTestExeMode(true);
      *
      *      class SomethingTest extends \BreakpointDebugging_UnitTestOverriding
      *      {
@@ -1179,8 +1187,8 @@ EOD;
 
         // If unit test.
         $callStack = debug_backtrace();
-        if (array_key_exists(2, $callStack)
-            && stripos($callStack[2]['function'], 'test') === 0
+        if (array_key_exists(2, $callStack) && stripos($callStack[2]['function'], 'test')
+            === 0
         ) {
             return;
         }
@@ -1199,9 +1207,12 @@ EOD;
      * @return void
      * @example
      *      <?php
+     *
      *      chdir(__DIR__ . '/../../');
-     *      require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
+     *      require_once './BreakpointDebugging_Including.php';
+     *
      *      use \BreakpointDebugging as B;
+     *
      *      // Makes up code coverage report, then displays in browser.
      *      B::displayCodeCoverageReport('BreakpointDebugging-InAllCaseTest.php', 'PEAR/BreakpointDebugging.php');
      *      B::displayCodeCoverageReport('BreakpointDebugging/LockByFileExistingTest.php', array ('PEAR/BreakpointDebugging/Lock.php', 'PEAR/BreakpointDebugging/LockByFileExisting.php'));

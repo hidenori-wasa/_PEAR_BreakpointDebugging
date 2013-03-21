@@ -1,6 +1,6 @@
 <?php
 
-require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
+require_once './BreakpointDebugging_Including.php';
 
 // Native emulating class who is out of namespace.
 class BaseNativeClass

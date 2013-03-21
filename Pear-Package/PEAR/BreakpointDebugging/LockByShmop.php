@@ -6,7 +6,7 @@
  * This class requires "shmop" extension.
  * We can synchronize applications by setting the same directory
  * to "$workDir = &B::refStatic('$_workDir'); $workDir = <work directory>;"
- * of "BreakpointDebugging_MySetting.php".
+ * of "BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php'".
  *
  * @example of usage.
  *      $lockByShmop = &\BreakpointDebugging_LockByShmop::singleton(); // Creates a lock instance.
@@ -146,7 +146,7 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
 
         restore_error_handler();
         $this->pFile = @B::fopen($lockFilePath, 'x+b', 0600);
-        set_error_handler('\BreakpointDebugging::errorHandler', -1);
+        set_error_handler('\BreakpointDebugging::handleError', -1);
         while (true) {
             // In case of existing file.
             if ($this->pFile === false) {
@@ -192,7 +192,7 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
         // Close file handle.
         fclose($this->pFile);
 
-        // Lock for current process of between "$this->lockingLoop()" and "$this->unlockingLoop()".
+        // Lock for current process of between "$this->loopLocking()" and "$this->loopUnlocking()".
         $this->_lockOn2Processes(self::HEXADECIMAL_SIZE * 4, self::HEXADECIMAL_SIZE * 4 + 1);
 
         // Get minimum empty process number.
@@ -256,7 +256,7 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
         // Lock php code.
         self::$_lockingObject->lock();
 
-        // Lock for current process of between "$this->lockingLoop()" and "$this->unlockingLoop()".
+        // Lock for current process of between "$this->loopLocking()" and "$this->loopUnlocking()".
         $this->_lockOn2Processes(self::HEXADECIMAL_SIZE * 4, self::HEXADECIMAL_SIZE * 4 + 1);
 
         // When current process number is this process.
@@ -304,8 +304,7 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
         $sharedMemoryKey = fread($this->pFile, 10);
         // Open shared memory to read and write.
         $sharedMemoryID = @shmop_open($sharedMemoryKey, 'w', 0, 0);
-        set_error_handler('\BreakpointDebugging::errorHandler', -1);
-        //if ($sharedMemoryID === false || $sharedMemoryKey === '') {
+        set_error_handler('\BreakpointDebugging::handleError', -1);
         if ($sharedMemoryID === false || $sharedMemoryID === null || $sharedMemoryKey === '') {
             return false;
         }
@@ -331,7 +330,6 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
             }
             // It allocates shared memory area as current process number and minimum process number.
             self::$sharedMemoryID = @shmop_open($sharedMemoryKey, 'n', 0600, self::MEMORY_BLOCK_SIZE);
-            //if (self::$sharedMemoryID === false) {
             if (self::$sharedMemoryID === false || self::$sharedMemoryID === null) {
                 // @codeCoverageIgnoreStart
                 // Because this is a few probability.
@@ -340,7 +338,7 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
             }
             break;
         }
-        set_error_handler('\BreakpointDebugging::errorHandler', -1);
+        set_error_handler('\BreakpointDebugging::handleError', -1);
         if (self::$sharedMemoryID === false) {
             // @codeCoverageIgnoreStart
             // Because this is a few probability.
@@ -427,11 +425,11 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
     }
 
     /**
-     * Locking loop.
+     * Loops locking.
      *
      * @return void
      */
-    protected function lockingLoop()
+    protected function loopLocking()
     {
         // Update shared memory access time.
         shmop_write(self::$sharedMemoryID, sprintf('0x%08X', time()), self::HEXADECIMAL_SIZE * 3);
@@ -452,11 +450,11 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
     }
 
     /**
-     * Unlocking loop.
+     * Loops unlocking.
      *
      * @return void
      */
-    protected function unlockingLoop()
+    protected function loopUnlocking()
     {
         // Lock for a process which is locked by file existing.
         $this->_lockOn2Processes(self::HEXADECIMAL_SIZE * 4 + 1, self::HEXADECIMAL_SIZE * 4);

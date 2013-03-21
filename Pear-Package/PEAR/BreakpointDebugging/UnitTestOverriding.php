@@ -57,7 +57,6 @@
  * @version  SVN: $Id$
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
 
 // File to have "use" keyword does not inherit scope into a file including itself,
 // also it does not inherit scope into a file including,
@@ -132,10 +131,10 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
                 $this->status = PHPUnit_Runner_BaseTestRunner::STATUS_SKIPPED;
                 $this->statusMessage = $e->getMessage();
             } catch (PHPUnit_Framework_AssertionFailedError $e) {
-                B::exceptionHandler($e); // Displays error call stack information.
+                B::handleException($e); // Displays error call stack information.
                 exit;
             } catch (Exception $e) {
-                B::exceptionHandler($e); // Displays error call stack information.
+                B::handleException($e); // Displays error call stack information.
                 exit;
             }
 
@@ -147,7 +146,7 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
                     $this->tearDownAfterClass();
                 }
             } catch (Exception $_e) {
-                B::exceptionHandler($e); // Displays error call stack information.
+                B::handleException($e); // Displays error call stack information.
                 exit;
             }
 
@@ -248,7 +247,7 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
                 // If "@expectedException" annotation is not string.
                 if (!is_string($this->getExpectedException())) {
                     echo '<pre><b>It is error if this test has been not using "@expectedException" annotation, or it requires "@expectedException" annotation.</b></pre>';
-                    B::exceptionHandler($e); // Displays error call stack information.
+                    B::handleException($e); // Displays error call stack information.
                     exit;
                 }
                 // "@expectedException" annotation should be success.
@@ -256,7 +255,7 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
                     $this->assertThat($e, new PHPUnit_Framework_Constraint_Exception($this->getExpectedException()));
                 } catch (Exception $dummy) {
                     echo '<pre><b>Is error, or this test mistook "@expectedException" annotation value.</b></pre>';
-                    B::exceptionHandler($e); // Displays error call stack information.
+                    B::handleException($e); // Displays error call stack information.
                     exit;
                 }
                 // "@expectedExceptionMessage" annotation should be success.
@@ -269,7 +268,7 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
                     }
                 } catch (Exception $dummy) {
                     echo '<pre><b>Is error, or this test mistook "@expectedExceptionMessage" annotation value.</b></pre>';
-                    B::exceptionHandler($e); // Displays error call stack information.
+                    B::handleException($e); // Displays error call stack information.
                     exit;
                 }
                 // "@expectedExceptionCode" annotation should be success.
@@ -279,7 +278,7 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
                     }
                 } catch (Exception $dummy) {
                     echo '<pre><b>Is error, or this test mistook "@expectedExceptionCode" annotation value.</b></pre>';
-                    B::exceptionHandler($e); // Displays error call stack information.
+                    B::handleException($e); // Displays error call stack information.
                     exit;
                 }
                 return;
@@ -324,7 +323,7 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
             try {
                 parent::assertTrue($condition, $message);
             } catch (\Exception $e) {
-                B::exceptionHandler($e); // Displays error call stack information.
+                B::handleException($e); // Displays error call stack information.
                 exit;
             }
         }
@@ -344,7 +343,7 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
             try {
                 parent::fail($message);
             } catch (\Exception $e) {
-                B::exceptionHandler($e); // Displays error call stack information.
+                B::handleException($e); // Displays error call stack information.
                 exit;
             }
         }

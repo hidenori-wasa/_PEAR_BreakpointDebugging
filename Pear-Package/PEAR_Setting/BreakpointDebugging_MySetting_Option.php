@@ -51,7 +51,7 @@
 // therefore "use" keyword alias does not be affected by other files.
 use \BreakpointDebugging as B;
 
-B::limitAccess('./PEAR_Setting/BreakpointDebugging_MySetting.php');
+B::limitAccess(BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php');
 
 // ### Item-setting for debugging. ===>
 // $xdebugManualUrl = 'http://www.php.net/manual/ja/';
@@ -218,7 +218,7 @@ B::iniSet('html_errors', '1', false);
 B::assert(1 <= B::getStatic('$_maxLogParamNestingLevel') && B::getStatic('$_maxLogParamNestingLevel') <= 100, 1);
 B::assert(1 <= B::getStatic('$_maxLogElementNumber') && B::getStatic('$_maxLogElementNumber') <= 100, 2);
 B::assert(1 <= B::getStatic('$_maxLogElementNumber'), 3);
-// "include_path" of "./PEAR_Setting/BreakpointDebugging_MySetting.php" file must begin with "." or "./".
+// "include_path" of "BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php'" file must begin with "." or "./".
 B::assert(strpos(ini_get('include_path'), '.' . PATH_SEPARATOR) === 0 || strpos(ini_get('include_path'), './' . PATH_SEPARATOR) === 0, 4);
 
 ?>

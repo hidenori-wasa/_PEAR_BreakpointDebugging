@@ -49,7 +49,9 @@
 
   namespace Your_Name;
 
-  require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
+  use \BreakpointDebugging as B;
+
+  require_once './BreakpointDebugging_Including.php';
   require_once './NativeClass.php';
 
   // This defines an override class in namespace by the class name ( For example: NativeClass ) which is the same as the native class.
@@ -113,7 +115,6 @@
  */
 
 chdir(__DIR__ . '/../../');
-require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
 
 use \BreakpointDebugging as B;
 

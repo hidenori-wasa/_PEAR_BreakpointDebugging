@@ -10,11 +10,11 @@
  * @version  SVN: $Id$
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
+chdir('../../../');
+require_once './BreakpointDebugging_Including.php';
+
 use \BreakpointDebugging as B;
 use \TestClass as T;
-
-chdir('../../../');
-require_once './PEAR_Setting/BreakpointDebugging_MySetting.php';
 
 B::isUnitTestExeMode(false); // Checks the execution mode.
 /**
