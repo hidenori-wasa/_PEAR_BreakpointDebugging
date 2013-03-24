@@ -152,7 +152,6 @@ abstract class BreakpointDebugging_Error_InAllCase
     /**
      * @var int Maximum log file byte size.
      */
-    //private $_maxLogFileByteSize;
     protected $maxLogFileByteSize;
 
     /**
@@ -160,10 +159,6 @@ abstract class BreakpointDebugging_Error_InAllCase
      */
     protected $logByteSize = 0;
 
-//    /**
-//     * @var int Execution mode.
-//     */
-//    protected $exeMode;
     /**
      * Sets HTML tags.
      *
@@ -193,7 +188,6 @@ abstract class BreakpointDebugging_Error_InAllCase
      */
     function __construct()
     {
-        //$this->exeMode = B::getStatic('$exeMode');
         $this->maxLogFileByteSize = B::getStatic('$_maxLogFileByteSize');
         $this->isLogging = true;
         $this->mark = '#';
@@ -220,7 +214,8 @@ abstract class BreakpointDebugging_Error_InAllCase
         static $onceFlag = true;
 
         $charSet = mb_detect_encoding($string);
-        if ($charSet === 'UTF-8' || $charSet === 'ASCII'
+        if ($charSet === 'UTF-8'
+            || $charSet === 'ASCII'
         ) {
             return $string;
         } else if ($charSet === false) {
@@ -258,22 +253,22 @@ abstract class BreakpointDebugging_Error_InAllCase
         }
         foreach ($valuesToTraceFiles as $valuesToTraceLines) {
             foreach ($valuesToTraceLines as $trace) {
-                array_key_exists('function', $trace) ? $callFunc = $trace['function']
-                            : $callFunc = '';
-                array_key_exists('class', $trace) ? $callClass = $trace['class']
-                            : $callClass = '';
-                if ($callFunc === '' && $callClass === '' && $tabs !== ''
+                array_key_exists('function', $trace) ? $callFunc = $trace['function'] : $callFunc = '';
+                array_key_exists('class', $trace) ? $callClass = $trace['class'] : $callClass = '';
+                if ($callFunc === ''
+                    && $callClass === ''
+                    && $tabs !== ''
                 ) {
                     // @codeCoverageIgnoreStart
                     continue;
                     // @codeCoverageIgnoreEnd
                 }
-                if ($func === $callFunc && $class === $callClass
+                if ($func === $callFunc
+                    && $class === $callClass
                 ) {
                     if ($onceFlag2) {
                         $onceFlag2 = false;
-                        array_key_exists('file', $trace) ? $callFile = $trace['file']
-                                    : $callFile = '';
+                        array_key_exists('file', $trace) ? $callFile = $trace['file'] : $callFile = '';
                         $this->addParameterHeaderToLog($pTmpLog, $callFile, $line, $func, $class);
                     }
                     if ($onceFlag) {
@@ -283,8 +278,7 @@ abstract class BreakpointDebugging_Error_InAllCase
                         $onceFlag = true;
                     }
                     // Analyze values part of trace array, and return character string.
-                    $this->searchDebugBacktraceArgsToString($pTmpLog2, $trace['values'], strlen($tabs)
-                        + 1);
+                    $this->searchDebugBacktraceArgsToString($pTmpLog2, $trace['values'], strlen($tabs) + 1);
                 }
             }
         }
@@ -302,7 +296,7 @@ abstract class BreakpointDebugging_Error_InAllCase
      */
     protected function reflectArray(&$pTmpLog, $paramName, $array, $tabNumber = 1)
     {
-        $this->checksLogByteSize($pTmpLog, $tabNumber);
+        $this->checksLogByteSize($pTmpLog);
         $isOverMaxLogElementNumber = false;
         if (count($array) > B::getStatic('$_maxLogElementNumber')) {
             $isOverMaxLogElementNumber = true;
@@ -336,15 +330,12 @@ abstract class BreakpointDebugging_Error_InAllCase
                 }
                 if (is_array($paramValue)) {
                     // Reduces call stack nest level.
-                    $this->reflectArray($pTmpLog, $paramName, $paramValue, $tabNumber
-                        + 1);
+                    $this->reflectArray($pTmpLog, $paramName, $paramValue, $tabNumber + 1);
                 } else if (is_object($paramValue)) {
                     // Reduces call stack nest level.
-                    $this->reflectObject($pTmpLog, $paramName, $paramValue, $tabNumber
-                        + 1);
+                    $this->reflectObject($pTmpLog, $paramName, $paramValue, $tabNumber + 1);
                 } else {
-                    $this->getTypeAndValue($pTmpLog, $paramName, $paramValue, $tabNumber
-                        + 1);
+                    $this->getTypeAndValue($pTmpLog, $paramName, $paramValue, $tabNumber + 1);
                 }
             }
             if ($isOverMaxLogElementNumber !== false) {
@@ -369,7 +360,7 @@ abstract class BreakpointDebugging_Error_InAllCase
      */
     protected function reflectObject(&$pTmpLog, $paramName, $object, $tabNumber = 1)
     {
-        $this->checksLogByteSize($pTmpLog, $tabNumber);
+        $this->checksLogByteSize($pTmpLog);
         $className = get_class($object);
         $tabs = str_repeat("\t", $tabNumber);
         $classReflection = new \ReflectionClass($className);
@@ -392,8 +383,7 @@ abstract class BreakpointDebugging_Error_InAllCase
             $this->logBufferWriting($pTmpLog, PHP_EOL . $tabs . "\t...");
         } else {
             foreach ($constants as $constName => $constValue) {
-                $this->getTypeAndValue($pTmpLog, $this->tags['i'] . 'const ' . $this->tags['/i'] . $constName, $constValue, $tabNumber
-                    + 1);
+                $this->getTypeAndValue($pTmpLog, $this->tags['i'] . 'const ' . $this->tags['/i'] . $constName, $constValue, $tabNumber + 1);
             }
             count($constants) ? $this->logBufferWriting($pTmpLog, PHP_EOL) : null;
             foreach ($propertyReflections as $propertyReflection) {
@@ -414,15 +404,12 @@ abstract class BreakpointDebugging_Error_InAllCase
                     // Clears recursive array element.
                     $paramValue = B::clearRecursiveArrayElement($paramValue);
                     // Reduces call stack nest level.
-                    $this->reflectArray($pTmpLog, $paramName, $paramValue, $tabNumber
-                        + 1);
+                    $this->reflectArray($pTmpLog, $paramName, $paramValue, $tabNumber + 1);
                 } else if (is_object($paramValue)) {
                     // Reduces call stack nest level.
-                    $this->reflectObject($pTmpLog, $paramName, $paramValue, $tabNumber
-                        + 1);
+                    $this->reflectObject($pTmpLog, $paramName, $paramValue, $tabNumber + 1);
                 } else {
-                    $this->getTypeAndValue($pTmpLog, $paramName, $paramValue, $tabNumber
-                        + 1);
+                    $this->getTypeAndValue($pTmpLog, $paramName, $paramValue, $tabNumber + 1);
                 }
             }
         }
@@ -618,27 +605,26 @@ abstract class BreakpointDebugging_Error_InAllCase
             $func = '';
             $class = '';
         } else {
-            array_key_exists('function', $callStack) ? $func = $callStack['function']
-                        : $func = '';
-            array_key_exists('class', $callStack) ? $class = $callStack['class']
-                        : $class = '';
+            array_key_exists('function', $callStack) ? $func = $callStack['function'] : $func = '';
+            array_key_exists('class', $callStack) ? $class = $callStack['class'] : $class = '';
         }
         if (is_array(B::getStatic('$_notFixedLocations'))) {
             foreach (B::getStatic('$_notFixedLocations') as $notFixedLocation) {
-                array_key_exists('function', $notFixedLocation) ? $noFixFunc = $notFixedLocation['function']
-                            : $noFixFunc = '';
-                array_key_exists('class', $notFixedLocation) ? $noFixClass = $notFixedLocation['class']
-                            : $noFixClass = '';
-                array_key_exists('file', $notFixedLocation) ? $noFixFile = $notFixedLocation['file']
-                            : $noFixFile = '';
+                array_key_exists('function', $notFixedLocation) ? $noFixFunc = $notFixedLocation['function'] : $noFixFunc = '';
+                array_key_exists('class', $notFixedLocation) ? $noFixClass = $notFixedLocation['class'] : $noFixClass = '';
+                array_key_exists('file', $notFixedLocation) ? $noFixFile = $notFixedLocation['file'] : $noFixFile = '';
                 // $notFixedLocation of file scope is "$noFixFunc === '' && $noFixClass === '' && $tabs !== ''".
-                if ($noFixFunc === '' && $noFixClass === '' && $tabs !== ''
+                if ($noFixFunc === ''
+                    && $noFixClass === ''
+                    && $tabs !== ''
                 ) {
                     // @codeCoverageIgnoreStart
                     continue;
                     // @codeCoverageIgnoreEnd
                 }
-                if ($func === $noFixFunc && $class === $noFixClass && $file === $noFixFile
+                if ($func === $noFixFunc
+                    && $class === $noFixClass
+                    && $file === $noFixFile
                 ) {
                     $marks = str_repeat($this->mark, 10);
                     $this->logBufferWriting($pTmpLog, PHP_EOL . $tabs . $this->tags['font']['caution'] . $marks . $this->tags['b'] . ' This function has been not fixed. ' . $this->tags['/b'] . $marks . $this->tags['/font']);
@@ -655,29 +641,21 @@ abstract class BreakpointDebugging_Error_InAllCase
     /**
      * Changes the log file.
      *
-     * @param mixed $pTmpLog   Error temporary log pointer.
-     * @//param int   $tabNumber The tab number to indent.
+     * @param mixed $pTmpLog Error temporary log pointer.
      *
      * @return void
      * @throw \BreakpointDebugging_OutOfLogRangeException
      */
-    //private function _changeLogFile($pTmpLog, $tabNumber)
-    //protected function changeLogFile($pTmpLog, $tabNumber)
     protected function changeLogFile($pTmpLog)
     {
-        //// In case of logging.
-        //if (B::getStatic('$exeMode') & (B::RELEASE | B::LOCAL_DEBUG_OF_RELEASE)) {
         // In case of writing from top of file.
         if ($this->_pCurrentErrorLogFileSize === 0) {
             // Shortens to specification size.
-            //$continuingMark = PHP_EOL . str_repeat("\t", $tabNumber) . '.';
             $continuingMark = PHP_EOL . str_repeat("\t", 1) . '.';
-            //$continuingMark = $continuingMark . $continuingMark . $continuingMark;
             $continuingMark = PHP_EOL . '### Omits since then because it exceeded logfile maximum capacity. ###' . $continuingMark . $continuingMark . $continuingMark;
             if (is_resource($pTmpLog)) {
                 $errorLogFileStatus1 = fstat($this->pErrorLogFile);
-                ftruncate($pTmpLog, $this->maxLogFileByteSize - $errorLogFileStatus1['size']
-                    - strlen($continuingMark));
+                ftruncate($pTmpLog, $this->maxLogFileByteSize - $errorLogFileStatus1['size'] - strlen($continuingMark));
                 fseek($pTmpLog, 0, SEEK_END);
             }
             $this->logBufferWriting($pTmpLog, $continuingMark);
@@ -704,52 +682,23 @@ abstract class BreakpointDebugging_Error_InAllCase
         fwrite($this->_pVarConfFile, $nextNumber);
         // Creates current error log filename.
         $this->_currentErrorLogFileName = substr_replace($this->_currentErrorLogFileName, $nextNumber . $this->_errorLogFileExt, strlen($this->_prefixOfErrorLogFileName));
-//        } else {
-//            $continuingMark = PHP_EOL . str_repeat("\t", $tabNumber + 1) . '.';
-//            $continuingMark = $continuingMark . $continuingMark . $continuingMark;
-//            $this->logBufferWriting($pTmpLog, $continuingMark);
-//            $this->logWriting($pTmpLog);
-//            throw new \BreakpointDebugging_OutOfLogRangeException('');
-//        }
     }
 
     /**
      * Checks the log byte size.
      *
-     * @param mixed $pTmpLog   Error temporary log pointer.
-     * @param int   $tabNumber The tab number to indent.
+     * @param mixed $pTmpLog Error temporary log pointer.
      *
      * @return void
      */
-    //private function _checksLogByteSize($pTmpLog, $tabNumber)
-    protected function checksLogByteSize($pTmpLog, $tabNumber)
+    protected function checksLogByteSize($pTmpLog)
     {
-        //switch (B::getStatic('$exeMode') & ~(B::UNIT_TEST | B::IGNORING_BREAK_POINT)) {
-        // If this does a log.
-        //case B::RELEASE:
-        //case B::REMOTE_DEBUG:
         // When log file size exceeds.
         $errorLogFileStatus1 = fstat($this->pErrorLogFile);
         $errorLogFileStatus2 = fstat($pTmpLog);
-        if ($this->_pCurrentErrorLogFileSize + $errorLogFileStatus1['size'] + $errorLogFileStatus2['size']
-            > $this->maxLogFileByteSize
-        ) {
-            $this->changeLogFile($pTmpLog, $tabNumber);
+        if ($this->_pCurrentErrorLogFileSize + $errorLogFileStatus1['size'] + $errorLogFileStatus2['size'] > $this->maxLogFileByteSize) {
+            $this->changeLogFile($pTmpLog);
         }
-//                break;
-//            case B::LOCAL_DEBUG:
-//            case B::LOCAL_DEBUG_OF_RELEASE:
-//                $tmpLogSize = 0;
-//                foreach ($pTmpLog as $tmpLogLine) {
-//                    $tmpLogSize += strlen($tmpLogLine);
-//                }
-//                if ($this->logByteSize + $tmpLogSize > $this->maxLogFileByteSize) {
-//                    $this->changeLogFile($pTmpLog, $tabNumber);
-//                }
-//                break;
-//            default:
-//                B::internalException('', 1);
-//        }
     }
 
     /**
@@ -782,7 +731,6 @@ abstract class BreakpointDebugging_Error_InAllCase
                 $this->_lockByFileExisting = &\BreakpointDebugging_LockByFileExisting::internalSingleton();
                 $this->_lockByFileExisting->lock();
                 // When "ErrorLog" directory does not exist.
-                //$errorLogDirectory = B::getStatic('$_workDir') . '/ErrorLog/';
                 $this->_errorLogDirectory = B::getStatic('$_workDir') . '/ErrorLog/';
                 if (!is_dir($this->_errorLogDirectory)) {
                     // Makes directory, sets permission and sets own user.
@@ -792,7 +740,6 @@ abstract class BreakpointDebugging_Error_InAllCase
                 // If variable configuring file exists.
                 if (is_file($varConfFilePath)) {
                     // Opens variable configuring file.
-                    //$pVarConfFile = fopen($varConfFilePath, 'r+b');
                     $this->_pVarConfFile = fopen($varConfFilePath, 'r+b');
                 } else {
                     // Creates and opens variable configuring file.
@@ -804,7 +751,6 @@ abstract class BreakpointDebugging_Error_InAllCase
                 }
 
                 // Gets current error log file name.
-                //$currentErrorLogFileName = substr(trim(fgets($this->_pVarConfFile)), strlen($this->_keyOfCurrentErrorLogFileName));
                 $this->_currentErrorLogFileName = substr(trim(fgets($this->_pVarConfFile)), strlen($this->_keyOfCurrentErrorLogFileName));
                 if (B::getStatic('$_os') === 'WIN') { // In case of Windows.
                     $this->_errorLogFilePath = strtolower($this->_errorLogDirectory . $this->_currentErrorLogFileName);
@@ -815,15 +761,12 @@ abstract class BreakpointDebugging_Error_InAllCase
                 // When current error log file does not exist.
                 if (!is_file($this->_errorLogFilePath)) {
                     // Creates and opens current error log file.
-                    //$this->pErrorLogFile = B::fopen($this->_errorLogFilePath, 'xb', 0600);
                     $this->_pCurrentErrorLogFileSize = 0;
                 } else {
                     // Opens current error log file.
-                    //$this->pErrorLogFile = fopen($this->_errorLogFilePath, 'ab');
                     $errorLogFileStatus = stat($this->_errorLogFilePath);
                     $this->_pCurrentErrorLogFileSize = $errorLogFileStatus['size'];
                 }
-                //$this->pErrorLogFile = $this->logPointerOpening();
                 // Reads native call stack paths and its number.
                 $nativeCallStackArray = array ();
                 while ($varConfLineString = fgets($this->_pVarConfFile)) {
@@ -834,7 +777,9 @@ abstract class BreakpointDebugging_Error_InAllCase
                 // The call stack loop.
                 $callStackInfoArray = array ();
                 foreach ($this->_callStack as $call) {
-                    if (empty($call) || !array_key_exists('file', $call) || !array_key_exists('line', $call)
+                    if (empty($call)
+                        || !array_key_exists('file', $call)
+                        || !array_key_exists('line', $call)
                     ) {
                         continue;
                     }
@@ -934,7 +879,9 @@ abstract class BreakpointDebugging_Error_InAllCase
                 $this->logBufferWriting($dummy, PHP_EOL . $this->tags['b'] . 'function call #' . count($this->_loggedCallStacks) . $this->tags['/b']);
 
                 $this->outputFixedFunctionToLogging($call, $dummy, $onceFlag2, $func, $class, $file, $line);
-                if (is_array($call) && array_key_exists('args', $call)) {
+                if (is_array($call)
+                    && array_key_exists('args', $call)
+                ) {
                     // Analyze parameters part of trace array, and return character string.
                     $this->searchDebugBacktraceArgsToString($pTmpLog2, $call['args']);
                     $this->logBufferWriting($pTmpLog2, PHP_EOL . ');');
@@ -946,7 +893,7 @@ abstract class BreakpointDebugging_Error_InAllCase
                     $this->addParameterHeaderToLog($dummy, $file, $line, $func, $class);
                 }
                 $this->logBufferWriting($pTmpLog2, PHP_EOL);
-                $this->checksLogByteSize($pTmpLog2, 0);
+                $this->checksLogByteSize($pTmpLog2);
                 $this->logWriting($pTmpLog2);
             }
             $this->logBufferWriting($dummy, '//////////////////////////////// CALL STACK END ////////////////////////////////');
@@ -957,27 +904,6 @@ abstract class BreakpointDebugging_Error_InAllCase
 
         // If this does a log.
         if (B::getStatic('$exeMode') & (B::RELEASE | B::LOCAL_DEBUG_OF_RELEASE)) {
-//            // When log file size exceeds.
-//            $errorLogFileStatus = fstat($this->pErrorLogFile);
-//            if ($errorLogFileStatus['size'] > $this->maxLogFileByteSize) {
-//                // Gets next error log file name.
-//                $nextNumber = substr($this->_currentErrorLogFileName, strlen($this->_prefixOfErrorLogFileName), 1) + 1;
-//                if ($nextNumber > 8) {
-//                    // Error log file rotation.
-//                    $nextNumber = 1;
-//                }
-//                $nextErrorLogFilePath = $this->_errorLogDirectory . $this->_prefixOfErrorLogFileName . $nextNumber . $this->_errorLogFileExt;
-//                // When next error log file exists.
-//                if (is_file($nextErrorLogFilePath)) {
-//                    // Deletes next error log file.
-//                    unlink($nextErrorLogFilePath);
-//                }
-//                // Seeks to error log file number.
-//                fseek($this->_pVarConfFile, strlen($this->_keyOfCurrentErrorLogFileName . $this->_prefixOfErrorLogFileName));
-//                // Sets next error log file name number to variable configuring file.
-//                fwrite($this->_pVarConfFile, $nextNumber);
-//            }
-//
             // Gets current error log file name.
             if (B::getStatic('$_os') === 'WIN') { // In case of Windows.
                 $this->_errorLogFilePath = strtolower($this->_errorLogDirectory . $this->_currentErrorLogFileName);
@@ -997,20 +923,12 @@ abstract class BreakpointDebugging_Error_InAllCase
             $this->logWriting($this->pErrorLogFile, $pErrorLogFile);
             // Closes current error log file.
             fclose($pErrorLogFile);
-            //if (is_resource($this->pErrorLogFile)) {
-            //    // Closes current error log file.
-            //    fclose($this->pErrorLogFile);
-            //}
 
             END_LABEL:
             if (is_resource($pErrorLocationFile)) {
                 // Closes the error location file.
                 fclose($pErrorLocationFile);
             }
-//            if (is_resource($this->pErrorLogFile)) {
-//                // Closes current error log file.
-//                fclose($this->pErrorLogFile);
-//            }
             // Closes variable configuring file.
             fclose($this->_pVarConfFile);
             // Unlocks the error log files.
@@ -1060,8 +978,7 @@ abstract class BreakpointDebugging_Error_InAllCase
         if (is_null($paramValue)) {
             $this->logBufferWriting($pTmpLog, $this->getParamInfo($this->tags, 'null', 'null'));
         } else if (is_bool($paramValue)) {
-            $this->logBufferWriting($pTmpLog, $this->getParamInfo($this->tags, 'bool', $paramValue
-                            ? 'true' : 'false'));
+            $this->logBufferWriting($pTmpLog, $this->getParamInfo($this->tags, 'bool', $paramValue ? 'true' : 'false'));
         } else if (is_int($paramValue)) {
             $this->logBufferWriting($pTmpLog, $this->getParamInfo($this->tags, 'int', $paramValue));
         } else if (is_float($paramValue)) {
@@ -1161,12 +1078,10 @@ abstract class BreakpointDebugging_Error_InAllCase
      *
      * @return void
      */
-    //protected function logWriting(&$pTmpLog)
     protected function logWriting(&$pTmpLog, $pLog = false)
     {
         rewind($pTmpLog);
         while (!feof($pTmpLog)) {
-            //fwrite($this->pErrorLogFile, fread($pTmpLog, 4096));
             $tmpLog = fread($pTmpLog, 4096);
             if ($pLog) {
                 fwrite($pLog, $tmpLog);

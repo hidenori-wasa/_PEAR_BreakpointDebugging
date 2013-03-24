@@ -48,7 +48,7 @@
  * 2. Copyrighters do not take responsibility for this file code.
  *
  * LICENSE:
- * Copyright (c) 2012, Hidenori Wasa
+ * Copyright (c) 2012-2013, Hidenori Wasa
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -305,7 +305,10 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
         // Open shared memory to read and write.
         $sharedMemoryID = @shmop_open($sharedMemoryKey, 'w', 0, 0);
         set_error_handler('\BreakpointDebugging::handleError', -1);
-        if ($sharedMemoryID === false || $sharedMemoryID === null || $sharedMemoryKey === '') {
+        if ($sharedMemoryID === false
+            || $sharedMemoryID === null
+            || $sharedMemoryKey === ''
+        ) {
             return false;
         }
         self::$sharedMemoryID = $sharedMemoryID;
@@ -330,7 +333,9 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
             }
             // It allocates shared memory area as current process number and minimum process number.
             self::$sharedMemoryID = @shmop_open($sharedMemoryKey, 'n', 0600, self::MEMORY_BLOCK_SIZE);
-            if (self::$sharedMemoryID === false || self::$sharedMemoryID === null) {
+            if (self::$sharedMemoryID === false
+                || self::$sharedMemoryID === null
+            ) {
                 // @codeCoverageIgnoreStart
                 // Because this is a few probability.
                 continue;

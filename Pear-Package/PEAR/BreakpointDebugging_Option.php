@@ -9,9 +9,9 @@
  * ### Environment which can do breakpoint debugging. ###
  * Debugger which can use breakpoint.
  * The present recommendation debugging environment is
- * "WindowsXP Professional" + "NetBeans IDE 7.3" + "XAMPP 1.7.3" or
- * "Ubuntu desktop" + "NetBeans IDE 7.3" + "XAMPP for Linux 1.7.3a".
- * Do not use version greater than "XAMPP 1.7.3" for "NetBeans IDE 7.3"
+ * "WindowsXP Professional" + "NetBeans IDE 7.2.1" + "XAMPP 1.7.3" or
+ * "Ubuntu desktop" + "NetBeans IDE 7.2.1" + "XAMPP for Linux 1.7.3a".
+ * Do not use version greater than "XAMPP 1.7.3" for "NetBeans IDE 7.2.1"
  * because MySQL version causes discordance.
  * Notice: Use "phpMyAdmin" to see database and to execute "MySQL" command.
  *
@@ -110,7 +110,7 @@
  * 2. Copyrighters do not take responsibility for this file code.
  *
  * LICENSE:
- * Copyright (c) 2012, Hidenori Wasa
+ * Copyright (c) 2012-2013, Hidenori Wasa
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -180,8 +180,7 @@ class BreakpointDebugging_Exception extends \BreakpointDebugging_Exception_InAll
 
         // Adds "[[[CLASS=<class name>] FUNCTION=<function name>] ID=<identification number>]" to message in case of unit test.
         if (B::getStatic('$exeMode') & B::UNIT_TEST) {
-            B::assert(is_int($omissionCallStackLevel) && $omissionCallStackLevel
-                >= 0, 7);
+            B::assert(is_int($omissionCallStackLevel) && $omissionCallStackLevel >= 0, 7);
 
             if ($id === null) {
                 $idString = '';
@@ -241,6 +240,8 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
 
     /**
      * Limits static properties accessing.
+     *
+     * @return void
      */
     static function initialize()
     {
@@ -270,6 +271,8 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
 
     /**
      * If "Apache HTTP Server" does not support "suEXEC", this method displays security warning.
+     *
+     * @return void
      */
     static function checkSuperUserExecution()
     {
@@ -1033,6 +1036,7 @@ EOD;
      * use \BreakpointDebugging as B;
      *
      * // Please, choose unit tests files by customizing.
+     * // You must specify array element to one if you want step execution.
      * $unitTestCommands = array (
      *     '--stop-on-failure BreakpointDebuggingTest.php',
      *     '--stop-on-failure BreakpointDebugging/LockTest.php',
@@ -1187,8 +1191,8 @@ EOD;
 
         // If unit test.
         $callStack = debug_backtrace();
-        if (array_key_exists(2, $callStack) && stripos($callStack[2]['function'], 'test')
-            === 0
+        if (array_key_exists(2, $callStack)
+            && stripos($callStack[2]['function'], 'test') === 0
         ) {
             return;
         }

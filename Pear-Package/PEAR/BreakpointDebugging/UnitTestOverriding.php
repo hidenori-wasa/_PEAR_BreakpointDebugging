@@ -57,7 +57,6 @@
  * @version  SVN: $Id$
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-
 // File to have "use" keyword does not inherit scope into a file including itself,
 // also it does not inherit scope into a file including,
 // and moreover "use" keyword alias has priority over class definition,

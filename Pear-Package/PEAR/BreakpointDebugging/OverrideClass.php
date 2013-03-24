@@ -13,7 +13,7 @@
  * 2. Copyrighters do not take responsibility for this file code.
  *
  * LICENSE:
- * Copyright (c) 2012, Hidenori Wasa
+ * Copyright (c) 2012-2013, Hidenori Wasa
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -49,10 +49,10 @@
 
   namespace Your_Name;
 
-  use \BreakpointDebugging as B;
-
   require_once './BreakpointDebugging_Including.php';
   require_once './NativeClass.php';
+
+  use \BreakpointDebugging as B;
 
   // This defines an override class in namespace by the class name ( For example: NativeClass ) which is the same as the native class.
   class NativeClass extends \BreakpointDebugging_OverrideClass
@@ -208,7 +208,7 @@ class BreakpointDebugging_OverrideClass
         if (count($params) < 2) {
             return $nativeClassName::$methodName($params);
         }
-        return $nativeClassName::$methodName(explode(',', $params));
+        return $nativeClassName::$methodName(implode(',', $params));
     }
 
     /**

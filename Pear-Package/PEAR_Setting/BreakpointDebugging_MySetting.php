@@ -12,7 +12,7 @@
  * 2. Copyrighters do not take responsibility for this file code.
  *
  * LICENSE:
- * Copyright (c) 2012, Hidenori Wasa
+ * Copyright (c) 2012-2013, Hidenori Wasa
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -91,7 +91,7 @@ function BreakpointDebugging_setExecutionMode()
 /**
  * Sets execution mode flags.
  *
- * @param string Execution mode.
+ * @param string $executionMode Execution mode.
  *
  * @return void
  */
@@ -153,13 +153,10 @@ function BreakpointDebugging_mySetting()
     }
     // Maximum log file sum mega byte size. Recommendation size is 1 MB.
     // Log file rotation is from "php_error_1.log" file to "php_error_8.log" file.
-    // //Maximum file-capacity secures 16 K margin but it may exceed with low probability.
     $maxLogMBSize = 1;
     // This code has been fixed.
     $maxLogFileByteSize = &B::refStatic('$_maxLogFileByteSize');
-    //$maxLogFileByteSize = ($maxLogMBSize << 17) - 2048;
     $maxLogFileByteSize = $maxLogMBSize << 17;
-    //B::assert(($maxLogFileByteSize + 2048) % 4096 === 0);
     B::assert($maxLogFileByteSize % 4096 === 0);
     // Maximum log parameter nesting level. Default is 20. (1-100)
     $maxLogParamNestingLevel = &B::refStatic('$_maxLogParamNestingLevel');

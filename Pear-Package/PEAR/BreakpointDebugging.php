@@ -227,6 +227,8 @@ abstract class BreakpointDebugging_InAllCase
 
     /**
      * Initializes static properties.
+     *
+     * @return void
      */
     static function initialize()
     {

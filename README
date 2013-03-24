@@ -35,6 +35,7 @@ How to sniff my code.
         phpcs -n <full file path>
 
 Notice
-    "Pear-Package" directory is project directory of "NetBeans IDE 7.3 for Windows".
+    "Pear-Package" directory is project directory of "NetBeans IDE 7.2.1 for Windows".
+    Also, "NetBeans IDE 7.3 for Windows" cannot keep switchback.
 
     I have been coding the files of unit test with code coverage report.

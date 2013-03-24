@@ -23,7 +23,7 @@
  * 2. Copyrighters do not take responsibility for this file code.
  *
  * LICENSE:
- * Copyright (c) 2012, Hidenori Wasa
+ * Copyright (c) 2012-2013, Hidenori Wasa
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -122,7 +122,7 @@ if (isset($_GET['download'])) {
         $doneDownload = true;
         break;
     }
-    B::assert($doneDownload, 1);
+    B::assert($doneDownload);
 } else if (isset($_GET['deleteErrorLogs'])) { // When you pushed "Delete all error log files" button.
     // Searches the files which should delete.
     foreach ($errorLogDirElements as $errorLogDirElement) {

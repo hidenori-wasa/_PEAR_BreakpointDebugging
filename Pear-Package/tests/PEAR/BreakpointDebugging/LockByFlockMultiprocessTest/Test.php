@@ -2,9 +2,6 @@
 
 chdir(__DIR__ . '/../../../../');
 require_once './BreakpointDebugging_Including.php';
-
-use \BreakpointDebugging as B;
-
 class Test
 {
     private $shmopId;

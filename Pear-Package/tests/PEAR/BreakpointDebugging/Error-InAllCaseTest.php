@@ -252,66 +252,26 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_UnitT
             };
 
         // Makes "php_error_1.log".
-        //try {
-        //    self::$exeMode |= B::IGNORING_BREAK_POINT;
-        //    $this->exceptionHandler2(str_repeat('1234567890', 14000), array ('Test1.'), 1.1);
-        //} catch (\Exception $e) {
-        //    B::handleException($e);
-        //    self::$exeMode &= ~B::IGNORING_BREAK_POINT;
-        //}
         $logfileMaximumCapacityException($this);
         $stat = stat($workDir . '/ErrorLog/php_error_1.log');
         $this->assertTrue($stat['size'] === 1024 * 1024 / 8);
         // Makes "php_error_2.log".
-        //self::$exeMode |= B::IGNORING_BREAK_POINT;
-        //B::handleException(new \Exception('"php_error_2.log" start exception.'));
-        //self::$exeMode &= ~B::IGNORING_BREAK_POINT;
         $logStartException();
         $stat2 = stat($workDir . '/ErrorLog/php_error_2.log');
         $this->assertTrue(0 < $stat2['size'] && $stat2['size'] < 1024 * 1024 / 8);
         // Makes "php_error_3.log".
-        //try {
-        //    self::$exeMode |= B::IGNORING_BREAK_POINT;
-        //    $this->exceptionHandler2(str_repeat('1234567890', 14000), array ('Test1.'), 1.1);
-        //} catch (\Exception $e) {
-        //    B::handleException($e);
-        //    self::$exeMode &= ~B::IGNORING_BREAK_POINT;
-        //}
         $logfileMaximumCapacityException($this);
         $stat3 = stat($workDir . '/ErrorLog/php_error_3.log');
         $this->assertTrue($stat3['size'] === 1024 * 1024 / 8);
         // Makes "php_error_4.log".
-        //self::$exeMode |= B::IGNORING_BREAK_POINT;
-        //B::handleException(new \Exception('The log start exception.'));
-        //self::$exeMode &= ~B::IGNORING_BREAK_POINT;
         $logStartException();
         // Makes "php_error_5.log".
-        //try {
-        //    self::$exeMode |= B::IGNORING_BREAK_POINT;
-        //    $this->exceptionHandler2(str_repeat('1234567890', 14000), array ('Test1.'), 1.1);
-        //} catch (\Exception $e) {
-        //    B::handleException($e);
-        //    self::$exeMode &= ~B::IGNORING_BREAK_POINT;
-        //}
         $logfileMaximumCapacityException($this);
         // Makes "php_error_6.log".
-        //self::$exeMode |= B::IGNORING_BREAK_POINT;
-        //B::handleException(new \Exception('The log start exception.'));
-        //self::$exeMode &= ~B::IGNORING_BREAK_POINT;
         $logStartException();
         // Makes "php_error_7.log".
-        //try {
-        //    self::$exeMode |= B::IGNORING_BREAK_POINT;
-        //    $this->exceptionHandler2(str_repeat('1234567890', 14000), array ('Test1.'), 1.1);
-        //} catch (\Exception $e) {
-        //    B::handleException($e);
-        //    self::$exeMode &= ~B::IGNORING_BREAK_POINT;
-        //}
         $logfileMaximumCapacityException($this);
         // Makes "php_error_8.log".
-        //self::$exeMode |= B::IGNORING_BREAK_POINT;
-        //B::handleException(new \Exception('The log start exception.'));
-        //self::$exeMode &= ~B::IGNORING_BREAK_POINT;
         $logStartException();
         // Deletes "php_error_1.log", then makes "php_error_1.log".
         $logfileMaximumCapacityException($this);

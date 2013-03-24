@@ -83,7 +83,6 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
         B::limitAccess('BreakpointDebugging.php');
         B::assert(func_num_args() === 0);
 
-        //$this->exeMode = B::getStatic('$exeMode');
         if (B::getStatic('$exeMode') & B::LOCAL_DEBUG_OF_RELEASE) { // In case of logging.
             parent::__construct();
         } else { // In case of not the logging.
@@ -254,23 +253,18 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
     /**
      * Changes the log file.
      *
-     * @param mixed $pTmpLog   Error temporary log pointer.
-     * @//param int   $tabNumber The tab number to indent.
+     * @param mixed $pTmpLog Error temporary log pointer.
      *
      * @return void
      * @throw \BreakpointDebugging_OutOfLogRangeException
      */
-    //protected function changeLogFile($pTmpLog, $tabNumber)
     protected function changeLogFile($pTmpLog)
     {
         // In case of logging.
         if (B::getStatic('$exeMode') & B::LOCAL_DEBUG_OF_RELEASE) {
-            //parent::changeLogFile($pTmpLog, $tabNumber);
             parent::changeLogFile($pTmpLog);
         } else { // In case of browser display.
-            //$continuingMark = PHP_EOL . str_repeat("\t", $tabNumber) . '.';
             $continuingMark = PHP_EOL . str_repeat("\t", 1) . '.';
-            //$continuingMark = $continuingMark . $continuingMark . $continuingMark;
             $continuingMark = PHP_EOL . '### Omits since then because it exceeded logfile maximum capacity. ###' . $continuingMark . $continuingMark . $continuingMark;
             $this->logBufferWriting($pTmpLog, $continuingMark);
             $this->logWriting($pTmpLog);
@@ -281,17 +275,16 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
     /**
      * Checks the log byte size.
      *
-     * @param mixed $pTmpLog   Error temporary log pointer.
-     * @param int   $tabNumber The tab number to indent.
+     * @param mixed $pTmpLog Error temporary log pointer.
      *
      * @return void
      */
-    protected function checksLogByteSize($pTmpLog, $tabNumber)
+    protected function checksLogByteSize($pTmpLog)
     {
         switch (B::getStatic('$exeMode') & ~(B::UNIT_TEST | B::IGNORING_BREAK_POINT)) {
             // If this does a log.
             case B::REMOTE_DEBUG:
-                parent::checksLogByteSize($pTmpLog, $tabNumber);
+                parent::checksLogByteSize($pTmpLog);
                 break;
             case B::LOCAL_DEBUG:
             case B::LOCAL_DEBUG_OF_RELEASE:
@@ -300,7 +293,7 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
                     $tmpLogSize += strlen($tmpLogLine);
                 }
                 if ($this->logByteSize + $tmpLogSize > $this->maxLogFileByteSize) {
-                    $this->changeLogFile($pTmpLog, $tabNumber);
+                    $this->changeLogFile($pTmpLog);
                 }
                 break;
             // @codeCoverageIgnoreStart
@@ -430,7 +423,6 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
      *
      * @return Same as parent.
      */
-    //protected function logWriting(&$pTmpLog)
     protected function logWriting(&$pTmpLog, $pLog = false)
     {
         B::assert(func_num_args() <= 2, 1);
@@ -447,7 +439,6 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
             case B::REMOTE_DEBUG:
                 rewind($pTmpLog);
                 while (!feof($pTmpLog)) {
-                    //echo fread($pTmpLog, 4096);
                     $tmpLog = fread($pTmpLog, 4096);
                     echo $tmpLog;
                     $this->logByteSize += strlen($tmpLog);
@@ -457,11 +448,9 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
                 break;
             case B::LOCAL_DEBUG_OF_RELEASE:
                 foreach ($pTmpLog as $log) {
-                    //fwrite($this->pErrorLogFile, $log);
                     if ($pLog) {
                         fwrite($pLog, $log);
                     } else {
-                        //fwrite($this->pErrorLogFile, $log);
                         $this->pErrorLogFile[] = $log;
                     }
                     $this->logByteSize += strlen($log);
@@ -486,8 +475,7 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
     protected function logBufferWriting(&$pLogBuffer, $log)
     {
         B::assert(func_num_args() === 2, 1);
-        B::assert(is_array($pLogBuffer) || is_resource($pLogBuffer) || $pLogBuffer
-            === null, 2);
+        B::assert(is_array($pLogBuffer) || is_resource($pLogBuffer) || $pLogBuffer === null, 2);
         B::assert(is_string($log), 3);
 
         switch (B::getStatic('$exeMode') & ~(B::UNIT_TEST | B::IGNORING_BREAK_POINT)) {
@@ -509,7 +497,6 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
                 break;
             case B::LOCAL_DEBUG_OF_RELEASE:
                 if ($pLogBuffer === null) {
-                    //fwrite($this->pErrorLogFile, $log);
                     $this->pErrorLogFile[] = $log;
                     $this->logByteSize += strlen($log);
                 } else {
