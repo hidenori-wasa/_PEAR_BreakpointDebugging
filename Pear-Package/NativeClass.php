@@ -1,7 +1,6 @@
 <?php
 
 require_once './BreakpointDebugging_Including.php';
-
 // Native emulating class who is out of namespace.
 class BaseNativeClass
 {
@@ -18,7 +17,7 @@ class BaseNativeClass
     protected static $resource;
     protected static $null = null;
 
-    function __construct()
+    function __construct($param1 = null, $param2 = null)
     {
         global $object, $array;
 
@@ -86,7 +85,7 @@ class NativeClass extends \BaseNativeClass
         var_dump('Called protectedStaticFunction.');
     }
 
-    public static function publicStaticFunction()
+    public static function publicStaticFunction($param1 = null, $param2 = null)
     {
         var_dump('Called publicStaticFunction.');
     }

@@ -201,14 +201,8 @@ class BreakpointDebugging_OverrideClass
      */
     final static function __callStatic($methodName, $params)
     {
-        static $nativeClassName = null;
-
         // Uses late static binding because it can define each value to each derived class.
-        $nativeClassName = static::$pr_nativeClassName;
-        if (count($params) < 2) {
-            return $nativeClassName::$methodName($params);
-        }
-        return $nativeClassName::$methodName(implode(',', $params));
+        return forward_static_call_array(array (static::$pr_nativeClassName, $methodName), $params);
     }
 
     /**

@@ -36,7 +36,7 @@ class BreakpointDebugging_OverrideClassTest extends \BreakpointDebugging_UnitTes
     {
         parent::setUp();
         // Creates class object which does a native-class overriding.
-        $this->NativeClassOverriding = new NativeClassOverriding('dummy', 'dummy');
+        $this->NativeClassOverriding = new NativeClassOverriding('test1', 'test2');
     }
 
     function tearDown()
@@ -97,7 +97,7 @@ class BreakpointDebugging_OverrideClassTest extends \BreakpointDebugging_UnitTes
         ob_start();
         // Calls static-class-method which have been not defined in "NativeClassOverriding" class.
         NativeClassOverriding::publicStaticFunction();
-        NativeClassOverriding::publicStaticFunction('dummy', 'dummy');
+        NativeClassOverriding::publicStaticFunction('test1', 'test2');
         ob_end_clean();
     }
 
