@@ -611,7 +611,10 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
      */
     public function testBreakpoint_A()
     {
-        B::breakpoint('dummy', array ());
+        //B::breakpoint('dummy', debug_backtrace() array ('notEmpty'));
+        $callStack = debug_backtrace();
+        array_shift($callStack);
+        B::breakpoint('dummy', $callStack);
     }
 
     /**
@@ -1155,6 +1158,7 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
      */
     public function testIsUnitTestExeMode_A()
     {
+        B::setPropertyForTest('BreakpointDebugging', '$_unitTestDir', null);
         B::isUnitTestExeMode(true);
 
         if (!array_key_exists('SERVER_ADDR', $_SERVER)) {

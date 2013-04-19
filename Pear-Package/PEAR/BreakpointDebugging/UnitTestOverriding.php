@@ -63,6 +63,35 @@
 // therefore "use" keyword alias does not be affected by other files.
 use \BreakpointDebugging as B;
 
+/**
+ * Tests the all unit test files by "B::executeUnitTest()" class method.
+ * Notice:  You must code all array element comment which hands to "B::executeUnitTest()" before you execute this mode.
+ *
+ * @category PHP
+ * @package  BreakpointDebugging
+ * @author   Hidenori Wasa <public@hidenori-wasa.com>
+ * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
+ * @version  Release: @package_version@
+ * @link     http://pear.php.net/package/BreakpointDebugging
+ */
+class BreakpointDebugging_UnitTestOverridingBase extends \PHPUnit_Framework_TestCase
+{
+    /**
+     * Sets up initializing which is needed at least in unit test.
+     *
+     * @return void
+     */
+    protected function setUp()
+    {
+        @unlink(B::getStatic('$_workDir') . '/LockByFileExistingOfInternal.txt');
+        $onceErrorDispFlag = &B::refStatic('$_onceErrorDispFlag');
+        $onceErrorDispFlag = false;
+        $callingExceptionHandlerDirectly = &B::refStatic('$_callingExceptionHandlerDirectly');
+        $callingExceptionHandlerDirectly = false;
+    }
+
+}
+
 if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
     /**
      * Debugs one unit test file by "B::executeUnitTest()" class method.
@@ -75,7 +104,8 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
      * @version  Release: @package_version@
      * @link     http://pear.php.net/package/BreakpointDebugging
      */
-    class BreakpointDebugging_UnitTestOverriding extends \PHPUnit_Framework_TestCase
+    //class BreakpointDebugging_UnitTestOverriding extends \PHPUnit_Framework_TestCase
+    class BreakpointDebugging_UnitTestOverriding extends \BreakpointDebugging_UnitTestOverridingBase
     {
         /**
          * Overrides "\PHPUnit_Framework_TestCase::runBare()" to display call stack when error occurred.
@@ -292,20 +322,19 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
             return $testResult;
         }
 
-        /**
-         * Sets up initializing which is needed at least in unit test.
-         *
-         * @return void
-         */
-        protected function setUp()
-        {
-            @unlink(B::getStatic('$_workDir') . '/LockByFileExistingOfInternal.txt');
-            $onceErrorDispFlag = &B::refStatic('$_onceErrorDispFlag');
-            $onceErrorDispFlag = false;
-            $callingExceptionHandlerDirectly = &B::refStatic('$_callingExceptionHandlerDirectly');
-            $callingExceptionHandlerDirectly = false;
-        }
-
+//        /**
+//         * Sets up initializing which is needed at least in unit test.
+//         *
+//         * @return void
+//         */
+//        protected function setUp()
+//        {
+//            @unlink(B::getStatic('$_workDir') . '/LockByFileExistingOfInternal.txt');
+//            $onceErrorDispFlag = &B::refStatic('$_onceErrorDispFlag');
+//            $onceErrorDispFlag = false;
+//            $callingExceptionHandlerDirectly = &B::refStatic('$_callingExceptionHandlerDirectly');
+//            $callingExceptionHandlerDirectly = false;
+//        }
         /**
          * Overrides "\PHPUnit_Framework_Assert::assertTrue()" to display error call stack information.
          *
@@ -361,21 +390,21 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
      * @version  Release: @package_version@
      * @link     http://pear.php.net/package/BreakpointDebugging
      */
-    class BreakpointDebugging_UnitTestOverriding extends \PHPUnit_Framework_TestCase
+    //class BreakpointDebugging_UnitTestOverriding extends \PHPUnit_Framework_TestCase
+    class BreakpointDebugging_UnitTestOverriding extends \BreakpointDebugging_UnitTestOverridingBase
     {
-        /**
-         * Sets up initializing which is needed at least in unit test.
-         *
-         * @return void
-         */
-        protected function setUp()
-        {
-            $onceErrorDispFlag = &B::refStatic('$_onceErrorDispFlag');
-            $onceErrorDispFlag = false;
-            $callingExceptionHandlerDirectly = &B::refStatic('$_callingExceptionHandlerDirectly');
-            $callingExceptionHandlerDirectly = false;
-        }
-
+//        /**
+//         * Sets up initializing which is needed at least in unit test.
+//         *
+//         * @return void
+//         */
+//        protected function setUp()
+//        {
+//            $onceErrorDispFlag = &B::refStatic('$_onceErrorDispFlag');
+//            $onceErrorDispFlag = false;
+//            $callingExceptionHandlerDirectly = &B::refStatic('$_callingExceptionHandlerDirectly');
+//            $callingExceptionHandlerDirectly = false;
+//        }
     }
 
 }

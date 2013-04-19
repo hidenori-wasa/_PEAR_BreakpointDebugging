@@ -35,7 +35,16 @@ How to sniff my code.
         phpcs -n <full file path>
 
 Notice
-    "Pear-Package" directory is project directory of "NetBeans IDE 7.2.1 for Windows".
-    Also, "NetBeans IDE 7.3 for Windows" cannot keep switchback.
+    "Pear-Package" directory is project directory of "NetBeans IDE 7.1.2 for Windows".
+    Also, "NetBeans IDE 7.3" cannot keep switchback at April, 2013.
+    However, "NetBeans IDE 7.3" supports "PHP5.4" and "HTML5".
 
-    I have been coding the files of unit test with code coverage report.
+    I had executed unit test perfectly in Windows, but error occurred in sample.
+    It is causes that release code cannot execute unit test.
+    I corrected those, but package user cannot execute unit test in release code.
+    Therefore, I will code following.
+        Deletes "B::LOCAL_DEBUG_OF_RELEASE" mode.
+        Includes unit test code by "\BreakpointDebugging_UnitTestCaller" class in case of "B::UNIT_TEST".
+        Changes execution mode from "UNIT_TEST" to "DEBUG_UNIT_TEST" and "RELEASE_UNIT_TEST".
+        Changes execution mode constant to "B::LOCAL, B::REMOTE, B::DEBUG, B::RELEASE, B::UNIT_TEST".
+    Also, I will execute unit test in Linux.

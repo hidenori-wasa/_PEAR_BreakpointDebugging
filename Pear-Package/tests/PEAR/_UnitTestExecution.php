@@ -8,19 +8,19 @@ use \BreakpointDebugging as B;
 // Please, choose unit tests files by customizing.
 // You must specify array element to one if you want step execution.
 $testFileNames = array (
-    // '--stop-on-failure BreakpointDebugging-ExceptionTest.php',
-    // '--stop-on-failure BreakpointDebugging-InAllCaseTest.php',
-    // '--stop-on-failure BreakpointDebuggingTest.php',
-    // '--stop-on-failure BreakpointDebugging/Error-InAllCaseTest.php',
-    // '--stop-on-failure BreakpointDebugging/ErrorTest.php',
-    // '--stop-on-failure BreakpointDebugging/LockByFileExistingTest.php',
-    // '--stop-on-failure BreakpointDebugging/LockByFlockTest.php',
-    // '--stop-on-failure BreakpointDebugging/LockByShmopTest.php',
+    '--stop-on-failure BreakpointDebugging-ExceptionTest.php',
+    '--stop-on-failure BreakpointDebugging-InAllCaseTest.php',
+    '--stop-on-failure BreakpointDebuggingTest.php',
+    '--stop-on-failure BreakpointDebugging/Error-InAllCaseTest.php',
+    '--stop-on-failure BreakpointDebugging/ErrorTest.php',
+    '--stop-on-failure BreakpointDebugging/LockByFileExistingTest.php',
+    '--stop-on-failure BreakpointDebugging/LockByFlockTest.php',
+    '--stop-on-failure BreakpointDebugging/LockByShmopTest.php',
     '--stop-on-failure BreakpointDebugging/OverrideClassTest.php',
 );
 // Executes unit tests.
-// B::executeUnitTest($testFileNames); exit;
-
+B::executeUnitTest($testFileNames); exit;
+//
 // Makes up code coverage report, then displays in browser.
 // B::displayCodeCoverageReport('BreakpointDebugging-ExceptionTest.php', 'PEAR/BreakpointDebugging.php'); // OK
 // B::displayCodeCoverageReport('BreakpointDebugging-InAllCaseTest.php', 'PEAR/BreakpointDebugging.php'); // Windows is OK.

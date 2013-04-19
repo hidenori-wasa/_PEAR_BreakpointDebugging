@@ -108,7 +108,7 @@ abstract class BreakpointDebugging_InAllCase
     /**
      * @const int Next mode is log debug with remote personal computer. That is, this is a release mode.
      */
-    const RELEASE = 8;
+    const REMOTE_RELEASE = 8;
 
     /**
      * @const int Tests by "phpunit". This flag is used with other flag.
@@ -411,6 +411,11 @@ abstract class BreakpointDebugging_InAllCase
         // In case of scope of method or function or included file.
         if (array_key_exists(1, $backTrace)) {
             $backTrace2 = &$backTrace[1];
+            if (array_key_exists('function', $backTrace2)
+                && ($backTrace2['function'] === 'include_once' || $backTrace2['function'] === '{closure}')
+            ) {
+                $backTrace2['function'] = '';
+            }
         } else { // In case of scope of start page file.
             // @codeCoverageIgnoreStart
             $backTrace2['file'] = &$backTrace[0]['file'];
@@ -772,7 +777,7 @@ abstract class BreakpointDebugging_InAllCase
 
 global $_BreakpointDebugging_EXE_MODE;
 
-if ($_BreakpointDebugging_EXE_MODE === BreakpointDebugging_InAllCase::RELEASE) { // In case of release.
+if ($_BreakpointDebugging_EXE_MODE === BreakpointDebugging_InAllCase::REMOTE_RELEASE) { // In case of release.
     /**
      * Dummy class for release.
      *
@@ -842,6 +847,16 @@ if ($_BreakpointDebugging_EXE_MODE === BreakpointDebugging_InAllCase::RELEASE) {
         static function iniSet($phpIniVariable, $setValue)
         {
             ini_set($phpIniVariable, $setValue);
+        }
+
+        /**
+         * Empties in release.
+         *
+         * @return void
+         */
+        static function isUnitTestExeMode()
+        {
+
         }
 
     }

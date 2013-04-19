@@ -23,6 +23,7 @@ function test3_()
 
 $exeMode = &B::refStatic('$exeMode');
 $exeMode |= B::IGNORING_BREAK_POINT;
+B::addValuesToTrace(array (array ('TestString')));
 BreakpointDebugging_Error_InAllCaseTest::$error->handleException2(new \Exception(), B::$prependExceptionLog);
 $line__ = __LINE__ - 1;
 $exeMode &= ~B::IGNORING_BREAK_POINT;

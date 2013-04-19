@@ -8,12 +8,14 @@
  *
  * ### Environment which can do breakpoint debugging. ###
  * Debugger which can use breakpoint.
- * The present recommendation debugging environment is
- * "WindowsXP Professional" + "NetBeans IDE 7.2.1" + "XAMPP 1.7.3" or
- * "Ubuntu desktop" + "NetBeans IDE 7.2.1" + "XAMPP for Linux 1.7.3a".
- * Do not use version greater than "XAMPP 1.7.3" for "NetBeans IDE 7.2.1"
+ * At April, 2013 recommendation debugging environment is
+ * "WindowsXP Professional" + "NetBeans IDE 7.1.2" + "XAMPP 1.7.3" or
+ * "Ubuntu desktop" + "NetBeans IDE 7.1.2" + "XAMPP for Linux 1.7.3".
+ * Do not use version greater than "XAMPP 1.7.3" for "NetBeans IDE 7.1.2"
  * because MySQL version causes discordance.
  * Notice: Use "phpMyAdmin" to see database and to execute "MySQL" command.
+ *         Also, "NetBeans IDE 7.3" cannot keep switchback at April, 2013.
+ *         However, "NetBeans IDE 7.3" supports "PHP5.4" and "HTML5".
  *
  * ### The advantage of breakpoint debugging. ###
  * Can find a position of a bug immediately.
@@ -52,7 +54,7 @@
  *      Then, use "B::getStatic('$exeMode')" to get value.
  *      Lastly, we must execute all codes using "\BreakpointDebugging::displayCodeCoverageReport()" before release.
  *      Then, we must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('RELEASE');".
- *      Because "XDebug" information is not displayed on 'RELEASE' mode.
+ *      Because "XDebug" information is not displayed on 'REMOTE_RELEASE' mode.
  * Procedure 8: Please, if you use "Unix", register your username as
  *      "User" and "Group" into "lampp/apache/conf/httpd.conf".
  *      And, register "export PATH=$PATH:/opt/lampp/bin" into "~/.profile".
@@ -221,7 +223,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
     /**
      * @var array Setting option filenames.
      */
-    private static $_onceFlag;
+    private static $_onceFlag = array ();
 
     /**
      * @var string Browser execution pass.
@@ -276,6 +278,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      */
     static function checkSuperUserExecution()
     {
+        // @codeCoverageIgnoreStart
         // If this is not remote debug.
         if (self::$exeMode & ~B::REMOTE_DEBUG) {
             return;
@@ -286,6 +289,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
         }
     }
 
+    // @codeCoverageIgnoreEnd
     /**
      * For debug.
      *
@@ -635,9 +639,9 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
             return;
         }
 
-        if ($os === 'WIN') {
-            $fullFilePath = strtolower($fullFilePath);
-        }
+        //if ($os === 'WIN') {
+        //    $fullFilePath = strtolower($fullFilePath);
+        //}
         if (!isset(self::$_includePaths)) {
             self::$_includePaths = ini_get('include_path');
             if ($os === 'WIN') {
@@ -982,8 +986,10 @@ EOD;
             && $unitTestCurrentDir[1]['class'] === 'BreakpointDebugging' && array_key_exists('function', $unitTestCurrentDir[1])
             && $unitTestCurrentDir[1]['function'] === 'executeUnitTest'
         ) { // Calling from "\BreakpointDebugging::executeUnitTest()".
+            // @codeCoverageIgnoreStart
             $unitTestCurrentDir = dirname($unitTestCurrentDir[1]['file']);
         } else { // In case of command.
+            // @codeCoverageIgnoreEnd
             $unitTestCurrentDir = dirname($unitTestCurrentDir[0]['file']);
         }
         $unitTestCurrentDir .= DIRECTORY_SEPARATOR;
@@ -1119,7 +1125,7 @@ EOD;
             echo $pPHPUnit_TextUI_Command->run($commandElements, true);
         } else {
             // @codeCoverageIgnoreEnd
-            if (self::$exeMode & (B::REMOTE_DEBUG | B::RELEASE)) {
+            if (self::$exeMode & (B::REMOTE_DEBUG | B::REMOTE_RELEASE)) {
                 // @codeCoverageIgnoreStart
                 exit('<pre>Executes on "local server only" because continuation unit test requires many load on remote server.</pre>');
                 // @codeCoverageIgnoreEnd

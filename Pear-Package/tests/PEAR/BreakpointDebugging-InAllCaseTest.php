@@ -33,9 +33,11 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
     /**
      * @covers \BreakpointDebugging_InAllCase<extended>
      */
-    function test__construct()
+    //function test__construct()
+    function test__initialize()
     {
-        new \BreakpointDebugging();
+        //new \BreakpointDebugging();
+        B::initialize();
     }
 
     /**

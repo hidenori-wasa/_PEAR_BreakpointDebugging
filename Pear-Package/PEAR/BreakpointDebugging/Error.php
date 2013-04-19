@@ -296,7 +296,7 @@ abstract class BreakpointDebugging_Error_InAllCase
      */
     protected function reflectArray(&$pTmpLog, $paramName, $array, $tabNumber = 1)
     {
-        $this->checksLogByteSize($pTmpLog);
+        $this->checkLogByteSize($pTmpLog);
         $isOverMaxLogElementNumber = false;
         if (count($array) > B::getStatic('$_maxLogElementNumber')) {
             $isOverMaxLogElementNumber = true;
@@ -360,7 +360,7 @@ abstract class BreakpointDebugging_Error_InAllCase
      */
     protected function reflectObject(&$pTmpLog, $paramName, $object, $tabNumber = 1)
     {
-        $this->checksLogByteSize($pTmpLog);
+        $this->checkLogByteSize($pTmpLog);
         $className = get_class($object);
         $tabs = str_repeat("\t", $tabNumber);
         $classReflection = new \ReflectionClass($className);
@@ -537,7 +537,7 @@ abstract class BreakpointDebugging_Error_InAllCase
         // Add scope of start page file.
         $this->_callStack[] = array ();
         $this->outputErrorCallStackLog2($errorKind, $errorMessage, $prependLog);
-        if (B::getStatic('$exeMode') === B::RELEASE) { // In case of release.
+        if (B::getStatic('$exeMode') === B::REMOTE_RELEASE) { // In case of release.
             // @codeCoverageIgnoreStart
             if (isset($endFlag)) {
                 // In case of release mode, we must exit this process when kind is error.
@@ -691,8 +691,11 @@ abstract class BreakpointDebugging_Error_InAllCase
      *
      * @return void
      */
-    protected function checksLogByteSize($pTmpLog)
+    protected function checkLogByteSize($pTmpLog)
     {
+        if (!isset($pTmpLog)) {
+            return;
+        }
         // When log file size exceeds.
         $errorLogFileStatus1 = fstat($this->pErrorLogFile);
         $errorLogFileStatus2 = fstat($pTmpLog);
@@ -726,7 +729,7 @@ abstract class BreakpointDebugging_Error_InAllCase
 
         try {
             // If this does a log.
-            if (B::getStatic('$exeMode') & (B::RELEASE | B::LOCAL_DEBUG_OF_RELEASE)) {
+            if (B::getStatic('$exeMode') & (B::REMOTE_RELEASE | B::LOCAL_DEBUG_OF_RELEASE)) {
                 // Locks the error log files.
                 $this->_lockByFileExisting = &\BreakpointDebugging_LockByFileExisting::internalSingleton();
                 $this->_lockByFileExisting->lock();
@@ -893,7 +896,7 @@ abstract class BreakpointDebugging_Error_InAllCase
                     $this->addParameterHeaderToLog($dummy, $file, $line, $func, $class);
                 }
                 $this->logBufferWriting($pTmpLog2, PHP_EOL);
-                $this->checksLogByteSize($pTmpLog2);
+                $this->checkLogByteSize($pTmpLog2);
                 $this->logWriting($pTmpLog2);
             }
             $this->logBufferWriting($dummy, '//////////////////////////////// CALL STACK END ////////////////////////////////');
@@ -903,7 +906,7 @@ abstract class BreakpointDebugging_Error_InAllCase
         }
 
         // If this does a log.
-        if (B::getStatic('$exeMode') & (B::RELEASE | B::LOCAL_DEBUG_OF_RELEASE)) {
+        if (B::getStatic('$exeMode') & (B::REMOTE_RELEASE | B::LOCAL_DEBUG_OF_RELEASE)) {
             // Gets current error log file name.
             if (B::getStatic('$_os') === 'WIN') { // In case of Windows.
                 $this->_errorLogFilePath = strtolower($this->_errorLogDirectory . $this->_currentErrorLogFileName);
@@ -1125,6 +1128,9 @@ abstract class BreakpointDebugging_Error_InAllCase
      */
     protected function logCombination(&$pTmpLog, &$pTmpLog2)
     {
+        if (!is_resource($pTmpLog)) {
+            return;
+        }
         rewind($pTmpLog2);
         while (!feof($pTmpLog2)) {
             fwrite($pTmpLog, fread($pTmpLog2, 4096));
@@ -1135,7 +1141,7 @@ abstract class BreakpointDebugging_Error_InAllCase
 }
 
 // @codeCoverageIgnoreStart
-if (B::getStatic('$exeMode') & B::RELEASE) { // In case of release.
+if (B::getStatic('$exeMode') & B::REMOTE_RELEASE) { // In case of release.
     /**
      * Dummy class for release.
      *
@@ -1147,6 +1153,7 @@ if (B::getStatic('$exeMode') & B::RELEASE) { // In case of release.
      * @link     http://pear.php.net/package/BreakpointDebugging
      * @codeCoverageIgnore
      */
+
     final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCase
     {
 

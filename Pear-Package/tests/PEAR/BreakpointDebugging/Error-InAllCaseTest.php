@@ -36,7 +36,7 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_UnitT
     static function setUpBeforeClass()
     {
         self::$exeMode = &B::refStatic('$exeMode');
-        self::$exeMode = B::RELEASE | B::UNIT_TEST; // Executes without including "Error_Option.php" file.
+        self::$exeMode = B::REMOTE_RELEASE | B::UNIT_TEST; // Executes without including "Error_Option.php" file.
         $maxLogStringSize = &B::refStatic('$_maxLogStringSize');
         $maxLogStringSize = 8;
     }

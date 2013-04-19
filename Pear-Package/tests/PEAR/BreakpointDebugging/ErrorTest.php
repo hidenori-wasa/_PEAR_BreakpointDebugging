@@ -79,6 +79,7 @@ class BreakpointDebugging_ErrorTest extends \BreakpointDebugging_UnitTestOverrid
 
         $exceptionWithGLOBALS = function ($self) {
                 try {
+                    B::addValuesToTrace(array (array ('TestString')));
                     $self->exceptionHandler2($GLOBALS, array ('Test1.'));
                 } catch (\Exception $e) {
                     B::handleException($e);

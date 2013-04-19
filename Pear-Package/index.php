@@ -8,10 +8,12 @@ B::isUnitTestExeMode(false); // Checks the execution mode.
 
 $a = false;
 $b = true;
+
 if ($a === false
-    && $b === true) {
+    && $b === true
+) {
     $c = 1;
 }
-echo $c;
 
+echo $c;
 ?>

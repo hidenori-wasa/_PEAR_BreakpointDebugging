@@ -63,8 +63,8 @@ $xdebugVarDisplayMaxDepth = '3';
 //
 // PHP It limits directory which opens a file.
 B::iniSet('open_basedir', $openBasedir);
-// Caution: "if" statement is needed to copy in case of "B::RELEASE" if copies a code inside "if".
-if (B::getStatic('$exeMode') & (B::REMOTE_DEBUG | B::RELEASE)) { // In case of remote.
+// Caution: "if" statement is needed to copy in case of "B::REMOTE_RELEASE" if copies a code inside "if".
+if (B::getStatic('$exeMode') & (B::REMOTE_DEBUG | B::REMOTE_RELEASE)) { // In case of remote.
     // Windows e-mail sending server setting.
     B::iniSet('SMTP', $SMTP); // 'smtp.???.com'
     // Windows mail address setting.
@@ -82,7 +82,7 @@ if (B::getXebugExists()) {
     // xdebug.dump.*    * = COOKIE, FILES, GET, POST, REQUEST, SERVER, SESSION.
     //      Shows the specified superglobal value. Example is shown below.
     //      B::iniSet('xdebug.dump.SERVER', 'REMOTE_ADDR,REQUEST_METHOD');
-    // if (B::getStatic('$exeMode') & (B::REMOTE_DEBUG | B::RELEASE)) { // In case of remote.
+    // if (B::getStatic('$exeMode') & (B::REMOTE_DEBUG | B::REMOTE_RELEASE)) { // In case of remote.
     //    // ### [XDebug] setting in "php.ini" file. ###
     //    B::iniCheck('xdebug.remote_host', array ('127.0.0.1', 'localhost'), 'Sets the \'xdebug.remote_host = "&lt;Remote IDE host of server&gt;"\' of "php.ini file", in other words remote IDE host of server is "&lt;Your host name or IP&gt;".');
     // }
@@ -123,11 +123,11 @@ if (B::getXebugExists()) {
     B::iniSet('xdebug.remote_connect_back', '0', false);
     // Deadline of remote debug by session cookie.
     B::iniSet('xdebug.remote_cookie_expire_time', '3600', false);
-    B::iniCheck('xdebug.remote_enable', '1', 'Set "xdebug.remote_enable = 1" of "php.ini" file because this is needed to do breakpoint debugging.');
+    B::iniCheck('xdebug.remote_enable', '1', 'Set "xdebug.remote_enable = 1" of "php.ini" file because this is needed to do breakpoint debugging if server permits.');
     B::iniCheck('xdebug.remote_handler', 'dbgp', 'Set \'xdebug.remote_handler = "dbgp"\' of "php.ini" file because this is needed to do remote debugging.');
     // Connects when remote debug begins.
     B::iniSet('xdebug.remote_mode', 'req', false);
-    B::iniCheck('xdebug.remote_port', '9000', 'Set "xdebug.remote_port = 9000" of "php.ini" file. This is "NetBeans IDE" port number of own terminal. Also, we use default value because it is the default of "NetBeans IDE".');
+    // B::iniCheck('xdebug.remote_port', '9000', 'Set "xdebug.remote_port = 9000" of "php.ini" file. This is "NetBeans IDE" port number of own terminal. Also, we use default value because it is the default of "NetBeans IDE".');
     // Enables '@' operator.
     B::iniSet('xdebug.scream', '0', false);
     // Shows local variables.

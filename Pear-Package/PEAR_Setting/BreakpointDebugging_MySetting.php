@@ -57,12 +57,20 @@ function BreakpointDebugging_setExecutionMode()
      */
     global $_BreakpointDebugging_EXE_MODE;
 
+    $REMOTE_DEBUG = 4;
+    $RELEASE = 8;
+    $UNIT_TEST = 16;
+
     // ### Execution mode setting. ===>
     // Please, choose a mode.
     // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('DEBUG');
+    // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('DEBUG_RELEASE');
     // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('RELEASE');
     $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('UNIT_TEST');
     // ### <=== Execution mode setting.
+    //
+    // $_BreakpointDebugging_EXE_MODE = $REMOTE_DEBUG; // For this package development by local host.
+    // $_BreakpointDebugging_EXE_MODE = $REMOTE_DEBUG | $UNIT_TEST; // For this package development by local host.
     //
     // Reference path setting.
     if ($_BreakpointDebugging_EXE_MODE & ($REMOTE_DEBUG | $RELEASE)) { // In case of remote.
@@ -110,6 +118,8 @@ function BreakpointDebugging_setExecutionModeFlags($executionMode)
     if (!isset($_SERVER['SERVER_ADDR']) || $_SERVER['SERVER_ADDR'] === '127.0.0.1') { // In case of command or local host.
         if ($executionMode === 'DEBUG') {
             return $LOCAL_DEBUG; // Local server debug by breakpoint.
+        } else if ($executionMode === 'DEBUG_RELEASE') {
+            return $RELEASE; // Release code debug by browser display.
         } else if ($executionMode === 'RELEASE') {
             return $LOCAL_DEBUG_OF_RELEASE; // Local server debug by breakpoint and logging.
         } else if ($executionMode === 'UNIT_TEST') {
@@ -198,7 +208,7 @@ function BreakpointDebugging_mySetting()
     /* ### "Unix" Example. ===>
       // PHP It limits directory which opens a file.
       B::iniSet('open_basedir', $openBasedir);
-      if (B::getStatic('$exeMode') & (B::REMOTE_DEBUG | B::RELEASE)) { // In case of remote.
+      if (B::getStatic('$exeMode') & (B::REMOTE_DEBUG | B::REMOTE_RELEASE)) { // In case of remote.
       // Windows e-mail sending server setting.
       B::iniSet('SMTP', $SMTP); // 'smtp.???.com'
       // Windows mail address setting.
@@ -229,55 +239,59 @@ function BreakpointDebugging_mySetting()
       B::iniSet('ignore_user_abort', '');
       ### <=== "Unix" Example. */
 
-    /* ### "Windows" Example. ===>
-      // PHP It limits directory which opens a file.
-      B::iniSet('open_basedir', $openBasedir);
-      if (B::getStatic('$exeMode') & (B::REMOTE_DEBUG | B::RELEASE)) { // In case of remote.
-      // Windows e-mail sending server setting.
-      B::iniSet('SMTP', $SMTP); // 'smtp.???.com'
-      // Windows mail address setting.
-      B::iniSet('sendmail_from', $sendmailFrom); // '???@???.com'
-      }
-      // The default character sets of PHP.
-      B::iniSet('default_charset', 'utf8');
-      // The default value of language setting (NLS).
-      B::iniSet('mbstring.language', $language);
-      // Set "mbstring.internal_encoding = utf8" of "php.ini" file because this is purpose to define default value of inner character encoding.
-      B::iniSet('mbstring.internal_encoding', 'utf8');
-      // Set "mbstring.http_input = auto" of "php.ini" file because this is purpose to define default value of HTTP entry character encoding.
-      B::iniSet('mbstring.http_input', 'auto');
-      // Set "mbstring.http_output = utf8" of "php.ini" file because this is purpose to define default value of HTTP output character encoding.
-      B::iniSet('mbstring.http_output', 'utf8');
-      // Set "mbstring.strict_detection = Off" of "php.ini" file because this is purpose to not do strict encoding detection.
-      B::iniSet('mbstring.strict_detection', '');
-      // This sets "user_agent" to "PHP".
-      B::iniSet('user_agent', 'PHP');
-      // Set for the debugging because "from" can be set only in "php.ini".
-      // This judges an end of a sentence character by the data which was read in "fgets()" and "file()", and we can use "PHP_EOL" constant.
-      B::iniSet('auto_detect_line_endings', '1');
-      // This changes "php.ini" file setting into "ignore_user_abort = Off" because it is purpose to end execution of script when client is disconnected.
-      B::iniSet('ignore_user_abort', '');
-      ### <=== "Windows" Example. */
-    if (B::getStatic('$exeMode') !== B::RELEASE) { // In case of not release.
+    // /* ### "Windows" Example. ===>
+    // PHP It limits directory which opens a file.
+    B::iniSet('open_basedir', $openBasedir);
+    if (B::getStatic('$exeMode') & (B::REMOTE_DEBUG | B::REMOTE_RELEASE)) { // In case of remote.
+        // Windows e-mail sending server setting.
+        B::iniSet('SMTP', $SMTP); // 'smtp.???.com'
+        // Windows mail address setting.
+        B::iniSet('sendmail_from', $sendmailFrom); // '???@???.com'
+    }
+    // The default character sets of PHP.
+    B::iniSet('default_charset', 'utf8');
+    // The default value of language setting (NLS).
+    B::iniSet('mbstring.language', $language);
+    // Set "mbstring.internal_encoding = utf8" of "php.ini" file because this is purpose to define default value of inner character encoding.
+    B::iniSet('mbstring.internal_encoding', 'utf8');
+    // Set "mbstring.http_input = auto" of "php.ini" file because this is purpose to define default value of HTTP entry character encoding.
+    B::iniSet('mbstring.http_input', 'auto');
+    // Set "mbstring.http_output = utf8" of "php.ini" file because this is purpose to define default value of HTTP output character encoding.
+    B::iniSet('mbstring.http_output', 'utf8');
+    // Set "mbstring.strict_detection = Off" of "php.ini" file because this is purpose to not do strict encoding detection.
+    B::iniSet('mbstring.strict_detection', '');
+    // This sets "user_agent" to "PHP".
+    B::iniSet('user_agent', 'PHP');
+    // Set for the debugging because "from" can be set only in "php.ini".
+    // This judges an end of a sentence character by the data which was read in "fgets()" and "file()", and we can use "PHP_EOL" constant.
+    B::iniSet('auto_detect_line_endings', '1');
+    // This changes "php.ini" file setting into "ignore_user_abort = Off" because it is purpose to end execution of script when client is disconnected.
+    B::iniSet('ignore_user_abort', '');
+    // ### <=== "Windows" Example. */
+
+    if (B::getStatic('$exeMode') !== B::REMOTE_RELEASE) { // In case of not release.
         include_once './' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . '/BreakpointDebugging_MySetting_Option.php';
     }
     ////////////////////////////////////////////////////////////////////////////////
     // ### This setting has been Fixed. ###
-    if (B::getStatic('$exeMode') === B::RELEASE) { // In case of release.
+    if (B::getStatic('$exeMode') === B::REMOTE_RELEASE) { // In case of release.
+        // Output it at log to except notice and deprecated.
+        ini_set('error_reporting', (string) (PHP_INT_MAX & ~(E_NOTICE | E_DEPRECATED | E_STRICT)));
+        // This changes "php.ini" file setting into "log_errors = On" to record log for security.
+        ini_set('log_errors', '1');
+        if ($_SERVER['SERVER_ADDR'] === '127.0.0.1') { // In case of local host.
+            return;
+        }
         // When "Xdebug" exists.
         if (extension_loaded('xdebug')) {
             B::iniCheck('xdebug.remote_enable', '0', 'Set "xdebug.remote_enable = 0" of "php.ini" file because is for security.');
             // Does not display XDebug information.
             ini_set('xdebug.default_enable', '0');
         }
-        // Output it at log to except notice and deprecated.
-        ini_set('error_reporting', (string) (PHP_INT_MAX & ~(E_NOTICE | E_DEPRECATED | E_STRICT)));
         // For security, it doesn't display all errors, warnings and notices.
         ini_set('display_errors', '');
         // This changes "php.ini" file setting into "display_startup_errors = Off" Because this makes not display an error on start-up for security.
         ini_set('display_startup_errors', '');
-        // This changes "php.ini" file setting into "log_errors = On" to record log for security.
-        ini_set('log_errors', '1');
         // This changes "php.ini" file setting into "html_errors=Off" for security because this does not make output link to page which explains function which HTML error occurred.
         ini_set('html_errors', '');
     }
