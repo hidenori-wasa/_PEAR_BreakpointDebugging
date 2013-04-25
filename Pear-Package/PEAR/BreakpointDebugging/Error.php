@@ -537,7 +537,7 @@ abstract class BreakpointDebugging_Error_InAllCase
         // Add scope of start page file.
         $this->_callStack[] = array ();
         $this->outputErrorCallStackLog2($errorKind, $errorMessage, $prependLog);
-        if (B::getStatic('$exeMode') === B::REMOTE_RELEASE) { // In case of release.
+        if (B::getStatic('$exeMode') & B::RELEASE) { // In case of release.
             // @codeCoverageIgnoreStart
             if (isset($endFlag)) {
                 // In case of release mode, we must exit this process when kind is error.
@@ -729,7 +729,7 @@ abstract class BreakpointDebugging_Error_InAllCase
 
         try {
             // If this does a log.
-            if (B::getStatic('$exeMode') & (B::REMOTE_RELEASE | B::LOCAL_DEBUG_OF_RELEASE)) {
+            if (B::getStatic('$exeMode') & B::RELEASE) {
                 // Locks the error log files.
                 $this->_lockByFileExisting = &\BreakpointDebugging_LockByFileExisting::internalSingleton();
                 $this->_lockByFileExisting->lock();
@@ -906,7 +906,7 @@ abstract class BreakpointDebugging_Error_InAllCase
         }
 
         // If this does a log.
-        if (B::getStatic('$exeMode') & (B::REMOTE_RELEASE | B::LOCAL_DEBUG_OF_RELEASE)) {
+        if (B::getStatic('$exeMode') & B::RELEASE) {
             // Gets current error log file name.
             if (B::getStatic('$_os') === 'WIN') { // In case of Windows.
                 $this->_errorLogFilePath = strtolower($this->_errorLogDirectory . $this->_currentErrorLogFileName);
@@ -1128,7 +1128,7 @@ abstract class BreakpointDebugging_Error_InAllCase
      */
     protected function logCombination(&$pTmpLog, &$pTmpLog2)
     {
-        if (!is_resource($pTmpLog)) {
+        if (!isset($pTmpLog)) {
             return;
         }
         rewind($pTmpLog2);
@@ -1141,7 +1141,7 @@ abstract class BreakpointDebugging_Error_InAllCase
 }
 
 // @codeCoverageIgnoreStart
-if (B::getStatic('$exeMode') & B::REMOTE_RELEASE) { // In case of release.
+if (B::getStatic('$exeMode') & B::RELEASE) { // In case of release.
     /**
      * Dummy class for release.
      *

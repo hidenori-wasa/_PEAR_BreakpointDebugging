@@ -9,7 +9,7 @@ use \BreakpointDebugging as B;
 chdir('../../../');
 require_once './NativeClass.php'; // Test class.
 
-B::isUnitTestExeMode(false); // Checks the execution mode.
+B::isUnitTestExeMode(); // Checks the execution mode.
 
 $testNumber = 2;
 

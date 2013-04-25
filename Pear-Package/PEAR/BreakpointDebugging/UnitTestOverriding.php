@@ -76,6 +76,14 @@ use \BreakpointDebugging as B;
  */
 class BreakpointDebugging_UnitTestOverridingBase extends \PHPUnit_Framework_TestCase
 {
+    static $exeMode;
+    private $_storeExeMode;
+
+    static function setUpBeforeClass()
+    {
+        self::$exeMode = &B::refStatic('$exeMode');
+    }
+
     /**
      * Sets up initializing which is needed at least in unit test.
      *
@@ -88,6 +96,16 @@ class BreakpointDebugging_UnitTestOverridingBase extends \PHPUnit_Framework_Test
         $onceErrorDispFlag = false;
         $callingExceptionHandlerDirectly = &B::refStatic('$_callingExceptionHandlerDirectly');
         $callingExceptionHandlerDirectly = false;
+        $this->_storeExeMode = self::$exeMode;
+    }
+
+    protected function tearDown()
+    {
+        self::$exeMode = $this->_storeExeMode;
+        if (ob_get_level() === 2) {
+            ob_end_clean();
+        }
+        B::assert(ob_get_level() === 1);
     }
 
 }
@@ -104,7 +122,6 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
      * @version  Release: @package_version@
      * @link     http://pear.php.net/package/BreakpointDebugging
      */
-    //class BreakpointDebugging_UnitTestOverriding extends \PHPUnit_Framework_TestCase
     class BreakpointDebugging_UnitTestOverriding extends \BreakpointDebugging_UnitTestOverridingBase
     {
         /**
@@ -322,19 +339,6 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
             return $testResult;
         }
 
-//        /**
-//         * Sets up initializing which is needed at least in unit test.
-//         *
-//         * @return void
-//         */
-//        protected function setUp()
-//        {
-//            @unlink(B::getStatic('$_workDir') . '/LockByFileExistingOfInternal.txt');
-//            $onceErrorDispFlag = &B::refStatic('$_onceErrorDispFlag');
-//            $onceErrorDispFlag = false;
-//            $callingExceptionHandlerDirectly = &B::refStatic('$_callingExceptionHandlerDirectly');
-//            $callingExceptionHandlerDirectly = false;
-//        }
         /**
          * Overrides "\PHPUnit_Framework_Assert::assertTrue()" to display error call stack information.
          *
@@ -390,21 +394,9 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
      * @version  Release: @package_version@
      * @link     http://pear.php.net/package/BreakpointDebugging
      */
-    //class BreakpointDebugging_UnitTestOverriding extends \PHPUnit_Framework_TestCase
     class BreakpointDebugging_UnitTestOverriding extends \BreakpointDebugging_UnitTestOverridingBase
     {
-//        /**
-//         * Sets up initializing which is needed at least in unit test.
-//         *
-//         * @return void
-//         */
-//        protected function setUp()
-//        {
-//            $onceErrorDispFlag = &B::refStatic('$_onceErrorDispFlag');
-//            $onceErrorDispFlag = false;
-//            $callingExceptionHandlerDirectly = &B::refStatic('$_callingExceptionHandlerDirectly');
-//            $callingExceptionHandlerDirectly = false;
-//        }
+
     }
 
 }

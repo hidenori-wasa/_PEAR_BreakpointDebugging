@@ -57,23 +57,22 @@ function BreakpointDebugging_setExecutionMode()
      */
     global $_BreakpointDebugging_EXE_MODE;
 
-    $REMOTE_DEBUG = 4;
-    $RELEASE = 8;
-    $UNIT_TEST = 16;
+    $REMOTE = 1;
+    $RELEASE = 2;
+    $UNIT_TEST = 4;
 
     // ### Execution mode setting. ===>
     // Please, choose a mode.
     // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('DEBUG');
-    // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('DEBUG_RELEASE');
     // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('RELEASE');
-    $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('UNIT_TEST');
+    // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('DEBUG_UNIT_TEST');
+    $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('RELEASE_UNIT_TEST');
     // ### <=== Execution mode setting.
     //
-    // $_BreakpointDebugging_EXE_MODE = $REMOTE_DEBUG; // For this package development by local host.
-    // $_BreakpointDebugging_EXE_MODE = $REMOTE_DEBUG | $UNIT_TEST; // For this package development by local host.
+    // $_BreakpointDebugging_EXE_MODE |= $REMOTE; // Emulates remote by local host.
     //
     // Reference path setting.
-    if ($_BreakpointDebugging_EXE_MODE & ($REMOTE_DEBUG | $RELEASE)) { // In case of remote.
+    if ($_BreakpointDebugging_EXE_MODE & $REMOTE) { // In case of remote.
         if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') { // In case of Windows.
             // ini_set('include_path', '.;C:\xampp\php\PEAR');
             // ini_set('include_path', '.;./PEAR;C:\xampp\php\PEAR');
@@ -109,32 +108,34 @@ function BreakpointDebugging_setExecutionModeFlags($executionMode)
      * @see "### Debug mode constant number ###" of class "BreakpointDebugging_InAllCase" in "BreakpointDebugging.php".
      */
     // ### Debug mode number ###
-    $LOCAL_DEBUG = 1;
-    $LOCAL_DEBUG_OF_RELEASE = 2;
-    $REMOTE_DEBUG = 4;
-    $RELEASE = 8;
-    $UNIT_TEST = 16;
+    $REMOTE = 1;
+    $RELEASE = 2;
+    $UNIT_TEST = 4;
 
     if (!isset($_SERVER['SERVER_ADDR']) || $_SERVER['SERVER_ADDR'] === '127.0.0.1') { // In case of command or local host.
-        if ($executionMode === 'DEBUG') {
-            return $LOCAL_DEBUG; // Local server debug by breakpoint.
-        } else if ($executionMode === 'DEBUG_RELEASE') {
-            return $RELEASE; // Release code debug by browser display.
-        } else if ($executionMode === 'RELEASE') {
-            return $LOCAL_DEBUG_OF_RELEASE; // Local server debug by breakpoint and logging.
-        } else if ($executionMode === 'UNIT_TEST') {
-            return $LOCAL_DEBUG | $UNIT_TEST; // Unit test on local server.
+        switch ($executionMode) {
+            case 'RELEASE':
+                return $RELEASE; // Local server debug by breakpoint and logging.
+            case 'DEBUG':
+                return 0; // Local server debug by breakpoint.
+            case 'RELEASE_UNIT_TEST':
+                return $RELEASE | $UNIT_TEST; // Unit test of release code on local server.
+            case 'DEBUG_UNIT_TEST':
+                return $UNIT_TEST; // Unit test of debug code on local server.
         }
     } else { // In case of remote.
-        if ($executionMode === 'DEBUG') {
-            return $REMOTE_DEBUG; // Remote server debug by browser display.
-        } else if ($executionMode === 'RELEASE') {
-            return $RELEASE; // Remote server release by logging. We must execute "REMOTE_DEBUG" before this, and we must set on last for security.
-        } else if ($executionMode === 'UNIT_TEST') {
-            return $REMOTE_DEBUG | $UNIT_TEST; // Unit test on remote server.
+        switch ($executionMode) {
+            case 'RELEASE':
+                return $REMOTE | $RELEASE; // Remote server release by logging. We must execute "$_BreakpointDebugging_EXE_MODE = $REMOTE" before this, and we must set on last for security.
+            case 'DEBUG':
+                return $REMOTE; // Remote server debug by browser display.
+            case 'RELEASE_UNIT_TEST':
+                return $REMOTE | $RELEASE | $UNIT_TEST; // Unit test of release code on remote server.
+            case 'DEBUG_UNIT_TEST':
+                return $REMOTE | $UNIT_TEST; // Unit test of debug code on remote server.
         }
     }
-    exit('<pre>You must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags();" into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" because you mistook.</pre>');
+    exit('<pre>You must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'...\');" into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" because you mistook.</pre>');
 }
 
 BreakpointDebugging_setExecutionMode();
@@ -208,7 +209,7 @@ function BreakpointDebugging_mySetting()
     /* ### "Unix" Example. ===>
       // PHP It limits directory which opens a file.
       B::iniSet('open_basedir', $openBasedir);
-      if (B::getStatic('$exeMode') & (B::REMOTE_DEBUG | B::REMOTE_RELEASE)) { // In case of remote.
+      if (B::getStatic('$exeMode') & B::REMOTE) { // In case of remote.
       // Windows e-mail sending server setting.
       B::iniSet('SMTP', $SMTP); // 'smtp.???.com'
       // Windows mail address setting.
@@ -242,7 +243,7 @@ function BreakpointDebugging_mySetting()
     // /* ### "Windows" Example. ===>
     // PHP It limits directory which opens a file.
     B::iniSet('open_basedir', $openBasedir);
-    if (B::getStatic('$exeMode') & (B::REMOTE_DEBUG | B::REMOTE_RELEASE)) { // In case of remote.
+    if (B::getStatic('$exeMode') & B::REMOTE) { // In case of remote.
         // Windows e-mail sending server setting.
         B::iniSet('SMTP', $SMTP); // 'smtp.???.com'
         // Windows mail address setting.
@@ -268,13 +269,11 @@ function BreakpointDebugging_mySetting()
     // This changes "php.ini" file setting into "ignore_user_abort = Off" because it is purpose to end execution of script when client is disconnected.
     B::iniSet('ignore_user_abort', '');
     // ### <=== "Windows" Example. */
-
-    if (B::getStatic('$exeMode') !== B::REMOTE_RELEASE) { // In case of not release.
+    if (!(B::getStatic('$exeMode') & B::RELEASE)) { // In case of not release.
         include_once './' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . '/BreakpointDebugging_MySetting_Option.php';
-    }
-    ////////////////////////////////////////////////////////////////////////////////
-    // ### This setting has been Fixed. ###
-    if (B::getStatic('$exeMode') === B::REMOTE_RELEASE) { // In case of release.
+    } else { // In case of release.
+        ////////////////////////////////////////////////////////////////////////////////
+        // ### This setting has been Fixed. ###
         // Output it at log to except notice and deprecated.
         ini_set('error_reporting', (string) (PHP_INT_MAX & ~(E_NOTICE | E_DEPRECATED | E_STRICT)));
         // This changes "php.ini" file setting into "log_errors = On" to record log for security.
@@ -283,7 +282,9 @@ function BreakpointDebugging_mySetting()
             return;
         }
         // When "Xdebug" exists.
-        if (extension_loaded('xdebug')) {
+        if (extension_loaded('xdebug')
+            && !(B::getStatic('$exeMode') & B::UNIT_TEST)
+        ) {
             B::iniCheck('xdebug.remote_enable', '0', 'Set "xdebug.remote_enable = 0" of "php.ini" file because is for security.');
             // Does not display XDebug information.
             ini_set('xdebug.default_enable', '0');

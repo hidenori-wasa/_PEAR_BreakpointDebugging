@@ -89,36 +89,25 @@ abstract class BreakpointDebugging_Exception_InAllCase extends \PEAR_Exception
 abstract class BreakpointDebugging_InAllCase
 {
     // ### Debug mode constant number ###
+    /**
+     * @const int This flag means executing on practical use server. This flag means executing on local development server if it is not set.
+     */
+    const REMOTE = 1;
 
     /**
-     * @const int First mode is breakpoint debug with your personal computer.
+     * @const int This flag means executing release code. This flag means executing debug code if it is not set.
      */
-    const LOCAL_DEBUG = 1;
+    const RELEASE = 2;
 
     /**
-     * @const int Next mode is breakpoint debug to emulate release mode with your personal computer.
+     * @const int This flag means executing unit test. This flag means not executing unit test if it is not set.
      */
-    const LOCAL_DEBUG_OF_RELEASE = 2;
+    const UNIT_TEST = 4;
 
     /**
-     * @const int Next mode is browser display debug with remote personal computer.
+     * @const int This flag means ignoring break point. This flag means enabling break point if it is not set.
      */
-    const REMOTE_DEBUG = 4;
-
-    /**
-     * @const int Next mode is log debug with remote personal computer. That is, this is a release mode.
-     */
-    const REMOTE_RELEASE = 8;
-
-    /**
-     * @const int Tests by "phpunit". This flag is used with other flag.
-     */
-    const UNIT_TEST = 16;
-
-    /**
-     * @const int Ignoring break point.
-     */
-    const IGNORING_BREAK_POINT = 32;
+    const IGNORING_BREAK_POINT = 8;
 
     /**
      *  @const string Character string which means recursive array.
@@ -226,6 +215,52 @@ abstract class BreakpointDebugging_InAllCase
     protected static $exeMode;
 
     /**
+     * Debugs by using breakpoint.
+     * We must define this class method outside namespace, and we must not change method name when we call this method.
+     *
+     * @param string $message       Message.
+     * @param array  $callStackInfo A call stack info.
+     *
+     * @return void
+     * @example B::breakpoint('Error message.', debug_backtrace());
+     */
+    static function breakpoint($message, $callStackInfo)
+    {
+        B::assert(func_num_args() === 2, 1);
+        B::assert(is_string($message), 2);
+        B::assert(is_array($callStackInfo), 3);
+
+        if (self::$exeMode === (B::REMOTE | B::RELEASE)
+            || (self::$exeMode & B::IGNORING_BREAK_POINT)) {
+            return;
+        }
+
+        reset($callStackInfo);
+        if (!empty($callStackInfo)) {
+            $call = each($callStackInfo);
+            $call = $call['value'];
+            if (array_key_exists('file', $call)) {
+                $errorFile = $call['file'];
+            }
+            if (array_key_exists('line', $call)) {
+                $errorLine = $call['line'];
+            }
+        }
+
+        if (self::getXebugExists()) {
+            xdebug_break(); // Breakpoint. See local variable value by doing step execution here.
+            // Push stop button if is thought error message.
+        }
+
+        if (self::$exeMode & (self::REMOTE | self::RELEASE) === self::REMOTE) { // In case of remote debug.
+            // @codeCoverageIgnoreStart
+            // Remote debug must end immediately to avoid eternal execution.
+            exit;
+            // @codeCoverageIgnoreEnd
+        }
+    }
+
+    /**
      * Initializes static properties.
      *
      * @return void
@@ -234,7 +269,7 @@ abstract class BreakpointDebugging_InAllCase
     {
         global $_BreakpointDebugging_EXE_MODE;
 
-        B::limitAccess('BreakpointDebugging_Option.php');
+        B::limitAccess(array ('BreakpointDebugging_UnitTestCaller.php', 'BreakpointDebugging_Option.php'));
 
         self::$_pwd = getcwd();
         self::$exeMode = $_BreakpointDebugging_EXE_MODE;
@@ -289,7 +324,11 @@ abstract class BreakpointDebugging_InAllCase
      */
     static function getXebugExists()
     {
-        B::limitAccess('BreakpointDebugging_Option.php');
+        B::limitAccess(
+            array ('BreakpointDebugging.php',
+                'BreakpointDebugging_Option.php'
+            )
+        );
 
         return self::$_xdebugExists;
     }
@@ -777,9 +816,11 @@ abstract class BreakpointDebugging_InAllCase
 
 global $_BreakpointDebugging_EXE_MODE;
 
-if ($_BreakpointDebugging_EXE_MODE === BreakpointDebugging_InAllCase::REMOTE_RELEASE) { // In case of release.
+if ($_BreakpointDebugging_EXE_MODE & BreakpointDebugging_InAllCase::UNIT_TEST) { // In case of unit test.
+    include_once __DIR__ . '/BreakpointDebugging_UnitTestCaller.php';
+} else {
     /**
-     * Dummy class for release.
+     * Dummy class for unit test.
      *
      * @category PHP
      * @package  BreakpointDebugging
@@ -794,6 +835,24 @@ if ($_BreakpointDebugging_EXE_MODE === BreakpointDebugging_InAllCase::REMOTE_REL
     }
 
     /**
+     * Dummy class for unit test.
+     *
+     * @category PHP
+     * @package  BreakpointDebugging
+     * @author   Hidenori Wasa <public@hidenori-wasa.com>
+     * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
+     * @version  Release: @package_version@
+     * @link     http://pear.php.net/package/BreakpointDebugging
+     */
+    class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_InAllCase
+    {
+
+    }
+
+}
+
+if ($_BreakpointDebugging_EXE_MODE & BreakpointDebugging_InAllCase::RELEASE) { // In case of release.
+    /**
      * The class for release.
      *
      * @category PHP
@@ -804,18 +863,8 @@ if ($_BreakpointDebugging_EXE_MODE === BreakpointDebugging_InAllCase::REMOTE_REL
      * @link     http://pear.php.net/package/BreakpointDebugging
      * @codeCoverageIgnore
      */
-    final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
+    final class BreakpointDebugging extends \BreakpointDebugging_UnitTestCaller
     {
-        /**
-         * Empties in release.
-         *
-         * @return void
-         */
-        static function breakpoint()
-        {
-
-        }
-
         /**
          * Empties in release.
          *
@@ -908,8 +957,8 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
     // This sets global error handler.( -1 sets all bits on 1. Therefore, this specifies error, warning and note of all kinds and so on.)
     set_error_handler('\BreakpointDebugging::handleError', -1);
 }
-\BreakpointDebugging::initialize();
 spl_autoload_register('\BreakpointDebugging::autoload');
 register_shutdown_function('\BreakpointDebugging::shutdown');
+\BreakpointDebugging::initialize();
 
 ?>

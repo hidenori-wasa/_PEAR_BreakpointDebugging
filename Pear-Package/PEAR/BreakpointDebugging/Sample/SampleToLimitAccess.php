@@ -16,7 +16,7 @@ require_once './BreakpointDebugging_Including.php';
 use \BreakpointDebugging as B;
 use \TestClass as T;
 
-B::isUnitTestExeMode(false); // Checks the execution mode.
+B::isUnitTestExeMode(); // Checks the execution mode.
 /**
  * Dummy.
  *
@@ -111,7 +111,6 @@ abstract class TestClass_InAllCase
      */
     function __set($propertyName, $value)
     {
-        //B::limitAccess('BreakpointDebugging/Sample/SampleToLimitAccess_Option.php');
         B::limitAccess(
             array (
                 'BreakpointDebugging/Sample/SampleToLimitAccess.php',
@@ -143,7 +142,6 @@ abstract class TestClass_InAllCase
      */
     static function &refStatic($propertyName)
     {
-        //B::limitAccess('BreakpointDebugging/Sample/SampleToLimitAccess_Option.php');
         B::limitAccess(
             array (
                 'BreakpointDebugging/Sample/SampleToLimitAccess.php',
@@ -180,8 +178,7 @@ abstract class TestClass_InAllCase
 
 }
 
-// if (B::getStatic('$exeMode') & B::REMOTE_RELEASE) { // In case of release. // Actual "php" code.
-if (B::getStatic('$exeMode') & B::LOCAL_DEBUG_OF_RELEASE) {
+if (B::getStatic('$exeMode') & B::RELEASE) { // In case of release.
     /**
      * Dummy.
      *

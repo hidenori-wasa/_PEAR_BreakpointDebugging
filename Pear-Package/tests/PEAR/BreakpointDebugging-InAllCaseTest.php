@@ -4,8 +4,9 @@ chdir(__DIR__ . '/../../');
 require_once './BreakpointDebugging_Including.php';
 
 use \BreakpointDebugging as B;
+use \BreakpointDebugging_UnitTestOverridingBase as BU;
 
-B::isUnitTestExeMode(true);
+B::isUnitTestExeMode('DEBUG_UNIT_TEST');
 
 $testAutoload = 1;
 if ($testAutoload === 1) { // The case which extends base class.
@@ -23,20 +24,11 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
 {
     const TEST_CONST = 'The test constant.';
 
-    private static $_exeMode;
-
-    static function setUpBeforeClass()
-    {
-        self::$_exeMode = &B::refStatic('$exeMode');
-    }
-
     /**
      * @covers \BreakpointDebugging_InAllCase<extended>
      */
-    //function test__construct()
     function test__initialize()
     {
-        //new \BreakpointDebugging();
         B::initialize();
     }
 
@@ -77,7 +69,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
         $this->assertTrue(ob_get_contents() === '');
         ob_clean();
         B::iniCheck('safe_mode', array ('', 'On'), 'Test message 4.');
-        $this->assertTrue(ob_get_clean() !== '');
+        $this->assertTrue(ob_get_contents() !== '');
     }
 
     /**
@@ -272,7 +264,6 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
         if ($testAutoload === 2) { // In case of accessing to static member.
             ob_start();
             \NativeClass::publicStaticFunction();
-            ob_end_clean();
         }
 
         if ($testAutoload === 3) { // In case of creating new instance.
@@ -285,13 +276,10 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
      */
     public function testExceptionHandler()
     {
-        ob_start();
-        $pPrevious = new \Exception('Previous exception.', E_USER_ERROR);
-        $pException = new \Exception('Exception.', E_USER_ERROR, $pPrevious);
-        self::$_exeMode |= B::IGNORING_BREAK_POINT;
+        $pPrevious = new \Exception('Previous exception.', E_USER_WARNING);
+        $pException = new \Exception('Exception.', E_USER_WARNING, $pPrevious);
+        BU::$exeMode |= B::IGNORING_BREAK_POINT;
         B::handleException($pException);
-        self::$_exeMode &= ~B::IGNORING_BREAK_POINT;
-        $this->assertTrue(ob_get_clean() !== '');
     }
 
     /**
@@ -299,21 +287,16 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
      */
     public function testErrorHandler()
     {
-        ob_start();
-        self::$_exeMode |= B::IGNORING_BREAK_POINT;
-        B::handleError(E_USER_ERROR, 'Error test.');
-        self::$_exeMode &= ~B::IGNORING_BREAK_POINT;
-        $this->assertTrue(ob_get_clean() !== '');
+        BU::$exeMode |= B::IGNORING_BREAK_POINT;
+        B::handleError(E_USER_WARNING, 'Error test.');
     }
 
     /**
      * @covers \BreakpointDebugging_InAllCase<extended>
-     *
-     * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_InAllCaseTest FUNCTION=testInternalException ID=1
      */
     public function testInternalException()
     {
+        BU::$exeMode |= B::IGNORING_BREAK_POINT;
         B::internalException('Tests "internalException()".', 1);
     }
 

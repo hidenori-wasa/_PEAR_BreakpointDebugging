@@ -56,8 +56,8 @@ use \BreakpointDebugging as B;
  * @version  Release: @package_version@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCase {
-
+final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCase
+{
     /**
      * For debug.
      *
@@ -65,7 +65,8 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
      *
      * @return void
      */
-    protected function setHTMLTags(&$tags) {
+    protected function setHTMLTags(&$tags)
+    {
         B::assert(func_num_args() === 1, 1);
         B::assert(is_array($tags), 2);
 
@@ -77,40 +78,37 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
      *
      * @return void
      */
-    function __construct() {
+    function __construct()
+    {
         B::limitAccess('BreakpointDebugging.php');
         B::assert(func_num_args() === 0);
 
-        if (B::getStatic('$exeMode') & B::LOCAL_DEBUG_OF_RELEASE) { // In case of logging.
-            parent::__construct();
-        } else { // In case of not the logging.
-            $this->maxLogFileByteSize = B::getStatic('$_maxLogFileByteSize');
-            $this->isLogging = false;
-            $this->mark = '&diams;';
-            // When "Xdebug" exists.
-            if (B::getXebugExists()) {
-                $this->tags['pre'] = '<pre class=\'xdebug-var-dump\' dir=\'ltr\'>';
-                $this->tags['font']['caution'] = '<font color=\'#ff0000\'>';
-                $this->tags['font']['bool'] = '<font color=\'#75507b\'>';
-                $this->tags['font']['int'] = '<font color=\'#4e9a06\'>';
-                $this->tags['font']['float'] = '<font color=\'#f57900\'>';
-                $this->tags['font']['string'] = '<font color=\'#cc0000\'>';
-                $this->tags['font']['null'] = '<font color=\'#3465a4\'>';
-                $this->tags['font']['resource'] = '<font color=\'#8080ff\'>';
-                $this->tags['font']['=>'] = '<font color=\'#888a85\'>';
-                $this->tags['/font'] = '</font>';
-                $this->tags['small'] = '<small>';
-                $this->tags['/small'] = '</small>';
-            } else { // When "Xdebug" does not exist.
-                $this->tags['pre'] = '<pre>';
-                $this->setHTMLTags($this->tags);
-            }
-            $this->tags['/pre'] = '</pre>';
-            $this->tags['i'] = '<i>';
-            $this->tags['/i'] = '</i>';
-            $this->tags['b'] = '<b>';
-            $this->tags['/b'] = '</b>';
+        $this->maxLogFileByteSize = B::getStatic('$_maxLogFileByteSize');
+        $this->isLogging = false;
+        $this->mark = '&diams;';
+        // When "Xdebug" exists.
+        if (B::getXebugExists()) {
+            $this->tags['pre'] = '<pre class=\'xdebug-var-dump\' dir=\'ltr\'>';
+            $this->tags['font']['caution'] = '<font color=\'#ff0000\'>';
+            $this->tags['font']['bool'] = '<font color=\'#75507b\'>';
+            $this->tags['font']['int'] = '<font color=\'#4e9a06\'>';
+            $this->tags['font']['float'] = '<font color=\'#f57900\'>';
+            $this->tags['font']['string'] = '<font color=\'#cc0000\'>';
+            $this->tags['font']['null'] = '<font color=\'#3465a4\'>';
+            $this->tags['font']['resource'] = '<font color=\'#8080ff\'>';
+            $this->tags['font']['=>'] = '<font color=\'#888a85\'>';
+            $this->tags['/font'] = '</font>';
+            $this->tags['small'] = '<small>';
+            $this->tags['/small'] = '</small>';
+        } else { // When "Xdebug" does not exist.
+            $this->tags['pre'] = '<pre>';
+            $this->setHTMLTags($this->tags);
         }
+        $this->tags['/pre'] = '</pre>';
+        $this->tags['i'] = '<i>';
+        $this->tags['/i'] = '</i>';
+        $this->tags['b'] = '<b>';
+        $this->tags['/b'] = '</b>';
     }
 
     /**
@@ -120,7 +118,8 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
      *
      * @return Same as parent.
      */
-    protected function convertMbString($string) {
+    protected function convertMbString($string)
+    {
         B::assert(func_num_args() === 1, 1);
         B::assert(is_string($string), 2);
 
@@ -140,7 +139,8 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
      *
      * @return Same as parent.
      */
-    protected function addFunctionValuesToLog(&$pTmpLog2, &$pTmpLog, &$onceFlag2, $func, $class, $line, $tabs = '') {
+    protected function addFunctionValuesToLog(&$pTmpLog2, &$pTmpLog, &$onceFlag2, $func, $class, $line, $tabs = '')
+    {
         $paramNumber = func_num_args();
         B::assert($paramNumber <= 7, 1);
         B::assert(is_array($pTmpLog2) || is_resource($pTmpLog2) || $pTmpLog2 === null, 2);
@@ -162,7 +162,8 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
      *
      * @return Same as parent.
      */
-    function handleException2($pException, $prependLog) {
+    function handleException2($pException, $prependLog)
+    {
         B::assert(func_num_args() === 2, 1);
         B::assert($pException instanceof \Exception, 2);
         B::assert(is_string($prependLog), 3);
@@ -182,7 +183,8 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
      *
      * @return Same as parent.
      */
-    function handleError2($errorNumber, $errorMessage, $prependLog, $callStack) {
+    function handleError2($errorNumber, $errorMessage, $prependLog, $callStack)
+    {
         B::assert(func_num_args() === 4, 1);
         B::assert(is_int($errorNumber), 2);
         B::assert(is_string($errorMessage), 3);
@@ -203,7 +205,8 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
      *
      * @return Same as parent.
      */
-    protected function addParameterHeaderToLog(&$pTmpLog, $file, $line, $func, $class) {
+    protected function addParameterHeaderToLog(&$pTmpLog, $file, $line, $func, $class)
+    {
         B::assert(func_num_args() === 5, 1);
         B::assert(is_array($pTmpLog) || is_resource($pTmpLog) || $pTmpLog === null, 2);
         B::assert(is_string($file), 3);
@@ -228,7 +231,8 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
      *
      * @return Same as parent.
      */
-    protected function outputFixedFunctionToLogging($backTrace, &$pTmpLog, &$onceFlag2, &$func, &$class, $file, $line, $tabs = '') {
+    protected function outputFixedFunctionToLogging($backTrace, &$pTmpLog, &$onceFlag2, &$func, &$class, $file, $line, $tabs = '')
+    {
         B::assert(func_num_args() <= 8, 1);
         B::assert(is_array($backTrace), 2);
         B::assert(is_array($pTmpLog) || is_resource($pTmpLog) || $pTmpLog === null, 3);
@@ -250,17 +254,13 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
      * @return void
      * @throw \BreakpointDebugging_OutOfLogRangeException
      */
-    protected function changeLogFile($pTmpLog) {
-        // In case of logging.
-        if (B::getStatic('$exeMode') & B::LOCAL_DEBUG_OF_RELEASE) {
-            parent::changeLogFile($pTmpLog);
-        } else { // In case of browser display.
-            $continuingMark = PHP_EOL . str_repeat("\t", 1) . '.';
-            $continuingMark = PHP_EOL . '### Omits since then because it exceeded logfile maximum capacity. ###' . $continuingMark . $continuingMark . $continuingMark;
-            $this->logBufferWriting($pTmpLog, $continuingMark);
-            $this->logWriting($pTmpLog);
-            throw new \BreakpointDebugging_OutOfLogRangeException('');
-        }
+    protected function changeLogFile($pTmpLog)
+    {
+        $continuingMark = PHP_EOL . str_repeat("\t", 1) . '.';
+        $continuingMark = PHP_EOL . '### Omits since then because it exceeded logfile maximum capacity. ###' . $continuingMark . $continuingMark . $continuingMark;
+        $this->logBufferWriting($pTmpLog, $continuingMark);
+        $this->logWriting($pTmpLog);
+        throw new \BreakpointDebugging_OutOfLogRangeException('');
     }
 
     /**
@@ -270,30 +270,22 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
      *
      * @return void
      */
-    protected function checkLogByteSize($pTmpLog) {
+    protected function checkLogByteSize($pTmpLog)
+    {
         if (!isset($pTmpLog)) {
             return;
         }
-        switch (B::getStatic('$exeMode') & ~(B::UNIT_TEST | B::IGNORING_BREAK_POINT)) {
-            // If this does a log.
-            case B::REMOTE_DEBUG:
-                parent::checkLogByteSize($pTmpLog);
-                break;
-            case B::LOCAL_DEBUG:
-            case B::LOCAL_DEBUG_OF_RELEASE:
-                $tmpLogSize = 0;
-                foreach ($pTmpLog as $tmpLogLine) {
-                    $tmpLogSize += strlen($tmpLogLine);
-                }
-                if ($this->logByteSize + $tmpLogSize > $this->maxLogFileByteSize) {
-                    $this->changeLogFile($pTmpLog);
-                }
-                break;
-            // @codeCoverageIgnoreStart
-            default:
-                B::internalException('', 1);
+        if (B::getStatic('$exeMode') & B::REMOTE) { // In case of remote.
+            parent::checkLogByteSize($pTmpLog);
+        } else { // In case of local.
+            $tmpLogSize = 0;
+            foreach ($pTmpLog as $tmpLogLine) {
+                $tmpLogSize += strlen($tmpLogLine);
+            }
+            if ($this->logByteSize + $tmpLogSize > $this->maxLogFileByteSize) {
+                $this->changeLogFile($pTmpLog);
+            }
         }
-        // @codeCoverageIgnoreEnd
     }
 
     /**
@@ -305,7 +297,8 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
      *
      * @return Same as parent.
      */
-    protected function outputErrorCallStackLog2($errorKind, $errorMessage, $prependLog = '') {
+    protected function outputErrorCallStackLog2($errorKind, $errorMessage, $prependLog = '')
+    {
         B::assert(func_num_args() <= 3, 1);
         B::assert(is_string($errorKind), 2);
         B::assert(is_string($errorMessage), 3);
@@ -323,7 +316,8 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
      *
      * @return Same as parent.
      */
-    protected function getParamInfo($tags, $type, $paramValue) {
+    protected function getParamInfo($tags, $type, $paramValue)
+    {
         B::assert(func_num_args() === 3, 1);
         B::assert(is_array($tags), 2);
         B::assert(is_string($type), 3);
@@ -341,7 +335,8 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
      *
      * @return Same as parent.
      */
-    protected function getTypeAndValue(&$pTmpLog, $paramName, $paramValue, $tabNumber) {
+    protected function getTypeAndValue(&$pTmpLog, $paramName, $paramValue, $tabNumber)
+    {
         B::assert(func_num_args() === 4, 1);
         B::assert(is_array($pTmpLog) || is_resource($pTmpLog) || $pTmpLog === null, 2);
         B::assert(is_string($paramName) || is_int($paramName), 3);
@@ -359,7 +354,8 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
      *
      * @return Same as parent.
      */
-    protected function searchDebugBacktraceArgsToString(&$pTmpLog, $backtraceParams, $tabNumber = 1) {
+    protected function searchDebugBacktraceArgsToString(&$pTmpLog, $backtraceParams, $tabNumber = 1)
+    {
         B::assert(func_num_args() <= 3, 1);
         B::assert(is_array($pTmpLog) || is_resource($pTmpLog) || $pTmpLog === null, 2);
         B::assert(is_array($backtraceParams), 3);
@@ -373,13 +369,14 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
      *
      * @return Same as parent.
      */
-    protected function logPointerOpening() {
+    protected function logPointerOpening()
+    {
         B::assert(func_num_args() === 0, 1);
 
-        if (B::getStatic('$exeMode') & (B::LOCAL_DEBUG | B::LOCAL_DEBUG_OF_RELEASE)) { // In case of local host.
-            return array();
-        } else { // In case of remote host.
+        if (B::getStatic('$exeMode') & B::REMOTE) { // In case of remote.
             return parent::logPointerOpening();
+        } else { // In case of local.
+            return array ();
         }
     }
 
@@ -390,11 +387,12 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
      *
      * @return Same as parent.
      */
-    protected function logPointerClosing(&$pTmpLog) {
+    protected function logPointerClosing(&$pTmpLog)
+    {
         B::assert(func_num_args() === 1, 1);
         B::assert(is_array($pTmpLog) || is_resource($pTmpLog) || $pTmpLog === null, 2);
 
-        if (B::getStatic('$exeMode') & B::REMOTE_DEBUG) {
+        if (B::getStatic('$exeMode') & B::REMOTE) { // In case of remote debug.
             fclose($pTmpLog);
             $pTmpLog = null;
         } else {
@@ -410,43 +408,27 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
      *
      * @return Same as parent.
      */
-    protected function logWriting(&$pTmpLog, $pLog = false) {
+    protected function logWriting(&$pTmpLog, $pLog = false)
+    {
         B::assert(func_num_args() <= 2, 1);
         B::assert(is_array($pTmpLog) || is_resource($pTmpLog), 2);
         B::assert(is_resource($pLog) || $pLog === false);
 
-        switch (B::getStatic('$exeMode') & ~(B::UNIT_TEST | B::IGNORING_BREAK_POINT)) {
-            case B::LOCAL_DEBUG:
-                foreach ($pTmpLog as $log) {
-                    echo $log;
-                    $this->logByteSize += strlen($log);
-                }
-                break;
-            case B::REMOTE_DEBUG:
-                rewind($pTmpLog);
-                while (!feof($pTmpLog)) {
-                    $tmpLog = fread($pTmpLog, 4096);
-                    echo $tmpLog;
-                    $this->logByteSize += strlen($tmpLog);
-                }
-                // Deletes temporary file.
-                fclose($pTmpLog);
-                break;
-            case B::LOCAL_DEBUG_OF_RELEASE:
-                foreach ($pTmpLog as $log) {
-                    if ($pLog) {
-                        fwrite($pLog, $log);
-                    } else {
-                        $this->pErrorLogFile[] = $log;
-                    }
-                    $this->logByteSize += strlen($log);
-                }
-                break;
-            // @codeCoverageIgnoreStart
-            default:
-                B::internalException('', 3);
+        if (B::getStatic('$exeMode') & B::REMOTE) { // In case of remote.
+            rewind($pTmpLog);
+            while (!feof($pTmpLog)) {
+                $tmpLog = fread($pTmpLog, 4096);
+                echo $tmpLog;
+                $this->logByteSize += strlen($tmpLog);
+            }
+            // Deletes temporary file.
+            fclose($pTmpLog);
+        } else { // In case of local.
+            foreach ($pTmpLog as $log) {
+                echo $log;
+                $this->logByteSize += strlen($log);
+            }
         }
-        // @codeCoverageIgnoreEnd
         $pTmpLog = null;
     }
 
@@ -458,38 +440,21 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
      *
      * @return Same as parent.
      */
-    protected function logBufferWriting(&$pLogBuffer, $log) {
+    protected function logBufferWriting(&$pLogBuffer, $log)
+    {
         B::assert(func_num_args() === 2, 1);
         B::assert(is_array($pLogBuffer) || is_resource($pLogBuffer) || $pLogBuffer === null, 2);
         B::assert(is_string($log), 3);
 
-        switch (B::getStatic('$exeMode') & ~(B::UNIT_TEST | B::IGNORING_BREAK_POINT)) {
-            case B::LOCAL_DEBUG:
-                if ($pLogBuffer === null) {
-                    echo $log;
-                    $this->logByteSize += strlen($log);
-                } else {
-                    $pLogBuffer[] = $log;
-                }
-                break;
-            case B::REMOTE_DEBUG:
-                if ($pLogBuffer === null) {
-                    echo $log;
-                    $this->logByteSize += strlen($log);
-                } else {
-                    fwrite($pLogBuffer, $log);
-                }
-                break;
-            case B::LOCAL_DEBUG_OF_RELEASE:
-                if ($pLogBuffer === null) {
-                    $this->pErrorLogFile[] = $log;
-                    $this->logByteSize += strlen($log);
-                } else {
-                    $pLogBuffer[] = $log;
-                }
-                break;
-            default:
-                B::internalException('', 4);
+        if ($pLogBuffer === null) {
+            echo $log;
+            $this->logByteSize += strlen($log);
+        } else {
+            if (B::getStatic('$exeMode') & B::REMOTE) { // In case of remote.
+                fwrite($pLogBuffer, $log);
+            } else { // In case of local.
+                $pLogBuffer[] = $log;
+            }
         }
     }
 
@@ -502,34 +467,27 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
      *
      * @return void
      */
-    protected function logCombination(&$pTmpLog, &$pTmpLog2) {
+    protected function logCombination(&$pTmpLog, &$pTmpLog2)
+    {
         B::assert(func_num_args() === 2, 1);
 
         if (!isset($pTmpLog)) {
             return;
         }
-        switch (B::getStatic('$exeMode') & ~(B::UNIT_TEST | B::IGNORING_BREAK_POINT)) {
-            case B::LOCAL_DEBUG:
-            case B::LOCAL_DEBUG_OF_RELEASE:
-                B::assert(is_array($pTmpLog), 2);
-                B::assert(is_array($pTmpLog2), 3);
-                if (count($pTmpLog2) !== 0) {
-                    $pTmpLog = array_merge($pTmpLog, $pTmpLog2);
-                }
-                break;
-            case B::REMOTE_DEBUG:
-                B::assert(is_resource($pTmpLog), 4);
-                B::assert(is_resource($pTmpLog2), 5);
-                rewind($pTmpLog2);
-                while (!feof($pTmpLog2)) {
-                    fwrite($pTmpLog, fread($pTmpLog2, 4096));
-                }
-                break;
-            // @codeCoverageIgnoreStart
-            default:
-                B::internalException('', 6);
+        if (B::getStatic('$exeMode') & B::REMOTE) { // In case of remote.
+            B::assert(is_resource($pTmpLog), 4);
+            B::assert(is_resource($pTmpLog2), 5);
+            rewind($pTmpLog2);
+            while (!feof($pTmpLog2)) {
+                fwrite($pTmpLog, fread($pTmpLog2, 4096));
+            }
+        } else { // In case of local.
+            B::assert(is_array($pTmpLog), 2);
+            B::assert(is_array($pTmpLog2), 3);
+            if (count($pTmpLog2) !== 0) {
+                $pTmpLog = array_merge($pTmpLog, $pTmpLog2);
+            }
         }
-        // @codeCoverageIgnoreEnd
         $this->logPointerClosing($pTmpLog2);
     }
 

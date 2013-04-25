@@ -5,7 +5,7 @@ require_once './BreakpointDebugging_Including.php';
 
 use \BreakpointDebugging as B;
 
-B::isUnitTestExeMode(true);
+B::isUnitTestExeMode('DEBUG_UNIT_TEST');
 class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_UnitTestOverriding
 {
     protected $LockByShmop;
@@ -13,7 +13,9 @@ class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_UnitTestO
     function setUp()
     {
         parent::setUp();
-        if ((B::getStatic('$exeMode') & B::REMOTE_DEBUG) && !extension_loaded('shmop')) {
+        if ((B::getStatic('$exeMode') & B::REMOTE)
+            && !extension_loaded('shmop')
+        ) {
             $this->markTestSkipped('"shmop" extention has been not loaded.');
         }
         // Constructs instance.

@@ -61,10 +61,9 @@ require_once './BreakpointDebugging_Including.php';
 use \BreakpointDebugging as B;
 
 // Checks the execution mode.
-if (B::getStatic('$exeMode') !== B::REMOTE_RELEASE) { // In case of not release.
+if (!(B::getStatic('$exeMode') & B::RELEASE)) { // In case of not release.
     exit('<pre>You must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'RELEASE\');" into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file.</pre>');
 }
-
 // Checks client IP address.
 if ($_SERVER['REMOTE_ADDR'] !== $myIPAddress) {
     exit('<pre>You must register your IP address into "$myIPAddress" of this page, then upload it.</pre>');
@@ -136,7 +135,7 @@ if (isset($_GET['download'])) {
         // Deletes the error log file, variable configuring file or the error location file.
         unlink($errorLogDirElementPath);
     }
-    echo '<H1>You must delete this page for security.</H1>';
+    echo '<pre><H1>You must delete this page for security.</H1></pre>';
 } else if (isset($_GET['reset'])) { // When you pushed "Reset error log files" button.
     // Searches the files which should delete.
     foreach ($errorLogDirElements as $errorLogDirElement) {
@@ -147,7 +146,7 @@ if (isset($_GET['download'])) {
         // Deletes the error log file, variable configuring file or the error location file.
         unlink($errorLogDirElementPath);
     }
-    echo '<H1>You must delete this page for security.</H1>';
+    echo '<pre><H1>You must delete this page for security.</H1></pre>';
 } else { // In case of first time when this page was called.
     $thisFileName = basename(__FILE__);
     // Makes error log download-buttons.
@@ -158,17 +157,18 @@ if (isset($_GET['download'])) {
         echo <<<EOD
 <form method="post" action="{$thisFileName}?download={$errorLogDirElement}">
     <input type="submit" value="Download error log file ({$errorLogDirElement})"/>
+
 </form>
 EOD;
     }
     echo <<<EOD
 <form method="post" action="{$thisFileName}?deleteErrorLogs">
-    <input type="submit" value="Delete all error log files"> You must download all error log files before you push this button.</input>
+    <input type="submit" value="Delete all error log files (You must download all error log files before you push this button.)"></input>
 </form>
 EOD;
     echo <<<EOD
 <form method="post" action="{$thisFileName}?reset">
-    <input type="submit" value="Reset error log files"> You must debug and upload all error code before you push this button.</input>
+    <input type="submit" value="Reset error log files (You must debug and upload all error code before you push this button.)"></input>
 </form>
 EOD;
 }
