@@ -129,7 +129,8 @@ class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_InAllCase
     /**
      * @var  string Unit test directory.
      */
-    private static $_unitTestDir;
+//    private static $unitTestDir;
+    protected static $unitTestDir;
 
     /**
      * Limits static properties accessing.
@@ -144,11 +145,72 @@ class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_InAllCase
 
         parent::initialize();
 
-        self::$staticPropertyLimitings['$_includePaths'] = ''; // For unit test.
-        self::$staticPropertyLimitings['$_valuesToTrace'] = ''; // For unit test.
-        self::$staticPropertyLimitings['$exeMode'] = ''; // For unit test.
+        parent::$staticPropertyLimitings['$_includePaths'] = ''; // For unit test.
+        parent::$staticPropertyLimitings['$_valuesToTrace'] = ''; // For unit test.
+        parent::$staticPropertyLimitings['$exeMode'] = 'BreakpointDebugging/UnitTestOverriding.php'; // For unit test.
     }
 
+    /**
+     * Displays exception if release unit test error of "local or remote".
+     *
+     * @param object $pException Exception information.
+     *
+     * @return void
+     */
+    static function displaysException($pException)
+    {
+        $callStack = debug_backtrace();
+//        if (!array_key_exists(0, $callStack)
+//            || !array_key_exists('file', $callStack[0])
+//            || strripos($callStack[0]['file'], 'UnitTestOverriding.php') === strlen($callStack[0]['file']) - strlen('UnitTestOverriding.php')
+        if (!array_key_exists(1, $callStack)
+            || !array_key_exists('file', $callStack[1])
+            || strripos($callStack[1]['file'], 'UnitTestOverriding.php') === strlen($callStack[1]['file']) - strlen('UnitTestOverriding.php')
+        ) {
+//            if (function_exists('xdebug_break')) {
+//                xdebug_break();
+//            } else {
+            B::iniSet('xdebug.var_display_max_depth', 5, false);
+            var_dump($pException);
+            exit;
+//            }
+        }
+    }
+
+    /**
+     * Handles unit test exception.
+     *
+     * @param object $pException Exception information.
+     *
+     * @return void
+     */
+    static function handleUnitTestException($pException)
+    {
+        $callStack = $pException->getTrace();
+        $call = array_key_exists(0, $callStack) ? $callStack[0] : array ();
+        // In case of direct call from "BreakpointDebugging_InAllCase::callExceptionHandlerDirectly()".
+        if ((array_key_exists('class', $call) && $call['class'] === 'BreakpointDebugging_InAllCase')
+            && (array_key_exists('function', $call) && $call['function'] === 'callExceptionHandlerDirectly')
+        ) {
+//            if (function_exists('xdebug_break')) {
+//                xdebug_break();
+//            }
+            throw $pException;
+            // @codeCoverageIgnoreStart
+        }
+        // @codeCoverageIgnoreEnd
+    }
+
+//    /**
+//     * Skips unit test in release.
+//     *
+//     * @return void
+//     */
+//    static function assert()
+//    {
+//        $this->markTestSkipped();
+//    }
+    //////////////////////////////////////// For package user ////////////////////////////////////////
     /**
      * Gets property for test.
      *
@@ -245,7 +307,8 @@ class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_InAllCase
     /**
      * Checks unit-test-execution-mode, and sets unit test directory.
      *
-     * @param string $unitTestKind Unit test kind.
+     * @//param string $unitTestKind Unit test kind.
+     * @param bool $isUnitTest It is unit test?
      *
      * @return mixed Unit test directory, or void.
      *
@@ -257,40 +320,49 @@ class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_InAllCase
      *
      *      use \BreakpointDebugging as B;
      *
-     *      B::isUnitTestExeMode('DEBUG_UNIT_TEST'); // or B::isUnitTestExeMode('RELEASE_UNIT_TEST');
+     *      //B::isUnitTestExeMode('UNIT_TEST');
+     *      B::isUnitTestExeMode(true);
+     *      //or B::isUnitTestExeMode('DEBUG_UNIT_TEST');
+     *      //or B::isUnitTestExeMode('RELEASE_UNIT_TEST');
      *
-     *      class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
+     *      class SomethingTest extends \BreakpointDebugging_UnitTestOverriding
      *      {
      *          .
      *          .
      *          .
      */
-    static function isUnitTestExeMode($unitTestKind)
+    static function isUnitTestExeMode($isUnitTest)
     {
         B::assert(func_num_args() === 1, 1);
-        B::assert(is_string($unitTestKind), 2);
+        //B::assert(is_string($isUnitTest), 2);
+        B::assert(is_bool($isUnitTest), 2);
 
-        if (parent::$exeMode & B::RELEASE) {
-            switch ($unitTestKind) {
-                case 'RELEASE_UNIT_TEST':
-                    break;
-                case 'DEBUG_UNIT_TEST':
-                    throw new \BreakpointDebugging_ErrorException('<pre>You must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'DEBUG_UNIT_TEST\');" into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php".</pre>', 3);
-                default:
-                    throw new \BreakpointDebugging_ErrorException('<pre>You mistook "\BreakpointDebugging::isUnitTestExeMode(\'...\');".</pre>', 5);
-            }
-        } else {
-            switch ($unitTestKind) {
-                case 'DEBUG_UNIT_TEST':
-                    break;
-                case 'RELEASE_UNIT_TEST':
-                    throw new \BreakpointDebugging_ErrorException('<pre>You must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'RELEASE_UNIT_TEST\');" into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php".</pre>', 6);
-                default:
-                    throw new \BreakpointDebugging_ErrorException('<pre>You mistook "\BreakpointDebugging::isUnitTestExeMode(\'...\');".</pre>', 8);
-            }
+//        if (parent::$exeMode & B::RELEASE) {
+//            switch ($isUnitTest) {
+//                case 'UNIT_TEST':
+//                case 'RELEASE_UNIT_TEST':
+//                    break;
+//                case 'DEBUG_UNIT_TEST':
+//                    throw new \BreakpointDebugging_ErrorException('<pre>You must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'DEBUG_UNIT_TEST\');" into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php".</pre>', 3);
+//                default:
+//                    throw new \BreakpointDebugging_ErrorException('<pre>You mistook "\BreakpointDebugging::isUnitTestExeMode(\'...\');".</pre>', 4);
+//            }
+//        } else {
+//            switch ($isUnitTest) {
+//                case 'UNIT_TEST':
+//                case 'DEBUG_UNIT_TEST':
+//                    break;
+//                case 'RELEASE_UNIT_TEST':
+//                    throw new \BreakpointDebugging_ErrorException('<pre>You must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'RELEASE_UNIT_TEST\');" into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php".</pre>', 5);
+//                default:
+//                    throw new \BreakpointDebugging_ErrorException('<pre>You mistook "\BreakpointDebugging::isUnitTestExeMode(\'...\');".</pre>', 6);
+//            }
+//        }
+        if (!$isUnitTest) {
+            throw new \BreakpointDebugging_ErrorException('<pre>You must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'..._UNIT_TEST\');" into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php".</pre>', 3);
         }
 
-        if (isset(self::$_unitTestDir)) {
+        if (isset(self::$unitTestDir)) {
             return;
         }
 
@@ -309,12 +381,12 @@ class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_InAllCase
         }
         $unitTestCurrentDir .= DIRECTORY_SEPARATOR;
         if (B::getStatic('$_os') === 'WIN') { // In case of Windows.
-            self::$_unitTestDir = strtolower($unitTestCurrentDir);
+            self::$unitTestDir = strtolower($unitTestCurrentDir);
         } else { // In case of Unix.
-            self::$_unitTestDir = $unitTestCurrentDir;
+            self::$unitTestDir = $unitTestCurrentDir;
         }
 
-        return self::$_unitTestDir;
+        return self::$unitTestDir;
     }
 
     /**
@@ -358,12 +430,20 @@ class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_InAllCase
      *
      * // Please, choose unit tests files by customizing.
      * // You must specify array element to one if you want step execution.
-     * $unitTestCommands = array (
-     *     '--stop-on-failure BreakpointDebuggingTest.php',
-     *     '--stop-on-failure BreakpointDebugging/LockTest.php',
-     * );
+     * if (B::getStatic('$exeMode') & B::RELEASE) { // In case of release.
+     *     $unitTestCommands = array (
+     *         '--stop-on-failure Something-InAllCaseTest.php',
+     *         '--stop-on-failure Something/Sub-InAllCaseTest.php',
+     *     );
+     * } else { // In case of debug.
+     *     $unitTestCommands = array (
+     *         '--stop-on-failure SomethingTest.php',
+     *         '--stop-on-failure Something/SubTest.php',
+     *     );
+     * }
+     *
      * // Executes unit tests.
-     * B::executeUnitTest($unitTestCommands);
+     * B::executeUnitTest($unitTestCommands); exit;
      *
      * ?>
      *
@@ -373,8 +453,10 @@ class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_InAllCase
      *      require_once './BreakpointDebugging_Including.php';
      *
      *      use \BreakpointDebugging as B;
+     *      use \BreakpointDebugging_UnitTestOverridingBase as BU;
      *
-     *      B::isUnitTestExeMode('DEBUG_UNIT_TEST'); // or B::isUnitTestExeMode('RELEASE_UNIT_TEST');
+     *      //B::isUnitTestExeMode('DEBUG_UNIT_TEST'); //or B::isUnitTestExeMode('RELEASE_UNIT_TEST');
+     *      B::isUnitTestExeMode(true);
      *
      *      class SomethingTest extends \BreakpointDebugging_UnitTestOverriding
      *      {
@@ -382,14 +464,14 @@ class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_InAllCase
      *
      *          protected function setUp()
      *          {
-     *              // Executes the need setup always.
-     *              parent::setUp();
      *              // Constructs instance.
      *              $this->pSomething = new \Something();
+     *              parent::setUp();
      *          }
      *
      *          protected function tearDown()
      *          {
+     *              parent::tearDown();
      *              // Destructs instance.
      *              $this->pSomething = null;
      *          }
@@ -400,7 +482,8 @@ class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_InAllCase
      *           *
      *          function testSomething_A()
      *          {
-     *              throw new \BreakpointDebugging_ErrorException('Something message.', 123);
+     *              BU::$exeMode |= B::IGNORING_BREAK_POINT;
+     *              throw new \Something_ErrorException('Something message.', 123);
      *          }
      *
      *          function testSomething_B()
@@ -418,15 +501,19 @@ class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_InAllCase
      */
     static function executeUnitTest($unitTestCommands)
     {
-        if (parent::$exeMode & self::RELEASE) {
-            $unitTestCurrentDir = self::isUnitTestExeMode('RELEASE_UNIT_TEST');
+        if (parent::$exeMode & B::RELEASE) {
+            //$unitTestCurrentDir = self::isUnitTestExeMode('RELEASE_UNIT_TEST');
+            echo '<pre>\'RELEASE_UNIT_TEST\' execution mode.' . PHP_EOL;
         } else {
-            $unitTestCurrentDir = self::isUnitTestExeMode('DEBUG_UNIT_TEST');
+            //$unitTestCurrentDir = self::isUnitTestExeMode('DEBUG_UNIT_TEST');
+            echo '<pre>\'DEBUG_UNIT_TEST\' execution mode.' . PHP_EOL;
         }
+        $unitTestCurrentDir = self::isUnitTestExeMode(true);
 
         B::assert(func_num_args() === 1, 1);
         B::assert(is_array($unitTestCommands), 2);
         B::assert(!empty($unitTestCommands), 3);
+        B::assert($unitTestCurrentDir !== null, 4);
 
         if (count($unitTestCommands) === 1) {
             // @codeCoverageIgnoreStart
@@ -437,7 +524,8 @@ class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_InAllCase
             array_unshift($commandElements, 'dummy');
             include_once 'PHPUnit/Autoload.php';
             $pPHPUnit_TextUI_Command = new \PHPUnit_TextUI_Command;
-            echo "<pre>Starts Debugging of '$testFileName' file." . PHP_EOL;
+            //echo "<pre>Starts Debugging of '$testFileName' file." . PHP_EOL;
+            echo "Starts Debugging of '$testFileName' file." . PHP_EOL;
             echo '//////////////////////////////////////////////////////////////////////////' . PHP_EOL;
             // Uses "PHPUnit" error handler.
             restore_error_handler();
@@ -449,6 +537,8 @@ class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_InAllCase
                 exit('<pre>Executes on "local server only" because continuation unit test requires many load on remote server.</pre>');
                 // @codeCoverageIgnoreEnd
             }
+            echo 'Starts continuation unit tests.' . PHP_EOL;
+            echo '//////////////////////////////////////////////////////////////////////////' . PHP_EOL;
             // In case of extending test class except "\BreakpointDebugging_UnitTestOverriding" class.
             if (B::getStatic('$_os') === 'WIN') { // In case of Windows.
                 $phpunit = 'phpunit.bat';
@@ -475,8 +565,9 @@ class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_InAllCase
                     exit('<pre>"phpunit" command is not executable. (' . $phpunit . ')</pre>');
                 }
             }
-            echo '<pre>Starts continuation unit tests.' . PHP_EOL;
-            echo '//////////////////////////////////////////////////////////////////////////' . PHP_EOL;
+            //echo '<pre>Starts continuation unit tests.' . PHP_EOL;
+//            echo 'Starts continuation unit tests.' . PHP_EOL;
+//            echo '//////////////////////////////////////////////////////////////////////////' . PHP_EOL;
             foreach ($unitTestCommands as $command) {
                 $commandElements = explode(' ', $command);
                 $testFileName = array_pop($commandElements);
@@ -484,7 +575,9 @@ class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_InAllCase
                 // If test file name contains '_'.
                 if (strpos($testFileName, '_') !== false) {
                     echo "You must change its array element and its file name into '-' because '$testFileName' contains '_'." . PHP_EOL;
-                    if (self::getXebugExists()) {
+                    if (B::getXebugExists()
+                        && !(B::getStatic('$exeMode') & B::IGNORING_BREAK_POINT)
+                    ) {
                         xdebug_break();
                     }
                     return;

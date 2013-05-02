@@ -108,6 +108,30 @@ class BreakpointDebugging_UnitTestOverridingBase extends \PHPUnit_Framework_Test
         B::assert(ob_get_level() === 1);
     }
 
+    /**
+     * Marks the test as skipped in debug.
+     *
+     * @return void
+     */
+    protected static function markTestSkippedInDebug()
+    {
+        if (!(self::$exeMode & B::RELEASE)) {
+            parent::markTestSkipped();
+        }
+    }
+
+    /**
+     * Marks the test as skipped in release.
+     *
+     * @return void
+     */
+    protected static function markTestSkippedInRelease()
+    {
+        if (self::$exeMode & B::RELEASE) {
+            parent::markTestSkipped();
+        }
+    }
+
 }
 
 if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
@@ -329,7 +353,6 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
                 }
                 return;
             }
-            // In case of success.
             if ($this->getExpectedException() !== NULL) {
                 // "@expectedException" should not exist.
                 echo '<pre>Is error in "' . $class->name . '::' . $name . '".</pre>';

@@ -274,27 +274,27 @@ function BreakpointDebugging_mySetting()
     } else { // In case of release.
         ////////////////////////////////////////////////////////////////////////////////
         // ### This setting has been Fixed. ###
-        // Output it at log to except notice and deprecated.
-        ini_set('error_reporting', (string) (PHP_INT_MAX & ~(E_NOTICE | E_DEPRECATED | E_STRICT)));
-        // This changes "php.ini" file setting into "log_errors = On" to record log for security.
-        ini_set('log_errors', '1');
-        if ($_SERVER['SERVER_ADDR'] === '127.0.0.1') { // In case of local host.
-            return;
+        if (!(B::getStatic('$exeMode') & B::UNIT_TEST)) {
+            // Output it at log to except notice and deprecated.
+            ini_set('error_reporting', (string) (PHP_INT_MAX & ~(E_NOTICE | E_DEPRECATED | E_STRICT)));
+            // This changes "php.ini" file setting into "log_errors = On" to record log for security.
+            ini_set('log_errors', '1');
+            if ($_SERVER['SERVER_ADDR'] === '127.0.0.1') { // In case of local host.
+                return;
+            }
+            // When "Xdebug" exists.
+            if (extension_loaded('xdebug')) {
+                B::iniCheck('xdebug.remote_enable', '0', 'Set "xdebug.remote_enable = 0" of "php.ini" file because is for security.');
+                // Does not display XDebug information.
+                ini_set('xdebug.default_enable', '0');
+            }
+            // For security, it doesn't display all errors, warnings and notices.
+            ini_set('display_errors', '');
+            // This changes "php.ini" file setting into "display_startup_errors = Off" Because this makes not display an error on start-up for security.
+            ini_set('display_startup_errors', '');
+            // This changes "php.ini" file setting into "html_errors=Off" for security because this does not make output link to page which explains function which HTML error occurred.
+            ini_set('html_errors', '');
         }
-        // When "Xdebug" exists.
-        if (extension_loaded('xdebug')
-            && !(B::getStatic('$exeMode') & B::UNIT_TEST)
-        ) {
-            B::iniCheck('xdebug.remote_enable', '0', 'Set "xdebug.remote_enable = 0" of "php.ini" file because is for security.');
-            // Does not display XDebug information.
-            ini_set('xdebug.default_enable', '0');
-        }
-        // For security, it doesn't display all errors, warnings and notices.
-        ini_set('display_errors', '');
-        // This changes "php.ini" file setting into "display_startup_errors = Off" Because this makes not display an error on start-up for security.
-        ini_set('display_startup_errors', '');
-        // This changes "php.ini" file setting into "html_errors=Off" for security because this does not make output link to page which explains function which HTML error occurred.
-        ini_set('html_errors', '');
     }
 }
 

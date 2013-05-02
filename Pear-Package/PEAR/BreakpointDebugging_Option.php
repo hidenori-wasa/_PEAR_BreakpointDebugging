@@ -185,16 +185,16 @@ final class BreakpointDebugging extends \BreakpointDebugging_UnitTestCaller
 
         parent::initialize();
 
-        self::$staticProperties['$_includePaths'] = &self::$_includePaths;
+        parent::$staticProperties['$_includePaths'] = &self::$_includePaths;
         $tmp = BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php';
-        self::$staticPropertyLimitings['$_userName'] = $tmp;
-        self::$staticPropertyLimitings['$_maxLogFileByteSize'] = $tmp;
-        self::$staticPropertyLimitings['$_maxLogParamNestingLevel'] = $tmp;
-        self::$staticPropertyLimitings['$_maxLogElementNumber'] = $tmp;
-        self::$staticPropertyLimitings['$_maxLogStringSize'] = $tmp;
-        self::$staticPropertyLimitings['$_workDir'] = $tmp;
-        self::$staticPropertyLimitings['$_onceErrorDispFlag'] = 'BreakpointDebugging/UnitTestOverriding.php';
-        self::$staticPropertyLimitings['$_callingExceptionHandlerDirectly'] = array (
+        parent::$staticPropertyLimitings['$_userName'] = $tmp;
+        parent::$staticPropertyLimitings['$_maxLogFileByteSize'] = $tmp;
+        parent::$staticPropertyLimitings['$_maxLogParamNestingLevel'] = $tmp;
+        parent::$staticPropertyLimitings['$_maxLogElementNumber'] = $tmp;
+        parent::$staticPropertyLimitings['$_maxLogStringSize'] = $tmp;
+        parent::$staticPropertyLimitings['$_workDir'] = $tmp;
+        parent::$staticPropertyLimitings['$_onceErrorDispFlag'] = 'BreakpointDebugging/UnitTestOverriding.php';
+        parent::$staticPropertyLimitings['$_callingExceptionHandlerDirectly'] = array (
             'BreakpointDebugging/Error.php',
             'BreakpointDebugging/UnitTestOverriding.php'
         );
@@ -207,18 +207,21 @@ final class BreakpointDebugging extends \BreakpointDebugging_UnitTestCaller
      */
     static function checkSuperUserExecution()
     {
-        // @codeCoverageIgnoreStart
-        // If this is not remote debug.
-        if (BA::$exeMode !== parent::REMOTE) {
-            return;
-        }
-        if (B::getStatic('$_os') !== 'WIN' && trim(`echo \$USER`) === 'root'
+        // @//codeCoverageIgnoreStart
+        //// If this is not remote debug.
+        //if (BA::$exeMode !== B::REMOTE) {
+        //    return;
+        //}
+        // If this is remote debug, unix and root user.
+        if (BA::$exeMode & B::REMOTE
+            && B::getStatic('$_os') !== 'WIN'
+            && trim(`echo \$USER`) === 'root'
         ) {
             echo '<pre>Security warning: Recommends to change to "Apache HTTP Server" which Supported "suEXEC" because this "Apache HTTP Server" is executed by "root" user.</pre>';
         }
     }
 
-    // @codeCoverageIgnoreEnd
+    // @//codeCoverageIgnoreEnd
     /**
      * For debug.
      *
@@ -243,7 +246,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_UnitTestCaller
      */
     static function &refStatic($propertyName)
     {
-        self::limitAccess(self::$staticPropertyLimitings[$propertyName]);
+        self::limitAccess(parent::$staticPropertyLimitings[$propertyName]);
 
         self::assert(func_num_args() === 1, 1);
         self::assert(is_string($propertyName), 2);
@@ -409,17 +412,18 @@ final class BreakpointDebugging extends \BreakpointDebugging_UnitTestCaller
         self::assert(func_num_args() === 1, 1);
         self::assert($pException instanceof \Exception, 2);
 
-        if (BA::$exeMode & self::UNIT_TEST) {
-            $callStack = $pException->getTrace();
-            $call = array_key_exists(0, $callStack) ? $callStack[0] : array ();
-            // In case of direct call from "BreakpointDebugging_InAllCase::callExceptionHandlerDirectly()".
-            if ((array_key_exists('class', $call) && $call['class'] === 'BreakpointDebugging_InAllCase')
-                && (array_key_exists('function', $call) && $call['function'] === 'callExceptionHandlerDirectly')
-            ) {
-                throw $pException;
-                // @codeCoverageIgnoreStart
-            }
-            // @codeCoverageIgnoreEnd
+        if (BA::$exeMode & B::UNIT_TEST) {
+//            $callStack = $pException->getTrace();
+//            $call = array_key_exists(0, $callStack) ? $callStack[0] : array ();
+//            // In case of direct call from "BreakpointDebugging_InAllCase::callExceptionHandlerDirectly()".
+//            if ((array_key_exists('class', $call) && $call['class'] === 'BreakpointDebugging_InAllCase')
+//                && (array_key_exists('function', $call) && $call['function'] === 'callExceptionHandlerDirectly')
+//            ) {
+//                throw $pException;
+//                // @codeCoverageIgnoreStart
+//            }
+//            // @codeCoverageIgnoreEnd
+            BreakpointDebugging_UnitTestCaller::handleUnitTestException($pException);
         }
 
         parent::handleException($pException);
@@ -518,8 +522,8 @@ final class BreakpointDebugging extends \BreakpointDebugging_UnitTestCaller
         self::assert(is_bool($enableUnitTest), 3);
 
         if (!$enableUnitTest
-            && (BA::$exeMode & self::UNIT_TEST)
-            && (!isset(self::$_unitTestDir) || strpos($fullFilePath, self::$_unitTestDir) === 0)
+            && (BA::$exeMode & B::UNIT_TEST)
+            && (!isset(parent::$unitTestDir) || strpos($fullFilePath, parent::$unitTestDir) === 0)
         ) {
             return;
         }
@@ -605,7 +609,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_UnitTestCaller
     static function convertMbStringForDebug()
     {
         // In case of local.
-        if (!(BA::$exeMode & parent::REMOTE)) {
+        if (!(BA::$exeMode & B::REMOTE)) {
             // Character set string to want to display, and some variables.
             $mbStringArray = func_get_args();
             $mbParamArray = array_slice($mbStringArray, 1);
@@ -664,7 +668,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_UnitTestCaller
         if ($setValue !== $getValue) {
             // In case of remote debug.
             if ($doCheck === true
-                && (BA::$exeMode & parent::REMOTE)
+                && (BA::$exeMode & B::REMOTE)
             ) {
                 $backTrace = debug_backtrace();
                 $baseName = basename($backTrace[0]['file']);
@@ -708,37 +712,36 @@ EOD;
         }
     }
 
-    /**
-     * Checks unit-test-execution-mode, and sets unit test directory.
-     *
-     * @param string $unitTestKind Unit test kind.
-     *
-     * @return mixed Unit test directory, or void.
-     *
-     * @example
-     *      <?php
-     *
-     *      require_once './BreakpointDebugging_Including.php';
-     *
-     *      use \BreakpointDebugging as B;
-     *
-     *      B::isUnitTestExeMode(); // Checks the execution mode.
-     *          .
-     *          .
-     *          .
-     */
-    static function isUnitTestExeMode($unitTestKind = 'FALSE')
-    {
-        B::assert(func_num_args() <= 1, 1);
-        B::assert(is_string($unitTestKind), 2);
-
-        if (B::getStatic('$exeMode') & B::UNIT_TEST) {
-            return parent::isUnitTestExeMode($unitTestKind);
-        } else if ($unitTestKind !== 'FALSE') {
-            throw new \BreakpointDebugging_ErrorException('<pre>You mistook "\BreakpointDebugging::isUnitTestExeMode(\'...\');".</pre>', 3);
-        }
-    }
-
+//    /**
+//     * Checks unit-test-execution-mode, and sets unit test directory.
+//     *
+//     * @param string $unitTestKind Unit test kind.
+//     *
+//     * @return mixed Unit test directory, or void.
+//     *
+//     * @example
+//     *      <?php
+//     *
+//     *      require_once './BreakpointDebugging_Including.php';
+//     *
+//     *      use \BreakpointDebugging as B;
+//     *
+//     *      B::isUnitTestExeMode(); // Checks the execution mode.
+//     *          .
+//     *          .
+//     *          .
+//     */
+//    static function isUnitTestExeMode($unitTestKind = 'FALSE')
+//    {
+//        B::assert(func_num_args() <= 1, 1);
+//        B::assert(is_string($unitTestKind), 2);
+//
+//        if (B::getStatic('$exeMode') & B::UNIT_TEST) {
+//            return parent::isUnitTestExeMode($unitTestKind);
+//        } else if ($unitTestKind !== 'FALSE') {
+//            throw new \BreakpointDebugging_ErrorException('<pre>You mistook "\BreakpointDebugging::isUnitTestExeMode(\'...\');".</pre>', 3);
+//        }
+//    }
     /**
      * Executes function by parameter array, then displays executed function line, file, parameters and results.
      * Does not exist in case of release because this method uses for a function verification display.

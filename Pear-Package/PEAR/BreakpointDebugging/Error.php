@@ -537,7 +537,8 @@ abstract class BreakpointDebugging_Error_InAllCase
         // Add scope of start page file.
         $this->_callStack[] = array ();
         $this->outputErrorCallStackLog2($errorKind, $errorMessage, $prependLog);
-        if (B::getStatic('$exeMode') & B::RELEASE) { // In case of release.
+        //if (B::getStatic('$exeMode') & B::RELEASE) { // In case of release.
+        if (B::getStatic('$exeMode') === (B::REMOTE | B::RELEASE)) { // In case of remote release.
             // @codeCoverageIgnoreStart
             if (isset($endFlag)) {
                 // In case of release mode, we must exit this process when kind is error.
@@ -936,6 +937,15 @@ abstract class BreakpointDebugging_Error_InAllCase
             fclose($this->_pVarConfFile);
             // Unlocks the error log files.
             $this->_lockByFileExisting->unlock();
+//            // Displays the call stack if release unit test.
+//            foreach ($this->_callStack as $call) {
+//                if (array_key_exists('file', $call)
+//                    && stripos($call['file'], 'Test.php') === strlen($call['file']) - strlen('Test.php')
+//                ) {
+//                    var_dump($this->_callStack);
+//                    break;
+//                }
+//            }
         }
     }
 

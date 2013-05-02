@@ -42,6 +42,7 @@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
 use \BreakpointDebugging as B;
+use \BreakpointDebugging_InAllCase as BA;
 
 require_once __DIR__ . '/PEAR/Exception.php';
 /**
@@ -215,6 +216,11 @@ abstract class BreakpointDebugging_InAllCase
     protected static $exeMode;
 
     /**
+     * @var int Native execution mode.
+     */
+    private static $_nativeExeMode;
+
+    /**
      * Debugs by using breakpoint.
      * We must define this class method outside namespace, and we must not change method name when we call this method.
      *
@@ -252,11 +258,45 @@ abstract class BreakpointDebugging_InAllCase
             // Push stop button if is thought error message.
         }
 
-        if (self::$exeMode & (self::REMOTE | self::RELEASE) === self::REMOTE) { // In case of remote debug.
+        //if (self::$exeMode & (self::REMOTE | self::RELEASE) === self::REMOTE) { // In case of remote debug.
+        if (self::$_nativeExeMode === self::REMOTE) { // In case of remote debug.
             // @codeCoverageIgnoreStart
             // Remote debug must end immediately to avoid eternal execution.
             exit;
             // @codeCoverageIgnoreEnd
+        }
+    }
+
+    /**
+     * Checks unit-test-execution-mode.
+     *
+     * @//param string $unitTestKind Unit test kind.
+     * @param bool $isUnitTest It is unit test?
+     *
+     * @return void
+     *
+     * @example
+     *      <?php
+     *
+     *      require_once './BreakpointDebugging_Including.php';
+     *
+     *      use \BreakpointDebugging as B;
+     *
+     *      B::isUnitTestExeMode(); // Checks the execution mode.
+     *          .
+     *          .
+     *          .
+     */
+    //static function isUnitTestExeMode($unitTestKind = 'FALSE')
+    static function isUnitTestExeMode($isUnitTest = false)
+    {
+        //if (self::$exeMode & B::UNIT_TEST) { // In case of unit test.
+        //    return parent::isUnitTestExeMode($isUnitTest);
+        //} else
+        //if ($isUnitTest !== 'FALSE') {
+        if ($isUnitTest) {
+            //throw new \BreakpointDebugging_ErrorException('<pre>You mistook "\BreakpointDebugging::isUnitTestExeMode(\'...\');".</pre>');
+            throw new \BreakpointDebugging_ErrorException('<pre>You must not set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'..._UNIT_TEST\');" into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php".</pre>', 3);
         }
     }
 
@@ -272,7 +312,7 @@ abstract class BreakpointDebugging_InAllCase
         B::limitAccess(array ('BreakpointDebugging_UnitTestCaller.php', 'BreakpointDebugging_Option.php'));
 
         self::$_pwd = getcwd();
-        self::$exeMode = $_BreakpointDebugging_EXE_MODE;
+        self::$_nativeExeMode = self::$exeMode = $_BreakpointDebugging_EXE_MODE;
         unset($_BreakpointDebugging_EXE_MODE);
         self::$staticProperties['$exeMode'] = &self::$exeMode;
         self::$_os = strtoupper(substr(PHP_OS, 0, 3));
@@ -633,6 +673,7 @@ abstract class BreakpointDebugging_InAllCase
         if (count($parentArray) > B::getStatic('$_maxLogElementNumber')) {
             $parentArray = array_slice($parentArray, 0, B::getStatic('$_maxLogElementNumber'), true);
             $parentArray[] = ''; // Array element out of area.
+            //$parentArray[] = array ('Out of area.'); // Array element out of area.
         }
         // If this may be "$GLOBALS".
         if (array_key_exists('GLOBALS', $parentArray) && is_array($parentArray['GLOBALS'])
@@ -642,6 +683,7 @@ abstract class BreakpointDebugging_InAllCase
                 // Changes the 'GLOBALS' nest element to string.
                 if ($childKey === 'GLOBALS') {
                     $changingArray['GLOBALS'] = self::GLOBALS_USING;
+                    //$changingArray['GLOBALS'] = array ('Recursive array!');
                     continue;
                 }
                 // Does reference copy because may be reference variable.
@@ -655,12 +697,16 @@ abstract class BreakpointDebugging_InAllCase
         foreach ($parentArray as $childKey => $childArray) {
             // If not recursive array.
             if (!is_array($childArray)) {
+                //if (!is_array($childArray)
+                //    || (count($childArray) === 1 && array_key_exists(0, $childArray) && !is_array($childArray[0]))
+                //) {
                 continue;
             }
             // Stores the child array.
             $elementStoring = $parentArray[$childKey];
             // Checks reference of parents array by changing from child array to string.
             $parentArray[$childKey] = self::RECURSIVE_ARRAY;
+            //$parentArray[$childKey] = array ('Recursive array!');
             foreach ($parentsArray as $cmpParentArrays) {
                 // If a recursive array.
                 if (!is_array(current($cmpParentArrays))) {
@@ -668,6 +714,7 @@ abstract class BreakpointDebugging_InAllCase
                     unset($changingArray[$childKey]);
                     // Marks recursive array.
                     $changingArray[$childKey] = self::RECURSIVE_ARRAY;
+                    //$changingArray[$childKey] = array ('Recursive array!');
                     // Restores child array.
                     $parentArray[$childKey] = $elementStoring;
                     continue 2;
@@ -729,6 +776,26 @@ abstract class BreakpointDebugging_InAllCase
 
         $error = new \BreakpointDebugging_Error();
         $error->handleException2($pException, self::$prependExceptionLog);
+        //if ((self::$_nativeExeMode & (self::RELEASE | self::UNIT_TEST)) === (self::RELEASE | self::UNIT_TEST)) {
+        if ((self::$_nativeExeMode & self::UNIT_TEST) === self::UNIT_TEST) {
+//            $callStack = debug_backtrace();
+//            if (!array_key_exists(0, $callStack)
+//                || !array_key_exists('file', $callStack[0])
+//                || strripos($callStack[0]['file'], 'UnitTestOverriding.php') === strlen($callStack[0]['file']) - strlen('UnitTestOverriding.php')
+//            ) {
+//                B::iniSet('xdebug.var_display_max_depth', 5, false);
+//                var_dump($pException);
+//                exit;
+////            $error = null;
+////            $storeExeMode = self::$exeMode;
+////            self::$exeMode = (self::$_nativeExeMode & self::REMOTE) | self::UNIT_TEST;
+////            include_once __DIR__ . '/BreakpointDebugging/Error_Option.php';
+////            $error->handleException2($pException, self::$prependExceptionLog);
+////            self::$exeMode = $storeExeMode;
+//            }
+            BreakpointDebugging_UnitTestCaller::displaysException($pException);
+            BreakpointDebugging_UnitTestCaller::handleUnitTestException($pException);
+        }
     }
 
     /**
@@ -816,11 +883,11 @@ abstract class BreakpointDebugging_InAllCase
 
 global $_BreakpointDebugging_EXE_MODE;
 
-if ($_BreakpointDebugging_EXE_MODE & BreakpointDebugging_InAllCase::UNIT_TEST) { // In case of unit test.
+if ($_BreakpointDebugging_EXE_MODE & BA::UNIT_TEST) { // In case of unit test.
     include_once __DIR__ . '/BreakpointDebugging_UnitTestCaller.php';
 } else {
     /**
-     * Dummy class for unit test.
+     * Dummy class for not unit test.
      *
      * @category PHP
      * @package  BreakpointDebugging
@@ -835,7 +902,7 @@ if ($_BreakpointDebugging_EXE_MODE & BreakpointDebugging_InAllCase::UNIT_TEST) {
     }
 
     /**
-     * Dummy class for unit test.
+     * Dummy class for not unit test.
      *
      * @category PHP
      * @package  BreakpointDebugging
@@ -844,14 +911,14 @@ if ($_BreakpointDebugging_EXE_MODE & BreakpointDebugging_InAllCase::UNIT_TEST) {
      * @version  Release: @package_version@
      * @link     http://pear.php.net/package/BreakpointDebugging
      */
-    class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_InAllCase
+    class BreakpointDebugging_UnitTestCaller extends BA
     {
 
     }
 
 }
 
-if ($_BreakpointDebugging_EXE_MODE & BreakpointDebugging_InAllCase::RELEASE) { // In case of release.
+if ($_BreakpointDebugging_EXE_MODE & BA::RELEASE) { // In case of release.
     /**
      * The class for release.
      *
@@ -861,9 +928,10 @@ if ($_BreakpointDebugging_EXE_MODE & BreakpointDebugging_InAllCase::RELEASE) { /
      * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
      * @version  Release: @package_version@
      * @link     http://pear.php.net/package/BreakpointDebugging
-     * @codeCoverageIgnore
+     * @//codeCoverageIgnore
      */
-    final class BreakpointDebugging extends \BreakpointDebugging_UnitTestCaller
+    //final class BreakpointDebugging extends \BreakpointDebugging_UnitTestCaller
+    class BreakpointDebugging_Middle extends \BreakpointDebugging_UnitTestCaller
     {
         /**
          * Empties in release.
@@ -882,9 +950,11 @@ if ($_BreakpointDebugging_EXE_MODE & BreakpointDebugging_InAllCase::RELEASE) { /
          */
         static function assert()
         {
-
+            // @codeCoverageIgnoreStart
+            // Because this class method is overridden.
         }
 
+        // @codeCoverageIgnoreEnd
         /**
          * "ini_set()" in release.
          *
@@ -898,26 +968,67 @@ if ($_BreakpointDebugging_EXE_MODE & BreakpointDebugging_InAllCase::RELEASE) { /
             ini_set($phpIniVariable, $setValue);
         }
 
-        /**
-         * Empties in release.
-         *
-         * @return void
-         */
-        static function isUnitTestExeMode()
+//        /**
+//         * Checks unit-test-execution-mode, and sets unit test directory.
+//         *
+//         * @param string $unitTestKind Unit test kind.
+//         *
+//         * @return void
+//         */
+//        static function isUnitTestExeMode($unitTestKind = 'FALSE')
+//        {
+//            if (self::$exeMode & B::UNIT_TEST) { // In case of unit test.
+//                //\BreakpointDebugging_UnitTestCaller::isUnitTestExeMode($unitTestKind);
+//                return parent::isUnitTestExeMode($unitTestKind);
+//            } else if ($unitTestKind !== 'FALSE') {
+//                throw new \BreakpointDebugging_ErrorException('<pre>You mistook "\BreakpointDebugging::isUnitTestExeMode(\'...\');".</pre>', 3);
+//            }
+//        }
+    }
+
+    if ($_BreakpointDebugging_EXE_MODE & BA::UNIT_TEST) { // In case of unit test.
+        final class BreakpointDebugging extends \BreakpointDebugging_Middle
+        {
+            /**
+             * Assertion error is stopped at break point in case of release unit test.
+             *
+             * @param bool $assertion Assertion.
+             *
+             * @return void
+             */
+            static function assert($assertion)
+            {
+                if (!$assertion
+                    && !(self::$exeMode & B::IGNORING_BREAK_POINT)
+                    && function_exists('xdebug_break')
+                ) {
+                    xdebug_break(); // You must use "\BreakpointDebugging_UnitTestOverridingBase::markTestSkippedInRelease(); // Because this unit test is assertion." at top of unit test class method.
+                }
+            }
+
+        }
+
+    } else {
+        final class BreakpointDebugging extends \BreakpointDebugging_Middle
         {
 
         }
 
+        if (assert_options(ASSERT_ACTIVE, 0) === false) { // Ignore assert().
+            throw new \BreakpointDebugging_ErrorException('', 1);
+        }
     }
 
-    if (assert_options(ASSERT_ACTIVE, 0) === false) { // Ignore assert().
-        throw new \BreakpointDebugging_ErrorException('', 1);
+    if ($_BreakpointDebugging_EXE_MODE === (B::REMOTE | B::RELEASE)) { // In case of remote release.
+        // Ignores "Xdebug" in case of remote release because must not stop.
+        //BreakpointDebugging::setXebugExists(false);
+        BA::setXebugExists(false);
+    } else {
+        BA::setXebugExists(extension_loaded('xdebug'));
     }
-    // Ignores "Xdebug" in case of release because must not stop.
-    BreakpointDebugging::setXebugExists(false);
 } else { // In case of not release.
     // This does not invoke extended class method exceptionally because its class is not defined.
-    BreakpointDebugging_InAllCase::setXebugExists(extension_loaded('xdebug'));
+    BA::setXebugExists(extension_loaded('xdebug'));
     include_once __DIR__ . '/BreakpointDebugging_Option.php';
 }
 /**

@@ -234,7 +234,7 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
     protected function outputFixedFunctionToLogging($backTrace, &$pTmpLog, &$onceFlag2, &$func, &$class, $file, $line, $tabs = '')
     {
         B::assert(func_num_args() <= 8, 1);
-        B::assert(is_array($backTrace), 2);
+        B::assert(is_array($backTrace) || is_string($backTrace), 2);
         B::assert(is_array($pTmpLog) || is_resource($pTmpLog) || $pTmpLog === null, 3);
         B::assert(is_bool($onceFlag2), 4);
         B::assert(is_null($func) || is_string($func), 5);

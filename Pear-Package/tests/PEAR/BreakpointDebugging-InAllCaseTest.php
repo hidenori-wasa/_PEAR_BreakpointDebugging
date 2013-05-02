@@ -4,9 +4,11 @@ chdir(__DIR__ . '/../../');
 require_once './BreakpointDebugging_Including.php';
 
 use \BreakpointDebugging as B;
+use \BreakpointDebugging_InAllCase as BA;
 use \BreakpointDebugging_UnitTestOverridingBase as BU;
 
-B::isUnitTestExeMode('DEBUG_UNIT_TEST');
+//B::isUnitTestExeMode('UNIT_TEST');
+B::isUnitTestExeMode(true);
 
 $testAutoload = 1;
 if ($testAutoload === 1) { // The case which extends base class.
@@ -29,7 +31,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
      */
     function test__initialize()
     {
-        B::initialize();
+        BA::initialize();
     }
 
     /**
@@ -37,10 +39,10 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
      */
     function testRefAndGetStatic()
     {
-        $userName = &B::refStatic('$_userName');
+        $userName = &BA::refStatic('$_userName');
         $userName = 'hidenori';
         $this->assertTrue($userName === 'hidenori');
-        $this->assertTrue(B::getStatic('$_userName') === 'hidenori');
+        $this->assertTrue(BA::getStatic('$_userName') === 'hidenori');
     }
 
     /**
@@ -48,9 +50,9 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
      */
     function testSetAndGetXebugExists()
     {
-        B::setXebugExists(false);
-        $this->assertTrue(B::getXebugExists() === false);
-        B::setXebugExists(true);
+        BA::setXebugExists(false);
+        $this->assertTrue(BA::getXebugExists() === false);
+        BA::setXebugExists(true);
     }
 
     /**
@@ -59,16 +61,16 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
     public function testIniCheck()
     {
         ob_start();
-        B::iniCheck('safe_mode', '', 'Test message 1.');
+        BA::iniCheck('safe_mode', '', 'Test message 1.');
         $this->assertTrue(ob_get_contents() === '');
         ob_clean();
-        B::iniCheck('safe_mode', 'On', 'Test message 2.');
+        BA::iniCheck('safe_mode', 'On', 'Test message 2.');
         $this->assertTrue(ob_get_contents() !== '');
         ob_clean();
-        B::iniCheck('xdebug.remote_host', array ('Other1', 'Other2'), 'Test message 3.');
+        BA::iniCheck('xdebug.remote_host', array ('Other1', 'Other2'), 'Test message 3.');
         $this->assertTrue(ob_get_contents() === '');
         ob_clean();
-        B::iniCheck('safe_mode', array ('', 'On'), 'Test message 4.');
+        BA::iniCheck('safe_mode', array ('', 'On'), 'Test message 4.');
         $this->assertTrue(ob_get_contents() !== '');
     }
 
@@ -80,7 +82,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
      */
     public function testIniCheck_B()
     {
-        B::iniCheck('safe_mode', array (123), 'Test message.');
+        BA::iniCheck('safe_mode', array (123), 'Test message.');
     }
 
     /**
@@ -90,9 +92,9 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
     {
         static $isRegister = false;
 
-        B::registerNotFixedLocation($isRegister);
-        B::registerNotFixedLocation($isRegister);
-        $notFixedLocations = B::getStatic('$_notFixedLocations');
+        BA::registerNotFixedLocation($isRegister);
+        BA::registerNotFixedLocation($isRegister);
+        $notFixedLocations = BA::getStatic('$_notFixedLocations');
         $notFixedLocation = $notFixedLocations[count($notFixedLocations) - 1];
         $this->assertTrue($notFixedLocation['function'] === 'testRegisterNotFixedLocation');
         $this->assertTrue($notFixedLocation['class'] === 'BreakpointDebugging_InAllCaseTest');
@@ -106,9 +108,9 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
     {
         $testString = 'The test character string.';
         $values = array ('TEST_CONST' => BreakpointDebugging_InAllCaseTest::TEST_CONST, '$testString' => $testString);
-        B::addValuesToTrace($values);
+        BA::addValuesToTrace($values);
         $line = __LINE__ - 1;
-        $valuesToTraces = B::getStatic('$_valuesToTrace');
+        $valuesToTraces = BA::getStatic('$_valuesToTrace');
         $valuesToTrace = $valuesToTraces[__FILE__][$line];
         $this->assertTrue($valuesToTrace['function'] === 'testAddValuesToTrace');
         $this->assertTrue($valuesToTrace['class'] === 'BreakpointDebugging_InAllCaseTest');
@@ -122,7 +124,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
     public function testConvertMbString_A()
     {
         // SJIS
-        B::convertMbString("\x95\xB6\x8E\x9A ");
+        BA::convertMbString("\x95\xB6\x8E\x9A ");
     }
 
     /**
@@ -131,7 +133,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
     public function testConvertMbString_B()
     {
         // UTF-8
-        B::convertMbString("\xE6\x96\x87\xE5\xAD\x97 ");
+        BA::convertMbString("\xE6\x96\x87\xE5\xAD\x97 ");
     }
 
     /**
@@ -143,7 +145,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
     public function testConvertMbString_C()
     {
         // SJIS + UTF-8
-        B::convertMbString("\x95\xB6\x8E\x9A \xE6\x96\x87\xE5\xAD\x97 ");
+        BA::convertMbString("\x95\xB6\x8E\x9A \xE6\x96\x87\xE5\xAD\x97 ");
     }
 
     /**
@@ -151,13 +153,13 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
      */
     public function testMkdir()
     {
-        $testDirName = B::getStatic('$_workDir') . '/TestMkDir';
+        $testDirName = BA::getStatic('$_workDir') . '/TestMkDir';
         if (is_dir($testDirName)) {
             rmdir($testDirName);
         }
-        B::mkdir($testDirName, 0700);
+        BA::mkdir($testDirName, 0700);
         $this->assertTrue(is_dir($testDirName));
-        if (B::getStatic('$_os') === 'WIN') {
+        if (BA::getStatic('$_os') === 'WIN') {
             return;
         }
         clearstatcache();
@@ -169,14 +171,14 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
      */
     public function testFopen()
     {
-        $testFileName = B::getStatic('$_workDir') . '/TestFopen.txt';
+        $testFileName = BA::getStatic('$_workDir') . '/TestFopen.txt';
         if (is_file($testFileName)) {
             unlink($testFileName);
         }
-        $pFile = B::fopen($testFileName, 'w+b', 0700);
+        $pFile = BA::fopen($testFileName, 'w+b', 0700);
         fclose($pFile);
         $this->assertTrue(is_file($testFileName));
-        if (B::getStatic('$_os') === 'WIN') {
+        if (BA::getStatic('$_os') === 'WIN') {
             return;
         }
         clearstatcache();
@@ -192,12 +194,12 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
         for ($count = 0; $count <= 400; $count++) {
             $intArray[] = $count;
         }
-        $pFile = fopen(B::getStatic('$_workDir') . '/test.bin', 'w+b');
-        fwrite($pFile, B::compressIntArray($intArray));
-        fwrite($pFile, B::compressIntArray($intArray));
+        $pFile = fopen(BA::getStatic('$_workDir') . '/test.bin', 'w+b');
+        fwrite($pFile, BA::compressIntArray($intArray));
+        fwrite($pFile, BA::compressIntArray($intArray));
         fflush($pFile);
         rewind($pFile);
-        while ($intResultArray = B::decompressIntArray(fgets($pFile))) {
+        while ($intResultArray = BA::decompressIntArray(fgets($pFile))) {
             $this->assertTrue($intArray === $intResultArray);
         }
         fclose($pFile);
@@ -225,7 +227,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
         $expectedArray['component']['component']['GLOBALS'] = B::GLOBALS_USING;
 
 
-        $resultArray = B::clearRecursiveArrayElement($testArray);
+        $resultArray = BA::clearRecursiveArrayElement($testArray);
         $this->assertTrue($expectedArray['element'] === $resultArray['element']
             && $expectedArray['recursive'] === $resultArray['recursive']
             && $expectedArray['component']['recursive'] === $resultArray['component']['recursive']
@@ -239,7 +241,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
         unset($expectedArray);
         $expectedArray['GLOBALS'] = B::GLOBALS_USING;
 
-        $resultArray = B::clearRecursiveArrayElement($GLOBALS);
+        $resultArray = BA::clearRecursiveArrayElement($GLOBALS);
         $this->assertTrue($expectedArray['GLOBALS'] === $resultArray['GLOBALS']);
         $this->assertTrue(is_array($GLOBALS));
 
@@ -249,7 +251,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
         unset($expectedArray);
         $expectedArray[0]['GLOBALS'] = B::GLOBALS_USING;
 
-        $resultArray = B::clearRecursiveArrayElement($testArray);
+        $resultArray = BA::clearRecursiveArrayElement($testArray);
         $this->assertTrue($expectedArray[0]['GLOBALS'] === $resultArray[0]['GLOBALS']);
         $this->assertTrue(is_array($GLOBALS));
     }
@@ -279,7 +281,8 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
         $pPrevious = new \Exception('Previous exception.', E_USER_WARNING);
         $pException = new \Exception('Exception.', E_USER_WARNING, $pPrevious);
         BU::$exeMode |= B::IGNORING_BREAK_POINT;
-        B::handleException($pException);
+        ob_start();
+        BA::handleException($pException);
     }
 
     /**
@@ -288,16 +291,20 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
     public function testErrorHandler()
     {
         BU::$exeMode |= B::IGNORING_BREAK_POINT;
-        B::handleError(E_USER_WARNING, 'Error test.');
+        ob_start();
+        BA::handleError(E_USER_WARNING, 'Error test.');
     }
 
     /**
      * @covers \BreakpointDebugging_InAllCase<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_InAllCaseTest FUNCTION=testInternalException ID=1
      */
     public function testInternalException()
     {
         BU::$exeMode |= B::IGNORING_BREAK_POINT;
-        B::internalException('Tests "internalException()".', 1);
+        BA::internalException('Tests "internalException()".', 1);
     }
 
     /**
@@ -306,9 +313,69 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
     public function testShutdown()
     {
         // Emulates this page shutdown.
-        \BreakpointDebugging_InAllCase::shutdown();
+        BA::shutdown();
     }
 
+    /**
+     * @covers \BreakpointDebugging<extended>
+     */
+    public function testCheckUnitTestExeMode()
+    {
+//        B::setPropertyForTest('BreakpointDebugging_UnitTestCaller', '$unitTestDir', null);
+//        BA::isUnitTestExeMode('DEBUG_UNIT_TEST');
+//        BU::$exeMode = B::UNIT_TEST;
+//        BA::isUnitTestExeMode('DEBUG_UNIT_TEST');
+//        BU::$exeMode = B::RELEASE | B::UNIT_TEST;
+//        BA::isUnitTestExeMode('RELEASE_UNIT_TEST');
+//        BU::$exeMode = B::REMOTE | B::RELEASE | B::UNIT_TEST;
+//        BA::isUnitTestExeMode('RELEASE_UNIT_TEST');
+
+        BU::$exeMode = B::RELEASE;
+        BA::isUnitTestExeMode();
+//        BU::$exeMode = B::REMOTE | B::RELEASE;
+//        BA::isUnitTestExeMode();
+//        BU::$exeMode = B::RELEASE;
+        //BA::isUnitTestExeMode('FALSE');
+        BA::isUnitTestExeMode(false);
+//        BU::$exeMode = B::REMOTE | B::RELEASE;
+//        BA::isUnitTestExeMode('FALSE');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage <pre>You must not set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('..._UNIT_TEST');"
+     */
+    public function testCheckUnitTestExeMode_A()
+    {
+        BU::$exeMode = B::RELEASE;
+        //BA::isUnitTestExeMode('RELEASE_UNIT_TEST');
+        BA::isUnitTestExeMode(true);
+    }
+
+//    /**
+//     * @covers \BreakpointDebugging<extended>
+//     *
+//     * @expectedException        \BreakpointDebugging_ErrorException
+//     * @expectedExceptionMessage <pre>You mistook "\BreakpointDebugging::isUnitTestExeMode('...');".</pre>
+//     */
+//    public function testCheckUnitTestExeMode_B()
+//    {
+//        BU::$exeMode = B::RELEASE;
+//        BA::isUnitTestExeMode('DEBUG_UNIT_TEST');
+//    }
+//    /**
+//     * @covers \BreakpointDebugging<extended>
+//     *
+//     * @expectedException        \BreakpointDebugging_ErrorException
+//     * @expectedExceptionMessage <pre>You mistook "\BreakpointDebugging::isUnitTestExeMode('...');".</pre>
+//     */
+//    public function testCheckUnitTestExeMode_C()
+//    {
+//        BU::$exeMode = B::RELEASE;
+//        BA::isUnitTestExeMode('Mistaken character string.');
+//    }
 }
 
 ?>

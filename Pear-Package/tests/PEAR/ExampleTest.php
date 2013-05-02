@@ -5,7 +5,8 @@ require_once './BreakpointDebugging_Including.php';
 
 use \BreakpointDebugging as B;
 
-B::isUnitTestExeMode('DEBUG_UNIT_TEST');
+//B::isUnitTestExeMode('DEBUG_UNIT_TEST');
+B::isUnitTestExeMode(true);
 class ExampleTest extends \BreakpointDebugging_UnitTestOverriding
 {
     /**

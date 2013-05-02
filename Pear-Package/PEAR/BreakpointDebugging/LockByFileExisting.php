@@ -152,7 +152,12 @@ final class BreakpointDebugging_LockByFileExisting extends \BreakpointDebugging_
      */
     protected function loopUnlocking()
     {
-        fclose($this->pFile);
+        if (is_resource($this->pFile)) {
+            fclose($this->pFile);
+        }
+        if (!is_file($this->lockFilePath)) {
+            return;
+        }
         while (@unlink($this->lockFilePath) === false) {
             // @codeCoverageIgnoreStart
             // Because the following isn't executed in case of single process.

@@ -6,7 +6,12 @@ require_once './BreakpointDebugging_Including.php';
 use \BreakpointDebugging as B;
 use \BreakpointDebugging_UnitTestOverridingBase as BU;
 
-B::isUnitTestExeMode('RELEASE_UNIT_TEST');
+//B::isUnitTestExeMode('UNIT_TEST');
+B::isUnitTestExeMode(true);
+
+//if (B::getStatic('$exeMode') & B::RELEASE) { // In case of release.
+//B::isUnitTestExeMode('DEBUG_UNIT_TEST');
+//B::isUnitTestExeMode('RELEASE_UNIT_TEST');
 class example
 {
     const CONST_TEST = 1; // Tests constant property when unit test reflects object.
@@ -99,6 +104,8 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_UnitT
      */
     function testExceptionHandler2()
     {
+        BU::markTestSkippedInDebug(); // Because this unit test is the logging check.
+
         global $line1_, $line2_, $lineA_, $lineB_;
 
         $testString = 'Test string.';
@@ -219,6 +226,8 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_UnitT
      */
     function testExceptionHandler2_A()
     {
+        BU::markTestSkippedInDebug(); // Because this unit test is the logging check.
+
         $maxLogStringSize = &B::refStatic('$_maxLogStringSize');
         $maxLogStringSize = 140000;
         $workDir = B::getStatic('$_workDir');
@@ -270,6 +279,8 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_UnitT
      */
     function testErrorHandler2()
     {
+        BU::markTestSkippedInDebug(); // Because this unit test is the logging check.
+
         global $line1, $line2, $lineA, $lineB;
         function handleError()
         {
@@ -335,13 +346,19 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_UnitT
 
         self::$error->handleError2(E_USER_WARNING, '', B::$prependErrorLog, debug_backtrace());
 
+        self::$error->handleError2(E_ERROR, '', B::$prependErrorLog, debug_backtrace());
+
         self::$error->handleError2(E_WARNING, '', B::$prependErrorLog, debug_backtrace());
 
         self::$error->handleError2(E_PARSE, '', B::$prependErrorLog, debug_backtrace());
 
         self::$error->handleError2(E_NOTICE, '', B::$prependErrorLog, debug_backtrace());
 
+        self::$error->handleError2(E_CORE_ERROR, '', B::$prependErrorLog, debug_backtrace());
+
         self::$error->handleError2(E_CORE_WARNING, '', B::$prependErrorLog, debug_backtrace());
+
+        self::$error->handleError2(E_COMPILE_ERROR, '', B::$prependErrorLog, debug_backtrace());
 
         self::$error->handleError2(E_COMPILE_WARNING, '', B::$prependErrorLog, debug_backtrace());
 
@@ -353,5 +370,17 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_UnitT
     }
 
 }
+
+//} else { // In case of debug.
+//    class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_UnitTestOverriding
+//    {
+//        function testDummy()
+//        {
+//            echo 'This execution mode does not have unit test.';
+//        }
+//
+//    }
+//
+//}
 
 ?>
