@@ -58,7 +58,7 @@ for ($count = 0; $count < 100000; $count++) {
     fwrite($pFile, sprintf('0x%08X', $count));
     fseek($pFile, 0);
     $return = hexdec(fread($pFile, 10));
-    B::assert($return === $count, 1);
+    B::assert($return === $count, 101);
 }
 echo microtime(true) - $start;
 // fwrite       3.1231918334961 2.8318340778351

@@ -119,18 +119,22 @@ abstract class BreakpointDebugging_Lock
     {
         static $currentClassName = null;
 
-        B::assert(is_int($timeout) && 0 <= $timeout);
-        B::assert(is_int($expire) && 0 <= $expire);
-        B::assert(is_int($sleepMicroSeconds) && 0 <= $sleepMicroSeconds);
+        B::assert(is_string($className), 1);
+        B::assert(is_string($lockFilePath), 2);
+        B::assert(is_int($timeout) && 0 <= $timeout, 3);
+        B::assert(is_int($expire) && 0 <= $expire, 4);
+        B::assert(is_int($sleepMicroSeconds) && 0 <= $sleepMicroSeconds, 5);
+        B::assert(is_bool($isInternal), 6);
 
         if ($isInternal) {
+            // This code is executed in case of "\BreakpointDebugging_LockByFileExisting" unit test.
             if (self::$_internalInstance === null) {
                 self::$_internalInstance = new $className($lockFilePath, $timeout, $expire, $sleepMicroSeconds);
             }
             return self::$_internalInstance;
         } else {
             // Synchronous class has to be any one of derived classes because dead-lock occurs.
-            B::assert($currentClassName === null || $currentClassName === $className, 1);
+            B::assert($currentClassName === null || $currentClassName === $className, 101);
             $currentClassName = $className;
             if (self::$_instance === null) {
                 self::$_instance = new $className($lockFilePath, $timeout, $expire, $sleepMicroSeconds);
@@ -146,8 +150,10 @@ abstract class BreakpointDebugging_Lock
      */
     function __clone()
     {
-        throw new \BreakpointDebugging_ErrorException('Prevents duplicating an instance.', 1);
+        // This code is executed in case of debug unit test because assertion test is executed in case of debug mode.
+        B::assert(false, 101);
         // @codeCoverageIgnoreStart
+        // Because "B::assert()" throws exception.
     }
 
     // @codeCoverageIgnoreEnd
@@ -160,6 +166,11 @@ abstract class BreakpointDebugging_Lock
      */
     protected function __construct($lockFilePath, $timeout, $sleepMicroSeconds)
     {
+        B::assert(func_num_args() === 3, 1);
+        B::assert(is_string($lockFilePath), 2);
+        B::assert(is_int($timeout), 3);
+        B::assert(is_int($sleepMicroSeconds), 4);
+
         // Extend maximum execution time.
         set_time_limit($timeout + 10);
         $this->lockCount = 0;
@@ -177,14 +188,16 @@ abstract class BreakpointDebugging_Lock
         $lockCount = $this->lockCount;
         // Unlocks all. We must unlock before "B::assert" because if we execute unit test, it throws exception.
         while ($this->lockCount > 0) {
+            // This code is executed in case of debug unit test because assertion test is executed in case of debug mode.
             $this->unlock();
         }
         // In case of lock by shared memory operation.
         if ($this instanceof \BreakpointDebugging_LockByShmop) {
+            // This code is executed in case of "\BreakpointDebugging_LockByShmop" unit test.
             // Closes the shared memory.
             shmop_close(self::$sharedMemoryID);
         }
-        B::assert($lockCount <= 0, 1);
+        B::assert($lockCount <= 0, 101);
     }
 
     /**
@@ -201,6 +214,8 @@ abstract class BreakpointDebugging_Lock
      */
     function lock()
     {
+        B::assert(func_num_args() === 0, 1);
+
         if ($this->lockCount > 0) {
             $this->lockCount++;
             return;
@@ -212,7 +227,7 @@ abstract class BreakpointDebugging_Lock
         $this->loopLocking();
         set_error_handler('\BreakpointDebugging::handleError', -1);
 
-        B::assert($this->lockCount === 0, 1);
+        B::assert($this->lockCount === 0, 101);
         $this->lockCount++;
     }
 
@@ -230,12 +245,14 @@ abstract class BreakpointDebugging_Lock
      */
     function unlock()
     {
+        B::assert(func_num_args() === 0, 1);
+
         if ($this->lockCount > 1) {
             $this->lockCount--;
             return;
         }
         $this->lockCount--;
-        B::assert($this->lockCount === 0, 1);
+        B::assert($this->lockCount === 0, 101);
 
         restore_error_handler();
         $this->loopUnlocking();
@@ -249,6 +266,8 @@ abstract class BreakpointDebugging_Lock
      */
     static function forceUnlocking()
     {
+        B::assert(func_num_args() === 0, 1);
+
         B::limitAccess(
             array (
                 'BreakpointDebugging/Error.php',
@@ -257,6 +276,7 @@ abstract class BreakpointDebugging_Lock
         );
 
         if (is_object(self::$_internalInstance)) {
+            // This code is executed in case of "\BreakpointDebugging_LockByFileExisting" unit test.
             while (self::$_internalInstance->lockCount > 0) {
                 self::$_internalInstance->unlock();
             }

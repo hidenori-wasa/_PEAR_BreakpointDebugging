@@ -6,8 +6,6 @@ require_once './BreakpointDebugging_Including.php';
 use \BreakpointDebugging as B;
 use \BreakpointDebugging_UnitTestOverridingBase as BU;
 
-//B::isUnitTestExeMode('DEBUG_UNIT_TEST');
-//B::isUnitTestExeMode('UNIT_TEST');
 B::isUnitTestExeMode(true);
 class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_UnitTestOverriding
 {
@@ -36,10 +34,12 @@ class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_UnitTestO
      * @covers \BreakpointDebugging_LockByShmop<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=__clone
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=__clone ID=101.
      */
     function test__clone()
     {
+        BU::markTestSkippedInRelease(); // Because this unit test is assertion.
+
         $tmp = clone $this->LockByShmop;
     }
 
@@ -48,6 +48,7 @@ class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_UnitTestO
      */
     function testSingleton()
     {
+        B::setPropertyForTest('\BreakpointDebugging_Lock', '$_instance', null);
         \BreakpointDebugging_LockByShmop::singleton(5, 0);
 
         $pFile = fopen(B::getStatic('$_workDir') . '/LockByShmop.txt', 'wb');
@@ -108,11 +109,12 @@ class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_UnitTestO
      * @covers \BreakpointDebugging_LockByShmop<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=unlock ID=1
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=unlock ID=101.
      */
     function testLockThenUnlock_C()
     {
         BU::markTestSkippedInRelease(); // Because this unit test is assertion.
+
         $this->LockByShmop->unlock();
     }
 
@@ -120,11 +122,12 @@ class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_UnitTestO
      * @covers \BreakpointDebugging_LockByShmop<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=unlock ID=1
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=unlock ID=101.
      */
     function testLockThenUnlock_D()
     {
         BU::markTestSkippedInRelease(); // Because this unit test is assertion.
+
         try {
             $this->LockByShmop->lock();
             $this->LockByShmop->unlock();
@@ -138,11 +141,12 @@ class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_UnitTestO
      * @covers \BreakpointDebugging_LockByShmop<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=__destruct ID=1
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=__destruct ID=101.
      */
     function testLockThenUnlock_E()
     {
         BU::markTestSkippedInRelease(); // Because this unit test is assertion.
+
         $this->LockByShmop->lock();
         // Calls "__destruct()".
         $this->LockByShmop = null; // Error.
@@ -152,11 +156,12 @@ class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_UnitTestO
      * @covers \BreakpointDebugging_LockByShmop<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=__destruct ID=1
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=__destruct ID=101.
      */
     function testLockThenUnlock_F()
     {
         BU::markTestSkippedInRelease(); // Because this unit test is assertion.
+
         $this->LockByShmop->lock();
         $this->LockByShmop->lock();
         $this->LockByShmop->unlock();
@@ -178,7 +183,7 @@ class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_UnitTestO
      * @covers \BreakpointDebugging_LockByShmop<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=singletonBase ID=1
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=singletonBase ID=101.
      */
     function testSingleton_B()
     {
@@ -191,7 +196,7 @@ class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_UnitTestO
      * @covers \BreakpointDebugging_LockByShmop<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=singletonBase ID=1
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=singletonBase ID=101.
      */
     function testSingleton_C()
     {

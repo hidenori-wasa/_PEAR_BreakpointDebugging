@@ -156,7 +156,10 @@ final class BreakpointDebugging_LockByFileExisting extends \BreakpointDebugging_
             fclose($this->pFile);
         }
         if (!is_file($this->lockFilePath)) {
+            // @codeCoverageIgnoreStart
+            // This code may not be executed but it remains for safety.
             return;
+            // @codeCoverageIgnoreEnd
         }
         while (@unlink($this->lockFilePath) === false) {
             // @codeCoverageIgnoreStart

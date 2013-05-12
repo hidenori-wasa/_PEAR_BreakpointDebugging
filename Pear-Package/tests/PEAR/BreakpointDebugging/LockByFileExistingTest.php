@@ -6,7 +6,6 @@ require_once './BreakpointDebugging_Including.php';
 use \BreakpointDebugging as B;
 use \BreakpointDebugging_UnitTestOverridingBase as BU;
 
-//B::isUnitTestExeMode('UNIT_TEST');
 B::isUnitTestExeMode(true);
 class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_UnitTestOverriding
 {
@@ -14,28 +13,30 @@ class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_Un
 
     function setUp()
     {
+        parent::setUp();
         // Constructs instance.
         $this->lockByFileExistingInternal = &\BreakpointDebugging_LockByFileExisting::internalSingleton(5, 10);
         $this->lockByFileExisting = &\BreakpointDebugging_LockByFileExisting::singleton(5, 10);
-        parent::setUp();
     }
 
     function tearDown()
     {
-        parent::tearDown();
         // Destructs instance.
         $this->lockByFileExisting = null;
         $this->lockByFileExistingInternal = null;
+        parent::tearDown();
     }
 
     /**
      * @covers \BreakpointDebugging_LockByFileExisting<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=__clone
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=__clone ID=101.
      */
     function test__clone()
     {
+        BU::markTestSkippedInRelease(); // Because this unit test is assertion.
+
         $tmp = clone $this->lockByFileExisting;
     }
 
@@ -97,14 +98,12 @@ class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_Un
      * @covers \BreakpointDebugging_LockByFileExisting<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=unlock ID=1
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=unlock ID=101.
      */
     function testLockThenUnlock_D()
     {
-//        if(BU::$exeMode & B::RELEASE){
-//            $this->markTestSkipped();
-//        }
         BU::markTestSkippedInRelease(); // Because this unit test is assertion.
+
         $this->lockByFileExisting->unlock();
     }
 
@@ -112,11 +111,12 @@ class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_Un
      * @covers \BreakpointDebugging_LockByFileExisting<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=__destruct ID=1
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=__destruct ID=101.
      */
     function testLockThenUnlock_E()
     {
         BU::markTestSkippedInRelease(); // Because this unit test is assertion.
+
         $this->lockByFileExisting->lock();
         // Calls "__destruct()".
         $this->lockByFileExisting = null; // Error.
@@ -126,11 +126,12 @@ class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_Un
      * @covers \BreakpointDebugging_LockByFileExisting<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=unlock ID=1
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=unlock ID=101.
      */
     function testLockThenUnlock_F()
     {
         BU::markTestSkippedInRelease(); // Because this unit test is assertion.
+
         try {
             $this->lockByFileExisting->lock();
             $this->lockByFileExisting->unlock();
@@ -144,11 +145,12 @@ class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_Un
      * @covers \BreakpointDebugging_LockByFileExisting<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=__destruct ID=1
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=__destruct ID=101.
      */
     function testLockThenUnlock_G()
     {
         BU::markTestSkippedInRelease(); // Because this unit test is assertion.
+
         $this->lockByFileExisting->lock();
         $this->lockByFileExisting->lock();
         $this->lockByFileExisting->unlock();
@@ -170,11 +172,12 @@ class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_Un
      * @covers \BreakpointDebugging_LockByFileExisting<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=singletonBase ID=1
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=singletonBase ID=101.
      */
     function testSingleton_B()
     {
         BU::markTestSkippedInRelease(); // Because this unit test is assertion.
+
         if ((B::getStatic('$exeMode') & B::REMOTE)
             && !extension_loaded('shmop')
         ) {
@@ -188,11 +191,12 @@ class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_Un
      * @covers \BreakpointDebugging_LockByFileExisting<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=singletonBase ID=1
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=singletonBase ID=101.
      */
     function testSingleton_C()
     {
         BU::markTestSkippedInRelease(); // Because this unit test is assertion.
+
         // Constructs instance of other class.
         $lockByFlock = &\BreakpointDebugging_LockByFlock::singleton(5, 10); // Error.
     }

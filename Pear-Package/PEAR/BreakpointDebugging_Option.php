@@ -78,8 +78,10 @@
  *
  * ### Exception hierarchical structure ###
  *  PEAR_Exception
- *      BreakpointDebugging_Exception
- *          BreakpointDebugging_ErrorException
+ *      BreakpointDebugging_Exception_InAllCase
+ *          BreakpointDebugging_Exception
+ *              BreakpointDebugging_ErrorException
+ *              BreakpointDebugging_OutOfLogRangeException
  *
  * ### Useful class index. ###
  * This class override a class without inheritance, but only public member can be inherited.
@@ -181,7 +183,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_UnitTestCaller
     {
         B::limitAccess('BreakpointDebugging.php');
 
-        B::assert(func_num_args() === 0);
+        B::assert(func_num_args() === 0, 1);
 
         parent::initialize();
 
@@ -207,11 +209,6 @@ final class BreakpointDebugging extends \BreakpointDebugging_UnitTestCaller
      */
     static function checkSuperUserExecution()
     {
-        // @//codeCoverageIgnoreStart
-        //// If this is not remote debug.
-        //if (BA::$exeMode !== B::REMOTE) {
-        //    return;
-        //}
         // If this is remote debug, unix and root user.
         if (BA::$exeMode & B::REMOTE
             && B::getStatic('$_os') !== 'WIN'
@@ -221,7 +218,6 @@ final class BreakpointDebugging extends \BreakpointDebugging_UnitTestCaller
         }
     }
 
-    // @//codeCoverageIgnoreEnd
     /**
      * For debug.
      *
@@ -261,7 +257,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_UnitTestCaller
      */
     static function getXebugExists()
     {
-        self::assert(func_num_args() === 0);
+        self::assert(func_num_args() === 0, 1);
 
         return parent::getXebugExists();
     }
@@ -413,16 +409,6 @@ final class BreakpointDebugging extends \BreakpointDebugging_UnitTestCaller
         self::assert($pException instanceof \Exception, 2);
 
         if (BA::$exeMode & B::UNIT_TEST) {
-//            $callStack = $pException->getTrace();
-//            $call = array_key_exists(0, $callStack) ? $callStack[0] : array ();
-//            // In case of direct call from "BreakpointDebugging_InAllCase::callExceptionHandlerDirectly()".
-//            if ((array_key_exists('class', $call) && $call['class'] === 'BreakpointDebugging_InAllCase')
-//                && (array_key_exists('function', $call) && $call['function'] === 'callExceptionHandlerDirectly')
-//            ) {
-//                throw $pException;
-//                // @codeCoverageIgnoreStart
-//            }
-//            // @codeCoverageIgnoreEnd
             BreakpointDebugging_UnitTestCaller::handleUnitTestException($pException);
         }
 
@@ -509,7 +495,8 @@ final class BreakpointDebugging extends \BreakpointDebugging_UnitTestCaller
             $fullFilePath = strtolower($fullFilePath);
         }
         $line = $callStack[$key]['line'];
-        if (array_key_exists($fullFilePath, $invokingLocations) && array_key_exists($line, $invokingLocations[$fullFilePath])
+        if (array_key_exists($fullFilePath, $invokingLocations)
+            && array_key_exists($line, $invokingLocations[$fullFilePath])
         ) {
             // Skips same.
             return true;
@@ -562,10 +549,13 @@ final class BreakpointDebugging extends \BreakpointDebugging_UnitTestCaller
 
     // @codeCoverageIgnoreEnd
     /**
-     * Throws exception if assertion is false. Also, has identification code for unit test.
+     * Throws exception if assertion is false. Also, has identification code for debug unit test.
      *
      * @param bool $assertion Assertion.
      * @param int  $id        Exception identification number inside function.
+     *                        I recommend from 0 to 99 if you do not detect by unit test.
+     *                        I recommend from 100 if you detect by unit test.
+     *                        This number must not overlap with other assertion or exception identification number inside function.
      *
      * @return void
      * @usage
@@ -574,7 +564,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_UnitTestCaller
      *      For example: \BreakpointDebugging::assert(3 <= $value && $value <= 5); // $value should be 3-5.
      *      Caution: Don't change the value of variable in "\BreakpointDebugging::assert()" function because there isn't executed in case of release.
      */
-    static function assert($assertion, $id = 0)
+    static function assert($assertion, $id = null)
     {
         if (func_num_args() > 2) {
             self::callExceptionHandlerDirectly('Parameter number mistake.', 1);
@@ -586,7 +576,9 @@ final class BreakpointDebugging extends \BreakpointDebugging_UnitTestCaller
             // @codeCoverageIgnoreStart
         }
         // @codeCoverageIgnoreEnd
-        if (!is_int($id)) {
+        if (!is_int($id)
+            && !is_null($id)
+        ) {
             self::callExceptionHandlerDirectly('Exception identification number must be integer.', 3);
             // @codeCoverageIgnoreStart
         }
@@ -707,41 +699,11 @@ EOD;
                 // @codeCoverageIgnoreEnd
             }
             if (ini_set($phpIniVariable, $setValue) === false) {
-                throw new \BreakpointDebugging_ErrorException('"ini_set()" failed.', 6);
+                throw new \BreakpointDebugging_ErrorException('"ini_set()" failed.', 101);
             }
         }
     }
 
-//    /**
-//     * Checks unit-test-execution-mode, and sets unit test directory.
-//     *
-//     * @param string $unitTestKind Unit test kind.
-//     *
-//     * @return mixed Unit test directory, or void.
-//     *
-//     * @example
-//     *      <?php
-//     *
-//     *      require_once './BreakpointDebugging_Including.php';
-//     *
-//     *      use \BreakpointDebugging as B;
-//     *
-//     *      B::isUnitTestExeMode(); // Checks the execution mode.
-//     *          .
-//     *          .
-//     *          .
-//     */
-//    static function isUnitTestExeMode($unitTestKind = 'FALSE')
-//    {
-//        B::assert(func_num_args() <= 1, 1);
-//        B::assert(is_string($unitTestKind), 2);
-//
-//        if (B::getStatic('$exeMode') & B::UNIT_TEST) {
-//            return parent::isUnitTestExeMode($unitTestKind);
-//        } else if ($unitTestKind !== 'FALSE') {
-//            throw new \BreakpointDebugging_ErrorException('<pre>You mistook "\BreakpointDebugging::isUnitTestExeMode(\'...\');".</pre>', 3);
-//        }
-//    }
     /**
      * Executes function by parameter array, then displays executed function line, file, parameters and results.
      * Does not exist in case of release because this method uses for a function verification display.

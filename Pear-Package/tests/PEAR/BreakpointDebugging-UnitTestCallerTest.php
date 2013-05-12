@@ -6,7 +6,6 @@ require_once './BreakpointDebugging_Including.php';
 use \BreakpointDebugging as B;
 use \BreakpointDebugging_UnitTestOverridingBase as BU;
 
-//B::isUnitTestExeMode('UNIT_TEST');
 B::isUnitTestExeMode(true);
 class BreakpointDebuggingTestExampleBase
 {
@@ -26,32 +25,55 @@ class BreakpointDebuggingTestExample extends \BreakpointDebuggingTestExampleBase
 
 }
 
-//if (B::getStatic('$exeMode') & B::RELEASE) {
-//B::isUnitTestExeMode('RELEASE_UNIT_TEST');
 class BreakpointDebugging_UnitTestCallerTest extends \BreakpointDebugging_UnitTestOverriding
 {
     /**
      * @covers \BreakpointDebugging<extended>
      */
-    public function testCheckUnitTestExeMode()
+    public function testInitialize()
     {
-        //BU::markTestSkippedInDebug();
+        B::initialize();
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     */
+    public function testHandleUnitTestException()
+    {
+        B::handleUnitTestException(new \Exception(''));
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     */
+    public function testIsUnitTestExeMode()
+    {
         B::setPropertyForTest('BreakpointDebugging_UnitTestCaller', '$unitTestDir', null);
-        //B::isUnitTestExeMode('RELEASE_UNIT_TEST');
-        //BU::$exeMode = B::RELEASE | B::UNIT_TEST;
-        //B::isUnitTestExeMode('UNIT_TEST');
         B::isUnitTestExeMode(true);
-        //B::isUnitTestExeMode('RELEASE_UNIT_TEST');
-//            BU::$exeMode = B::REMOTE | B::RELEASE | B::UNIT_TEST;
-//            B::isUnitTestExeMode('RELEASE_UNIT_TEST');
-//            BU::$exeMode = B::RELEASE;
-//            B::isUnitTestExeMode();
-//            BU::$exeMode = B::REMOTE | B::RELEASE;
-//            B::isUnitTestExeMode();
-//            BU::$exeMode = B::RELEASE;
-//            B::isUnitTestExeMode('FALSE');
-//            BU::$exeMode = B::REMOTE | B::RELEASE;
-//            B::isUnitTestExeMode('FALSE');
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_UnitTestCaller FUNCTION=isUnitTestExeMode ID=101.
+     */
+    public function testIsUnitTestExeMode_A()
+    {
+        ob_start();
+        B::isUnitTestExeMode();
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_UnitTestCaller FUNCTION=isUnitTestExeMode ID=102.
+     */
+    public function testIsUnitTestExeMode_C()
+    {
+        ob_start();
+        B::isUnitTestExeMode(false);
     }
 
     /**
@@ -82,7 +104,7 @@ class BreakpointDebugging_UnitTestCallerTest extends \BreakpointDebugging_UnitTe
     /**
      * @covers \BreakpointDebugging<extended>
      */
-    public function testExecuteUnitTest_A_InRelease()
+    public function testExecuteUnitTest_2_InRelease()
     {
         BU::markTestSkippedInDebug();
 
@@ -107,114 +129,11 @@ class BreakpointDebugging_UnitTestCallerTest extends \BreakpointDebugging_UnitTe
         B::displayCodeCoverageReport('BreakpointDebugging/OverrideClassTest.php', array ('PEAR/BreakpointDebugging/OverrideClass.php'));
     }
 
-//    }
-//} else {
-    //B::isUnitTestExeMode('DEBUG_UNIT_TEST');
-//    class BreakpointDebuggingTestExampleBase
-//    {
-//        private static $privateStaticBase = 'private static base';
-//        private $privateAutoBase = 'private auto base';
-//        protected static $protectedStaticBase = 'protected static base';
-//        protected $protectedAutoBase = 'protected auto base';
-//
-//    }
-//
-//    class BreakpointDebuggingTestExample extends \BreakpointDebuggingTestExampleBase
-//    {
-//        const CONSTANT_TEST = 123;
-//
-//        private static $privateStatic = 'private static';
-//        private $privateAuto = 'private auto';
-//
-//    }
-//    class BreakpointDebugging_UnitTestCallerTest extends \BreakpointDebugging_UnitTestOverriding
-//    {
-//    /**
-//     * @covers \BreakpointDebugging<extended>
-//     */
-//    public function testCheckUnitTestExeMode_InDebug()
-//    {
-//        BU::markTestSkippedInRelease();
-//
-//        B::setPropertyForTest('BreakpointDebugging_UnitTestCaller', '$unitTestDir', null);
-//        //B::isUnitTestExeMode('DEBUG_UNIT_TEST');
-//        //BU::$exeMode = B::UNIT_TEST;
-//        //B::isUnitTestExeMode('UNIT_TEST');
-//        B::isUnitTestExeMode(true);
-//        //B::isUnitTestExeMode('DEBUG_UNIT_TEST');
-////            BU::$exeMode = 0;
-////            B::isUnitTestExeMode();
-////
-////            BU::$exeMode = 0;
-////            B::isUnitTestExeMode('FALSE');
-//    }
-    /**
-     * @covers \BreakpointDebugging<extended>
-     *
-     * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_UnitTestCaller FUNCTION=isUnitTestExeMode ID=1
-     */
-    public function testCheckUnitTestExeMode_A()
-    {
-        BU::markTestSkippedInRelease(); // Because this unit test is assertion.
-
-        B::isUnitTestExeMode('dummy', 'notExist');
-    }
-
-    /**
-     * @covers \BreakpointDebugging<extended>
-     *
-     * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_UnitTestCaller FUNCTION=isUnitTestExeMode ID=3
-     */
-    public function testCheckUnitTestExeMode_B()
-    {
-        BU::markTestSkippedInRelease(); // Because this unit test is assertion.
-
-        B::isUnitTestExeMode(false);
-    }
-
-//    /**
-//     * @covers \BreakpointDebugging<extended>
-//     *
-//     * @expectedException        \BreakpointDebugging_ErrorException
-//     * @expectedExceptionMessage CLASS=BreakpointDebugging_UnitTestCaller FUNCTION=isUnitTestExeMode ID=5
-//     */
-//    public function testCheckUnitTestExeMode_C()
-//    {
-//        B::isUnitTestExeMode('RELEASE_UNIT_TEST');
-//    }
-    /**
-     * @covers \BreakpointDebugging<extended>
-     *
-     * @expectedException        \PHPUnit_Framework_Error_Warning
-     * @expectedExceptionMessage Missing argument 1 for BreakpointDebugging_UnitTestCaller::isUnitTestExeMode()
-     */
-    public function testCheckUnitTestExeMode_D()
-    {
-        B::isUnitTestExeMode();
-    }
-
-    /**
-     * @covers \BreakpointDebugging<extended>
-     *
-     * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_UnitTestCaller FUNCTION=isUnitTestExeMode ID=2
-     */
-    public function testCheckUnitTestExeMode_E()
-    {
-        BU::markTestSkippedInRelease(); // Because this unit test is assertion.
-
-        B::isUnitTestExeMode('Mistaken character string.');
-    }
-
     /**
      * @covers \BreakpointDebugging<extended>
      */
-    public function testGetPropertyForTest_A()
+    public function testGetPropertyForTest()
     {
-        BU::markTestSkippedInRelease();
-
         $pBreakpointDebuggingTestExample = new \BreakpointDebuggingTestExample();
 
         $this->assertTrue(B::getPropertyForTest('BreakpointDebuggingTestExample', 'CONSTANT_TEST') === 123); // Constant property.
@@ -227,57 +146,9 @@ class BreakpointDebugging_UnitTestCallerTest extends \BreakpointDebugging_UnitTe
      * @covers \BreakpointDebugging<extended>
      *
      * @expectedException        \PHPUnit_Framework_Error_Warning
-     * @expectedExceptionMessage Missing argument 2 for BreakpointDebugging_UnitTestCaller::getPropertyForTest()
-     */
-    public function testGetPropertyForTest_B()
-    {
-        B::getPropertyForTest('dummy');
-    }
-
-    /**
-     * @covers \BreakpointDebugging<extended>
-     *
-     * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_UnitTestCaller FUNCTION=getPropertyForTest ID=1
-     */
-    public function testGetPropertyForTest_C()
-    {
-        BU::markTestSkippedInRelease(); // Because this unit test is assertion.
-
-        B::getPropertyForTest('dummy', 'dummy', 'notExist');
-    }
-
-    /**
-     * @covers \BreakpointDebugging<extended>
-     *
-     * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_UnitTestCaller FUNCTION=getPropertyForTest ID=2
-     */
-    public function testGetPropertyForTest_D()
-    {
-        BU::markTestSkippedInRelease(); // Because this unit test is assertion.
-
-        B::getPropertyForTest('dummy', 123);
-    }
-
-    /**
-     * @covers \BreakpointDebugging<extended>
-     *
-     * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_UnitTestCaller FUNCTION=getPropertyForTest ID=3
-     */
-    public function testGetPropertyForTest_E()
-    {
-        B::getPropertyForTest(123, 'dummy');
-    }
-
-    /**
-     * @covers \BreakpointDebugging<extended>
-     *
-     * @expectedException        \PHPUnit_Framework_Error_Warning
      * @expectedExceptionMessage failed to open stream: No such file or directory
      */
-    public function testGetPropertyForTest_F()
+    public function testGetPropertyForTest_E()
     {
         B::getPropertyForTest('notExistClassName', 'dummy');
     }
@@ -286,9 +157,9 @@ class BreakpointDebugging_UnitTestCallerTest extends \BreakpointDebugging_UnitTe
      * @covers \BreakpointDebugging<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_UnitTestCaller FUNCTION=getPropertyForTest ID=4
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_UnitTestCaller FUNCTION=getPropertyForTest ID=101.
      */
-    public function testGetPropertyForTest_G()
+    public function testGetPropertyForTest_F()
     {
         B::getPropertyForTest('BreakpointDebuggingTestExample', 'notExistPropertyName');
     }
@@ -297,9 +168,9 @@ class BreakpointDebugging_UnitTestCallerTest extends \BreakpointDebugging_UnitTe
      * @covers \BreakpointDebugging<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_UnitTestCaller FUNCTION=getPropertyForTest ID=4
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_UnitTestCaller FUNCTION=getPropertyForTest ID=101.
      */
-    public function testGetPropertyForTest_H()
+    public function testGetPropertyForTest_G()
     {
         B::getPropertyForTest('BreakpointDebuggingTestExample', '$privateStaticBase'); // Private static property of base class.
     }
@@ -310,7 +181,7 @@ class BreakpointDebugging_UnitTestCallerTest extends \BreakpointDebugging_UnitTe
      * @expectedException        \BreakpointDebugging_ErrorException
      * @expectedExceptionMessage CLASS=BreakpointDebugging_UnitTestCaller FUNCTION=getPropertyForTest
      */
-    public function testGetPropertyForTest_I()
+    public function testGetPropertyForTest_H()
     {
         $pBreakpointDebuggingTestExample = new \BreakpointDebuggingTestExample();
 
@@ -341,56 +212,8 @@ class BreakpointDebugging_UnitTestCallerTest extends \BreakpointDebugging_UnitTe
     /**
      * @covers \BreakpointDebugging<extended>
      *
-     * @expectedException        \PHPUnit_Framework_Error_Warning
-     * @expectedExceptionMessage Missing argument 3 for BreakpointDebugging_UnitTestCaller::setPropertyForTest()
-     */
-    function testSetPropertyForTest_A()
-    {
-        B::setPropertyForTest('dummy', 'dummy');
-    }
-
-    /**
-     * @covers \BreakpointDebugging<extended>
-     *
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_UnitTestCaller FUNCTION=setPropertyForTest ID=1
-     */
-    function testSetPropertyForTest_B()
-    {
-        BU::markTestSkippedInRelease(); // Because this unit test is assertion.
-
-        B::setPropertyForTest('dummy', 'dummy', 'dummy', 'notExist');
-    }
-
-    /**
-     * @covers \BreakpointDebugging<extended>
-     *
-     * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_UnitTestCaller FUNCTION=setPropertyForTest ID=2
-     */
-    function testSetPropertyForTest_C()
-    {
-        BU::markTestSkippedInRelease(); // Because this unit test is assertion.
-
-        B::setPropertyForTest('dummy', 123, 'dummy');
-    }
-
-    /**
-     * @covers \BreakpointDebugging<extended>
-     *
-     * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_UnitTestCaller FUNCTION=setPropertyForTest ID=3
-     */
-    function testSetPropertyForTest_D()
-    {
-        B::setPropertyForTest(123, 'dummy', 'dummy');
-    }
-
-    /**
-     * @covers \BreakpointDebugging<extended>
-     *
-     * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_UnitTestCaller FUNCTION=setPropertyForTest ID=4
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_UnitTestCaller FUNCTION=setPropertyForTest ID=101.
      */
     function testSetPropertyForTest_E()
     {
@@ -403,7 +226,7 @@ class BreakpointDebugging_UnitTestCallerTest extends \BreakpointDebugging_UnitTe
      * @covers \BreakpointDebugging<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_UnitTestCaller FUNCTION=setPropertyForTest ID=4
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_UnitTestCaller FUNCTION=setPropertyForTest ID=101.
      */
     function testSetPropertyForTest_F()
     {
@@ -416,7 +239,7 @@ class BreakpointDebugging_UnitTestCallerTest extends \BreakpointDebugging_UnitTe
      * @covers \BreakpointDebugging<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_UnitTestCaller FUNCTION=setPropertyForTest ID=4
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_UnitTestCaller FUNCTION=setPropertyForTest ID=101.
      */
     function testSetPropertyForTest_G()
     {
@@ -430,72 +253,13 @@ class BreakpointDebugging_UnitTestCallerTest extends \BreakpointDebugging_UnitTe
      */
     function testExecuteUnitTest()
     {
+        $testFileNames = array (
+            '--stop-on-failure --strict ExampleTest.php',
+            '--stop-on-failure --strict ExampleTest.php',
+        );
+        B::setPropertyForTest('BreakpointDebugging_UnitTestCaller', '$unitTestDir', null);
         ob_start();
-
-        $testFileNames = array (
-            '--stop-on-failure --strict ExampleTest.php',
-            '--stop-on-failure --strict ExampleTest.php',
-        );
-        B::setPropertyForTest('BreakpointDebugging_UnitTestCaller', '$unitTestDir', null);
         B::executeUnitTest($testFileNames);
-
-        $testFileNames = array (
-            '--stop-on-failure --strict Example_Test.php',
-            '--stop-on-failure --strict Example_Test.php',
-        );
-        BU::$exeMode |= B::IGNORING_BREAK_POINT;
-        B::setPropertyForTest('BreakpointDebugging_UnitTestCaller', '$unitTestDir', null);
-        B::executeUnitTest($testFileNames);
-    }
-
-    /**
-     * @covers \BreakpointDebugging<extended>
-     *
-     * @expectedException        \PHPUnit_Framework_Error_Warning
-     * @expectedExceptionMessage Missing argument 1 for BreakpointDebugging_UnitTestCaller::executeUnitTest()
-     */
-    function testExecuteUnitTest_A()
-    {
-        B::executeUnitTest();
-    }
-
-    /**
-     * @covers \BreakpointDebugging<extended>
-     *
-     * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_UnitTestCaller FUNCTION=executeUnitTest ID=1
-     */
-    function testExecuteUnitTest_B()
-    {
-        BU::markTestSkippedInRelease(); // Because this unit test is assertion.
-
-        B::executeUnitTest('dummy', 'notExist');
-    }
-
-    /**
-     * @covers \BreakpointDebugging<extended>
-     *
-     * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_UnitTestCaller FUNCTION=executeUnitTest ID=2
-     */
-    function testExecuteUnitTest_C()
-    {
-        BU::markTestSkippedInRelease(); // Because this unit test is assertion.
-
-        B::executeUnitTest('incorrectType');
-    }
-
-    /**
-     * @covers \BreakpointDebugging<extended>
-     *
-     * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_UnitTestCaller FUNCTION=executeUnitTest ID=3
-     */
-    function testExecuteUnitTest_D()
-    {
-        BU::markTestSkippedInRelease(); // Because this unit test is assertion.
-
-        B::executeUnitTest(array ());
     }
 
     /**
@@ -507,8 +271,52 @@ class BreakpointDebugging_UnitTestCallerTest extends \BreakpointDebugging_UnitTe
             '--stop-on-failure --strict NotExistTest.php',
             '--stop-on-failure --strict NotExistTest.php',
         );
-        ob_start();
         B::setPropertyForTest('BreakpointDebugging_UnitTestCaller', '$unitTestDir', null);
+        ob_start();
+        B::executeUnitTest($testFileNames);
+        $output = ob_get_contents();
+        parent::assertTrue(strpos($output, 'Cannot open file') !== false);
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     */
+    function testExecuteUnitTest_F()
+    {
+        $testFileNames = array (
+            '--stop-on-failure --strict Example_Test.php',
+            '--stop-on-failure --strict Example_Test.php',
+        );
+        BU::$exeMode |= B::IGNORING_BREAK_POINT;
+        B::setPropertyForTest('BreakpointDebugging_UnitTestCaller', '$unitTestDir', null);
+        ob_start();
+        B::executeUnitTest($testFileNames);
+        ob_get_clean();
+    }
+
+    /**
+     * @covers \BreakpointDebugging<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_UnitTestCaller FUNCTION=_getUnitTestDir ID=101.
+     */
+    function test_getUnitTestDir_A()
+    {
+        BU::markTestSkippedInRelease(); // Because this unit test is assertion.
+
+        $testFileNames = array (
+            '--stop-on-failure --strict ExampleTest.php',
+            '--stop-on-failure --strict ExampleTest.php',
+        );
+        B::setPropertyForTest('BreakpointDebugging_UnitTestCaller', '$unitTestDir', null);
+        ob_start();
+        B::executeUnitTest($testFileNames);
+
+        $testFileNames = array (
+            '--stop-on-failure --strict ExampleTest.php',
+            '--stop-on-failure --strict ExampleTest.php',
+        );
+        BU::$exeMode |= B::IGNORING_BREAK_POINT;
         B::executeUnitTest($testFileNames);
     }
 
@@ -522,58 +330,6 @@ class BreakpointDebugging_UnitTestCallerTest extends \BreakpointDebugging_UnitTe
         B::displayCodeCoverageReport('BreakpointDebugging/OverrideClassTest.php', array ('PEAR/BreakpointDebugging/OverrideClass.php'));
     }
 
-    /**
-     * @covers \BreakpointDebugging<extended>
-     *
-     * @expectedException        \PHPUnit_Framework_Error_Warning
-     * @expectedExceptionMessage Missing argument 2 for BreakpointDebugging_UnitTestCaller::displayCodeCoverageReport()
-     */
-    function testDisplayCodeCoverageReport_A()
-    {
-        B::displayCodeCoverageReport('dummy');
-    }
-
-    /**
-     * @covers \BreakpointDebugging<extended>
-     *
-     * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_UnitTestCaller FUNCTION=displayCodeCoverageReport ID=1
-     */
-    function testDisplayCodeCoverageReport_B()
-    {
-        BU::markTestSkippedInRelease(); // Because this unit test is assertion.
-
-        B::displayCodeCoverageReport('dummy', 'dummy', 'notExist');
-    }
-
-    /**
-     * @covers \BreakpointDebugging<extended>
-     *
-     * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_UnitTestCaller FUNCTION=displayCodeCoverageReport ID=2
-     */
-    function testDisplayCodeCoverageReport_C()
-    {
-        BU::markTestSkippedInRelease(); // Because this unit test is assertion.
-
-        B::displayCodeCoverageReport(123, 'dummy');
-    }
-
-    /**
-     * @covers \BreakpointDebugging<extended>
-     *
-     * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_UnitTestCaller FUNCTION=displayCodeCoverageReport ID=3
-     */
-    function testDisplayCodeCoverageReport_D()
-    {
-        BU::markTestSkippedInRelease(); // Because this unit test is assertion.
-
-        B::displayCodeCoverageReport('dummy', 123);
-    }
-
 }
-
-//}
 
 ?>

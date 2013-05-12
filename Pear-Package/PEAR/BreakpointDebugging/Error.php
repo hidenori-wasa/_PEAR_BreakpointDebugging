@@ -537,7 +537,6 @@ abstract class BreakpointDebugging_Error_InAllCase
         // Add scope of start page file.
         $this->_callStack[] = array ();
         $this->outputErrorCallStackLog2($errorKind, $errorMessage, $prependLog);
-        //if (B::getStatic('$exeMode') & B::RELEASE) { // In case of release.
         if (B::getStatic('$exeMode') === (B::REMOTE | B::RELEASE)) { // In case of remote release.
             // @codeCoverageIgnoreStart
             if (isset($endFlag)) {
@@ -602,13 +601,8 @@ abstract class BreakpointDebugging_Error_InAllCase
      */
     protected function outputFixedFunctionToLogging($callStack, &$pTmpLog, &$onceFlag2, &$func, &$class, $file, $line, $tabs = '')
     {
-        if (!is_array($callStack)) {
-            $func = '';
-            $class = '';
-        } else {
-            array_key_exists('function', $callStack) ? $func = $callStack['function'] : $func = '';
-            array_key_exists('class', $callStack) ? $class = $callStack['class'] : $class = '';
-        }
+        array_key_exists('function', $callStack) ? $func = $callStack['function'] : $func = '';
+        array_key_exists('class', $callStack) ? $class = $callStack['class'] : $class = '';
         if (is_array(B::getStatic('$_notFixedLocations'))) {
             foreach (B::getStatic('$_notFixedLocations') as $notFixedLocation) {
                 array_key_exists('function', $notFixedLocation) ? $noFixFunc = $notFixedLocation['function'] : $noFixFunc = '';
@@ -661,7 +655,8 @@ abstract class BreakpointDebugging_Error_InAllCase
             }
             $this->logBufferWriting($pTmpLog, $continuingMark);
             $this->logWriting($pTmpLog);
-            throw new \BreakpointDebugging_OutOfLogRangeException('');
+            // This exception is caught inside handler.
+            throw new \BreakpointDebugging_OutOfLogRangeException('', 101);
         }
         $this->_pCurrentErrorLogFileSize = 0;
         // Gets next error log file name.
@@ -761,7 +756,7 @@ abstract class BreakpointDebugging_Error_InAllCase
                 } else { // In case of Unix.
                     $this->_errorLogFilePath = $this->_errorLogDirectory . $this->_currentErrorLogFileName;
                 }
-                B::assert(is_string($this->_currentErrorLogFileName));
+                B::assert(is_string($this->_currentErrorLogFileName), 101);
                 // When current error log file does not exist.
                 if (!is_file($this->_errorLogFilePath)) {
                     // Creates and opens current error log file.
@@ -859,6 +854,15 @@ abstract class BreakpointDebugging_Error_InAllCase
             foreach ($this->_callStack as $call) {
                 $onceFlag2 = true;
                 $pTmpLog2 = $this->logPointerOpening();
+                if ($call === array ()) {
+                    continue;
+                }
+                if ($call === '') {
+                    $this->logBufferWriting($pTmpLog2, PHP_EOL . 'Omits call stack because exceeded "\BreakpointDebugging::$_maxLogElementNumber".' . PHP_EOL . "\t." . PHP_EOL . "\t." . PHP_EOL . "\t." . PHP_EOL);
+                    $this->logWriting($pTmpLog2);
+                    continue;
+                }
+                B::assert(is_array($call), 102);
                 foreach ($this->_loggedCallStacks as $loggedCallNumber => $loggedCall) {
                     if ($loggedCall === $call) {
                         // Skips same call stack.
@@ -871,13 +875,8 @@ abstract class BreakpointDebugging_Error_InAllCase
                         goto AFTER_TREATMENT;
                     }
                 }
-                if (!is_array($call)) {
-                    $file = '';
-                    $line = '';
-                } else {
-                    array_key_exists('file', $call) ? $file = $call['file'] : $file = '';
-                    array_key_exists('line', $call) ? $line = $call['line'] : $line = '';
-                }
+                array_key_exists('file', $call) ? $file = $call['file'] : $file = '';
+                array_key_exists('line', $call) ? $line = $call['line'] : $line = '';
 
                 $this->_loggedCallStacks[] = $call;
                 $this->logBufferWriting($dummy, PHP_EOL . $this->tags['b'] . 'function call #' . count($this->_loggedCallStacks) . $this->tags['/b']);
@@ -914,7 +913,6 @@ abstract class BreakpointDebugging_Error_InAllCase
             } else { // In case of Unix.
                 $this->_errorLogFilePath = $this->_errorLogDirectory . $this->_currentErrorLogFileName;
             }
-            B::assert(is_string($this->_currentErrorLogFileName));
             // When current error log file does not exist.
             if (!is_file($this->_errorLogFilePath)) {
                 // Creates and opens current error log file.
@@ -937,15 +935,6 @@ abstract class BreakpointDebugging_Error_InAllCase
             fclose($this->_pVarConfFile);
             // Unlocks the error log files.
             $this->_lockByFileExisting->unlock();
-//            // Displays the call stack if release unit test.
-//            foreach ($this->_callStack as $call) {
-//                if (array_key_exists('file', $call)
-//                    && stripos($call['file'], 'Test.php') === strlen($call['file']) - strlen('Test.php')
-//                ) {
-//                    var_dump($this->_callStack);
-//                    break;
-//                }
-//            }
         }
     }
 

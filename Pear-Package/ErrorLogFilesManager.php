@@ -121,7 +121,7 @@ if (isset($_GET['download'])) {
         $doneDownload = true;
         break;
     }
-    B::assert($doneDownload);
+    B::assert($doneDownload, 101);
 } else if (isset($_GET['deleteErrorLogs'])) { // When you pushed "Delete all error log files" button.
     // Searches the files which should delete.
     foreach ($errorLogDirElements as $errorLogDirElement) {
@@ -135,7 +135,7 @@ if (isset($_GET['download'])) {
         // Deletes the error log file, variable configuring file or the error location file.
         unlink($errorLogDirElementPath);
     }
-    echo '<pre><H1>You must delete this page for security.</H1></pre>';
+    echo '<pre>You must delete this page for security before your IP is changed.</pre>';
 } else if (isset($_GET['reset'])) { // When you pushed "Reset error log files" button.
     // Searches the files which should delete.
     foreach ($errorLogDirElements as $errorLogDirElement) {
@@ -146,7 +146,7 @@ if (isset($_GET['download'])) {
         // Deletes the error log file, variable configuring file or the error location file.
         unlink($errorLogDirElementPath);
     }
-    echo '<pre><H1>You must delete this page for security.</H1></pre>';
+    echo '<pre>You must delete this page for security before your IP is changed.</pre>';
 } else { // In case of first time when this page was called.
     $thisFileName = basename(__FILE__);
     // Makes error log download-buttons.

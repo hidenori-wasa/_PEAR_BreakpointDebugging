@@ -98,19 +98,19 @@
 
   // How to call a function by parameter array.
   $return = call_user_func_array('override_function_name'), $refParams);
-  B::assert($return !== false, 3);
+  B::assert($return !== false, 101);
 
   // How to call an parent object ( dynamic ) method by parameter array.
   $return = call_user_func_array(array ('parent', 'override_function_name'), $refParams);
-  B::assert($return !== false, 4);
+  B::assert($return !== false, 102);
 
   // How to call a parent static method by parameter array.
   $return = forward_static_call_array(array ('parent', 'override_function_name'), $refParams);
-  B::assert($return !== false, 5);
+  B::assert($return !== false, 103);
 
   // How to call a parent constructor by parameter array.
   $return = forward_static_call_array(array ('parent', '__construct'), func_get_args());
-  B::assert($return !== false, 6);
+  B::assert($return !== false, 104);
   }
  */
 
@@ -156,7 +156,8 @@ class BreakpointDebugging_OverrideClass
      */
     final function __get($propertyName)
     {
-        B::assert(property_exists($this->pNativeClass, $propertyName), 1);
+        B::assert(property_exists($this->pNativeClass, $propertyName), 101);
+
         return $this->pNativeClass->$propertyName;
     }
 
@@ -170,7 +171,8 @@ class BreakpointDebugging_OverrideClass
      */
     final function __set($propertyName, $setValue)
     {
-        B::assert(property_exists($this->pNativeClass, $propertyName), 1);
+        B::assert(property_exists($this->pNativeClass, $propertyName), 101);
+
         $this->pNativeClass->$propertyName = $setValue;
     }
 

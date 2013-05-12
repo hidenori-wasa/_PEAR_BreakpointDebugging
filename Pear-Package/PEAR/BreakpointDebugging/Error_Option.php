@@ -81,7 +81,7 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
     function __construct()
     {
         B::limitAccess('BreakpointDebugging.php');
-        B::assert(func_num_args() === 0);
+        B::assert(func_num_args() === 0, 1);
 
         $this->maxLogFileByteSize = B::getStatic('$_maxLogFileByteSize');
         $this->isLogging = false;
@@ -260,7 +260,8 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
         $continuingMark = PHP_EOL . '### Omits since then because it exceeded logfile maximum capacity. ###' . $continuingMark . $continuingMark . $continuingMark;
         $this->logBufferWriting($pTmpLog, $continuingMark);
         $this->logWriting($pTmpLog);
-        throw new \BreakpointDebugging_OutOfLogRangeException('');
+        // This exception is caught inside handler.
+        throw new \BreakpointDebugging_OutOfLogRangeException('', 101);
     }
 
     /**
@@ -284,7 +285,10 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
             }
             if ($this->logByteSize + $tmpLogSize > $this->maxLogFileByteSize) {
                 $this->changeLogFile($pTmpLog);
+                // @codeCoverageIgnoreStart
+                // Because "$this->changeLogFile()" class method throws exception.
             }
+            // @codeCoverageIgnoreEnd
         }
     }
 
@@ -412,7 +416,7 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
     {
         B::assert(func_num_args() <= 2, 1);
         B::assert(is_array($pTmpLog) || is_resource($pTmpLog), 2);
-        B::assert(is_resource($pLog) || $pLog === false);
+        B::assert(is_resource($pLog) || $pLog === false, 3);
 
         if (B::getStatic('$exeMode') & B::REMOTE) { // In case of remote.
             rewind($pTmpLog);

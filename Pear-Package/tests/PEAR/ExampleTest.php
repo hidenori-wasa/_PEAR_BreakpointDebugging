@@ -5,13 +5,12 @@ require_once './BreakpointDebugging_Including.php';
 
 use \BreakpointDebugging as B;
 
-//B::isUnitTestExeMode('DEBUG_UNIT_TEST');
 B::isUnitTestExeMode(true);
 class ExampleTest extends \BreakpointDebugging_UnitTestOverriding
 {
     /**
      * @expectedException        BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=ExampleTest FUNCTION=_something ID=123
+     * @expectedExceptionMessage CLASS=ExampleTest FUNCTION=_something ID=123.
      * @expectedExceptionCode    123
      */
     public function testExample()

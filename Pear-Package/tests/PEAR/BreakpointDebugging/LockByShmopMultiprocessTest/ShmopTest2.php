@@ -48,7 +48,7 @@ class ShmopTest2
                 shmop_close($sharedMemoryID);
                 break;
             default:
-                throw new \BreakpointDebugging_ErrorException('', 1);
+                throw new \BreakpointDebugging_ErrorException('', 101);
         }
         var_dump(shmop_read($this->shmopId, 0, 10) + 0, microtime(true) - $start);
     }

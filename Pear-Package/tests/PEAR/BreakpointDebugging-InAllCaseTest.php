@@ -7,7 +7,6 @@ use \BreakpointDebugging as B;
 use \BreakpointDebugging_InAllCase as BA;
 use \BreakpointDebugging_UnitTestOverridingBase as BU;
 
-//B::isUnitTestExeMode('UNIT_TEST');
 B::isUnitTestExeMode(true);
 
 $testAutoload = 1;
@@ -78,7 +77,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
      * @covers \BreakpointDebugging_InAllCase<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_InAllCase FUNCTION=iniCheck ID=2
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_InAllCase FUNCTION=iniCheck ID=101.
      */
     public function testIniCheck_B()
     {
@@ -140,7 +139,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
      * @covers \BreakpointDebugging_InAllCase<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_InAllCase FUNCTION=convertMbString ID=3
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_InAllCase FUNCTION=convertMbString ID=101.
      */
     public function testConvertMbString_C()
     {
@@ -276,6 +275,16 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
     /**
      * @covers \BreakpointDebugging_InAllCase<extended>
      */
+    public function testBreakpoint()
+    {
+        $callStack = debug_backtrace();
+        array_shift($callStack);
+        B::breakpoint('Dummy.', $callStack);
+    }
+
+    /**
+     * @covers \BreakpointDebugging_InAllCase<extended>
+     */
     public function testExceptionHandler()
     {
         $pPrevious = new \Exception('Previous exception.', E_USER_WARNING);
@@ -299,7 +308,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
      * @covers \BreakpointDebugging_InAllCase<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_InAllCaseTest FUNCTION=testInternalException ID=1
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_InAllCaseTest FUNCTION=testInternalException ID=1.
      */
     public function testInternalException()
     {
@@ -316,66 +325,6 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
         BA::shutdown();
     }
 
-    /**
-     * @covers \BreakpointDebugging<extended>
-     */
-    public function testCheckUnitTestExeMode()
-    {
-//        B::setPropertyForTest('BreakpointDebugging_UnitTestCaller', '$unitTestDir', null);
-//        BA::isUnitTestExeMode('DEBUG_UNIT_TEST');
-//        BU::$exeMode = B::UNIT_TEST;
-//        BA::isUnitTestExeMode('DEBUG_UNIT_TEST');
-//        BU::$exeMode = B::RELEASE | B::UNIT_TEST;
-//        BA::isUnitTestExeMode('RELEASE_UNIT_TEST');
-//        BU::$exeMode = B::REMOTE | B::RELEASE | B::UNIT_TEST;
-//        BA::isUnitTestExeMode('RELEASE_UNIT_TEST');
-
-        BU::$exeMode = B::RELEASE;
-        BA::isUnitTestExeMode();
-//        BU::$exeMode = B::REMOTE | B::RELEASE;
-//        BA::isUnitTestExeMode();
-//        BU::$exeMode = B::RELEASE;
-        //BA::isUnitTestExeMode('FALSE');
-        BA::isUnitTestExeMode(false);
-//        BU::$exeMode = B::REMOTE | B::RELEASE;
-//        BA::isUnitTestExeMode('FALSE');
-    }
-
-    /**
-     * @covers \BreakpointDebugging<extended>
-     *
-     * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage <pre>You must not set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('..._UNIT_TEST');"
-     */
-    public function testCheckUnitTestExeMode_A()
-    {
-        BU::$exeMode = B::RELEASE;
-        //BA::isUnitTestExeMode('RELEASE_UNIT_TEST');
-        BA::isUnitTestExeMode(true);
-    }
-
-//    /**
-//     * @covers \BreakpointDebugging<extended>
-//     *
-//     * @expectedException        \BreakpointDebugging_ErrorException
-//     * @expectedExceptionMessage <pre>You mistook "\BreakpointDebugging::isUnitTestExeMode('...');".</pre>
-//     */
-//    public function testCheckUnitTestExeMode_B()
-//    {
-//        BU::$exeMode = B::RELEASE;
-//        BA::isUnitTestExeMode('DEBUG_UNIT_TEST');
-//    }
-//    /**
-//     * @covers \BreakpointDebugging<extended>
-//     *
-//     * @expectedException        \BreakpointDebugging_ErrorException
-//     * @expectedExceptionMessage <pre>You mistook "\BreakpointDebugging::isUnitTestExeMode('...');".</pre>
-//     */
-//    public function testCheckUnitTestExeMode_C()
-//    {
-//        BU::$exeMode = B::RELEASE;
-//        BA::isUnitTestExeMode('Mistaken character string.');
-//    }
 }
 
 ?>

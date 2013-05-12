@@ -9,7 +9,7 @@ class Initialization
 {
     function __construct()
     {
-        B::assert(extension_loaded('shmop'), 1);
+        B::assert(extension_loaded('shmop'), 101);
         // Allocate shared memory area.
         $shmopId = shmop_open(1234, 'c', 0600, 10);
         // Initialize shared memory.

@@ -65,8 +65,8 @@ function BreakpointDebugging_setExecutionMode()
     // Please, choose a mode.
     // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('DEBUG');
     // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('RELEASE');
-    // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('DEBUG_UNIT_TEST');
-    $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('RELEASE_UNIT_TEST');
+    $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('DEBUG_UNIT_TEST');
+    // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('RELEASE_UNIT_TEST');
     // ### <=== Execution mode setting.
     //
     // $_BreakpointDebugging_EXE_MODE |= $REMOTE; // Emulates remote by local host.
@@ -168,24 +168,20 @@ function BreakpointDebugging_mySetting()
     // This code has been fixed.
     $maxLogFileByteSize = &B::refStatic('$_maxLogFileByteSize');
     $maxLogFileByteSize = $maxLogMBSize << 17;
-    B::assert($maxLogFileByteSize % 4096 === 0);
     // Maximum log parameter nesting level. Default is 20. (1-100)
     $maxLogParamNestingLevel = &B::refStatic('$_maxLogParamNestingLevel');
     $maxLogParamNestingLevel = 20;
-    B::assert(1 <= $maxLogParamNestingLevel && $maxLogParamNestingLevel <= 100);
-    // Maximum count of elements in log. ( Count of parameter or array elements ) Default is 50. (1-100)
+    // Maximum count of elements in log. (Maximum number of parameter, array elements and call-stack) Default is 50. (1-100)
     $maxLogElementNumber = &B::refStatic('$_maxLogElementNumber');
     $maxLogElementNumber = 50;
-    B::assert(1 <= $maxLogElementNumber && $maxLogElementNumber <= 100);
     // Maximum string type byte-count of log. Default is 3000. (1-)
     $maxLogStringSize = &B::refStatic('$_maxLogStringSize');
     $maxLogStringSize = 3000;
-    B::assert(1 <= $maxLogStringSize);
     // Inner form of the browser of the default: HTML text, character sets = UTF8.
     // header('Content-type: text/html; charset=utf-8');
     // Set "mbstring.detect_order = UTF-8, UTF-7, ASCII, EUC-JP,SJIS, eucJP-win, SJIS-win, JIS, ISO-2022-JP" of "php.ini" file because this is purpose to define default value of character code detection.
     $result = mb_detect_order('UTF-8, UTF-7, ASCII, EUC-JP,SJIS, eucJP-win, SJIS-win, JIS, ISO-2022-JP');
-    B::assert($result, 2);
+    B::assert($result, 101);
     // This is work directory. "php_error_*.log" file is created in this directory.
     // Warning: When you use existing log, it is destroyed if it is not "UTF-8". It is necessary to be a single character sets.
     $workDir = &B::refStatic('$_workDir');
@@ -194,7 +190,7 @@ function BreakpointDebugging_mySetting()
         B::mkdir($workDir, 0700);
     }
     $workDir = realpath($workDir);
-    B::assert($workDir !== false, 3);
+    B::assert($workDir !== false, 102);
     // ### <=== Item setting.
     //
     ////////////////////////////////////////////////////////////////////////////////

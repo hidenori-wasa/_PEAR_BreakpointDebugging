@@ -6,10 +6,7 @@ require_once './BreakpointDebugging_Including.php';
 use \BreakpointDebugging as B;
 use \BreakpointDebugging_UnitTestOverridingBase as BU;
 
-//B::isUnitTestExeMode('DEBUG_UNIT_TEST');
-//B::isUnitTestExeMode('UNIT_TEST');
 B::isUnitTestExeMode(true);
-
 class BreakpointDebugging_LockByFlockTest extends \BreakpointDebugging_UnitTestOverriding
 {
     protected $lockByFlock;
@@ -32,10 +29,12 @@ class BreakpointDebugging_LockByFlockTest extends \BreakpointDebugging_UnitTestO
      * @covers \BreakpointDebugging_LockByFlock<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=__clone
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=__clone ID=101.
      */
     function test__clone()
     {
+        BU::markTestSkippedInRelease(); // Because this unit test is assertion.
+
         $tmp = clone $this->lockByFlock;
     }
 
@@ -89,11 +88,12 @@ class BreakpointDebugging_LockByFlockTest extends \BreakpointDebugging_UnitTestO
      * @covers \BreakpointDebugging_LockByFlock<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=unlock ID=1
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=unlock ID=101.
      */
     function testLockThenUnlock_C()
     {
         BU::markTestSkippedInRelease(); // Because this unit test is assertion.
+
         $this->lockByFlock->unlock();
     }
 
@@ -101,11 +101,12 @@ class BreakpointDebugging_LockByFlockTest extends \BreakpointDebugging_UnitTestO
      * @covers \BreakpointDebugging_LockByFlock<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=unlock ID=1
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=unlock ID=101.
      */
     function testLockThenUnlock_D()
     {
         BU::markTestSkippedInRelease(); // Because this unit test is assertion.
+
         try {
             $this->lockByFlock->lock();
             $this->lockByFlock->unlock();
@@ -119,11 +120,12 @@ class BreakpointDebugging_LockByFlockTest extends \BreakpointDebugging_UnitTestO
      * @covers \BreakpointDebugging_LockByFlock<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=__destruct ID=1
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=__destruct ID=101.
      */
     function testLockThenUnlock_E()
     {
         BU::markTestSkippedInRelease(); // Because this unit test is assertion.
+
         $this->lockByFlock->lock();
         // Calls "__destruct()".
         $this->lockByFlock = null; // Error.
@@ -133,11 +135,12 @@ class BreakpointDebugging_LockByFlockTest extends \BreakpointDebugging_UnitTestO
      * @covers \BreakpointDebugging_LockByFlock<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=__destruct ID=1
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=__destruct ID=101.
      */
     function testLockThenUnlock_F()
     {
         BU::markTestSkippedInRelease(); // Because this unit test is assertion.
+
         $this->lockByFlock->lock();
         $this->lockByFlock->lock();
         $this->lockByFlock->unlock();
@@ -159,7 +162,7 @@ class BreakpointDebugging_LockByFlockTest extends \BreakpointDebugging_UnitTestO
      * @covers \BreakpointDebugging_LockByFlock<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=singletonBase ID=1
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=singletonBase ID=101.
      */
     function testSingleton_B()
     {
@@ -172,11 +175,12 @@ class BreakpointDebugging_LockByFlockTest extends \BreakpointDebugging_UnitTestO
      * @covers \BreakpointDebugging_LockByFlock<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=singletonBase ID=1
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=singletonBase ID=101.
      */
     function testSingleton_C()
     {
         BU::markTestSkippedInRelease(); // Because this unit test is assertion.
+
         if ((B::getStatic('$exeMode') & B::REMOTE)
             && !extension_loaded('shmop')
         ) {

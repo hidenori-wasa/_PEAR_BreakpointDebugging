@@ -76,15 +76,28 @@ use \BreakpointDebugging as B;
  */
 class BreakpointDebugging_UnitTestOverridingBase extends \PHPUnit_Framework_TestCase
 {
+    /**
+     * @var int Execution mode. We must call this property correctly because this property is reference.
+     */
     static $exeMode;
-    private $_storeExeMode;
 
+    /**
+     * @var int Execution mode storing.
+     */
+    private $_exeModeStoring;
+
+    /**
+     * This method is called before the first test of this test class is run.
+     *
+     * @return void
+     */
     static function setUpBeforeClass()
     {
         self::$exeMode = &B::refStatic('$exeMode');
     }
 
     /**
+     * This method is called before a test class method is executed.
      * Sets up initializing which is needed at least in unit test.
      *
      * @return void
@@ -96,16 +109,22 @@ class BreakpointDebugging_UnitTestOverridingBase extends \PHPUnit_Framework_Test
         $onceErrorDispFlag = false;
         $callingExceptionHandlerDirectly = &B::refStatic('$_callingExceptionHandlerDirectly');
         $callingExceptionHandlerDirectly = false;
-        $this->_storeExeMode = self::$exeMode;
+        $this->_exeModeStoring = self::$exeMode;
     }
 
+    /**
+     * This method is called after a test class method is executed.
+     * Cleans up environment which is needed at least in unit test.
+     *
+     * @return void
+     */
     protected function tearDown()
     {
-        self::$exeMode = $this->_storeExeMode;
+        self::$exeMode = $this->_exeModeStoring;
         if (ob_get_level() === 2) {
             ob_end_clean();
         }
-        B::assert(ob_get_level() === 1);
+        B::assert(ob_get_level() === 1, 101);
     }
 
     /**

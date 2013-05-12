@@ -6,12 +6,7 @@ require_once './BreakpointDebugging_Including.php';
 use \BreakpointDebugging as B;
 use \BreakpointDebugging_UnitTestOverridingBase as BU;
 
-//B::isUnitTestExeMode('UNIT_TEST');
 B::isUnitTestExeMode(true);
-
-//if (B::getStatic('$exeMode') & B::RELEASE) { // In case of release.
-//B::isUnitTestExeMode('DEBUG_UNIT_TEST');
-//B::isUnitTestExeMode('RELEASE_UNIT_TEST');
 class example
 {
     const CONST_TEST = 1; // Tests constant property when unit test reflects object.
@@ -56,7 +51,7 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_UnitT
                 if (!is_file($errorLogDirElementPath)) {
                     continue;
                 }
-                // Deletes the error log file, variable configuring file or the error location file.
+                // Deletes the error log file, variable configuring file and the error location file.
                 unlink($errorLogDirElementPath);
             }
             rmdir($errorLogDirectory);
@@ -96,13 +91,13 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_UnitT
             }
         }
         fclose($pFile);
-        throw new \BreakpointDebugging_ErrorException('', 1);
+        throw new \BreakpointDebugging_ErrorException('', 101);
     }
 
     /**
      * @covers \BreakpointDebugging_Error<extended>
      */
-    function testExceptionHandler2()
+    function testHandleException2()
     {
         BU::markTestSkippedInDebug(); // Because this unit test is the logging check.
 
@@ -224,7 +219,7 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_UnitT
     /**
      * @covers \BreakpointDebugging_Error<extended>
      */
-    function testExceptionHandler2_A()
+    function testHandleException2_A()
     {
         BU::markTestSkippedInDebug(); // Because this unit test is the logging check.
 
@@ -277,7 +272,7 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_UnitT
     /**
      * @covers \BreakpointDebugging_Error<extended>
      */
-    function testErrorHandler2()
+    function testHandleError2()
     {
         BU::markTestSkippedInDebug(); // Because this unit test is the logging check.
 
@@ -346,6 +341,8 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_UnitT
 
         self::$error->handleError2(E_USER_WARNING, '', B::$prependErrorLog, debug_backtrace());
 
+        self::$error->handleError2(E_USER_ERROR, '', B::$prependErrorLog, debug_backtrace());
+
         self::$error->handleError2(E_ERROR, '', B::$prependErrorLog, debug_backtrace());
 
         self::$error->handleError2(E_WARNING, '', B::$prependErrorLog, debug_backtrace());
@@ -369,18 +366,35 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_UnitT
         self::$error->handleError2(E_DEPRECATED, '', B::$prependErrorLog, debug_backtrace());
     }
 
-}
+    /**
+     * @covers \BreakpointDebugging_Error<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_Error_InAllCase FUNCTION=handleError2 ID=5.
+     */
+    function testHandleError2_A()
+    {
+        BU::markTestSkippedInDebug(); // Because this unit test is the logging check.
 
-//} else { // In case of debug.
-//    class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_UnitTestOverriding
-//    {
-//        function testDummy()
-//        {
-//            echo 'This execution mode does not have unit test.';
-//        }
-//
-//    }
-//
-//}
+        BU::$exeMode |= B::IGNORING_BREAK_POINT;
+        self::$error->handleError2(255, '', B::$prependErrorLog, debug_backtrace());
+    }
+
+    /**
+     * @covers \BreakpointDebugging_Error<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_Error_InAllCase FUNCTION=convertMbString ID=3.
+     */
+    function testConvertMbString()
+    {
+        BU::markTestSkippedInDebug(); // Because this unit test is the logging check.
+        // SJIS + UTF-8
+        B::$prependExceptionLog = "\x95\xB6\x8E\x9A \xE6\x96\x87\xE5\xAD\x97 ";
+        BU::$exeMode |= B::IGNORING_BREAK_POINT;
+        B::handleException(new \Exception());
+    }
+
+}
 
 ?>
