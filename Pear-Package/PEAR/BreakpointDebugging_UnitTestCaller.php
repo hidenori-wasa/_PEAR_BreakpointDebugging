@@ -436,7 +436,7 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      *
      *          /*
      *           * @expectedException        \BreakpointDebugging_ErrorException
-     *           * @expectedExceptionMessage CLASS=SomethingTest FUNCTION=testSomething_A ID=201
+     *           * @expectedExceptionMessage CLASS=SomethingTest FUNCTION=testSomething_A ID=101
      *           *
      *          function testSomething_A()
      *          {
@@ -450,7 +450,7 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      *                  B::assert(true, 101);
      *                  B::assert(false, 102);
      *              } catch (\BreakpointDebugging_ErrorException $e) {
-     *                  $this->assertTrue(strripos($e->getMessage(), 'CLASS=SomethingTest FUNCTION=testSomething_B ID=202'));
+     *                  $this->assertTrue(strripos($e->getMessage(), 'CLASS=SomethingTest FUNCTION=testSomething_B ID=102'));
      *                  return;
      *              }
      *              $this->fail();

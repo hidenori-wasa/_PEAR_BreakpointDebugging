@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Class which is for breakpoint debugging.
+ * Class for breakpoint debugging.
  *
  * PHP version 5.3
  *
@@ -113,12 +113,14 @@ abstract class BreakpointDebugging_InAllCase
     /**
      *  @const string Character string which means recursive array.
      */
-    const RECURSIVE_ARRAY = '### DANGER: You used recursive array! ###';
+    //const RECURSIVE_ARRAY = '### DANGER: You used recursive array! ###';
+    const RECURSIVE_ARRAY = '### Omits recursive array. ###';
 
     /**
      * @const string Character string which means using "$GLOBALS".
      */
-    const GLOBALS_USING = '### DANGER: You used "$GLOBALS"! ###';
+    //const GLOBALS_USING = '### DANGER: You used "$GLOBALS"! ###';
+    const GLOBALS_USING = '### Omits own recursive array inside "$GLOBALS". ###';
 
     /**
      * @var mixed Temporary variable.
@@ -975,6 +977,7 @@ if ($_BreakpointDebugging_EXE_MODE & BA::RELEASE) { // In case of release.
                     } else {
                         // @codeCoverageIgnoreStart
                         // Because unit test is exited.
+                        ini_set('xdebug.var_display_max_depth', 5);
                         var_dump(debug_backtrace());
                         while (ob_get_level() > 1) {
                             ob_end_clean();

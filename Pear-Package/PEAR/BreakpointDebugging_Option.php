@@ -1,10 +1,18 @@
 <?php
 
 /**
- * Class which is for breakpoint debugging.
+ * Class for breakpoint debugging in case of debug mode.
  *
  * "*_Option.php" file does not use on release. Therefore, response time is zero in release.
  * These file names put "_" to cause error when we do autoload.
+ *
+ * ### The basic concept. ###
+ * This is package for breakpoint debugging.
+ * Also, you can use as basics of other PHP program or PEAR package if you want
+ * because this package has necessary minimum feature.
+ *      It is "php.ini" file setting fixation feature, PHP code synchronization feature,
+ *      error log feature by global handler, PHPUnit PEAR package extension feature,
+ *      the override class feature and execution mode.
  *
  * ### Environment which can do breakpoint debugging. ###
  * Debugger which can use breakpoint.

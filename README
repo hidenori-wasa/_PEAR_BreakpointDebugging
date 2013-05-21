@@ -1,5 +1,10 @@
 The basic concept
-    This package is for breakpoint debugging.
+    This is package for breakpoint debugging.
+    Also, you can use as basics of other PHP program or PEAR package if you want
+    because this package has necessary minimum feature.
+        It is "php.ini" file setting fixation feature, PHP code synchronization feature,
+        error log feature by global handler, PHPUnit PEAR package extension feature,
+        the override class feature and execution mode.
 
 The features list
     Please, read the file level document block of "PEAR/BreakpointDebugging_Option.php".
