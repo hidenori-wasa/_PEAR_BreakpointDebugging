@@ -8,4 +8,11 @@ B::isUnitTestExeMode(true); // Checks the execution mode.
 
 B::assert(false);
 
+$dummy = array ();
+if (true
+    && false
+) {
+    null;
+}
+
 ?>

@@ -9,7 +9,7 @@
  * ### The basic concept. ###
  * This is package for breakpoint debugging.
  * Also, you can use as basics of other PHP program or PEAR package if you want
- * because this package has necessary minimum feature.
+ * because this package has necessary minimum features.
  *      It is "php.ini" file setting fixation feature, PHP code synchronization feature,
  *      error log feature by global handler, PHPUnit PEAR package extension feature,
  *      the override class feature and execution mode.
@@ -24,6 +24,8 @@
  * Notice: Use "phpMyAdmin" to see database and to execute "MySQL" command.
  *         Also, "NetBeans IDE 7.3" cannot keep switchback at April, 2013.
  *         However, "NetBeans IDE 7.3" supports "PHP5.4" and "HTML5".
+ * Caution: The code format setting of "NetBeans" disperses to two menu because setting per IDE and setting per project exists.
+ *          Those must have both directions link button because setting may not be executed, however, those is not.
  *
  * ### The advantage of breakpoint debugging. ###
  * Can find a position of a bug immediately.
@@ -441,7 +443,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_UnitTestCaller
         return true;
     }
 
-    ///////////////////////////// For package user. /////////////////////////////
+    ///////////////////////////// For package user from here in case of debug mode. /////////////////////////////
     /**
      * Checks a invoker file path.
      *
@@ -750,6 +752,7 @@ EOD;
         return $return;
     }
 
+    ///////////////////////////// For package user until here in case of debug mode. /////////////////////////////
 }
 
 // When "Xdebug" does not exist.

@@ -102,6 +102,7 @@ class BreakpointDebugging_ErrorTest extends \BreakpointDebugging_UnitTestOverrid
         BU::$exeMode |= B::IGNORING_BREAK_POINT;
         // Skips "\BreakpointDebugging_Error::convertMbString()" "SJIS + UTF-8" error exception.
         self::$_error->handleException2(new \Exception(), "\x95\xB6\x8E\x9A \xE6\x96\x87\xE5\xAD\x97 ");
+        B::setPropertyForTest('\BreakpointDebugging_Error_InAllCase', '$_onceFlag', true);
     }
 
     function exceptionHandler2_D()

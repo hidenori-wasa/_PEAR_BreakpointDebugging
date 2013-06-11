@@ -103,6 +103,11 @@ abstract class BreakpointDebugging_Lock
     protected static $sharedMemoryID;
 
     /**
+     * @var type
+     */
+    private static $_currentClassName = null;
+
+    /**
      * Base of all synchronous singleton method.
      *
      * @param string $className         Object class name.
@@ -117,8 +122,6 @@ abstract class BreakpointDebugging_Lock
      */
     protected static function &singletonBase($className, $lockFilePath, $timeout, $expire, $sleepMicroSeconds, $isInternal = false)
     {
-        static $currentClassName = null;
-
         B::assert(is_string($className), 1);
         B::assert(is_string($lockFilePath), 2);
         B::assert(is_int($timeout) && 0 <= $timeout, 3);
@@ -134,8 +137,8 @@ abstract class BreakpointDebugging_Lock
             return self::$_internalInstance;
         } else {
             // Synchronous class has to be any one of derived classes because dead-lock occurs.
-            B::assert($currentClassName === null || $currentClassName === $className, 101);
-            $currentClassName = $className;
+            B::assert(self::$_currentClassName === null || self::$_currentClassName === $className, 101);
+            self::$_currentClassName = $className;
             if (self::$_instance === null) {
                 self::$_instance = new $className($lockFilePath, $timeout, $expire, $sleepMicroSeconds);
             }

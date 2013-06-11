@@ -113,13 +113,11 @@ abstract class BreakpointDebugging_InAllCase
     /**
      *  @const string Character string which means recursive array.
      */
-    //const RECURSIVE_ARRAY = '### DANGER: You used recursive array! ###';
     const RECURSIVE_ARRAY = '### Omits recursive array. ###';
 
     /**
      * @const string Character string which means using "$GLOBALS".
      */
-    //const GLOBALS_USING = '### DANGER: You used "$GLOBALS"! ###';
     const GLOBALS_USING = '### Omits own recursive array inside "$GLOBALS". ###';
 
     /**
@@ -222,6 +220,7 @@ abstract class BreakpointDebugging_InAllCase
      */
     private static $_nativeExeMode;
 
+    ///////////////////////////// For package user from here. /////////////////////////////
     /**
      * Debugs by using breakpoint.
      * We must define this class method outside namespace, and we must not change method name when we call this method.
@@ -231,6 +230,8 @@ abstract class BreakpointDebugging_InAllCase
      *
      * @return void
      * @example B::breakpoint('Error message.', debug_backtrace());
+     * @codeCoverageIgnore
+     * Because I do not want to stop at breakpoint.
      */
     static function breakpoint($message, $callStackInfo)
     {
@@ -262,10 +263,8 @@ abstract class BreakpointDebugging_InAllCase
         }
 
         if (self::$_nativeExeMode === self::REMOTE) { // In case of remote debug.
-            // @codeCoverageIgnoreStart
             // Remote debug must end immediately to avoid eternal execution.
             exit;
-            // @codeCoverageIgnoreEnd
         }
     }
 
@@ -297,35 +296,6 @@ abstract class BreakpointDebugging_InAllCase
             self::$exeMode |= self::IGNORING_BREAK_POINT;
             throw new \BreakpointDebugging_ErrorException('', 101);
         }
-    }
-
-    /**
-     * Initializes static properties.
-     *
-     * @return void
-     */
-    static function initialize()
-    {
-        global $_BreakpointDebugging_EXE_MODE;
-
-        B::limitAccess(array ('BreakpointDebugging_UnitTestCaller.php', 'BreakpointDebugging_Option.php'));
-
-        self::$_pwd = getcwd();
-        self::$_nativeExeMode = self::$exeMode = $_BreakpointDebugging_EXE_MODE;
-        unset($_BreakpointDebugging_EXE_MODE);
-        self::$staticProperties['$exeMode'] = &self::$exeMode;
-        self::$_os = strtoupper(substr(PHP_OS, 0, 3));
-        self::$staticProperties['$_os'] = &self::$_os;
-        self::$staticProperties['$_userName'] = &self::$_userName;
-        self::$staticProperties['$_maxLogFileByteSize'] = &self::$_maxLogFileByteSize;
-        self::$staticProperties['$_maxLogParamNestingLevel'] = &self::$_maxLogParamNestingLevel;
-        self::$staticProperties['$_maxLogElementNumber'] = &self::$_maxLogElementNumber;
-        self::$staticProperties['$_maxLogStringSize'] = &self::$_maxLogStringSize;
-        self::$staticProperties['$_workDir'] = &self::$_workDir;
-        self::$staticProperties['$_onceErrorDispFlag'] = &self::$_onceErrorDispFlag;
-        self::$staticProperties['$_callingExceptionHandlerDirectly'] = &self::$_callingExceptionHandlerDirectly;
-        self::$staticProperties['$_valuesToTrace'] = &self::$_valuesToTrace;
-        self::$staticProperties['$_notFixedLocations'] = &self::$_notFixedLocations;
     }
 
     /**
@@ -740,7 +710,36 @@ abstract class BreakpointDebugging_InAllCase
         return self::_clearRecursiveArrayElement($recursiveArray, $parentsArray);
     }
 
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////// For package user until here. /////////////////////////////
+    /**
+     * Initializes static properties.
+     *
+     * @return void
+     */
+    static function initialize()
+    {
+        global $_BreakpointDebugging_EXE_MODE;
+
+        B::limitAccess(array ('BreakpointDebugging_UnitTestCaller.php', 'BreakpointDebugging_Option.php'));
+
+        self::$_pwd = getcwd();
+        self::$_nativeExeMode = self::$exeMode = $_BreakpointDebugging_EXE_MODE;
+        unset($_BreakpointDebugging_EXE_MODE);
+        self::$staticProperties['$exeMode'] = &self::$exeMode;
+        self::$_os = strtoupper(substr(PHP_OS, 0, 3));
+        self::$staticProperties['$_os'] = &self::$_os;
+        self::$staticProperties['$_userName'] = &self::$_userName;
+        self::$staticProperties['$_maxLogFileByteSize'] = &self::$_maxLogFileByteSize;
+        self::$staticProperties['$_maxLogParamNestingLevel'] = &self::$_maxLogParamNestingLevel;
+        self::$staticProperties['$_maxLogElementNumber'] = &self::$_maxLogElementNumber;
+        self::$staticProperties['$_maxLogStringSize'] = &self::$_maxLogStringSize;
+        self::$staticProperties['$_workDir'] = &self::$_workDir;
+        self::$staticProperties['$_onceErrorDispFlag'] = &self::$_onceErrorDispFlag;
+        self::$staticProperties['$_callingExceptionHandlerDirectly'] = &self::$_callingExceptionHandlerDirectly;
+        self::$staticProperties['$_valuesToTrace'] = &self::$_valuesToTrace;
+        self::$staticProperties['$_notFixedLocations'] = &self::$_notFixedLocations;
+    }
+
     /**
      * Does autoload by path which was divided by name space separator and underscore separator as directory.
      *
@@ -972,10 +971,10 @@ if ($_BreakpointDebugging_EXE_MODE & BA::RELEASE) { // In case of release.
                 if (!$assertion
                     && !(self::$exeMode & B::IGNORING_BREAK_POINT)
                 ) {
+                    // @codeCoverageIgnoreStart
                     if (function_exists('xdebug_break')) {
                         xdebug_break(); // You must use "\BreakpointDebugging_UnitTestOverridingBase::markTestSkippedInRelease(); // Because this unit test is assertion." at top of unit test class method.
                     } else {
-                        // @codeCoverageIgnoreStart
                         // Because unit test is exited.
                         ini_set('xdebug.var_display_max_depth', 5);
                         var_dump(debug_backtrace());
@@ -983,9 +982,9 @@ if ($_BreakpointDebugging_EXE_MODE & BA::RELEASE) { // In case of release.
                             ob_end_clean();
                         }
                         exit;
-                        // @codeCoverageIgnoreEnd
                     }
                 }
+                // @codeCoverageIgnoreEnd
             }
 
         }

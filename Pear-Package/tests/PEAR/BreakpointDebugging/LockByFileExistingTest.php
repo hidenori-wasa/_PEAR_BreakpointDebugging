@@ -11,6 +11,12 @@ class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_Un
 {
     protected $lockByFileExisting, $lockByFileExistingInternal;
 
+    static function setUpBeforeClass()
+    {
+        parent::setUpBeforeClass();
+        B::setPropertyForTest('\BreakpointDebugging_Lock', '$_currentClassName', null);
+    }
+
     function setUp()
     {
         parent::setUp();
@@ -196,7 +202,6 @@ class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_Un
     function testSingleton_C()
     {
         BU::markTestSkippedInRelease(); // Because this unit test is assertion.
-
         // Constructs instance of other class.
         $lockByFlock = &\BreakpointDebugging_LockByFlock::singleton(5, 10); // Error.
     }

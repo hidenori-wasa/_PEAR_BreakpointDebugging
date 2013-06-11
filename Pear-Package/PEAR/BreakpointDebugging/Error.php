@@ -160,6 +160,11 @@ abstract class BreakpointDebugging_Error_InAllCase
     protected $logByteSize = 0;
 
     /**
+     * @var bool Error flag of once.
+     */
+    private static $_onceFlag = true;
+
+    /**
      * Sets HTML tags.
      *
      * @param array &$tags HTML tags.
@@ -211,8 +216,6 @@ abstract class BreakpointDebugging_Error_InAllCase
      */
     protected function convertMbString($string)
     {
-        static $onceFlag = true;
-
         $charSet = mb_detect_encoding($string);
         if ($charSet === 'UTF-8'
             || $charSet === 'ASCII'
@@ -220,8 +223,8 @@ abstract class BreakpointDebugging_Error_InAllCase
             return $string;
         } else if ($charSet === false) {
             $message = 'This isn\'t single character sets.';
-            if ($onceFlag) {
-                $onceFlag = false;
+            if (self::$_onceFlag) {
+                self::$_onceFlag = false;
                 B::internalException($message, 3);
                 // @codeCoverageIgnoreStart
             }

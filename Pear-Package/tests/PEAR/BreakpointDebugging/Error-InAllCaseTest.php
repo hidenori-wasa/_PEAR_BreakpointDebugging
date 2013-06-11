@@ -392,7 +392,13 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_UnitT
         // SJIS + UTF-8
         B::$prependExceptionLog = "\x95\xB6\x8E\x9A \xE6\x96\x87\xE5\xAD\x97 ";
         BU::$exeMode |= B::IGNORING_BREAK_POINT;
-        B::handleException(new \Exception());
+        try {
+            B::handleException(new \Exception());
+        } catch (\Exception $e) {
+            B::$prependExceptionLog = '';
+            B::setPropertyForTest('\BreakpointDebugging_Error_InAllCase', '$_onceFlag', true);
+            throw $e;
+        }
     }
 
 }

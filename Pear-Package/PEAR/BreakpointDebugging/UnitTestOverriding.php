@@ -87,6 +87,11 @@ class BreakpointDebugging_UnitTestOverridingBase extends \PHPUnit_Framework_Test
     private $_exeModeStoring;
 
     /**
+     * @var int The output buffering level.
+     */
+    private $_obLevel;
+
+    /**
      * This method is called before the first test of this test class is run.
      *
      * @return void
@@ -110,6 +115,7 @@ class BreakpointDebugging_UnitTestOverridingBase extends \PHPUnit_Framework_Test
         $callingExceptionHandlerDirectly = &B::refStatic('$_callingExceptionHandlerDirectly');
         $callingExceptionHandlerDirectly = false;
         $this->_exeModeStoring = self::$exeMode;
+        $this->_obLevel = ob_get_level();
     }
 
     /**
@@ -121,10 +127,9 @@ class BreakpointDebugging_UnitTestOverridingBase extends \PHPUnit_Framework_Test
     protected function tearDown()
     {
         self::$exeMode = $this->_exeModeStoring;
-        if (ob_get_level() === 2) {
+        while (ob_get_level() > $this->_obLevel) {
             ob_end_clean();
         }
-        B::assert(ob_get_level() === 1, 101);
     }
 
     /**
@@ -235,7 +240,7 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
                     $this->tearDownAfterClass();
                 }
             } catch (Exception $_e) {
-                B::handleException($e); // Displays error call stack information.
+                B::handleException($_e); // Displays error call stack information.
                 exit;
             }
 

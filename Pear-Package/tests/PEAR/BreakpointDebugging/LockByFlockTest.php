@@ -11,6 +11,12 @@ class BreakpointDebugging_LockByFlockTest extends \BreakpointDebugging_UnitTestO
 {
     protected $lockByFlock;
 
+    static function setUpBeforeClass()
+    {
+        parent::setUpBeforeClass();
+        B::setPropertyForTest('\BreakpointDebugging_Lock', '$_currentClassName', null);
+    }
+
     function setUp()
     {
         parent::setUp();

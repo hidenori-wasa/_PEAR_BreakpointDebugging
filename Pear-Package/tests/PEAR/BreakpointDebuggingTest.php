@@ -58,11 +58,12 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
      */
     function testRefAndGetStatic()
     {
-        $userName = &B::refStatic('$_userName');
-        $this->assertTrue($userName !== 'hidenori');
-        $userName = 'hidenori';
-        $this->assertTrue($userName === 'hidenori');
-        $this->assertTrue(B::getStatic('$_userName') === 'hidenori');
+        $userNameStoring = $userName = &B::refStatic('$_userName');
+        $this->assertTrue($userName !== 'hidenori_hidenori');
+        $userName = 'hidenori_hidenori';
+        $this->assertTrue($userName === 'hidenori_hidenori');
+        $this->assertTrue(B::getStatic('$_userName') === 'hidenori_hidenori');
+        $userName = $userNameStoring;
     }
 
     /**
@@ -159,16 +160,6 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
         B::handleError(E_USER_WARNING, 'dummy');
     }
 
-    /**
-     * @covers \BreakpointDebugging<extended>
-     */
-    public function testBreakpoint_A()
-    {
-        $callStack = debug_backtrace();
-        array_shift($callStack);
-        B::breakpoint('dummy', $callStack);
-    }
-
     function limitAccess_A1()
     {
         B::limitAccess('tests/PEAR/BreakpointDebuggingTest.php');
@@ -231,12 +222,6 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
     {
         B::assert(true);
         B::assert(true, 123);
-        try {
-            // Does not use "B::IGNORING_BREAK_POINT" flag because is needed in code coverage report.
-            B::assert(false);
-        } catch (\Exception $e) {
-
-        }
     }
 
     /**
@@ -309,10 +294,15 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
      */
     public function testConvertMbStringForDebug()
     {
+        if (BU::$exeMode & B::REMOTE) {
+            parent::markTestSkipped();
+        }
+
         BU::markTestSkippedInRelease(); // Because this unit test class method does not exist.
 
         $testArray = array (2, "\xE6\x96\x87\xE5\xAD\x97 ");
         $debugValues = B::convertMbStringForDebug('SJIS', 1, $testArray, "\xE6\x96\x87\xE5\xAD\x97 ");
+
         $cmpArray = array (1, array (2, "\x95\xB6\x8E\x9A "), "\x95\xB6\x8E\x9A ");
         $this->assertTrue($debugValues === $cmpArray);
 

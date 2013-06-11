@@ -38,10 +38,12 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
      */
     function testRefAndGetStatic()
     {
-        $userName = &BA::refStatic('$_userName');
-        $userName = 'hidenori';
-        $this->assertTrue($userName === 'hidenori');
-        $this->assertTrue(BA::getStatic('$_userName') === 'hidenori');
+        $userNameStoring = $userName = &BA::refStatic('$_userName');
+        $this->assertTrue($userName !== 'hidenori_hidenori');
+        $userName = 'hidenori_hidenori';
+        $this->assertTrue($userName === 'hidenori_hidenori');
+        $this->assertTrue(BA::getStatic('$_userName') === 'hidenori_hidenori');
+        $userName = $userNameStoring;
     }
 
     /**
@@ -270,16 +272,6 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
         if ($testAutoload === 3) { // In case of creating new instance.
             new \NativeClass();
         }
-    }
-
-    /**
-     * @covers \BreakpointDebugging_InAllCase<extended>
-     */
-    public function testBreakpoint()
-    {
-        $callStack = debug_backtrace();
-        array_shift($callStack);
-        B::breakpoint('Dummy.', $callStack);
     }
 
     /**
