@@ -151,6 +151,11 @@ abstract class BreakpointDebugging_InAllCase
     private static $_userName = '';
 
     /**
+     * @var string Developer IP for remote error log download, remote code coverage report display and remote unit test.
+     */
+    private static $_developerIP = '127.0.0.1';
+
+    /**
      * @var string This prepend to logging when self::handleException() is called.
      */
     static $prependExceptionLog = '';
@@ -265,6 +270,29 @@ abstract class BreakpointDebugging_InAllCase
         if (self::$_nativeExeMode === self::REMOTE) { // In case of remote debug.
             // Remote debug must end immediately to avoid eternal execution.
             exit;
+        }
+    }
+
+    /**
+     * Checks security before developer runs php page.
+     *
+     * @param int $necessaryExeMode Necessary execution mode.
+     *
+     * @return void
+     */
+    static function checkSecurity($necessaryExeMode)
+    {
+        // Checks the execution mode.
+        if (!(self::$exeMode & $necessaryExeMode)) {
+            exit('<pre>You must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'RELEASE\');" into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file.</pre>');
+        }
+        // Checks client IP address.
+        if ($_SERVER['REMOTE_ADDR'] !== self::$_developerIP) {
+            exit('<pre>You must set "self::$_developerIP" into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file.</pre>');
+        }
+        // Checks the request protocol.
+        if (empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] === 'off') {
+            exit('<pre>You must use "https" protocol.</pre>');
         }
     }
 
@@ -729,6 +757,7 @@ abstract class BreakpointDebugging_InAllCase
         self::$_os = strtoupper(substr(PHP_OS, 0, 3));
         self::$staticProperties['$_os'] = &self::$_os;
         self::$staticProperties['$_userName'] = &self::$_userName;
+        self::$staticProperties['$_developerIP'] = &self::$_developerIP;
         self::$staticProperties['$_maxLogFileByteSize'] = &self::$_maxLogFileByteSize;
         self::$staticProperties['$_maxLogParamNestingLevel'] = &self::$_maxLogParamNestingLevel;
         self::$staticProperties['$_maxLogElementNumber'] = &self::$_maxLogElementNumber;

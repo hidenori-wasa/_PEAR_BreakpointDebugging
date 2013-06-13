@@ -48,7 +48,6 @@ class BreakpointDebugging_UnitTestCallerTest extends \BreakpointDebugging_UnitTe
      */
     public function testIsUnitTestExeMode()
     {
-        B::setPropertyForTest('BreakpointDebugging_UnitTestCaller', '$unitTestDir', null);
         B::isUnitTestExeMode(true);
     }
 

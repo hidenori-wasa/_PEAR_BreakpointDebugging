@@ -3,18 +3,20 @@
 /**
  * Error log files manager.
  *
- * Procedure1: Please, set
+ * Please, execute the following procedure.
+ * Procedure1: Set
  *      "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('RELEASE');"
  *      in "BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php'" file.
- * Procedure2: Please, register your IP address to "$myIPAddress".
- * Procedure3: Please, upload this page to the project current directory.
- * Procedure4: Please, call this page from browser.
- * Procedure5: Please, download by clicking all "Download error log file" button.
- * Procedure6: Please, click "Delete all error log files" button.
- * Procedure7: Please, debug php code by downloaded error log files.
- * Procedure8: Please, go to "Procedure5" if "Download error log file" button exists.
- * Procedure9: Please, upload repaired php code.
- * Procedure10: Please, click "Reset error log files" button.
+ * Procedure2: Register your IP address to "$developerIP".
+ *      in "BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php'" file.
+ * Procedure3: Upload this page to the project current directory.
+ * Procedure4: Call this page from browser.
+ * Procedure5: Download by clicking all "Download error log file" button.
+ * Procedure6: Click "Delete all error log files" button.
+ * Procedure7: Debug php code by downloaded error log files.
+ * Procedure8: Go to "Procedure5" if "Download error log file" button exists.
+ * Procedure9: Upload repaired php code.
+ * Procedure10: Click "Reset error log files" button.
  *
  * PHP version 5.3
  *
@@ -54,24 +56,14 @@
  * @version  SVN: $Id$
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-$myIPAddress = '127.0.0.1'; // Please, enter your IP address.
+//$myIPAddress = '127.0.0.1'; // Please, enter your IP address.
 //////////////////////////////////////////////////////////////////
 require_once './BreakpointDebugging_Including.php';
 
 use \BreakpointDebugging as B;
 
-// Checks the execution mode.
-if (!(B::getStatic('$exeMode') & B::RELEASE)) { // In case of not release.
-    exit('<pre>You must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'RELEASE\');" into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file.</pre>');
-}
-// Checks client IP address.
-if ($_SERVER['REMOTE_ADDR'] !== $myIPAddress) {
-    exit('<pre>You must register your IP address into "$myIPAddress" of this page, then upload it.</pre>');
-}
-// Checks the request protocol.
-if (empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] === 'off') {
-    exit('<pre>You must use "https" protocol.</pre>');
-}
+B::checkSecurity(B::RELEASE);
+
 // Locks error log files.
 $lockByFileExisting = &\BreakpointDebugging_LockByFileExisting::internalSingleton();
 $lockByFileExisting->lock();

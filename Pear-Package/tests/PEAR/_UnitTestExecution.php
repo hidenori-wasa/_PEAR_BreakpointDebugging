@@ -9,7 +9,6 @@ use \BreakpointDebugging as B;
 B::isUnitTestExeMode(true);
 
 // Please, choose unit tests files by customizing.
-// You must specify array element to one if you want step execution.
 $unitTestCommands = array (
     '--stop-on-failure BreakpointDebugging-ExceptionTest.php',
     '--stop-on-failure BreakpointDebugging-InAllCaseTest.php',
@@ -24,7 +23,7 @@ $unitTestCommands = array (
 );
 
 // Executes unit tests.
-// B::executeUnitTest($unitTestCommands, true); exit;
+// B::executeUnitTest($unitTestCommands); exit;
 //
 // Makes up code coverage report, then displays in browser.
 if (B::getStatic('$exeMode') & B::RELEASE) { // In case of release.
@@ -37,7 +36,7 @@ if (B::getStatic('$exeMode') & B::RELEASE) { // In case of release.
 // In case of debug or release.
 // B::displayCodeCoverageReport('BreakpointDebugging-ExceptionTest.php', 'PEAR/BreakpointDebugging_UnitTestCaller.php'); // OK.
 // B::displayCodeCoverageReport('BreakpointDebugging-InAllCaseTest.php', 'PEAR/BreakpointDebugging.php'); // Windows is OK.
-B::displayCodeCoverageReport('BreakpointDebugging-UnitTestCallerTest.php', 'PEAR/BreakpointDebugging_UnitTestCaller.php'); // Windows is not OK.
+//// B::displayCodeCoverageReport('BreakpointDebugging-UnitTestCallerTest.php', 'PEAR/BreakpointDebugging_UnitTestCaller.php'); // Windows is not OK.
 // B::displayCodeCoverageReport('BreakpointDebugging/LockByFileExistingTest.php', array ('PEAR/BreakpointDebugging/Lock.php', 'PEAR/BreakpointDebugging/LockByFileExisting.php')); // OK.
 // B::displayCodeCoverageReport('BreakpointDebugging/LockByFlockTest.php', array ('PEAR/BreakpointDebugging/Lock.php', 'PEAR/BreakpointDebugging/LockByFlock.php')); // OK.
 B::displayCodeCoverageReport('BreakpointDebugging/LockByShmopTest.php', array ('PEAR/BreakpointDebugging/Lock.php', 'PEAR/BreakpointDebugging/LockByShmop.php')); // Release unit test is not OK.

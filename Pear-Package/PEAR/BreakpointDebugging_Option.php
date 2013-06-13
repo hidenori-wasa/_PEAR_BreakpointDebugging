@@ -205,6 +205,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_UnitTestCaller
         parent::$staticPropertyLimitings['$_maxLogElementNumber'] = $tmp;
         parent::$staticPropertyLimitings['$_maxLogStringSize'] = $tmp;
         parent::$staticPropertyLimitings['$_workDir'] = $tmp;
+        parent::$staticPropertyLimitings['$_developerIP'] = $tmp;
         parent::$staticPropertyLimitings['$_onceErrorDispFlag'] = 'BreakpointDebugging/UnitTestOverriding.php';
         parent::$staticPropertyLimitings['$_callingExceptionHandlerDirectly'] = array (
             'BreakpointDebugging/Error.php',

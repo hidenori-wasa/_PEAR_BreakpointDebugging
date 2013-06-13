@@ -294,7 +294,7 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
      */
     public function testConvertMbStringForDebug()
     {
-        if (BU::$exeMode & B::REMOTE) {
+        if (BU::$exeMode & B::REMOTE) { // Because this is class method for local.
             parent::markTestSkipped();
         }
 
