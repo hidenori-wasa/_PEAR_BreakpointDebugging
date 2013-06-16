@@ -151,7 +151,7 @@ abstract class BreakpointDebugging_InAllCase
     private static $_userName = '';
 
     /**
-     * @var string Developer IP for remote error log download, remote code coverage report display and remote unit test.
+     * @var string Developer IP for remote error log file manager, remote code coverage report display and remote unit test.
      */
     private static $_developerIP = '127.0.0.1';
 
@@ -288,7 +288,7 @@ abstract class BreakpointDebugging_InAllCase
         }
         // Checks client IP address.
         if ($_SERVER['REMOTE_ADDR'] !== self::$_developerIP) {
-            exit('<pre>You must set "self::$_developerIP" into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file.</pre>');
+            exit('<pre>You must set "$developerIP" into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file.</pre>');
         }
         // Checks the request protocol.
         if (empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] === 'off') {

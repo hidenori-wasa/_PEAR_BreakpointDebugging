@@ -3,6 +3,11 @@
 /**
  * Class to display code coverage report.
  *
+ * Runs security check of developer's IP, the request protocol and so on.
+ * Then, displays the code coverage report inside "700" permission directory
+ * by embedding its content
+ * if cascading style sheet file path exists in code coverage report file.
+ *
  * PHP version 5.3
  *
  * LICENSE OVERVIEW:
@@ -47,6 +52,7 @@ require_once './BreakpointDebugging_Including.php';
 
 use \BreakpointDebugging as B;
 
+B::limitAccess('BreakpointDebugging_UnitTestCaller.php');
 /**
  * Class to display code coverage report.
  *
@@ -56,11 +62,13 @@ use \BreakpointDebugging as B;
  * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
  * @version  Release: @package_version@
  * @link     http://pear.php.net/package/BreakpointDebugging
+ * @codeCoverageIgnore
+ * Because "phpunit" command cannot run during "phpunit" command running.
  */
 class BreakpointDebugging_DisplayCodeCoverageReport
 {
     /**
-     * Displays the code coverage report.
+     * Displays the code coverage report in browser.
      *
      * @return void
      */
@@ -68,7 +76,51 @@ class BreakpointDebugging_DisplayCodeCoverageReport
     {
         // If we pushed "Code coverage report" button.
         if (isset($_GET['classFilePath'])) {
-            self::_displayCodeCoverageReport($_GET['classFilePath'], $_GET['codeCoverageReportDir']);
+            $classFilePath = str_replace(array ('/', '\\'), '_', $_GET['classFilePath']);
+            $codeCoverageReportDir = str_replace('\\', '/', $_GET['codeCoverageReportDir']);
+            // Opens code coverage report.
+            $pFile = fopen("$codeCoverageReportDir/$classFilePath.html", 'rb');
+            while (!feof($pFile)) {
+                $line = fgets($pFile);
+                // Outputs raw data after that if header ends.
+                if (preg_match('`</head[[:^alpha:]]`xXi', $line)) {
+                    echo $line;
+                    break;
+                }
+
+                // $line = '    <link rel="stylesheet" type="text/css" href="style.css">    <link rel="stylesheet" type="text/css" href="other_style.css">'; // For debug.
+                $pattern = '`(.*)(<.*href[[:blank:]]*=[[:blank:]]*"(.*\.css)"[[:blank:]]*>)`xXiU';
+                $matches = array ();
+                // Embeds its content if cascading style sheet file path exists.
+                if (preg_match_all($pattern, $line, $matches)) {
+                    $lastStrlen = 0;
+                    $replaceLine = '';
+                    for ($count = 0; $count < count($matches[1]); $count++) {
+                        $match0 = $matches[0][$count];
+                        $match1 = $matches[1][$count];
+                        $match2 = $matches[2][$count];
+                        $match3 = $matches[3][$count];
+                        $cssFilePath = $codeCoverageReportDir . '/' . $match3;
+                        if (file_exists($cssFilePath)) {
+                            $replacement = '<style type="text/css">' . PHP_EOL
+                                . '<!--' . PHP_EOL
+                                . file_get_contents($cssFilePath)
+                                . '-->' . PHP_EOL
+                                . '</style>' . PHP_EOL;
+                        } else {
+                            $replacement = $match2;
+                        }
+                        $lastStrlen += strlen($match0);
+                        $replaceLine .= $match1 . $replacement;
+                    }
+                    $replaceLine .= substr($line, $lastStrlen);
+                    echo $replaceLine;
+                } else {
+                    echo $line;
+                }
+            }
+            fpassthru($pFile);
+            fclose($pFile);
         } else { // In case of first time when this page was called.
             $codeCoverageReportDir = B::getStatic('$_codeCoverageReportDir');
             $classFilePaths = B::getStatic('$_classFilePaths');
@@ -93,29 +145,6 @@ class BreakpointDebugging_DisplayCodeCoverageReport
 EOD;
             }
         }
-    }
-
-    /**
-     * Displays the code coverage report in browser.
-     *
-     * @param string $classFilePath         Class file path.
-     * @param string $codeCoverageReportDir Code coverage report directory.
-     *
-     * @return void
-     * @codeCoverageIgnore
-     * Because "phpunit" command cannot run during "phpunit" command running.
-     */
-    private function _displayCodeCoverageReport($classFilePath, $codeCoverageReportDir)
-    {
-        B::assert(func_num_args() === 2, 1);
-        B::assert(is_string($classFilePath), 2);
-        B::assert(is_string($codeCoverageReportDir), 3);
-
-        $classFilePath = str_replace(array ('/', '\\'), '_', $classFilePath);
-        $codeCoverageReportDir = str_replace('\\', '/', $codeCoverageReportDir);
-        $codeCoverageReportDir = substr($codeCoverageReportDir, strlen($_SERVER['DOCUMENT_ROOT']) + 1);
-        $projectDirPath = str_repeat('../', preg_match_all('`/`xX', $_SERVER['PHP_SELF'], $matches) - 1);
-        header("Location: $projectDirPath$codeCoverageReportDir/$classFilePath.html");
     }
 
 }

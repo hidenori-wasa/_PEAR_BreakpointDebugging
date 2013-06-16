@@ -7,7 +7,7 @@
  * Procedure1: Set
  *      "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('RELEASE');"
  *      in "BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php'" file.
- * Procedure2: Register your IP address to "$developerIP".
+ * Procedure2: Register your IP address to "$developerIP"
  *      in "BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php'" file.
  * Procedure3: Upload this page to the project current directory.
  * Procedure4: Call this page from browser.
@@ -56,7 +56,6 @@
  * @version  SVN: $Id$
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-//$myIPAddress = '127.0.0.1'; // Please, enter your IP address.
 //////////////////////////////////////////////////////////////////
 require_once './BreakpointDebugging_Including.php';
 

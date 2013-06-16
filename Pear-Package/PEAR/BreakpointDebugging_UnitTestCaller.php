@@ -170,14 +170,10 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <style type="text/css">
             <!--
-            body
+            body, input
             {
-                background-color: #fff;
-                color: #2e3436;
-                font-size: 1em;
+                font-size: 1.5em;
                 font-weight: bold;
-                margin: 0 auto;
-                width: 100%;
             }
             -->
         </style>

@@ -42,6 +42,14 @@ How to sniff my code.
 Notice
     "Pear-Package" directory is project directory of "NetBeans IDE 7.1.2 for Windows".
     Also, "NetBeans IDE 7.3" cannot keep switchback at April, 2013.
+    Example:
+        if ($a
+            && $b
+            && ($c || $d)
+            || ($e && $f)
+        ) {
+            return;
+        }
     However, "NetBeans IDE 7.3" supports "PHP5.4" and "HTML5".
 
     I have done coding of remote unit test and remote code coverage report.

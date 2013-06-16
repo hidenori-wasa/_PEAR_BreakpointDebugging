@@ -150,7 +150,7 @@ function BreakpointDebugging_mySetting()
 {
     // ### Item setting. ===>
     $developerIP = &B::refStatic('$_developerIP');
-    // $developerIP = '127.0.0.1'; // Please, enter developer IP address. However, comment out this in case of release.
+    // $developerIP = '219.116.1.31'; // Please, enter developer IP address. However, comment out this in case of release.
     $language = 'Japanese';
     $timezone = 'Asia/Tokyo';
     $SMTP = '<Your SMTP server>';
