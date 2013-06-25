@@ -1,10 +1,10 @@
 <?php
 
 /**
- * ?????
+ * The class for running unit test continuously.
  *
- * ?????
- * ?????
+ * I stripped "exit()" in case of success unit test because I want to execute continuously.
+ * I hope to do "exit()" outside this parent class method in case of success unit test because this file is not needed.
  *
  * PHP version 5.3
  *
@@ -46,7 +46,8 @@
  */
 if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
     /**
-     * ?????
+     * I stripped "exit()" in case of success unit test because I want to execute continuously.
+     * I hope to do "exit()" outside this parent class method in case of success unit test because this file is not needed.
      *
      * @category PHP
      * @package  BreakpointDebugging
@@ -58,8 +59,10 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
     class BreakpointDebugging_PHPUnitTextUICommand extends \PHPUnit_TextUI_Command
     {
         /**
-         * @param array   $argv
-         * @param boolean $exit
+         * Runs "phpunit" command. Overrides this for running a unit tests continuously.
+         *
+         * @param array   $argv Parameters of "phpunit" command.
+         * @param boolean $exit Ends running in case of success?
          *
          * @return int Result status value.
          */
@@ -109,7 +112,8 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
                 if ($exit) {
                     exit(PHPUnit_TextUI_TestRunner::SUCCESS_EXIT);
                 } else {
-                    return PHPUnit_TextUI_TestRunner::SUCCESS_EXIT;
+                    $ret = PHPUnit_TextUI_TestRunner::SUCCESS_EXIT;
+                    goto AFTER_TREATMENT;
                 }
             }
 
@@ -129,6 +133,9 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
             } else if (!isset($result) || $result->errorCount() > 0) {
                 $ret = PHPUnit_TextUI_TestRunner::EXCEPTION_EXIT;
             }
+
+            AFTER_TREATMENT:
+            BreakpointDebugging_PHPUnitUtilGlobalState::initializeGlobalsForNextTestFile();
 
             return $ret;
         }

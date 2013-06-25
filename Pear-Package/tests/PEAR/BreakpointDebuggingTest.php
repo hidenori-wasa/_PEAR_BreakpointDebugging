@@ -4,7 +4,7 @@ chdir(__DIR__ . '/../../');
 require_once './BreakpointDebugging_Including.php';
 
 use \BreakpointDebugging as B;
-use \BreakpointDebugging_UnitTestOverridingBase as BU;
+use \BreakpointDebugging_UnitTestCaller as BU;
 
 B::isUnitTestExeMode(true);
 /**
@@ -58,12 +58,11 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
      */
     function testRefAndGetStatic()
     {
-        $userNameStoring = $userName = &B::refStatic('$_userName');
+        $userName = &B::refStatic('$_userName');
         $this->assertTrue($userName !== 'hidenori_hidenori');
         $userName = 'hidenori_hidenori';
         $this->assertTrue($userName === 'hidenori_hidenori');
         $this->assertTrue(B::getStatic('$_userName') === 'hidenori_hidenori');
-        $userName = $userNameStoring;
     }
 
     /**
@@ -173,19 +172,15 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_UnitTestOverriding
     function limitAccess_A3()
     {
         $includePaths = &B::refStatic('$_includePaths');
-        $storeIncludePaths = $includePaths;
         $includePaths = null;
         B::limitAccess('tests/PEAR/BreakpointDebuggingTest.php');
-        $includePaths = $storeIncludePaths;
     }
 
     function limitAccess_A4()
     {
         $includePaths = &B::refStatic('$_includePaths');
-        $storeIncludePaths = $includePaths;
         $includePaths = null;
         B::limitAccess('tests/PEAR/BreakpointDebuggingTest.php', true);
-        $includePaths = $storeIncludePaths;
     }
 
     function limitAccess_A5()

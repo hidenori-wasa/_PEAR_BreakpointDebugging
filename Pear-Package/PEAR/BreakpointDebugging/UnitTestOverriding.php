@@ -1,12 +1,10 @@
 <?php
 
 /**
- * (Debugs one unit test file, or tests the all unit test files) by "\BreakpointDebugging::executeUnitTest()" class method.
+ * Debugs unit tests by IDE or tests multiprocess unit tests by command.  With "\BreakpointDebugging::executeUnitTest()" class method.
  *
  * This class extends "PHPUnit_Framework_TestCase".
- * This class does not use "phpunit" command to debug its unit test file
- * if array parameter element of "\BreakpointDebugging::executeUnitTest()" is one.
- * Therefore, we can execute unit test with remote server without installing "PHPUnit".
+ * Also, we can execute unit test with remote server without installing "PHPUnit".
  * Please, add following into "\PHPUnit_Framework_TestCase" class.
  *      function __get($propertyName)
  *      {
@@ -77,29 +75,9 @@ use \BreakpointDebugging as B;
 class BreakpointDebugging_UnitTestOverridingBase extends \PHPUnit_Framework_TestCase
 {
     /**
-     * @var int Execution mode. We must call this property correctly because this property is reference.
-     */
-    static $exeMode;
-
-    /**
-     * @var int Execution mode storing.
-     */
-    private $_exeModeStoring;
-
-    /**
      * @var int The output buffering level.
      */
     private $_obLevel;
-
-    /**
-     * This method is called before the first test of this test class is run.
-     *
-     * @return void
-     */
-    static function setUpBeforeClass()
-    {
-        self::$exeMode = &B::refStatic('$exeMode');
-    }
 
     /**
      * This method is called before a test class method is executed.
@@ -110,11 +88,6 @@ class BreakpointDebugging_UnitTestOverridingBase extends \PHPUnit_Framework_Test
     protected function setUp()
     {
         @unlink(B::getStatic('$_workDir') . '/LockByFileExistingOfInternal.txt');
-        $onceErrorDispFlag = &B::refStatic('$_onceErrorDispFlag');
-        $onceErrorDispFlag = false;
-        $callingExceptionHandlerDirectly = &B::refStatic('$_callingExceptionHandlerDirectly');
-        $callingExceptionHandlerDirectly = false;
-        $this->_exeModeStoring = self::$exeMode;
         $this->_obLevel = ob_get_level();
     }
 
@@ -126,33 +99,156 @@ class BreakpointDebugging_UnitTestOverridingBase extends \PHPUnit_Framework_Test
      */
     protected function tearDown()
     {
-        self::$exeMode = $this->_exeModeStoring;
         while (ob_get_level() > $this->_obLevel) {
             ob_end_clean();
         }
     }
 
     /**
-     * Marks the test as skipped in debug.
+     * Overrides "\PHPUnit_Framework_TestCase::runBare()" to display call stack when error occurred.
+     * Also, bug fix of parent class method.
      *
      * @return void
      */
-    protected static function markTestSkippedInDebug()
+    public function runBare()
     {
-        if (!(self::$exeMode & B::RELEASE)) {
-            parent::markTestSkipped();
-        }
-    }
+        static $globalsStoring = null;
 
-    /**
-     * Marks the test as skipped in release.
-     *
-     * @return void
-     */
-    protected static function markTestSkippedInRelease()
-    {
-        if (self::$exeMode & B::RELEASE) {
-            parent::markTestSkipped();
+        $this->numAssertions = 0;
+
+        // Backup the $GLOBALS array and static attributes.
+        if ($this->runTestInSeparateProcess !== TRUE
+            && $this->inIsolation !== TRUE
+        ) {
+            if ($this->backupGlobals === NULL
+                || $this->backupGlobals === TRUE
+            ) {
+                // ### Bug fixed from: PHPUnit_Util_GlobalState::backupGlobals($this->backupGlobalsBlacklist);
+                // ### To:
+                if (!isset($globalsStoring)) {
+                    // Stores a variable. We must not store by serialization because serialization cannot store resource and array element reference variable.
+                    $globalsStoring = $GLOBALS;
+                }
+            }
+
+            if (version_compare(PHP_VERSION, '5.3', '>')
+                && $this->backupStaticAttributes === TRUE
+            ) {
+                BreakpointDebugging_PHPUnitUtilGlobalState::backupStaticAttributes($this->backupStaticAttributesBlacklist);
+            }
+        }
+
+        // Start output buffering.
+        ob_start();
+        $this->outputBufferingActive = TRUE;
+
+        // Clean up stat cache.
+        clearstatcache();
+
+        try {
+            if ($this->inIsolation) {
+                $this->setUpBeforeClass();
+            }
+
+            $this->setExpectedExceptionFromAnnotation();
+            $this->setUp();
+            $this->checkRequirements();
+            $this->assertPreConditions();
+            $this->testResult = $this->runTest();
+            $this->verifyMockObjects();
+            $this->assertPostConditions();
+            $this->status = PHPUnit_Runner_BaseTestRunner::STATUS_PASSED;
+        } catch (PHPUnit_Framework_IncompleteTest $e) {
+            $this->status = PHPUnit_Runner_BaseTestRunner::STATUS_INCOMPLETE;
+            $this->statusMessage = $e->getMessage();
+        } catch (PHPUnit_Framework_SkippedTest $e) {
+            $this->status = PHPUnit_Runner_BaseTestRunner::STATUS_SKIPPED;
+            $this->statusMessage = $e->getMessage();
+        } catch (PHPUnit_Framework_AssertionFailedError $e) {
+            B::handleException($e); // Displays error call stack information.
+            exit;
+        } catch (Exception $e) {
+            B::handleException($e); // Displays error call stack information.
+            exit;
+        }
+
+        // Tear down the fixture. An exception raised in tearDown() will be
+        // caught and passed on when no exception was raised before.
+        try {
+            $this->tearDown();
+            if ($this->inIsolation) {
+                $this->tearDownAfterClass();
+            }
+        } catch (Exception $_e) {
+            B::handleException($_e); // Displays error call stack information.
+            exit;
+        }
+
+        // Stop output buffering.
+        if ($this->outputCallback === FALSE) {
+            $this->output = ob_get_contents();
+        } else {
+            $this->output = call_user_func_array($this->outputCallback, array (ob_get_contents()));
+        }
+
+        ob_end_clean();
+        $this->outputBufferingActive = FALSE;
+
+        // Clean up stat cache.
+        clearstatcache();
+
+        // Restore the $GLOBALS array and static attributes.
+        if ($this->runTestInSeparateProcess !== TRUE
+            && $this->inIsolation !== TRUE
+        ) {
+            if ($this->backupGlobals === NULL
+                || $this->backupGlobals === TRUE
+            ) {
+                // ### Bug fixed from: PHPUnit_Util_GlobalState::restoreGlobals($this->backupGlobalsBlacklist);
+                // ### To:
+                // Restores variable. We must not restore by reference copy because variable ID changes.
+                $GLOBALS = $globalsStoring;
+            }
+
+            if (version_compare(PHP_VERSION, '5.3', '>')
+                && $this->backupStaticAttributes === TRUE
+            ) {
+                BreakpointDebugging_PHPUnitUtilGlobalState::restoreStaticAttributes();
+            }
+        }
+
+        // Clean up INI settings.
+        foreach ($this->iniSettings as $varName => $oldValue) {
+            ini_set($varName, $oldValue);
+        }
+
+        $this->iniSettings = array ();
+
+        // Clean up locale settings.
+        foreach ($this->locale as $category => $locale) {
+            setlocale($category, $locale);
+        }
+
+        // Perform assertion on output.
+        if (!isset($e)) {
+            try {
+                if ($this->outputExpectedRegex !== NULL) {
+                    $this->hasPerformedExpectationsOnOutput = TRUE;
+                    $this->assertRegExp($this->outputExpectedRegex, $this->output);
+                    $this->outputExpectedRegex = NULL;
+                } else if ($this->outputExpectedString !== NULL) {
+                    $this->hasPerformedExpectationsOnOutput = TRUE;
+                    $this->assertEquals($this->outputExpectedString, $this->output);
+                    $this->outputExpectedString = NULL;
+                }
+            } catch (Exception $_e) {
+                $e = $_e;
+            }
+        }
+
+        // Workaround for missing "finally".
+        if (isset($e)) {
+            $this->onNotSuccessfulTest($e);
         }
     }
 
@@ -172,143 +268,6 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
      */
     class BreakpointDebugging_UnitTestOverriding extends \BreakpointDebugging_UnitTestOverridingBase
     {
-        /**
-         * Overrides "\PHPUnit_Framework_TestCase::runBare()" to display call stack when error occurred.
-         *
-         * @return void
-         */
-        public function runBare()
-        {
-            $this->numAssertions = 0;
-
-            // Backup the $GLOBALS array and static attributes.
-            if ($this->runTestInSeparateProcess !== TRUE
-                && $this->inIsolation !== TRUE
-            ) {
-                if ($this->backupGlobals === NULL
-                    || $this->backupGlobals === TRUE
-                ) {
-                    PHPUnit_Util_GlobalState::backupGlobals($this->backupGlobalsBlacklist);
-                }
-
-                if (version_compare(PHP_VERSION, '5.3', '>')
-                    && $this->backupStaticAttributes === TRUE
-                ) {
-                    PHPUnit_Util_GlobalState::backupStaticAttributes($this->backupStaticAttributesBlacklist);
-                }
-            }
-
-            // Start output buffering.
-            ob_start();
-            $this->outputBufferingActive = TRUE;
-
-            // Clean up stat cache.
-            clearstatcache();
-
-            try {
-                if ($this->inIsolation) {
-                    $this->setUpBeforeClass();
-                }
-
-                $this->setExpectedExceptionFromAnnotation();
-                $this->setUp();
-                $this->checkRequirements();
-                $this->assertPreConditions();
-                $this->testResult = $this->runTest();
-                $this->verifyMockObjects();
-                $this->assertPostConditions();
-                $this->status = PHPUnit_Runner_BaseTestRunner::STATUS_PASSED;
-            } catch (PHPUnit_Framework_IncompleteTest $e) {
-                $this->status = PHPUnit_Runner_BaseTestRunner::STATUS_INCOMPLETE;
-                $this->statusMessage = $e->getMessage();
-            } catch (PHPUnit_Framework_SkippedTest $e) {
-                $this->status = PHPUnit_Runner_BaseTestRunner::STATUS_SKIPPED;
-                $this->statusMessage = $e->getMessage();
-            } catch (PHPUnit_Framework_AssertionFailedError $e) {
-                B::handleException($e); // Displays error call stack information.
-                exit;
-            } catch (Exception $e) {
-                B::handleException($e); // Displays error call stack information.
-                exit;
-            }
-
-            // Tear down the fixture. An exception raised in tearDown() will be
-            // caught and passed on when no exception was raised before.
-            try {
-                $this->tearDown();
-                if ($this->inIsolation) {
-                    $this->tearDownAfterClass();
-                }
-            } catch (Exception $_e) {
-                B::handleException($_e); // Displays error call stack information.
-                exit;
-            }
-
-            // Stop output buffering.
-            if ($this->outputCallback === FALSE) {
-                $this->output = ob_get_contents();
-            } else {
-                $this->output = call_user_func_array($this->outputCallback, array (ob_get_contents()));
-            }
-
-            ob_end_clean();
-            $this->outputBufferingActive = FALSE;
-
-            // Clean up stat cache.
-            clearstatcache();
-
-            // Restore the $GLOBALS array and static attributes.
-            if ($this->runTestInSeparateProcess !== TRUE
-                && $this->inIsolation !== TRUE
-            ) {
-                if ($this->backupGlobals === NULL
-                    || $this->backupGlobals === TRUE
-                ) {
-                    PHPUnit_Util_GlobalState::restoreGlobals($this->backupGlobalsBlacklist);
-                }
-
-                if (version_compare(PHP_VERSION, '5.3', '>')
-                    && $this->backupStaticAttributes === TRUE
-                ) {
-                    PHPUnit_Util_GlobalState::restoreStaticAttributes();
-                }
-            }
-
-            // Clean up INI settings.
-            foreach ($this->iniSettings as $varName => $oldValue) {
-                ini_set($varName, $oldValue);
-            }
-
-            $this->iniSettings = array ();
-
-            // Clean up locale settings.
-            foreach ($this->locale as $category => $locale) {
-                setlocale($category, $locale);
-            }
-
-            // Perform assertion on output.
-            if (!isset($e)) {
-                try {
-                    if ($this->outputExpectedRegex !== NULL) {
-                        $this->hasPerformedExpectationsOnOutput = TRUE;
-                        $this->assertRegExp($this->outputExpectedRegex, $this->output);
-                        $this->outputExpectedRegex = NULL;
-                    } else if ($this->outputExpectedString !== NULL) {
-                        $this->hasPerformedExpectationsOnOutput = TRUE;
-                        $this->assertEquals($this->outputExpectedString, $this->output);
-                        $this->outputExpectedString = NULL;
-                    }
-                } catch (Exception $_e) {
-                    $e = $_e;
-                }
-            }
-
-            // Workaround for missing "finally".
-            if (isset($e)) {
-                $this->onNotSuccessfulTest($e);
-            }
-        }
-
         /**
          * Overrides "\PHPUnit_Framework_TestCase::runTest()" to display call stack when annotation failed.
          *

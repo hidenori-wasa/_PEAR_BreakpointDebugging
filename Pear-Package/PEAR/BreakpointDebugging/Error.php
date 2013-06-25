@@ -178,6 +178,7 @@ abstract class BreakpointDebugging_Error_InAllCase
         $tags['font']['int'] = '';
         $tags['font']['float'] = '';
         $tags['font']['string'] = '';
+        $tags['font']['blue'] = '';
         $tags['font']['null'] = '';
         $tags['font']['resource'] = '';
         $tags['font']['=>'] = '';
@@ -201,8 +202,6 @@ abstract class BreakpointDebugging_Error_InAllCase
         $this->tags['/pre'] = PHP_EOL . PHP_EOL;
         $this->tags['i'] = '';
         $this->tags['/i'] = '';
-        $this->tags['b'] = '';
-        $this->tags['/b'] = '';
     }
 
     /**
@@ -315,14 +314,14 @@ abstract class BreakpointDebugging_Error_InAllCase
             if ($loggedArray === $array) {
                 // Skips same array.
                 $loggedArrayNumber++;
-                $this->logBufferWriting($pTmpLog, PHP_EOL . $tabs . $paramName . $this->tags['font']['=>'] . ' => ' . $this->tags['/font'] . $this->tags['b'] . "same array #$loggedArrayNumber" . $this->tags['/b'] . ' (');
+                $this->logBufferWriting($pTmpLog, PHP_EOL . $tabs . $paramName . $this->tags['font']['=>'] . ' => ' . $this->tags['/font'] . $this->tags['font']['blue'] . "same array #$loggedArrayNumber" . $this->tags['/font'] . ' (');
                 $this->logBufferWriting($pTmpLog, PHP_EOL . $tabs . "\t...");
                 goto AFTER_TREATMENT;
             }
         }
         // Memory is not used unless value is overwritten.
         $this->_loggedArrays[] = $array;
-        $this->logBufferWriting($pTmpLog, PHP_EOL . $tabs . $paramName . $this->tags['font']['=>'] . ' => ' . $this->tags['/font'] . $this->tags['b'] . 'array #' . count($this->_loggedArrays) . $this->tags['/b'] . ' (');
+        $this->logBufferWriting($pTmpLog, PHP_EOL . $tabs . $paramName . $this->tags['font']['=>'] . ' => ' . $this->tags['/font'] . $this->tags['font']['blue'] . 'array #' . count($this->_loggedArrays) . $this->tags['/font'] . ' (');
         // Beyond max log param nesting level.
         if ($tabNumber >= B::getStatic('$_maxLogParamNestingLevel')) {
             $this->logBufferWriting($pTmpLog, PHP_EOL . $tabs . "\t...");
@@ -374,13 +373,13 @@ abstract class BreakpointDebugging_Error_InAllCase
             if ($loggedObject === $object) {
                 // Skips same object.
                 $loggedObjectNumber++;
-                $this->logBufferWriting($pTmpLog, PHP_EOL . $tabs . $paramName . $this->tags['font']['=>'] . ' => ' . $this->tags['/font'] . $this->tags['b'] . "same class object #$loggedObjectNumber " . $this->tags['/b'] . $this->tags['i'] . $className . $this->tags['/i'] . PHP_EOL . $tabs . '{');
+                $this->logBufferWriting($pTmpLog, PHP_EOL . $tabs . $paramName . $this->tags['font']['=>'] . ' => ' . $this->tags['/font'] . $this->tags['font']['blue'] . "same class object #$loggedObjectNumber " . $this->tags['/font'] . $this->tags['i'] . $className . $this->tags['/i'] . PHP_EOL . $tabs . '{');
                 $this->logBufferWriting($pTmpLog, PHP_EOL . $tabs . "\t...");
                 goto AFTER_TREATMENT;
             }
         }
         $this->_loggedObjects[] = $object;
-        $this->logBufferWriting($pTmpLog, PHP_EOL . $tabs . $paramName . $this->tags['font']['=>'] . ' => ' . $this->tags['/font'] . $this->tags['b'] . 'class object #' . count($this->_loggedObjects) . ' ' . $this->tags['/b'] . $this->tags['i'] . $className . $this->tags['/i'] . PHP_EOL . $tabs . '{');
+        $this->logBufferWriting($pTmpLog, PHP_EOL . $tabs . $paramName . $this->tags['font']['=>'] . ' => ' . $this->tags['/font'] . $this->tags['font']['blue'] . 'class object #' . count($this->_loggedObjects) . ' ' . $this->tags['/font'] . $this->tags['i'] . $className . $this->tags['/i'] . PHP_EOL . $tabs . '{');
         // Beyond max log param nesting level.
         if ($tabNumber >= B::getStatic('$_maxLogParamNestingLevel')) {
             $this->logBufferWriting($pTmpLog, PHP_EOL . $tabs . "\t...");
@@ -567,10 +566,10 @@ abstract class BreakpointDebugging_Error_InAllCase
     {
         if (strripos($file, 'test.php') === strlen($file) - strlen('test.php')) {
             if ($file) {
-                $this->logBufferWriting($pTmpLog, PHP_EOL . $this->mark . 'Error file =======>' . $this->tags['b'] . $this->tags['font']['string'] . '\'' . $file . '\'' . $this->tags['/font'] . $this->tags['/b']);
+                $this->logBufferWriting($pTmpLog, PHP_EOL . $this->mark . 'Error file =======>' . $this->tags['font']['blue'] . '\'' . $file . '\'' . $this->tags['/font']);
             }
             if ($line) {
-                $this->logBufferWriting($pTmpLog, PHP_EOL . $this->mark . 'Error line =======>' . $this->tags['b'] . $this->tags['font']['int'] . $line . $this->tags['/font'] . $this->tags['/b']);
+                $this->logBufferWriting($pTmpLog, PHP_EOL . $this->mark . 'Error line =======>' . $this->tags['font']['blue'] . $line . $this->tags['/font']);
             }
         } else {
             if ($file) {
@@ -625,7 +624,7 @@ abstract class BreakpointDebugging_Error_InAllCase
                     && $file === $noFixFile
                 ) {
                     $marks = str_repeat($this->mark, 10);
-                    $this->logBufferWriting($pTmpLog, PHP_EOL . $tabs . $this->tags['font']['caution'] . $marks . $this->tags['b'] . ' This function has been not fixed. ' . $this->tags['/b'] . $marks . $this->tags['/font']);
+                    $this->logBufferWriting($pTmpLog, PHP_EOL . $tabs . $this->tags['font']['blue'] . $marks . ' This function has been not fixed. ' . $marks . $this->tags['/font']);
                     if ($onceFlag2) {
                         $onceFlag2 = false;
                         $this->addParameterHeaderToLog($pTmpLog, $noFixFile, $line, $func, $class);
@@ -870,7 +869,7 @@ abstract class BreakpointDebugging_Error_InAllCase
                     if ($loggedCall === $call) {
                         // Skips same call stack.
                         $loggedCallNumber++;
-                        $this->logBufferWriting($dummy, PHP_EOL . $this->tags['b'] . "same function call #$loggedCallNumber" . $this->tags['/b'] . " ...");
+                        $this->logBufferWriting($dummy, PHP_EOL . $this->tags['font']['blue'] . "same function call #$loggedCallNumber" . $this->tags['/font'] . " ...");
                         $file = '';
                         $line = '';
                         $func = '';
@@ -882,7 +881,8 @@ abstract class BreakpointDebugging_Error_InAllCase
                 array_key_exists('line', $call) ? $line = $call['line'] : $line = '';
 
                 $this->_loggedCallStacks[] = $call;
-                $this->logBufferWriting($dummy, PHP_EOL . $this->tags['b'] . 'function call #' . count($this->_loggedCallStacks) . $this->tags['/b']);
+                $this->logBufferWriting($dummy, PHP_EOL . $this->tags['font']['blue'] . 'function call #' . count($this->_loggedCallStacks) . $this->tags['/font']);
+
 
                 $this->outputFixedFunctionToLogging($call, $dummy, $onceFlag2, $func, $class, $file, $line);
                 if (is_array($call)
@@ -1008,7 +1008,7 @@ abstract class BreakpointDebugging_Error_InAllCase
                 $this->logBufferWriting($pTmpLog, $this->getParamInfo($this->tags, 'string', $paramValue) . $this->tags['i'] . '... (length=' . $strlen . ')' . $this->tags['/i']);
             }
         } else if (is_resource($paramValue)) {
-            $tmp = $this->tags['b'] . 'resource' . $this->tags['/b'] . ' ' .
+            $tmp = $this->tags['font']['blue'] . 'resource' . $this->tags['/font'] . ' ' .
                 $this->tags['i'] . get_resource_type($paramValue) . $this->tags['/i'] . ' ' .
                 $this->tags['font']['resource'] . $paramValue . $this->tags['/font'];
             $this->logBufferWriting($pTmpLog, $tmp);

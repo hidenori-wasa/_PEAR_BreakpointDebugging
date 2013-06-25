@@ -1,7 +1,7 @@
 <?php
 
 use \BreakpointDebugging as B;
-use \BreakpointDebugging_UnitTestOverridingBase as BU;
+use \BreakpointDebugging_UnitTestCaller as BU;
 
 function test4_()
 {

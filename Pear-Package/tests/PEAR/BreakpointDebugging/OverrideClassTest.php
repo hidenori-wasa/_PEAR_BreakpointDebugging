@@ -73,7 +73,6 @@ class BreakpointDebugging_OverrideClassTest extends \BreakpointDebugging_UnitTes
         ob_start();
         // Calls auto-class-method which have been not defined in "NativeClassOverriding" class.
         $this->NativeClassOverriding->publicFunction();
-        ob_end_clean();
     }
 
     /**
@@ -87,7 +86,6 @@ class BreakpointDebugging_OverrideClassTest extends \BreakpointDebugging_UnitTes
         ob_start();
         // Calls auto-class-method which have been not defined.
         $this->NativeClassOverriding->notExistFunction();
-        ob_end_clean();
     }
 
     /**
@@ -99,7 +97,6 @@ class BreakpointDebugging_OverrideClassTest extends \BreakpointDebugging_UnitTes
         // Calls static-class-method which have been not defined in "NativeClassOverriding" class.
         NativeClassOverriding::publicStaticFunction();
         NativeClassOverriding::publicStaticFunction('test1', 'test2');
-        ob_end_clean();
     }
 
     /**

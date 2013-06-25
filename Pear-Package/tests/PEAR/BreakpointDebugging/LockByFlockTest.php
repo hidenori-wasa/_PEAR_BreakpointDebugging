@@ -4,18 +4,12 @@ chdir(__DIR__ . '/../../../');
 require_once './BreakpointDebugging_Including.php';
 
 use \BreakpointDebugging as B;
-use \BreakpointDebugging_UnitTestOverridingBase as BU;
+use \BreakpointDebugging_UnitTestCaller as BU;
 
 B::isUnitTestExeMode(true);
 class BreakpointDebugging_LockByFlockTest extends \BreakpointDebugging_UnitTestOverriding
 {
     protected $lockByFlock;
-
-    static function setUpBeforeClass()
-    {
-        parent::setUpBeforeClass();
-        B::setPropertyForTest('\BreakpointDebugging_Lock', '$_currentClassName', null);
-    }
 
     function setUp()
     {
@@ -173,6 +167,7 @@ class BreakpointDebugging_LockByFlockTest extends \BreakpointDebugging_UnitTestO
     function testSingleton_B()
     {
         BU::markTestSkippedInRelease(); // Because this unit test is assertion.
+
         // Constructs instance of other class.
         $lockByFileExisting = &\BreakpointDebugging_LockByFileExisting::singleton(5, 10);
     }
@@ -187,7 +182,7 @@ class BreakpointDebugging_LockByFlockTest extends \BreakpointDebugging_UnitTestO
     {
         BU::markTestSkippedInRelease(); // Because this unit test is assertion.
 
-        if ((B::getStatic('$exeMode') & B::REMOTE)
+        if ((BU::$exeMode & B::REMOTE)
             && !extension_loaded('shmop')
         ) {
             $this->markTestSkipped('"shmop" extention has been not loaded.');

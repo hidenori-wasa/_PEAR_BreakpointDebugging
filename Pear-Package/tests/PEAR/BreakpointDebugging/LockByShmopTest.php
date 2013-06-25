@@ -4,23 +4,18 @@ chdir(__DIR__ . '/../../../');
 require_once './BreakpointDebugging_Including.php';
 
 use \BreakpointDebugging as B;
-use \BreakpointDebugging_UnitTestOverridingBase as BU;
+use \BreakpointDebugging_UnitTestCaller as BU;
 
 B::isUnitTestExeMode(true);
 class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_UnitTestOverriding
 {
     protected $LockByShmop;
 
-    static function setUpBeforeClass()
-    {
-        parent::setUpBeforeClass();
-        B::setPropertyForTest('\BreakpointDebugging_Lock', '$_currentClassName', null);
-    }
-
     function setUp()
     {
         parent::setUp();
-        if ((B::getStatic('$exeMode') & B::REMOTE)
+
+        if ((BU::$exeMode & B::REMOTE)
             && !extension_loaded('shmop')
         ) {
             $this->markTestSkipped('"shmop" extention has been not loaded.');

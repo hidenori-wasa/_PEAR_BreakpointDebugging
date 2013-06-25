@@ -7,23 +7,22 @@ require_once './BreakpointDebugging_Including.php';
 use \BreakpointDebugging as B;
 
 B::isUnitTestExeMode(true);
-
 // Please, choose unit tests files by customizing.
 $unitTestCommands = array (
-    '--stop-on-failure BreakpointDebugging-ExceptionTest.php',
-    '--stop-on-failure BreakpointDebugging-InAllCaseTest.php',
-    '--stop-on-failure BreakpointDebuggingTest.php',
-    '--stop-on-failure BreakpointDebugging-UnitTestCallerTest.php',
-    '--stop-on-failure BreakpointDebugging/Error-InAllCaseTest.php',
-    '--stop-on-failure BreakpointDebugging/ErrorTest.php',
-    '--stop-on-failure BreakpointDebugging/LockByFileExistingTest.php',
-    '--stop-on-failure BreakpointDebugging/LockByFlockTest.php',
-    '--stop-on-failure BreakpointDebugging/LockByShmopTest.php',
-    '--stop-on-failure BreakpointDebugging/OverrideClassTest.php',
+    '--stop-on-failure --static-backup BreakpointDebugging-ExceptionTest.php',
+    '--stop-on-failure --static-backup BreakpointDebugging-InAllCaseTest.php',
+    '--stop-on-failure --static-backup BreakpointDebuggingTest.php',
+    '--stop-on-failure --static-backup BreakpointDebugging-UnitTestCallerTest.php',
+    '--stop-on-failure --static-backup BreakpointDebugging/Error-InAllCaseTest.php',
+    '--stop-on-failure --static-backup BreakpointDebugging/ErrorTest.php',
+    '--stop-on-failure --static-backup BreakpointDebugging/LockByFileExistingTest.php',
+    '--stop-on-failure --static-backup BreakpointDebugging/LockByFlockTest.php',
+    '--stop-on-failure --static-backup BreakpointDebugging/LockByShmopTest.php',
+    '--stop-on-failure --static-backup BreakpointDebugging/OverrideClassTest.php',
 );
 
 // Executes unit tests.
-// B::executeUnitTest($unitTestCommands); exit;
+B::executeUnitTest($unitTestCommands); exit;
 //
 // Makes up code coverage report, then displays in browser.
 if (B::getStatic('$exeMode') & B::RELEASE) { // In case of release.
@@ -36,7 +35,7 @@ if (B::getStatic('$exeMode') & B::RELEASE) { // In case of release.
 // In case of debug or release.
 // B::displayCodeCoverageReport('BreakpointDebugging-ExceptionTest.php', 'PEAR/BreakpointDebugging_UnitTestCaller.php'); // OK.
 // B::displayCodeCoverageReport('BreakpointDebugging-InAllCaseTest.php', 'PEAR/BreakpointDebugging.php'); // Windows is OK.
-//// B::displayCodeCoverageReport('BreakpointDebugging-UnitTestCallerTest.php', 'PEAR/BreakpointDebugging_UnitTestCaller.php'); // Windows is not OK.
+B::displayCodeCoverageReport('BreakpointDebugging-UnitTestCallerTest.php', 'PEAR/BreakpointDebugging_UnitTestCaller.php'); // Windows is not OK.
 // B::displayCodeCoverageReport('BreakpointDebugging/LockByFileExistingTest.php', array ('PEAR/BreakpointDebugging/Lock.php', 'PEAR/BreakpointDebugging/LockByFileExisting.php')); // OK.
 // B::displayCodeCoverageReport('BreakpointDebugging/LockByFlockTest.php', array ('PEAR/BreakpointDebugging/Lock.php', 'PEAR/BreakpointDebugging/LockByFlock.php')); // OK.
 B::displayCodeCoverageReport('BreakpointDebugging/LockByShmopTest.php', array ('PEAR/BreakpointDebugging/Lock.php', 'PEAR/BreakpointDebugging/LockByShmop.php')); // Release unit test is not OK.

@@ -52,6 +52,7 @@ require_once './BreakpointDebugging_Including.php';
 
 use \BreakpointDebugging as B;
 
+B::checkDevelopmentSecurity();
 B::limitAccess('BreakpointDebugging_UnitTestCaller.php');
 /**
  * Class to display code coverage report.
@@ -76,10 +77,10 @@ class BreakpointDebugging_DisplayCodeCoverageReport
     {
         // If we pushed "Code coverage report" button.
         if (isset($_GET['classFilePath'])) {
-            $classFilePath = str_replace(array ('/', '\\'), '_', $_GET['classFilePath']);
-            $codeCoverageReportDir = str_replace('\\', '/', $_GET['codeCoverageReportDir']);
+            $classFileName = str_replace(array ('/', '\\'), '_', $_GET['classFilePath']);
+            $codeCoverageReportPath = str_replace('\\', '/', $_GET['codeCoverageReportPath']);
             // Opens code coverage report.
-            $pFile = fopen("$codeCoverageReportDir/$classFilePath.html", 'rb');
+            $pFile = fopen($codeCoverageReportPath . $classFileName . '.html', 'rb');
             while (!feof($pFile)) {
                 $line = fgets($pFile);
                 // Outputs raw data after that if header ends.
@@ -89,32 +90,26 @@ class BreakpointDebugging_DisplayCodeCoverageReport
                 }
 
                 // $line = '    <link rel="stylesheet" type="text/css" href="style.css">    <link rel="stylesheet" type="text/css" href="other_style.css">'; // For debug.
-                $pattern = '`(.*)(<.*href[[:blank:]]*=[[:blank:]]*"(.*\.css)"[[:blank:]]*>)`xXiU';
                 $matches = array ();
                 // Embeds its content if cascading style sheet file path exists.
-                if (preg_match_all($pattern, $line, $matches)) {
+                if (preg_match_all('`(.*)(<link[[:blank:]].*href[[:blank:]]*=[[:blank:]]*"(.*\.css)"[[:blank:]]*>)`xXiU', $line, $matches)) {
                     $lastStrlen = 0;
                     $replaceLine = '';
                     for ($count = 0; $count < count($matches[1]); $count++) {
-                        $match0 = $matches[0][$count];
-                        $match1 = $matches[1][$count];
-                        $match2 = $matches[2][$count];
-                        $match3 = $matches[3][$count];
-                        $cssFilePath = $codeCoverageReportDir . '/' . $match3;
+                        echo $matches[1][$count];
+                        $cssFilePath = $codeCoverageReportPath . $matches[3][$count];
                         if (file_exists($cssFilePath)) {
-                            $replacement = '<style type="text/css">' . PHP_EOL
-                                . '<!--' . PHP_EOL
-                                . file_get_contents($cssFilePath)
-                                . '-->' . PHP_EOL
-                                . '</style>' . PHP_EOL;
+                            echo '<style type="text/css">' . PHP_EOL
+                            . '<!--' . PHP_EOL;
+                            readfile($cssFilePath);
+                            echo '-->' . PHP_EOL
+                            . '</style>' . PHP_EOL;
                         } else {
-                            $replacement = $match2;
+                            echo $matches[2][$count];
                         }
-                        $lastStrlen += strlen($match0);
-                        $replaceLine .= $match1 . $replacement;
+                        $lastStrlen += strlen($matches[0][$count]);
                     }
-                    $replaceLine .= substr($line, $lastStrlen);
-                    echo $replaceLine;
+                    echo substr($line, $lastStrlen);
                 } else {
                     echo $line;
                 }
@@ -122,12 +117,8 @@ class BreakpointDebugging_DisplayCodeCoverageReport
             fpassthru($pFile);
             fclose($pFile);
         } else { // In case of first time when this page was called.
-            $codeCoverageReportDir = B::getStatic('$_codeCoverageReportDir');
             $classFilePaths = B::getStatic('$_classFilePaths');
-            $thisFileName = str_replace('\\', '/', __FILE__);
-            $thisFileName = substr($thisFileName, strlen($_SERVER['DOCUMENT_ROOT']) + 1);
-            $projectDirPath = str_repeat('../', preg_match_all('`/`xX', $_SERVER['PHP_SELF'], $matches) - 1);
-            $thisFileName = $projectDirPath . $thisFileName;
+            $thisFileURI = str_repeat('../', preg_match_all('`/`xX', $_SERVER['PHP_SELF'], $matches) - 1) . substr(str_replace('\\', '/', __FILE__), strlen($_SERVER['DOCUMENT_ROOT']) + 1);
             if (!is_array($classFilePaths)) {
                 $classFilePaths = array ($classFilePaths);
             }
@@ -135,11 +126,11 @@ class BreakpointDebugging_DisplayCodeCoverageReport
             foreach ($classFilePaths as $classFilePath) {
                 $data = array (
                     'classFilePath' => $classFilePath,
-                    'codeCoverageReportDir' => $codeCoverageReportDir,
+                    'codeCoverageReportPath' => B::getStatic('$_codeCoverageReportPath'),
                 );
                 $data = http_build_query($data);
                 echo <<<EOD
-<form method="post" action="$thisFileName?$data">
+<form method="post" action="$thisFileURI?$data">
     <input type="submit" value="Code coverage report of ($classFilePath)."/>
 </form>
 EOD;
@@ -149,7 +140,6 @@ EOD;
 
 }
 
-B::checkSecurity(B::UNIT_TEST);
 new \BreakpointDebugging_DisplayCodeCoverageReport();
 
 ?>

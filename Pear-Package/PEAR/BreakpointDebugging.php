@@ -128,7 +128,8 @@ abstract class BreakpointDebugging_InAllCase
     /**
      * @var array Static properties reference.
      */
-    protected static $staticProperties;
+    // protected static $staticProperties;
+    static $staticProperties;
 
     /**
      * @var array Static property limitings reference.
@@ -193,7 +194,8 @@ abstract class BreakpointDebugging_InAllCase
     /**
      * @var array Locations to be not Fixed.
      */
-    private static $_notFixedLocations;
+    // private static $_notFixedLocations;
+    static $_notFixedLocations = array ();
 
     /**
      * @var array Values to trace.
@@ -203,7 +205,8 @@ abstract class BreakpointDebugging_InAllCase
     /**
      * @var bool Once error display flag.
      */
-    private static $_onceErrorDispFlag = false;
+    // private static $_onceErrorDispFlag = false;
+    static $_onceErrorDispFlag = false;
 
     /**
      * @var bool Calling exception handler directly?
@@ -218,7 +221,8 @@ abstract class BreakpointDebugging_InAllCase
     /**
      * @var int Execution mode.
      */
-    protected static $exeMode;
+    // protected static $exeMode;
+    static $exeMode;
 
     /**
      * @var int Native execution mode.
@@ -274,21 +278,36 @@ abstract class BreakpointDebugging_InAllCase
     }
 
     /**
-     * Checks security before developer runs php page.
+     * Checks security before we runs development page.
      *
-     * @param int $necessaryExeMode Necessary execution mode.
+     * @param mixed $necessaryExeMode Necessary execution mode. Does not check execution mode if this is false.
      *
      * @return void
      */
-    static function checkSecurity($necessaryExeMode)
+    static function checkDevelopmentSecurity($necessaryExeMode = false)
     {
+        B::assert(func_num_args() <= 1, 1);
+        B::assert($necessaryExeMode === false || is_int($necessaryExeMode), 2);
+
         // Checks the execution mode.
-        if (!(self::$exeMode & $necessaryExeMode)) {
-            exit('<pre>You must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'RELEASE\');" into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file.</pre>');
+        if ($necessaryExeMode !== false
+            && !(self::$exeMode & $necessaryExeMode)
+        ) {
+            switch ($necessaryExeMode) {
+                case self::RELEASE:
+                    $message = 'RELEASE';
+                    break;
+                case self::UNIT_TEST:
+                    $message = '..._UNIT_TEST';
+                    break;
+                default :
+                    throw new \BreakpointDebugging_ErrorException('"' . __METHOD__ . '" parameter1 is mistake.');
+            }
+            exit('<pre>You must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'' . $message . '\');" into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file.</pre>');
         }
         // Checks client IP address.
         if ($_SERVER['REMOTE_ADDR'] !== self::$_developerIP) {
-            exit('<pre>You must set "$developerIP" into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file.</pre>');
+            exit('<pre>You must set "$developerIP = \'' . $_SERVER['REMOTE_ADDR'] . '\';" into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file.</pre>');
         }
         // Checks the request protocol.
         if (empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] === 'off') {
@@ -998,11 +1017,11 @@ if ($_BreakpointDebugging_EXE_MODE & BA::RELEASE) { // In case of release.
             static function assert($assertion)
             {
                 if (!$assertion
-                    && !(self::$exeMode & B::IGNORING_BREAK_POINT)
+                    && !(BA::$exeMode & B::IGNORING_BREAK_POINT)
                 ) {
                     // @codeCoverageIgnoreStart
                     if (function_exists('xdebug_break')) {
-                        xdebug_break(); // You must use "\BreakpointDebugging_UnitTestOverridingBase::markTestSkippedInRelease(); // Because this unit test is assertion." at top of unit test class method.
+                        xdebug_break(); // You must use "\BreakpointDebugging::markTestSkippedInRelease(); // Because this unit test is assertion." at top of unit test class method.
                     } else {
                         // Because unit test is exited.
                         ini_set('xdebug.var_display_max_depth', 5);

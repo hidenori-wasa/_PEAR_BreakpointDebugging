@@ -4,7 +4,7 @@ chdir(__DIR__ . '/../../');
 require_once './BreakpointDebugging_Including.php';
 
 use \BreakpointDebugging as B;
-use \BreakpointDebugging_UnitTestOverridingBase as BU;
+use \BreakpointDebugging_UnitTestCaller as BU;
 
 B::isUnitTestExeMode(true);
 class BreakpointDebuggingTestExampleBase

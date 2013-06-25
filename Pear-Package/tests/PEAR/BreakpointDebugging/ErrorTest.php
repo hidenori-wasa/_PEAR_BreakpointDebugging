@@ -4,7 +4,7 @@ chdir(__DIR__ . '/../../../');
 require_once './BreakpointDebugging_Including.php';
 
 use \BreakpointDebugging as B;
-use \BreakpointDebugging_UnitTestOverridingBase as BU;
+use \BreakpointDebugging_UnitTestCaller as BU;
 
 B::isUnitTestExeMode(true);
 /**
@@ -15,9 +15,13 @@ class BreakpointDebugging_ErrorTest extends \BreakpointDebugging_UnitTestOverrid
 {
     private static $_error;
 
+    /**
+     * @var int Execution mode storing.
+     */
+    private $_exeModeStoring;
+
     static function setUpBeforeClass()
     {
-        parent::setUpBeforeClass();
         self::$_error = new \BreakpointDebugging_Error();
     }
 
@@ -81,28 +85,20 @@ class BreakpointDebugging_ErrorTest extends \BreakpointDebugging_UnitTestOverrid
 
     /**
      * @covers \BreakpointDebugging_Error<extended>
-     *
-     * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_Error_InAllCase FUNCTION=convertMbString ID=3.
      */
     function testHandleException2_B()
     {
         ob_start();
         BU::$exeMode |= B::IGNORING_BREAK_POINT;
-        // SJIS + UTF-8
-        self::$_error->handleException2(new \Exception(), "\x95\xB6\x8E\x9A \xE6\x96\x87\xE5\xAD\x97 ");
-    }
+        try {
+            // SJIS + UTF-8
+            self::$_error->handleException2(new \Exception(), "\x95\xB6\x8E\x9A \xE6\x96\x87\xE5\xAD\x97 ");
+        } catch (\BreakpointDebugging_ErrorException $e) {
+            parent::assertTrue(strpos($e->getMessage(), 'CLASS=BreakpointDebugging_Error_InAllCase FUNCTION=convertMbString ID=3.') !== false);
+        }
 
-    /**
-     * @covers \BreakpointDebugging_Error<extended>
-     */
-    function testHandleException2_C()
-    {
-        ob_start();
-        BU::$exeMode |= B::IGNORING_BREAK_POINT;
         // Skips "\BreakpointDebugging_Error::convertMbString()" "SJIS + UTF-8" error exception.
         self::$_error->handleException2(new \Exception(), "\x95\xB6\x8E\x9A \xE6\x96\x87\xE5\xAD\x97 ");
-        B::setPropertyForTest('\BreakpointDebugging_Error_InAllCase', '$_onceFlag', true);
     }
 
     function exceptionHandler2_D()

@@ -125,6 +125,11 @@ class BreakpointDebugging_Exception extends \BreakpointDebugging_Exception_InAll
 abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_InAllCase
 {
     /**
+     * @var int Execution mode.
+     */
+    static $exeMode;
+
+    /**
      * @var  string Unit test directory.
      */
     protected static $unitTestDir;
@@ -135,9 +140,9 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
     private static $_classFilePaths;
 
     /**
-     * @var string The code coverage report directory.
+     * @var string The code coverage report directory path.
      */
-    private static $_codeCoverageReportDir;
+    private static $_codeCoverageReportPath;
 
     /**
      * @var string Font style.
@@ -157,26 +162,26 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
 
         parent::initialize();
 
+        self::$exeMode = &parent::$exeMode;
         self::$staticProperties['$_classFilePaths'] = &self::$_classFilePaths;
-        self::$staticProperties['$_codeCoverageReportDir'] = &self::$_codeCoverageReportDir;
+        self::$staticProperties['$_codeCoverageReportPath'] = &self::$_codeCoverageReportPath;
         parent::$staticPropertyLimitings['$_includePaths'] = '';
         parent::$staticPropertyLimitings['$_valuesToTrace'] = '';
         parent::$staticPropertyLimitings['$exeMode'] = 'BreakpointDebugging/UnitTestOverriding.php';
+
+        $fontCssFileName = 'FontStyle.css';
+        $destFilePath = dirname($_SERVER['SCRIPT_FILENAME']) . '/' . $fontCssFileName;
+        if (!is_file($destFilePath)) {
+            copy(__DIR__ . '/BreakpointDebugging/css/' . $fontCssFileName, $destFilePath);
+        }
+
         self::$_style = <<<EOD
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 
 <html lang="en">
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <style type="text/css">
-            <!--
-            body, input
-            {
-                font-size: 1.5em;
-                font-weight: bold;
-            }
-            -->
-        </style>
+        <link rel="stylesheet" type="text/css" href="$fontCssFileName">
     </head>
     <body>
 EOD;
@@ -253,6 +258,30 @@ EOD;
     }
 
     //////////////////////////////////////// For package user ////////////////////////////////////////
+    /**
+     * Marks the test as skipped in debug.
+     *
+     * @return void
+     */
+    static function markTestSkippedInDebug()
+    {
+        if (!(self::$exeMode & B::RELEASE)) {
+            PHPUnit_Framework_Assert::markTestSkipped();
+        }
+    }
+
+    /**
+     * Marks the test as skipped in release.
+     *
+     * @return void
+     */
+    static function markTestSkippedInRelease()
+    {
+        if (self::$exeMode & B::RELEASE) {
+            PHPUnit_Framework_Assert::markTestSkipped();
+        }
+    }
+
     /**
      * Gets property for test.
      *
@@ -371,14 +400,14 @@ EOD;
     {
         if (func_num_args() === 0) {
             echo '<pre>You must not set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'..._UNIT_TEST\');" into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php".</pre>';
-            B::$exeMode |= B::IGNORING_BREAK_POINT;
+            self::$exeMode |= B::IGNORING_BREAK_POINT;
             throw new \BreakpointDebugging_ErrorException('', 101);
         }
         B::assert(is_bool($isUnitTest), 1);
 
         if (!$isUnitTest) {
             echo '<pre>You must not set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'..._UNIT_TEST\');" into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php".</pre>';
-            B::$exeMode |= B::IGNORING_BREAK_POINT;
+            self::$exeMode |= B::IGNORING_BREAK_POINT;
             throw new \BreakpointDebugging_ErrorException('', 102);
         }
     }
@@ -401,7 +430,7 @@ EOD;
         // Uses "PHPUnit" error handler.
         restore_error_handler();
         echo '<pre>';
-        $pPHPUnit_TextUI_Command->run($commandElements, true);
+        $pPHPUnit_TextUI_Command->run($commandElements, false);
         echo '</pre>';
         // Uses my error handler.
         set_error_handler('\BreakpointDebugging::handleError', -1);
@@ -409,6 +438,7 @@ EOD;
 
     /**
      * Executes unit test.
+     * We must use private static property instead of using local static variable because can use unit tests "--static-backup" option.
      *
      * ### Execution procedure ###
      * Procedure 1: Please, start a apache.
@@ -437,8 +467,7 @@ EOD;
      *                                Does continuation unit tests if array element is more than one.
      * @param bool  $runByCommand     Runs by command or runs by IDE?
      *                                You must specify false if you want step execution by IDE.
-     *                                Then, we must use private static property instead of using local static variable because unit tests run on same processes, if this is false.
-     *                                Then, we must use "\BreakpointDebugging::setPropertyForTest()" to restore value after unit test class method was run.
+     *                                However, this mode cannot run multiprocess unit test.
      *
      * @return void
      *
@@ -473,7 +502,7 @@ EOD;
      * require_once './BreakpointDebugging_Including.php';
      *
      * use \BreakpointDebugging as B;
-     * use \BreakpointDebugging_UnitTestOverridingBase as BU;
+     * use \BreakpointDebugging_UnitTestCaller as BU;
      *
      * B::isUnitTestExeMode(true);
      *
@@ -483,7 +512,6 @@ EOD;
      *
      *     static function setUpBeforeClass()
      *     {
-     *          parent::setUpBeforeClass();
      *          ...;
      *     }
      *
@@ -507,12 +535,16 @@ EOD;
      *      *
      *     function testSomething_A()
      *     {
+     *          BU::markTestSkippedInDebug();
+     *
      *          BU::$exeMode |= B::IGNORING_BREAK_POINT;
      *          throw new \Something_ErrorException('Something message.', 101);
      *     }
      *
      *     function testSomething_B()
      *     {
+     *          BU::markTestSkippedInRelease();
+     *
      *          try {
      *              B::assert(true, 101);
      *              B::assert(false, 102);
@@ -531,11 +563,11 @@ EOD;
      */
     static function executeUnitTest($unitTestCommands, $runByCommand = false)
     {
-        B::checkSecurity(B::UNIT_TEST);
+        B::checkDevelopmentSecurity();
         echo self::$_style;
         $separator = '<pre>//////////////////////////////////////////////////////////////////////////' . PHP_EOL;
 
-        if (parent::$exeMode & B::RELEASE) {
+        if (self::$exeMode & B::RELEASE) {
             echo '<pre>\'RELEASE_UNIT_TEST\' execution mode.</pre>';
         } else {
             echo '<pre>\'DEBUG_UNIT_TEST\' execution mode.</pre>';
@@ -582,7 +614,7 @@ EOD;
                 if (strpos($testFileName, '_') !== false) {
                     echo "You must change its array element and its file name into '-' because '$testFileName' contains '_'." . PHP_EOL;
                     if (B::getXebugExists()
-                        && !(B::getStatic('$exeMode') & B::IGNORING_BREAK_POINT)
+                        && !(self::$exeMode & B::IGNORING_BREAK_POINT)
                     ) {
                         // @codeCoverageIgnoreStart
                         xdebug_break();
@@ -610,7 +642,7 @@ EOD;
     }
 
     /**
-     * Makes up code coverage report, then displays in browser.
+     * Creates code coverage report, then displays in browser.
      *
      * @param string $unitTestFilePath Relative path of unit test file.
      * @param mixed  $classFilePaths   It is relative path of class which see the code coverage, and its current directory must be project directory.
@@ -636,22 +668,37 @@ EOD;
      */
     static function displayCodeCoverageReport($unitTestFilePath, $classFilePaths)
     {
+        B::checkDevelopmentSecurity();
+
         B::assert(func_num_args() === 2, 1);
         B::assert(is_string($unitTestFilePath), 2);
         B::assert(is_string($classFilePaths) || is_array($classFilePaths), 3);
 
         echo self::$_style;
-        $codeCoverageReportDir = 'CodeCoverageReport';
-        $workDir = B::getStatic('$_workDir');
-        self::_getUnitTestDir();
+        if (!extension_loaded('xdebug')) {
+            exit('"BreakpointDebugging::displayCodeCoverageReport()" needs "xdebug" extention.');
+        }
+        $codeCoverageReportPath = B::getStatic('$_workDir') . '/CodeCoverageReport/';
+        // Deletes code coverage report directory files.
+        if (is_dir($codeCoverageReportPath)) {
+            foreach (scandir($codeCoverageReportPath) as $codeCoverageReportDirElement) {
+                $errorLogDirElementPath = $codeCoverageReportPath . $codeCoverageReportDirElement;
+                if (is_file($errorLogDirElementPath)) {
+                    // Deletes the error log file, variable configuring file and the error location file.
+                    unlink($errorLogDirElementPath);
+                }
+            }
+        }
 
+        self::_getUnitTestDir();
+        // Creates code coverage report.
         $displayErrorsStoring = ini_get('display_errors');
         ini_set('display_errors', '');
-        self::_runPHPUnitCommand("--coverage-html $workDir/$codeCoverageReportDir $unitTestFilePath");
+        self::_runPHPUnitCommand("--coverage-html $codeCoverageReportPath $unitTestFilePath");
         ini_set('display_errors', $displayErrorsStoring);
-
+        // Displays the code coverage report in browser.
         self::$_classFilePaths = $classFilePaths;
-        self::$_codeCoverageReportDir = $workDir . '/' . $codeCoverageReportDir;
+        self::$_codeCoverageReportPath = $codeCoverageReportPath;
         require_once __DIR__ . '/BreakpointDebugging/DisplayCodeCoverageReport.php';
         exit;
     }

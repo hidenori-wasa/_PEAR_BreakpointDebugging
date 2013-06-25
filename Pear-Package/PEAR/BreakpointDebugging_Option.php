@@ -493,6 +493,10 @@ final class BreakpointDebugging extends \BreakpointDebugging_UnitTestCaller
         $callStack = debug_backtrace();
         // Makes invoking location information.
         $count = count($callStack);
+        if ($count === 1) {
+            // Skips top page.
+            return;
+        }
         for ($key = 1; $key < $count; $key++) {
             if (array_key_exists('file', $callStack[$key])) {
                 break;
@@ -510,7 +514,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_UnitTestCaller
             && array_key_exists($line, $invokingLocations[$fullFilePath])
         ) {
             // Skips same.
-            return true;
+            return;
         }
         // Stores the invoking location information.
         $invokingLocations[$fullFilePath][$line] = true;

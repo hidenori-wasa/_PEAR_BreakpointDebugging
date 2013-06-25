@@ -5,7 +5,7 @@ require_once './BreakpointDebugging_Including.php';
 
 use \BreakpointDebugging as B;
 use \BreakpointDebugging_InAllCase as BA;
-use \BreakpointDebugging_UnitTestOverridingBase as BU;
+use \BreakpointDebugging_UnitTestCaller as BU;
 
 B::isUnitTestExeMode(true);
 
@@ -38,12 +38,11 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_UnitTestOve
      */
     function testRefAndGetStatic()
     {
-        $userNameStoring = $userName = &BA::refStatic('$_userName');
+        $userName = &BA::refStatic('$_userName');
         $this->assertTrue($userName !== 'hidenori_hidenori');
         $userName = 'hidenori_hidenori';
         $this->assertTrue($userName === 'hidenori_hidenori');
         $this->assertTrue(BA::getStatic('$_userName') === 'hidenori_hidenori');
-        $userName = $userNameStoring;
     }
 
     /**

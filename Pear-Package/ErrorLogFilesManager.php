@@ -61,7 +61,7 @@ require_once './BreakpointDebugging_Including.php';
 
 use \BreakpointDebugging as B;
 
-B::checkSecurity(B::RELEASE);
+B::checkDevelopmentSecurity(B::RELEASE);
 
 // Locks error log files.
 $lockByFileExisting = &\BreakpointDebugging_LockByFileExisting::internalSingleton();

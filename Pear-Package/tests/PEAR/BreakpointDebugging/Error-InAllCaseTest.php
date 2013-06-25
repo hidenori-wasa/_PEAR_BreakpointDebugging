@@ -4,7 +4,7 @@ chdir(__DIR__ . '/../../../');
 require_once './BreakpointDebugging_Including.php';
 
 use \BreakpointDebugging as B;
-use \BreakpointDebugging_UnitTestOverridingBase as BU;
+use \BreakpointDebugging_UnitTestCaller as BU;
 
 B::isUnitTestExeMode(true);
 class example
@@ -35,7 +35,6 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_UnitT
 
     static function setUpBeforeClass()
     {
-        parent::setUpBeforeClass();
         $maxLogStringSize = &B::refStatic('$_maxLogStringSize');
         $maxLogStringSize = 8;
     }
@@ -396,7 +395,6 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_UnitT
             B::handleException(new \Exception());
         } catch (\Exception $e) {
             B::$prependExceptionLog = '';
-            B::setPropertyForTest('\BreakpointDebugging_Error_InAllCase', '$_onceFlag', true);
             throw $e;
         }
     }
