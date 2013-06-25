@@ -106,13 +106,13 @@ class BreakpointDebugging_UnitTestOverridingBase extends \PHPUnit_Framework_Test
 
     /**
      * Overrides "\PHPUnit_Framework_TestCase::runBare()" to display call stack when error occurred.
-     * Also, bug fix of parent class method.
+     * Also, I fixed bug of parent class method.
      *
      * @return void
      */
     public function runBare()
     {
-        static $globalsStoring = null;
+        //static $globalsStoring = null;
 
         $this->numAssertions = 0;
 
@@ -123,12 +123,14 @@ class BreakpointDebugging_UnitTestOverridingBase extends \PHPUnit_Framework_Test
             if ($this->backupGlobals === NULL
                 || $this->backupGlobals === TRUE
             ) {
-                // ### Bug fixed from: PHPUnit_Util_GlobalState::backupGlobals($this->backupGlobalsBlacklist);
+                // ### Bug fixed from:
+                // PHPUnit_Util_GlobalState::backupGlobals($this->backupGlobalsBlacklist);
                 // ### To:
-                if (!isset($globalsStoring)) {
-                    // Stores a variable. We must not store by serialization because serialization cannot store resource and array element reference variable.
-                    $globalsStoring = $GLOBALS;
-                }
+                //if (!isset($globalsStoring)) {
+                //// Stores the global variable. We should not store by serialization because serialization cannot store resource and array element reference variable.
+                //$globalsStoring = $GLOBALS;
+                BreakpointDebugging_PHPUnitUtilGlobalState::backupGlobals($this->backupGlobalsBlacklist);
+                //}
             }
 
             if (version_compare(PHP_VERSION, '5.3', '>')
@@ -204,10 +206,12 @@ class BreakpointDebugging_UnitTestOverridingBase extends \PHPUnit_Framework_Test
             if ($this->backupGlobals === NULL
                 || $this->backupGlobals === TRUE
             ) {
-                // ### Bug fixed from: PHPUnit_Util_GlobalState::restoreGlobals($this->backupGlobalsBlacklist);
+                // ### Bug fixed from:
+                // PHPUnit_Util_GlobalState::restoreGlobals($this->backupGlobalsBlacklist);
                 // ### To:
-                // Restores variable. We must not restore by reference copy because variable ID changes.
-                $GLOBALS = $globalsStoring;
+                //// Restores variable. We must not restore by reference copy because variable ID changes.
+                //$GLOBALS = $globalsStoring;
+                BreakpointDebugging_PHPUnitUtilGlobalState::restoreGlobals($this->backupGlobalsBlacklist);
             }
 
             if (version_compare(PHP_VERSION, '5.3', '>')
@@ -256,8 +260,7 @@ class BreakpointDebugging_UnitTestOverridingBase extends \PHPUnit_Framework_Test
 
 if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
     /**
-     * Debugs one unit test file by "B::executeUnitTest()" class method.
-     * Notice:  You must code one array element comment which hands to "B::executeUnitTest()" before you execute this mode.
+     * Debugs unit tests by "B::executeUnitTest()" class method.
      *
      * @category PHP
      * @package  BreakpointDebugging

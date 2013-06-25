@@ -438,7 +438,7 @@ EOD;
 
     /**
      * Executes unit test.
-     * We must use private static property instead of using local static variable because can use unit tests "--static-backup" option.
+     * We must use private static property instead of using local static variable because we can use unit tests "--static-backup" option.
      *
      * ### Execution procedure ###
      * Procedure 1: Please, start a apache.
@@ -467,7 +467,7 @@ EOD;
      *                                Does continuation unit tests if array element is more than one.
      * @param bool  $runByCommand     Runs by command or runs by IDE?
      *                                You must specify false if you want step execution by IDE.
-     *                                However, this mode cannot run multiprocess unit test.
+     *                                However, IDE mode cannot run multiprocess unit test.
      *
      * @return void
      *
@@ -483,10 +483,9 @@ EOD;
      * B::isUnitTestExeMode(true);
      *
      * // Please, choose unit tests files by customizing.
-     * // You must specify array element to one if you want step execution.
      * $unitTestCommands = array (
-     *     '--stop-on-failure SomethingTest.php',
-     *     '--stop-on-failure Something/SubTest.php',
+     *     '--stop-on-failure --static-backup SomethingTest.php',
+     *     '--stop-on-failure --static-backup Something/SubTest.php',
      * );
      *
      * // Executes unit tests.
@@ -684,7 +683,7 @@ EOD;
             foreach (scandir($codeCoverageReportPath) as $codeCoverageReportDirElement) {
                 $errorLogDirElementPath = $codeCoverageReportPath . $codeCoverageReportDirElement;
                 if (is_file($errorLogDirElementPath)) {
-                    // Deletes the error log file, variable configuring file and the error location file.
+                    // Deletes a file.
                     unlink($errorLogDirElementPath);
                 }
             }
@@ -694,7 +693,8 @@ EOD;
         // Creates code coverage report.
         $displayErrorsStoring = ini_get('display_errors');
         ini_set('display_errors', '');
-        self::_runPHPUnitCommand("--coverage-html $codeCoverageReportPath $unitTestFilePath");
+        //self::_runPHPUnitCommand("--coverage-html $codeCoverageReportPath $unitTestFilePath");
+        self::_runPHPUnitCommand("--static-backup --coverage-html $codeCoverageReportPath $unitTestFilePath");
         ini_set('display_errors', $displayErrorsStoring);
         // Displays the code coverage report in browser.
         self::$_classFilePaths = $classFilePaths;

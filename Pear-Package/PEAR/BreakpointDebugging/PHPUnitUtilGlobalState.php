@@ -10,7 +10,7 @@
  * 2. Copyrighters do not take responsibility for this file code.
  *
  * LICENSE:
- * Copyright (c) 2012-2013, Hidenori Wasa
+ * Copyright (c) 2013, Hidenori Wasa
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -53,6 +53,109 @@
  */
 class BreakpointDebugging_PHPUnitUtilGlobalState extends \PHPUnit_Util_GlobalState
 {
+    private static $_globalSerializeKeysStoring = array ();
+    private static $_propertySerializeKeysStoring = array ();
+
+    /**
+     * Stores variables. We should not store by serialization because serialization cannot store resource and array element reference variable.
+     *
+     * @param array $blacklist             The list to except from doing global variables backup.
+     * @param array $variables
+     * @param array &$variablesStoring
+     * @param array &$serializeKeysStoring
+     *
+     * @return void
+     */
+    private static function _storeVariable(array $blacklist, array $variables, array &$variablesStoring, array &$serializeKeysStoring)
+    {
+        if (!empty($variablesStoring)) {
+            return;
+        }
+
+        foreach ($variables as $key => $value) {
+            if (in_array($key, $blacklist)
+                || $value instanceof Closure
+            ) {
+                continue;
+            }
+            if ($key === 'GLOBALS'
+                || (!is_object($value) && !is_array($value))
+            ) {
+                $variablesStoring[$key] = $value;
+                continue;
+            }
+            do {
+                if (is_array($value)) {
+                    foreach ($value as $value2) {
+                        if (is_object($value2)) {
+                            break 2;
+                        }
+                        if (is_array($value2)) {
+                            foreach ($value2 as $value3) {
+                                if (is_object($value3)
+                                    || is_array($value3)
+                                ) {
+                                    break 3;
+                                }
+                            }
+                        }
+                    }
+                    $variablesStoring[$key] = $value;
+                    continue 2;
+                }
+            } while (false);
+            $variablesStoring[$key] = serialize($value);
+            $serializeKeysStoring[$key] = null;
+        }
+    }
+
+    /**
+     * Restores variable. We must not restore by reference copy because variable ID changes.
+     *
+     * @param array &$variables
+     * @param array $variablesStoring
+     * @param array $serializeKeysStoring
+     */
+    private static function _restoreVariable(array &$variables, array $variablesStoring, array $serializeKeysStoring)
+    {
+        foreach ($variables as $key => $value) {
+            if (!array_key_exists($key, $variablesStoring)) {
+                unset($variables[$key]);
+            }
+        }
+        foreach ($variablesStoring as $key => $value) {
+            if (array_key_exists($key, $serializeKeysStoring)) {
+                $variables[$key] = unserialize($value);
+            } else {
+                $variables[$key] = $value;
+            }
+        }
+    }
+
+    /**
+     * Bug fix of parent class method. Also, ups Speed of parent class method.
+     *
+     * @param array $blacklist The list to except from doing global variables backup.
+     *
+     * @return void
+     */
+    static function backupGlobals(array $blacklist)
+    {
+        self::_storeVariable($blacklist, $GLOBALS, parent::$globals, self::$_globalSerializeKeysStoring);
+    }
+
+    /**
+     * Bug fix of parent class method. Also, ups Speed of parent class method.
+     *
+     * @param array $blacklist Does not use.
+     *
+     * @return void
+     */
+    static function restoreGlobals(array $blacklist = array ())
+    {
+        self::_restoreVariable($GLOBALS, parent::$globals, self::$_globalSerializeKeysStoring);
+    }
+
     /**
      * Bug fix of parent class method. Also, ups Speed of parent class method.
      *
@@ -60,7 +163,7 @@ class BreakpointDebugging_PHPUnitUtilGlobalState extends \PHPUnit_Util_GlobalSta
      *
      * @return void
      */
-    public static function backupStaticAttributes(array $blacklist)
+    static function backupStaticAttributes(array $blacklist)
     {
         if (!empty(parent::$staticAttributes)) {
             return;
@@ -110,19 +213,20 @@ class BreakpointDebugging_PHPUnitUtilGlobalState extends \PHPUnit_Util_GlobalSta
 
                         if (!$attributeValue instanceof Closure) {
                             // ### Bug fix from:
-                            //// Static property backup.
+                            // Static property backup.
                             // $backup[$attributeName] = serialize($attributeValue);
-                            // ### To:
-                            // Stores static property. We must not store by serialization because serialization cannot store resource and array element reference variable.
-                            $backup[$attributeName] = $attributeValue;
+                            $backup[$attributeName] = $attributeValue; // ### To:
                         }
                     }
                 }
             }
 
             if (!empty($backup)) {
+                // ### Bug fix from:
                 // Static class properties backup.
-                parent::$staticAttributes[$declaredClassName] = $backup;
+                // parent::$staticAttributes[$declaredClassName] = $backup;
+                parent::$staticAttributes[$declaredClassName] = array (); // ### To:
+                self::_storeVariable(array (), $backup, parent::$staticAttributes[$declaredClassName], self::$_propertySerializeKeysStoring); // ### To:
             }
         }
     }
@@ -132,17 +236,17 @@ class BreakpointDebugging_PHPUnitUtilGlobalState extends \PHPUnit_Util_GlobalSta
      *
      * @return void
      */
-    public static function restoreStaticAttributes()
+    static function restoreStaticAttributes()
     {
         foreach (parent::$staticAttributes as $className => $staticAttributes) {
+            $properties = array (); // ### To:
+            self::_restoreVariable($properties, $staticAttributes, self::$_propertySerializeKeysStoring); // ### To:
             foreach ($staticAttributes as $name => $value) {
                 $reflector = new ReflectionProperty($className, $name);
                 $reflector->setAccessible(TRUE);
                 // ### Bug fix from:
                 // $reflector->setValue(unserialize($value));
-                // ### To:
-                // Restores static property. We must not restore by reference copy because variable ID changes.
-                $reflector->setValue($value);
+                $reflector->setValue($properties[$name]); // ### To:
             }
         }
     }
@@ -156,6 +260,7 @@ class BreakpointDebugging_PHPUnitUtilGlobalState extends \PHPUnit_Util_GlobalSta
     {
         \BreakpointDebugging::limitAccess('BreakpointDebugging/PHPUnitTextUICommand.php', true);
 
+        parent::$globals = array ();
         parent::$staticAttributes = array ();
     }
 

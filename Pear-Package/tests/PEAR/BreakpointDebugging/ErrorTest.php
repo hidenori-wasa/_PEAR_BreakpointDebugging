@@ -15,10 +15,10 @@ class BreakpointDebugging_ErrorTest extends \BreakpointDebugging_UnitTestOverrid
 {
     private static $_error;
 
-    /**
-     * @var int Execution mode storing.
-     */
-    private $_exeModeStoring;
+//    /**
+//     * @var int Execution mode storing.
+//     */
+//    private $_exeModeStoring;
 
     static function setUpBeforeClass()
     {

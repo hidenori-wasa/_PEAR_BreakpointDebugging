@@ -128,8 +128,7 @@ abstract class BreakpointDebugging_InAllCase
     /**
      * @var array Static properties reference.
      */
-    // protected static $staticProperties;
-    static $staticProperties;
+    protected static $staticProperties;
 
     /**
      * @var array Static property limitings reference.
@@ -194,8 +193,7 @@ abstract class BreakpointDebugging_InAllCase
     /**
      * @var array Locations to be not Fixed.
      */
-    // private static $_notFixedLocations;
-    static $_notFixedLocations = array ();
+    private static $_notFixedLocations = array ();
 
     /**
      * @var array Values to trace.
@@ -205,8 +203,7 @@ abstract class BreakpointDebugging_InAllCase
     /**
      * @var bool Once error display flag.
      */
-    // private static $_onceErrorDispFlag = false;
-    static $_onceErrorDispFlag = false;
+    private static $_onceErrorDispFlag = false;
 
     /**
      * @var bool Calling exception handler directly?
@@ -221,8 +218,7 @@ abstract class BreakpointDebugging_InAllCase
     /**
      * @var int Execution mode.
      */
-    // protected static $exeMode;
-    static $exeMode;
+    protected static $exeMode;
 
     /**
      * @var int Native execution mode.
@@ -278,7 +274,7 @@ abstract class BreakpointDebugging_InAllCase
     }
 
     /**
-     * Checks security before we runs development page.
+     * Checks security before we run development page.
      *
      * @param mixed $necessaryExeMode Necessary execution mode. Does not check execution mode if this is false.
      *
@@ -1021,7 +1017,7 @@ if ($_BreakpointDebugging_EXE_MODE & BA::RELEASE) { // In case of release.
                 ) {
                     // @codeCoverageIgnoreStart
                     if (function_exists('xdebug_break')) {
-                        xdebug_break(); // You must use "\BreakpointDebugging::markTestSkippedInRelease(); // Because this unit test is assertion." at top of unit test class method.
+                        xdebug_break(); // You must use "\BreakpointDebugging_UnitTestCaller::markTestSkippedInRelease(); // Because this unit test is assertion." at top of unit test class method.
                     } else {
                         // Because unit test is exited.
                         ini_set('xdebug.var_display_max_depth', 5);
