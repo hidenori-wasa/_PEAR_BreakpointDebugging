@@ -9,16 +9,16 @@ use \BreakpointDebugging as B;
 B::isUnitTestExeMode(true);
 // Please, choose unit tests files by customizing.
 $unitTestCommands = array (
-    '--stop-on-failure --static-backup BreakpointDebugging-ExceptionTest.php',
-    '--stop-on-failure --static-backup BreakpointDebugging-InAllCaseTest.php',
-    '--stop-on-failure --static-backup BreakpointDebuggingTest.php',
-    '--stop-on-failure --static-backup BreakpointDebugging-UnitTestCallerTest.php',
-    '--stop-on-failure --static-backup BreakpointDebugging/Error-InAllCaseTest.php',
-    '--stop-on-failure --static-backup BreakpointDebugging/ErrorTest.php',
-    '--stop-on-failure --static-backup BreakpointDebugging/LockByFileExistingTest.php',
-    '--stop-on-failure --static-backup BreakpointDebugging/LockByFlockTest.php',
-    '--stop-on-failure --static-backup BreakpointDebugging/LockByShmopTest.php',
-    '--stop-on-failure --static-backup BreakpointDebugging/OverrideClassTest.php',
+    'BreakpointDebugging-ExceptionTest.php',
+    'BreakpointDebugging-InAllCaseTest.php',
+    'BreakpointDebuggingTest.php',
+    'BreakpointDebugging-UnitTestCallerTest.php',
+    'BreakpointDebugging/Error-InAllCaseTest.php',
+    'BreakpointDebugging/ErrorTest.php',
+    'BreakpointDebugging/LockByFileExistingTest.php',
+    'BreakpointDebugging/LockByFlockTest.php',
+    'BreakpointDebugging/LockByShmopTest.php',
+    'BreakpointDebugging/OverrideClassTest.php',
 );
 
 // Executes unit tests.

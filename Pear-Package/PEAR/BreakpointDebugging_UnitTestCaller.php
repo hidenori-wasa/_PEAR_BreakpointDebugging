@@ -169,19 +169,18 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
         parent::$staticPropertyLimitings['$_valuesToTrace'] = '';
         parent::$staticPropertyLimitings['$exeMode'] = 'BreakpointDebugging/UnitTestOverriding.php';
 
-        $fontCssFileName = 'FontStyle.css';
-        $destFilePath = dirname($_SERVER['SCRIPT_FILENAME']) . '/' . $fontCssFileName;
-        if (!is_file($destFilePath)) {
-            copy(__DIR__ . '/BreakpointDebugging/css/' . $fontCssFileName, $destFilePath);
-        }
-
+        $fontCssFileContent = file_get_contents('BreakpointDebugging/css/FontStyle.css', true);
         self::$_style = <<<EOD
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 
 <html lang="en">
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <link rel="stylesheet" type="text/css" href="$fontCssFileName">
+        <style type="text/css">
+        <!--
+        $fontCssFileContent
+        -->
+        </style>
     </head>
     <body>
 EOD;
@@ -437,16 +436,16 @@ EOD;
     }
 
     /**
-     * Executes unit test.
-     * We must use private static property instead of using local static variable because we can use unit tests "--static-backup" option.
+     * Executes unit tests continuously, and debugs with IDE.
      *
-     * ### Execution procedure ###
-     * Procedure 1: Please, start a apache.
-     * Procedure 2: Please, drop page like example page which executes unit tests to web browser.
-     * Procedure 3: Please, rewrite web browser URL prefix to "localhost", and push return.
+     * We must use private static property instead of using local static variable because we can use unit test's "--static-backup" command line switch.
+     * Also, we must not use unit test's "--process-isolation" command line switch because its tests is run in other process.
+     * So, we cannot debug with IDE.
      *
-     * Please, if you want remote execution, then upload "page like example page",
-     * unit test files and following "PHPUnit" files, then execute with browser.
+     * ### Running procedure. ###
+     * Please, run the following procedure.
+     * Procedure 1: Make "page like example page" and unit test files.
+     * Procedure 2: Copy following "PHPUnit" files into "PEAR" directory of project directory.
      *      PEAR/PHP/CodeCoverage.php
      *      PEAR/PHP/CodeCoverage/
      *          Copyright (c) 2009-2012 Sebastian Bergmann <sb@sebastian-bergmann.de>
@@ -461,13 +460,9 @@ EOD;
      *          Copyright (c) 2009-2012 Sebastian Bergmann <sb@sebastian-bergmann.de>
      *      PEAR/PHPUnit/
      *          Copyright (c) 2001-2012 Sebastian Bergmann <sebastian@phpunit.de>
+     * Procedure 3: Run "page like example page" with IDE.
      *
-     * @param array $unitTestCommands Commands of unit tests.
-     *                                Debugs its unit test file if array element is one.
-     *                                Does continuation unit tests if array element is more than one.
-     * @param bool  $runByCommand     Runs by command or runs by IDE?
-     *                                You must specify false if you want step execution by IDE.
-     *                                However, IDE mode cannot run multiprocess unit test.
+     * @param array $unitTestFilePaths The file paths of unit tests.
      *
      * @return void
      *
@@ -483,13 +478,13 @@ EOD;
      * B::isUnitTestExeMode(true);
      *
      * // Please, choose unit tests files by customizing.
-     * $unitTestCommands = array (
-     *     '--stop-on-failure --static-backup SomethingTest.php',
-     *     '--stop-on-failure --static-backup Something/SubTest.php',
+     * $unitTestFilePaths = array (
+     *     'SomethingTest.php',
+     *     'Something/SubTest.php',
      * );
      *
      * // Executes unit tests.
-     * B::executeUnitTest($unitTestCommands); exit;
+     * B::executeUnitTest($unitTestFilePaths); exit;
      *
      * ?>
      *
@@ -560,8 +555,10 @@ EOD;
      * @codeCoverageIgnore
      * Because "phpunit" command cannot run during "phpunit" command running.
      */
-    static function executeUnitTest($unitTestCommands, $runByCommand = false)
+    static function executeUnitTest($unitTestFilePaths)
     {
+        $runByCommand = false; // Running by command does not support.
+
         B::checkDevelopmentSecurity();
         echo self::$_style;
         $separator = '<pre>//////////////////////////////////////////////////////////////////////////' . PHP_EOL;
@@ -573,8 +570,8 @@ EOD;
         }
 
         B::assert(func_num_args() <= 2, 1);
-        B::assert(is_array($unitTestCommands), 2);
-        B::assert(!empty($unitTestCommands), 3);
+        B::assert(is_array($unitTestFilePaths), 2);
+        B::assert(!empty($unitTestFilePaths), 3);
 
         $unitTestCurrentDir = self::_getUnitTestDir();
         if ($runByCommand) {
@@ -591,7 +588,7 @@ EOD;
                         break;
                     }
 
-                    //$phpunit = `export PATH=/opt/lampp/bin:/opt/local/bin:/usr/bin:/usr/bin/X11:/usr/share/php;which phpunit`;
+                    // $phpunit = `export PATH=/opt/lampp/bin:/opt/local/bin:/usr/bin:/usr/bin/X11:/usr/share/php;which phpunit`;
                     $userName = B::getStatic('$_userName');
                     $phpunit = `sudo -u $userName which phpunit`;
 
@@ -605,20 +602,18 @@ EOD;
                     exit('<pre>"phpunit" command is not executable. (' . $phpunit . ')</pre>');
                 }
             }
-            foreach ($unitTestCommands as $command) {
-                $commandElements = explode(' ', $command);
+            foreach ($unitTestFilePaths as $unitTestFilePath) {
+                $commandElements = '--stop-on-failure --static-backup ' . $unitTestFilePath;
                 $testFileName = array_pop($commandElements);
                 $commandOptions = implode(' ', $commandElements);
-                // If test file name contains '_'.
+                // If test file path contains '_'.
                 if (strpos($testFileName, '_') !== false) {
-                    echo "You must change its array element and its file name into '-' because '$testFileName' contains '_'." . PHP_EOL;
+                    echo "You have to change from '_' of '$testFileName' to '-' because you cannot run unit tests." . PHP_EOL;
                     if (B::getXebugExists()
                         && !(self::$exeMode & B::IGNORING_BREAK_POINT)
                     ) {
-                        // @codeCoverageIgnoreStart
                         xdebug_break();
                     }
-                    // @codeCoverageIgnoreEnd
                     return;
                 }
                 echo $separator;
@@ -628,8 +623,18 @@ EOD;
                 echo '</pre>';
             }
         } else {
-            echo '<pre>Starts unit tests by IDE.</pre>';
-            foreach ($unitTestCommands as $command) {
+            foreach ($unitTestFilePaths as $unitTestFilePath) {
+                // If test file path contains '_'.
+                if (strpos($unitTestFilePath, '_') !== false) {
+                    echo "You have to change from '_' of '$unitTestFilePath' to '-' because you cannot run unit tests." . PHP_EOL;
+                    if (B::getXebugExists()
+                        && !(self::$exeMode & B::IGNORING_BREAK_POINT)
+                    ) {
+                        xdebug_break();
+                    }
+                    continue;
+                }
+                $command = '--stop-on-failure --static-backup ' . $unitTestFilePath;
                 echo $separator;
                 echo "Runs \"phpunit $command\" command.";
                 self::_runPHPUnitCommand($command);
@@ -693,7 +698,6 @@ EOD;
         // Creates code coverage report.
         $displayErrorsStoring = ini_get('display_errors');
         ini_set('display_errors', '');
-        //self::_runPHPUnitCommand("--coverage-html $codeCoverageReportPath $unitTestFilePath");
         self::_runPHPUnitCommand("--static-backup --coverage-html $codeCoverageReportPath $unitTestFilePath");
         ini_set('display_errors', $displayErrorsStoring);
         // Displays the code coverage report in browser.

@@ -5,6 +5,30 @@ require_once './BreakpointDebugging_Including.php';
 use \BreakpointDebugging as B;
 
 B::isUnitTestExeMode(); // Checks the execution mode.
+
+// throw new \Exception('Exception test.');
+trigger_error('Error test.');
+exit;
+
+
+$fruits = array ("a" => "lemon", "b" => "orange", array ("a" => "apple", "p" => "pear"));
+$iterator = new RecursiveArrayIterator($fruits);
+while ($iterator->valid()) {
+    // Check if there are children
+    if ($iterator->hasChildren()) {
+        // print all children
+        foreach ($iterator->getChildren() as $key => $value) {
+            echo $key . ' : ' . $value . "\n";
+        }
+    } else {
+        echo "No children.\n";
+    }
+    $iterator->next();
+}
+exit;
+//
+//
+//
 class TestClassA
 {
     public $testPropertyA = 'testPropertyA';

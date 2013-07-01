@@ -87,7 +87,10 @@ class BreakpointDebugging_UnitTestOverridingBase extends \PHPUnit_Framework_Test
      */
     protected function setUp()
     {
-        @unlink(B::getStatic('$_workDir') . '/LockByFileExistingOfInternal.txt');
+        $internalLockFileName = B::getStatic('$_workDir') . '/LockByFileExistingOfInternal.txt';
+        if (is_file($internalLockFileName)) {
+            unlink($internalLockFileName);
+        }
         $this->_obLevel = ob_get_level();
     }
 
@@ -106,14 +109,11 @@ class BreakpointDebugging_UnitTestOverridingBase extends \PHPUnit_Framework_Test
 
     /**
      * Overrides "\PHPUnit_Framework_TestCase::runBare()" to display call stack when error occurred.
-     * Also, I fixed bug of parent class method.
      *
      * @return void
      */
     public function runBare()
     {
-        //static $globalsStoring = null;
-
         $this->numAssertions = 0;
 
         // Backup the $GLOBALS array and static attributes.
@@ -123,14 +123,7 @@ class BreakpointDebugging_UnitTestOverridingBase extends \PHPUnit_Framework_Test
             if ($this->backupGlobals === NULL
                 || $this->backupGlobals === TRUE
             ) {
-                // ### Bug fixed from:
-                // PHPUnit_Util_GlobalState::backupGlobals($this->backupGlobalsBlacklist);
-                // ### To:
-                //if (!isset($globalsStoring)) {
-                //// Stores the global variable. We should not store by serialization because serialization cannot store resource and array element reference variable.
-                //$globalsStoring = $GLOBALS;
                 BreakpointDebugging_PHPUnitUtilGlobalState::backupGlobals($this->backupGlobalsBlacklist);
-                //}
             }
 
             if (version_compare(PHP_VERSION, '5.3', '>')
@@ -206,11 +199,6 @@ class BreakpointDebugging_UnitTestOverridingBase extends \PHPUnit_Framework_Test
             if ($this->backupGlobals === NULL
                 || $this->backupGlobals === TRUE
             ) {
-                // ### Bug fixed from:
-                // PHPUnit_Util_GlobalState::restoreGlobals($this->backupGlobalsBlacklist);
-                // ### To:
-                //// Restores variable. We must not restore by reference copy because variable ID changes.
-                //$GLOBALS = $globalsStoring;
                 BreakpointDebugging_PHPUnitUtilGlobalState::restoreGlobals($this->backupGlobalsBlacklist);
             }
 

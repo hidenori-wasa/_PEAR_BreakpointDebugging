@@ -812,16 +812,33 @@ abstract class BreakpointDebugging_InAllCase
     {
         B::limitAccess('BreakpointDebugging_Option.php');
 
-        $error = new \BreakpointDebugging_Error();
-        $error->handleException2($pException, self::$prependExceptionLog);
-        if (self::$_nativeExeMode & self::UNIT_TEST) {
-            BreakpointDebugging_UnitTestCaller::displaysException($pException);
-            BreakpointDebugging_UnitTestCaller::handleUnitTestException($pException);
+        // Sets global internal error handler.( -1 sets all bits on 1. Therefore, this specifies error, warning and note of all kinds.)
+        set_error_handler('\BreakpointDebugging_Error::handleInternalError', -1);
+
+        // trigger_error('Internal error test.'); // For debug.
+
+        try {
+            // throw new \Exception('Internal exception test.'); // For debug.
+
+            $error = new \BreakpointDebugging_Error();
+            $error->handleException2($pException, self::$prependExceptionLog);
+            if (self::$_nativeExeMode & self::UNIT_TEST) {
+                BreakpointDebugging_UnitTestCaller::displaysException($pException);
+                BreakpointDebugging_UnitTestCaller::handleUnitTestException($pException);
+            }
+        } catch (\Exception $e) {
+            if (self::$_nativeExeMode & self::UNIT_TEST) {
+                restore_error_handler();
+                throw $e;
+            }
+            \BreakpointDebugging_Error::handleInternalException($e);
         }
+
+        restore_error_handler();
     }
 
     /**
-     * Handles an error.
+     * Global error handler.
      *
      * @param int    $errorNumber  Error number.
      * @param string $errorMessage Error message.
@@ -832,8 +849,24 @@ abstract class BreakpointDebugging_InAllCase
     {
         B::limitAccess('BreakpointDebugging_Option.php');
 
-        $error = new \BreakpointDebugging_Error();
-        $error->handleError2($errorNumber, $errorMessage, self::$prependErrorLog, debug_backtrace());
+        // Sets global internal error handler.( -1 sets all bits on 1. Therefore, this specifies error, warning and note of all kinds.)
+        set_error_handler('\BreakpointDebugging_Error::handleInternalError', -1);
+
+        try {
+            // trigger_error('Internal error test.'); // For debug.
+            // throw new \Exception('Internal exception test.'); // For debug.
+
+            $error = new \BreakpointDebugging_Error();
+            $error->handleError2($errorNumber, $errorMessage, self::$prependErrorLog, debug_backtrace());
+        } catch (\Exception $e) {
+            if (self::$_nativeExeMode & self::UNIT_TEST) {
+                restore_error_handler();
+                throw $e;
+            }
+            \BreakpointDebugging_Error::handleInternalException($e);
+        }
+
+        restore_error_handler();
 
         return true;
     }
@@ -1095,13 +1128,24 @@ class BreakpointDebugging_OutOfLogRangeException extends \BreakpointDebugging_Ex
 
 }
 
-// This sets global exception handler.
-set_exception_handler('\BreakpointDebugging::handleException');
-// Uses "PHPUnit" error handler in case of command.
-if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
-    // This sets global error handler.( -1 sets all bits on 1. Therefore, this specifies error, warning and note of all kinds and so on.)
-    set_error_handler('\BreakpointDebugging::handleError', -1);
+// Has been using internal handler instead of regular error handler and exception handler in case of release.
+// Because running is unstable for using the file which affects on running of code for logging.
+// So, I have been adding rollback feature.
+if (B::getStatic('$exeMode') === B::RELEASE) {
+    // Sets global internal exception handler.
+    set_exception_handler('\BreakpointDebugging_Error::handleInternalException');
+    // Sets global internal error handler.( -1 sets all bits on 1. Therefore, this specifies error, warning and note of all kinds.)
+    set_error_handler('\BreakpointDebugging_Error::handleInternalError', -1);
+} else {
+    // Sets global exception handler.
+    set_exception_handler('\BreakpointDebugging::handleException');
+    // Uses "PHPUnit" error handler in case of command.
+    if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
+        // Sets global error handler.( -1 sets all bits on 1. Therefore, this specifies error, warning and note of all kinds.)
+        set_error_handler('\BreakpointDebugging::handleError', -1);
+    }
 }
+
 spl_autoload_register('\BreakpointDebugging::autoload');
 register_shutdown_function('\BreakpointDebugging::shutdown');
 \BreakpointDebugging::initialize();

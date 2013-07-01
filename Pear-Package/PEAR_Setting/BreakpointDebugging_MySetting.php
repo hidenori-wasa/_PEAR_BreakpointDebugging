@@ -63,9 +63,9 @@ function BreakpointDebugging_setExecutionMode()
 
     // ### Execution mode setting. ===>
     // Please, choose a mode.
-    $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('DEBUG');
+    // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('DEBUG');
     // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('RELEASE');
-    // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('DEBUG_UNIT_TEST');
+    $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('DEBUG_UNIT_TEST');
     // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('RELEASE_UNIT_TEST');
     // ### <=== Execution mode setting.
     //
@@ -150,7 +150,9 @@ function BreakpointDebugging_mySetting()
 {
     // ### Item setting. ===>
     $developerIP = &B::refStatic('$_developerIP');
-    // $developerIP = '61.121.83.86'; // Please, enter developer IP address. However, comment out this in case of release or local or local unit test.
+    // Please, enter developer IP address.
+    // However, comment out this when running code is local or running code does not use.
+    // $developerIP = '61.121.83.86';
     $language = 'Japanese';
     $timezone = 'Asia/Tokyo';
     $SMTP = '<Your SMTP server>';

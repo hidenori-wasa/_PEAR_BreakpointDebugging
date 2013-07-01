@@ -145,9 +145,7 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
         // Lock php code.
         self::$_lockingObject->lock();
 
-        restore_error_handler();
-        $this->pFile = @B::fopen($lockFilePath, 'x+b', 0600);
-        set_error_handler('\BreakpointDebugging::handleError', -1);
+        $this->pFile = B::fopen($lockFilePath, 'w+b', 0600);
         while (true) {
             // In case of existing file.
             if ($this->pFile === false) {

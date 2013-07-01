@@ -3,7 +3,7 @@
 /**
  * Error log files manager.
  *
- * Please, execute the following procedure.
+ * Please, run the following procedure.
  * Procedure1: Set
  *      "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('RELEASE');"
  *      in "BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php'" file.
@@ -83,6 +83,8 @@ if (isset($_GET['download'])) {
      */
     function download($filepath)
     {
+        global $lockByFileExisting;
+
         // Sends HTML header.
         header('Content-Disposition: attachment; filename="' . basename($filepath) . '"'); // Established file name. "filename" is sending-data file name.
         header('Content-Type: application/octet-stream'); // Content type. "application/octet-stream" is dialog which saves response by naming.
@@ -90,12 +92,30 @@ if (isset($_GET['download'])) {
         header('Content-Length: ' . filesize($filepath)); // Message body length.
         header('Pragma: private'); // For HTTP/1.0. "private" is cached on client, but it is not cached on proxy.
         header('Cache-Control: private'); // For HTTP/1.1 instead of "Pragma".
-        // Downloads by sector unit to avoid memory lack.
+        // テンポラリファイルにエラーログファイルをコピーする
         $pFile = fopen($filepath, 'rb');
+        $pTmp = tmpfile();
+        $offset = 0;
         while (!feof($pFile)) {
-            echo fread($pFile, 4096);
+            $offset += stream_copy_to_stream($pFile, $pTmp, 4096, $offset);
+            fflush($pTmp);
+            $debug1 = stream_get_meta_data($pFile); // For debug.
+            B::assert($debug1['unread_bytes'] === 0);
+            $debug2 = stream_get_meta_data($pTmp); // For debug.
+            B::assert($debug2['unread_bytes'] === 0);
         }
         fclose($pFile);
+
+        // Unlocks error log files.
+        $lockByFileExisting->unlock();
+
+        // Downloads by sector unit to avoid memory lack.
+        rewind($pTmp);
+        while (!feof($pTmp)) {
+            echo fread($pTmp, 4096);
+            flush();
+        }
+        fclose($pTmp);
     }
 
     // Searches the error log file which should download.
@@ -113,10 +133,11 @@ if (isset($_GET['download'])) {
         break;
     }
     B::assert($doneDownload, 101);
+    exit;
 } else if (isset($_GET['deleteErrorLogs'])) { // When you pushed "Delete all error log files" button.
     // Searches the files which should delete.
     foreach ($errorLogDirElements as $errorLogDirElement) {
-        if (!preg_match('`^php_error_[1-8]\.log$`xXu', $errorLogDirElement)) {
+        if (!preg_match('`\.log$`xX', $errorLogDirElement)) {
             continue;
         }
         $errorLogDirElementPath = $errorLogDirectory . $errorLogDirElement;
@@ -126,7 +147,7 @@ if (isset($_GET['download'])) {
         // Deletes the error log file, variable configuring file or the error location file.
         unlink($errorLogDirElementPath);
     }
-    echo '<pre>You must delete this page for security before your IP is changed.</pre>';
+    echo '<pre>You must comment out "$developerIP = \'' . $_SERVER['REMOTE_ADDR'] . '\';" into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file.</pre>';
 } else if (isset($_GET['reset'])) { // When you pushed "Reset error log files" button.
     // Searches the files which should delete.
     foreach ($errorLogDirElements as $errorLogDirElement) {
@@ -137,12 +158,12 @@ if (isset($_GET['download'])) {
         // Deletes the error log file, variable configuring file or the error location file.
         unlink($errorLogDirElementPath);
     }
-    echo '<pre>You must delete this page for security before your IP is changed.</pre>';
+    echo '<pre>You must comment out "$developerIP = \'' . $_SERVER['REMOTE_ADDR'] . '\';" into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file.</pre>';
 } else { // In case of first time when this page was called.
     $thisFileName = basename(__FILE__);
     // Makes error log download-buttons.
     foreach ($errorLogDirElements as $errorLogDirElement) {
-        if (!preg_match('`^php_error_[1-8]\.log$`xXu', $errorLogDirElement)) {
+        if (!preg_match('`\.log$`xX', $errorLogDirElement)) {
             continue;
         }
         echo <<<EOD

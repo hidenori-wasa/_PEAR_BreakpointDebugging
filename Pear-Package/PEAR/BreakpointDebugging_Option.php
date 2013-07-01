@@ -40,35 +40,35 @@
  * We do not need error and exception handler coding because an error and an exception
  * which wasn't caught are processed by global handler in "BreakpointDebugging" class.
  *
- * ### The execution procedure. ###
- * Procedure 1: Please, install "XDebug" by seeing "http://xdebug.org/docs/install"
+ * ### Running procedure. ###
+ * Please, run the following procedure.
+ * Procedure 1: Install "XDebug" by seeing "http://xdebug.org/docs/install"
  *      in case of your local host.
  *      "Xdebug" extension is required because "uses breakpoint,
  *      displays for fatal error and detects infinity recursive function call".
- * Procedure 2: If you want remote debug, please set 'xdebug.remote_host =
+ * Procedure 2: If you want remote debug, set 'xdebug.remote_host =
  *      "<name or ip of host which debugger exists>"' into "php.ini" file, if remote server supports.
- * Procedure 3: Please, set *.php file format to utf8, but we should create backup of
+ * Procedure 3: Set *.php file format to utf8, but we should create backup of
  *      php files because multibyte strings may be destroyed.
- * Procedure 4: Please, copy "BreakpointDebugging_Including.php" into your project directory.
+ * Procedure 4: Copy "BreakpointDebugging_Including.php" into your project directory.
  * And, copy "BreakpointDebugging_MySetting*.php" to
  * "const BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME" of your project directory.
- * Procedure 5: Please, edit BreakpointDebugging_MySetting*.php for customize.
+ * Procedure 5: Edit BreakpointDebugging_MySetting*.php for customize.
  *      Then, it fixes part setting about all debugging modes.
- * Procedure 6: Please, copy following in your project php code.
+ * Procedure 6: Copy following in your project php code.
  *      require_once './BreakpointDebugging_Including.php';
- * Procedure 7: Please, check debugging-mode using "B::isUnitTestExeMode()" in start page,
+ * Procedure 7: Check debugging-mode using "B::isUnitTestExeMode()" in start page,
  *      and set debugging mode to
  *      "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('...');"
  *      into "BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php'".
- *
  *      Then, use "B::getStatic('$exeMode')" to get value.
  *      Lastly, we must execute all codes using "\BreakpointDebugging::displayCodeCoverageReport()" before release.
  *      Then, we must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('RELEASE');".
  *      Because "XDebug" information is not displayed on remote release mode.
- * Procedure 8: Please, if you use "Unix", register your username as
+ * Procedure 8: If you use "Unix", register your username as
  *      "User" and "Group" into "lampp/apache/conf/httpd.conf".
  *      And, register "export PATH=$PATH:/opt/lampp/bin" into "~/.profile".
- * Procedure 9: Please, if you can change "php.ini" file,
+ * Procedure 9: If you can change "php.ini" file,
  *      use "B::iniCheck()" instead of "B::iniSet()" in "*_MySetting.php" file,
  *      and move it to "*_MySetting_Option.php" file
  *      because decreases the read and the parse bytes.
@@ -78,12 +78,12 @@
  * Caution: Do not execute "ini_set('error_log', ...)" because
  * this package uses local log rotation instead of system log.
  *
- * Option procedure: Please, register at top of the function or method or file
- *      which has been not fixed. Please, copy following.
+ * Option procedure: Register at top of the function or method or file
+ *      which has been not fixed. Copy following.
  *      "static $isRegister = false; \BreakpointDebugging::registerNotFixedLocation($isRegister);"
  *      Then, we can discern function or method or file
  *      which has been not fixed with browser screen or log.
- * Option procedure: Please, register local variable or global variable
+ * Option procedure: Register local variable or global variable
  *      which you want to see with "\BreakpointDebugging::addValuesToTrace()".
  *
  * ### Exception hierarchical structure ###
@@ -497,13 +497,15 @@ final class BreakpointDebugging extends \BreakpointDebugging_UnitTestCaller
             // Skips top page.
             return;
         }
-        for ($key = 1; $key < $count; $key++) {
-            if (array_key_exists('file', $callStack[$key])) {
-                break;
+        do {
+            for ($key = 1; $key < $count; $key++) {
+                if (array_key_exists('file', $callStack[$key])) {
+                    break 2;
+                }
             }
-            // @codeCoverageIgnoreStart
-        }
-        // @codeCoverageIgnoreEnd
+            // Skips when "file" key does not exist.
+            return;
+        } while (false);
         $fullFilePath = $callStack[$key]['file'];
         $os = strtoupper(substr(PHP_OS, 0, 3));
         if ($os === 'WIN') {
