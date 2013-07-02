@@ -63,10 +63,14 @@ use \BreakpointDebugging as B;
 
 B::checkDevelopmentSecurity(B::RELEASE);
 
+// Cancels the script running time limitation.
+set_time_limit(0);
+
 // Locks error log files.
 $lockByFileExisting = &\BreakpointDebugging_LockByFileExisting::internalSingleton();
 $lockByFileExisting->lock();
-$errorLogDirectory = B::getStatic('$_workDir') . '/ErrorLog/';
+
+$errorLogDirectory = B::getStatic('$_workDir') . \BreakpointDebugging_Error::getErrorLogDir();
 if (!is_dir($errorLogDirectory)) {
     echo 'Error log directory does not exist.';
     goto END_LABEL;
@@ -92,17 +96,13 @@ if (isset($_GET['download'])) {
         header('Content-Length: ' . filesize($filepath)); // Message body length.
         header('Pragma: private'); // For HTTP/1.0. "private" is cached on client, but it is not cached on proxy.
         header('Cache-Control: private'); // For HTTP/1.1 instead of "Pragma".
-        // テンポラリファイルにエラーログファイルをコピーする
+        // Copies error log file to temporary file.
         $pFile = fopen($filepath, 'rb');
         $pTmp = tmpfile();
         $offset = 0;
         while (!feof($pFile)) {
             $offset += stream_copy_to_stream($pFile, $pTmp, 4096, $offset);
             fflush($pTmp);
-            $debug1 = stream_get_meta_data($pFile); // For debug.
-            B::assert($debug1['unread_bytes'] === 0);
-            $debug2 = stream_get_meta_data($pTmp); // For debug.
-            B::assert($debug2['unread_bytes'] === 0);
         }
         fclose($pFile);
 
@@ -116,6 +116,7 @@ if (isset($_GET['download'])) {
             flush();
         }
         fclose($pTmp);
+        exit;
     }
 
     // Searches the error log file which should download.
@@ -129,11 +130,7 @@ if (isset($_GET['download'])) {
         }
         // Downloads the error log file.
         download($errorLogDirElementPath);
-        $doneDownload = true;
-        break;
     }
-    B::assert($doneDownload, 101);
-    exit;
 } else if (isset($_GET['deleteErrorLogs'])) { // When you pushed "Delete all error log files" button.
     // Searches the files which should delete.
     foreach ($errorLogDirElements as $errorLogDirElement) {
@@ -147,7 +144,7 @@ if (isset($_GET['download'])) {
         // Deletes the error log file, variable configuring file or the error location file.
         unlink($errorLogDirElementPath);
     }
-    echo '<pre>You must comment out "$developerIP = \'' . $_SERVER['REMOTE_ADDR'] . '\';" into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file.</pre>';
+    echo '<pre>You must comment out "$developerIP = \'' . $_SERVER['REMOTE_ADDR'] . '\';" inside "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file before your IP is changed.</pre>';
 } else if (isset($_GET['reset'])) { // When you pushed "Reset error log files" button.
     // Searches the files which should delete.
     foreach ($errorLogDirElements as $errorLogDirElement) {
@@ -158,7 +155,7 @@ if (isset($_GET['download'])) {
         // Deletes the error log file, variable configuring file or the error location file.
         unlink($errorLogDirElementPath);
     }
-    echo '<pre>You must comment out "$developerIP = \'' . $_SERVER['REMOTE_ADDR'] . '\';" into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file.</pre>';
+    echo '<pre>You must comment out "$developerIP = \'' . $_SERVER['REMOTE_ADDR'] . '\';" inside "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file before your IP is changed.</pre>';
 } else { // In case of first time when this page was called.
     $thisFileName = basename(__FILE__);
     // Makes error log download-buttons.

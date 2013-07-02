@@ -140,7 +140,7 @@ abstract class BreakpointDebugging_Error_InAllCase
     private $_currentErrorLogFileName;
 
     /**
-     * @var string Error log directory.
+     * @var string Full path of error log directory.
      */
     private $_errorLogDirectory;
 
@@ -165,9 +165,19 @@ abstract class BreakpointDebugging_Error_InAllCase
     private static $_onceFlag = true;
 
     /**
-     * @var string Error log directory.
+     * @var string Error log directory name.
      */
     private static $_errorLogDir = '/ErrorLog/';
+
+    /**
+     * Gets error log directory name.
+     *
+     * @return string Error log directory name.
+     */
+    static function getErrorLogDir()
+    {
+        return self::$_errorLogDir;
+    }
 
     /**
      * Sets HTML tags.
@@ -563,7 +573,7 @@ abstract class BreakpointDebugging_Error_InAllCase
     }
 
     /**
-     * Displays log in case of debug, or logs exception in case of release.
+     * Displays error log in case of debug, or logs error log in case of release.
      *
      * @param type $message   Message.
      * @param type $callStack The call stack information.

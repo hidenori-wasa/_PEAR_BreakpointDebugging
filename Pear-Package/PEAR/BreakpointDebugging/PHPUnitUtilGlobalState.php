@@ -68,6 +68,7 @@ class BreakpointDebugging_PHPUnitUtilGlobalState extends \PHPUnit_Util_GlobalSta
 
     /**
      * Stores variables. I fixed bug which cannot restore reference variable element of array. Also, increases the speed.
+     * NOTICE: A referenced value is not stored. It is until two-dimensional array element that a reference ID is stored.
      *
      * We should not store by serialization because serialization cannot store resource and array element reference variable.
      * However, we may store by serialization because we cannot detect recursive array without changing array and we take time to search deep nest array.
@@ -77,10 +78,11 @@ class BreakpointDebugging_PHPUnitUtilGlobalState extends \PHPUnit_Util_GlobalSta
      * @param array $variables             Array variable to store.
      * @param array &$variablesStoring     Variables storing.
      * @param array &$serializeKeysStoring Serialization-keys storing.
+     * @param bool  $isGlobalStoring       Is this the global storing?
      *
      * @return void
      */
-    private static function _storeVariables(array $blacklist, array $variables, array &$variablesStoring, array &$serializeKeysStoring)
+    private static function _storeVariables(array $blacklist, array $variables, array &$variablesStoring, array &$serializeKeysStoring, $isGlobalStoring = true)
     {
         if (!empty($variablesStoring)) {
             return;
@@ -92,7 +94,7 @@ class BreakpointDebugging_PHPUnitUtilGlobalState extends \PHPUnit_Util_GlobalSta
             ) {
                 continue;
             }
-            if ($key === 'GLOBALS'
+            if (($key === 'GLOBALS' && $isGlobalStoring)
                 || (!is_object($value) && !is_array($value))
             ) {
                 $variablesStoring[$key] = $value;
@@ -194,8 +196,9 @@ class BreakpointDebugging_PHPUnitUtilGlobalState extends \PHPUnit_Util_GlobalSta
         $declaredClasses = get_declared_classes();
         for ($i = count($declaredClasses) - 1; $i >= 0; $i--) {
             $declaredClassName = $declaredClasses[$i];
-            // $declaredClassName = 'SomethingTest'; // For debug.
             // $declaredClassName = 'PHPUnit_Framework_TestCase'; // For debug.
+            // $declaredClassName = 'BreakpointDebugging_ErrorTest'; // For debug.
+            // $declaredClassName = 'BreakpointDebugging'; // For debug.
             // Excepts unit test classes.
             if (stripos($declaredClassName, 'PHPUnit') === 0
                 || stripos($declaredClassName, 'File_Iterator') === 0
@@ -205,10 +208,12 @@ class BreakpointDebugging_PHPUnitUtilGlobalState extends \PHPUnit_Util_GlobalSta
                 || stripos($declaredClassName, 'PHP_TokenStream') === 0
                 || stripos($declaredClassName, 'sfYaml') === 0
                 || stripos($declaredClassName, 'Text_Template') === 0
-                || strripos($declaredClassName, 'Test', - strlen('Test')) === strlen($declaredClassName) - strlen('Test') // ### To:
+                //|| strripos($declaredClassName, 'Test', - strlen('Test')) === strlen($declaredClassName) - strlen('Test') // ### To:
+                || is_subclass_of($declaredClassName, 'PHPUnit_Util_GlobalState') // ### To:
+                || is_subclass_of($declaredClassName, 'PHPUnit_Framework_Test') // ### To:
             ) {
                 // ### Bug fixed from: && !$declaredClasses[$i] instanceof PHPUnit_Framework_Test
-                // However, this has been not supporting except "*Test.php".
+                //// However, this has been not supporting except "*Test.php".
                 continue;
             }
             // Class reflection.
@@ -247,7 +252,7 @@ class BreakpointDebugging_PHPUnitUtilGlobalState extends \PHPUnit_Util_GlobalSta
                 // Static class properties backup.
                 // parent::$staticAttributes[$declaredClassName] = $backup;
                 parent::$staticAttributes[$declaredClassName] = array (); // ### To:
-                self::_storeVariables(array (), $backup, parent::$staticAttributes[$declaredClassName], self::$_staticAttributesSerializationKeysStoring); // ### To:
+                self::_storeVariables(array (), $backup, parent::$staticAttributes[$declaredClassName], self::$_staticAttributesSerializationKeysStoring, false); // ### To:
             }
         }
     }

@@ -5,30 +5,6 @@ require_once './BreakpointDebugging_Including.php';
 use \BreakpointDebugging as B;
 
 B::isUnitTestExeMode(); // Checks the execution mode.
-
-// throw new \Exception('Exception test.');
-trigger_error('Error test.');
-exit;
-
-
-$fruits = array ("a" => "lemon", "b" => "orange", array ("a" => "apple", "p" => "pear"));
-$iterator = new RecursiveArrayIterator($fruits);
-while ($iterator->valid()) {
-    // Check if there are children
-    if ($iterator->hasChildren()) {
-        // print all children
-        foreach ($iterator->getChildren() as $key => $value) {
-            echo $key . ' : ' . $value . "\n";
-        }
-    } else {
-        echo "No children.\n";
-    }
-    $iterator->next();
-}
-exit;
-//
-//
-//
 class TestClassA
 {
     public $testPropertyA = 'testPropertyA';
@@ -39,6 +15,7 @@ class TestClassB
 {
     public $testPropertyB = 'testPropertyB';
     public $testObjectProperty;
+    static $GLOBALS;
 
     function __construct()
     {
@@ -48,12 +25,16 @@ class TestClassB
 }
 
 $testClassB = new \TestClassB();
-
 $testArray = array ($testClassB);
+$referenceA = '';
+$referenceB = array ();
 function test()
 {
-    global $_BreakpointDebugging_EXE_MODE, $testClassB, $testArray;
+    global $_BreakpointDebugging_EXE_MODE, $testClassB, $testArray, $referenceA, $referenceB;
 
+    $referenced = 'referenced';
+    $referenceA = &$referenced;
+    $referenceB = array (&$referenced);
     $HTTP_HOST = $GLOBALS['_SERVER']['HTTP_HOST'];
     $PHP_SELF = $GLOBALS['_SERVER']['PHP_SELF'];
     $BreakpointDebugging_EXE_MODE = $_BreakpointDebugging_EXE_MODE;
@@ -62,6 +43,8 @@ function test()
 
     // Stores a variable.
     \BreakpointDebugging_PHPUnitUtilGlobalState::backupGlobals(array ());
+    B::assert($referenceA === 'referenced');
+    B::assert($referenceB === array ('referenced'));
     B::assert($GLOBALS['_SERVER']['HTTP_HOST'] === $HTTP_HOST);
     B::assert($GLOBALS['_SERVER']['PHP_SELF'] === $PHP_SELF);
     B::assert($_BreakpointDebugging_EXE_MODE === $BreakpointDebugging_EXE_MODE);
@@ -70,11 +53,14 @@ function test()
     B::assert(!array_key_exists('ADDITION', $GLOBALS));
 
     // Change value.
+    $referenced = 'referenceDummy';
     $_SERVER['PHP_SELF'] = 'PHP_SELF_DUMMY';
     unset($_SERVER['HTTP_HOST']);
     $_BreakpointDebugging_EXE_MODE = 'BreakpointDebugging_EXE_MODE_DUMMY';
     $testClassB->testObjectProperty->testPropertyA = 'testPropertyZ';
     $GLOBALS['ADDITION'] = null;
+    B::assert($referenceA === 'referenceDummy');
+    B::assert($referenceB === array ('referenceDummy'));
     B::assert(!isset($GLOBALS['_SERVER']['HTTP_HOST']));
     B::assert($GLOBALS['_SERVER']['PHP_SELF'] === 'PHP_SELF_DUMMY');
     B::assert($_BreakpointDebugging_EXE_MODE === 'BreakpointDebugging_EXE_MODE_DUMMY');
@@ -84,12 +70,27 @@ function test()
 
     // Restores variable.
     \BreakpointDebugging_PHPUnitUtilGlobalState::restoreGlobals();
+    B::assert($referenceA === 'referenceDummy');
+    B::assert($referenceB === array ('referenceDummy'));
     B::assert($GLOBALS['_SERVER']['HTTP_HOST'] === $HTTP_HOST);
     B::assert($GLOBALS['_SERVER']['PHP_SELF'] === $PHP_SELF);
     B::assert($_BreakpointDebugging_EXE_MODE === $BreakpointDebugging_EXE_MODE);
     B::assert($testClassB->testObjectProperty->testPropertyA === $testPropertyA);
     B::assert($testArray[0]->testObjectProperty->testPropertyA === $testPropertyA2);
     B::assert(!array_key_exists('ADDITION', $GLOBALS));
+
+    \TestClassB::$GLOBALS = $testArray;
+    // Stores static attributes.
+    \BreakpointDebugging_PHPUnitUtilGlobalState::backupStaticAttributes(array ());
+    B::assert(\TestClassB::$GLOBALS[0]->testObjectProperty->testPropertyA === 'testPropertyA');
+
+    // Change value.
+    \TestClassB::$GLOBALS[0]->testObjectProperty->testPropertyA = 'testPropertyZ';
+    B::assert(\TestClassB::$GLOBALS[0]->testObjectProperty->testPropertyA === 'testPropertyZ');
+
+    // Restores static attributes.
+    \BreakpointDebugging_PHPUnitUtilGlobalState::restoreStaticAttributes();
+    B::assert(\TestClassB::$GLOBALS[0]->testObjectProperty->testPropertyA === 'testPropertyA');
 
     echo '<pre>Test ended.</pre>';
 }
