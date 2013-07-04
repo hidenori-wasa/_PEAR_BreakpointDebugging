@@ -428,9 +428,7 @@ EOD;
         $pPHPUnit_TextUI_Command = new \BreakpointDebugging_PHPUnitTextUICommand;
         // Uses "PHPUnit" error handler.
         restore_error_handler();
-        echo '<pre>';
         $pPHPUnit_TextUI_Command->run($commandElements, false);
-        echo '</pre>';
         // Uses my error handler.
         set_error_handler('\BreakpointDebugging::handleError', -1);
     }
@@ -441,6 +439,10 @@ EOD;
      * We must use private static property instead of using local static variable because we can use unit test's "--static-backup" command line switch.
      * Also, we must not use unit test's "--process-isolation" command line switch because its tests is run in other process.
      * So, we cannot debug with IDE.
+     *
+     * How to run multiprocess unit test (Unix only):
+     *      Procedure 1: Use process control functions "pcntl_...()" inside your unit test class method "test...()".
+     *      Procedure 2: Judge by using "parent::assertTrue(<conditional expression>)".
      *
      * ### Running procedure. ###
      * Please, run the following procedure.
@@ -557,16 +559,17 @@ EOD;
      */
     static function executeUnitTest($unitTestFilePaths)
     {
-        $runByCommand = false; // Running by command does not support.
-
+        /*         * ***
+          $runByCommand = false; // Running by command does not support.
+         * *** */
         B::checkDevelopmentSecurity();
-        echo self::$_style;
-        $separator = '<pre>//////////////////////////////////////////////////////////////////////////' . PHP_EOL;
+        echo self::$_style . '<pre>';
+        $separator = PHP_EOL . '//////////////////////////////////////////////////////////////////////////' . PHP_EOL;
 
         if (self::$exeMode & B::RELEASE) {
-            echo '<pre>\'RELEASE_UNIT_TEST\' execution mode.</pre>';
+            echo '<b>\'RELEASE_UNIT_TEST\' execution mode.</b>' . PHP_EOL;
         } else {
-            echo '<pre>\'DEBUG_UNIT_TEST\' execution mode.</pre>';
+            echo '<b>\'DEBUG_UNIT_TEST\' execution mode.</b>' . PHP_EOL;
         }
 
         B::assert(func_num_args() <= 2, 1);
@@ -574,75 +577,77 @@ EOD;
         B::assert(!empty($unitTestFilePaths), 3);
 
         $unitTestCurrentDir = self::_getUnitTestDir();
-        if ($runByCommand) {
-            echo '<pre>Starts unit tests by command.</pre>';
-            // In case of extending test class except "\BreakpointDebugging_UnitTestOverriding" class.
-            if (B::getStatic('$_os') === 'WIN') { // In case of Windows.
-                $phpunit = 'phpunit.bat';
-            } else { // In case of Unix.
-                // Command execution path by "bash" differs because "Apache" is root user in case of default, therefore uses full path for command.
-                while (true) {
-                    $phpunit = `which phpunit`;
-                    $phpunit = trim($phpunit);
-                    if ($phpunit) {
-                        break;
-                    }
+        /*         * ***
+          if ($runByCommand) {
+          echo 'Starts unit tests by command.' . PHP_EOL;
+          // In case of extending test class except "\BreakpointDebugging_UnitTestOverriding" class.
+          if (B::getStatic('$_os') === 'WIN') { // In case of Windows.
+          $phpunit = 'phpunit.bat';
+          } else { // In case of Unix.
+          // Command execution path by "bash" differs because "Apache" is root user in case of default, therefore uses full path for command.
+          while (true) {
+          $phpunit = `which phpunit`;
+          $phpunit = trim($phpunit);
+          if ($phpunit) {
+          break;
+          }
 
-                    // $phpunit = `export PATH=/opt/lampp/bin:/opt/local/bin:/usr/bin:/usr/bin/X11:/usr/share/php;which phpunit`;
-                    $userName = B::getStatic('$_userName');
-                    $phpunit = `sudo -u $userName which phpunit`;
+          // $phpunit = `export PATH=/opt/lampp/bin:/opt/local/bin:/usr/bin:/usr/bin/X11:/usr/share/php;which phpunit`;
+          $userName = B::getStatic('$_userName');
+          $phpunit = `sudo -u $userName which phpunit`;
 
-                    $phpunit = trim($phpunit);
-                    if ($phpunit) {
-                        break;
-                    }
-                    exit('<pre>"phpunit" command does not exist.</pre>');
+          $phpunit = trim($phpunit);
+          if ($phpunit) {
+          break;
+          }
+          exit('"phpunit" command does not exist.</pre>');
+          }
+          if (!is_executable($phpunit)) {
+          exit('"phpunit" command is not executable. (' . $phpunit . ')</pre>');
+          }
+          }
+          foreach ($unitTestFilePaths as $unitTestFilePath) {
+          $commandElements = '--stop-on-failure --static-backup ' . $unitTestFilePath;
+          $testFileName = array_pop($commandElements);
+          $commandOptions = implode(' ', $commandElements);
+          // If test file path contains '_'.
+          if (strpos($testFileName, '_') !== false) {
+          echo "You have to change from '_' of '$testFileName' to '-' because you cannot run unit tests." . PHP_EOL;
+          if (B::getXebugExists()
+          && !(self::$exeMode & B::IGNORING_BREAK_POINT)
+          ) {
+          xdebug_break();
+          }
+          return;
+          }
+          echo $separator;
+          echo "Runs \"phpunit $command\" command." . PHP_EOL;
+          // Runs unit test command.
+          echo `"$phpunit" $commandOptions "$unitTestCurrentDir$testFileName"`;
+          }
+          } else {
+         * *** */
+        foreach ($unitTestFilePaths as $unitTestFilePath) {
+            // If test file path contains '_'.
+            if (strpos($unitTestFilePath, '_') !== false) {
+                echo "You have to change from '_' of '$unitTestFilePath' to '-' because you cannot run unit tests." . PHP_EOL;
+                if (B::getXebugExists()
+                    && !(self::$exeMode & B::IGNORING_BREAK_POINT)
+                ) {
+                    xdebug_break();
                 }
-                if (!is_executable($phpunit)) {
-                    exit('<pre>"phpunit" command is not executable. (' . $phpunit . ')</pre>');
-                }
+                continue;
             }
-            foreach ($unitTestFilePaths as $unitTestFilePath) {
-                $commandElements = '--stop-on-failure --static-backup ' . $unitTestFilePath;
-                $testFileName = array_pop($commandElements);
-                $commandOptions = implode(' ', $commandElements);
-                // If test file path contains '_'.
-                if (strpos($testFileName, '_') !== false) {
-                    echo "You have to change from '_' of '$testFileName' to '-' because you cannot run unit tests." . PHP_EOL;
-                    if (B::getXebugExists()
-                        && !(self::$exeMode & B::IGNORING_BREAK_POINT)
-                    ) {
-                        xdebug_break();
-                    }
-                    return;
-                }
-                echo $separator;
-                echo "Runs \"phpunit $command\" command." . PHP_EOL;
-                // Runs unit test command.
-                echo `"$phpunit" $commandOptions "$unitTestCurrentDir$testFileName"`;
-                echo '</pre>';
-            }
-        } else {
-            foreach ($unitTestFilePaths as $unitTestFilePath) {
-                // If test file path contains '_'.
-                if (strpos($unitTestFilePath, '_') !== false) {
-                    echo "You have to change from '_' of '$unitTestFilePath' to '-' because you cannot run unit tests." . PHP_EOL;
-                    if (B::getXebugExists()
-                        && !(self::$exeMode & B::IGNORING_BREAK_POINT)
-                    ) {
-                        xdebug_break();
-                    }
-                    continue;
-                }
-                $command = '--stop-on-failure --static-backup ' . $unitTestFilePath;
-                echo $separator;
-                echo "Runs \"phpunit $command\" command.";
-                self::_runPHPUnitCommand($command);
-                echo '</pre>';
-            }
+            $command = '--stop-on-failure --static-backup ' . $unitTestFilePath;
+            echo $separator;
+            echo "Runs <b>\"phpunit $command\"</b> command." . PHP_EOL;
+            self::_runPHPUnitCommand($command);
         }
+        /*         * ***
+          }
+         * *** */
         echo $separator;
-        echo 'Unit tests have done.</pre>';
+        echo '<b>Unit tests have done.</b></pre>';
     }
 
     /**
@@ -698,7 +703,9 @@ EOD;
         // Creates code coverage report.
         $displayErrorsStoring = ini_get('display_errors');
         ini_set('display_errors', '');
+        echo '<pre>';
         self::_runPHPUnitCommand("--static-backup --coverage-html $codeCoverageReportPath $unitTestFilePath");
+        echo '</pre>';
         ini_set('display_errors', $displayErrorsStoring);
         // Displays the code coverage report in browser.
         self::$_classFilePaths = $classFilePaths;

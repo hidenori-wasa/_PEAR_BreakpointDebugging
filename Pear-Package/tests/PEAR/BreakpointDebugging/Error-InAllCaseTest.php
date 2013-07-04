@@ -44,7 +44,7 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_UnitT
     function setUp()
     {
         parent::setUp();
-        //$errorLogDirectory = B::getStatic('$_workDir') . '/ErrorLog/';
+
         $errorLogDirectory = B::getStatic('$_workDir') . self::$_errorLogDir;
         if (is_dir($errorLogDirectory)) {
             $errorLogDirElements = scandir($errorLogDirectory);
@@ -82,9 +82,7 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_UnitT
     private function _getFileNumber($fileName)
     {
         $fileName = str_replace('\\', '/', $fileName);
-        //$pFile = fopen(B::getStatic('$_workDir') . '/ErrorLog/ErrorLog.var.conf', 'rb');
         $pFile = fopen(B::getStatic('$_workDir') . self::$_errorLogDir . 'ErrorLog.var.conf', 'rb');
-
         fgets($pFile);
         while ($readFileLine = fgets($pFile)) {
             $readFileName = substr($readFileLine, 0, strrpos($readFileLine, '?'));
@@ -149,7 +147,6 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_UnitT
         test1_();
         $line3 = __LINE__ - 1;
 
-        //$binData1 = file_get_contents(B::getStatic('$_workDir') . "/ErrorLog/{$parentFileNumber}.bin");
         $binData1 = file_get_contents(B::getStatic('$_workDir') . self::$_errorLogDir . $parentFileNumber . '.bin');
 
         $cmpBinData1 = rtrim(B::compressIntArray(array ($parentFileNumber, $line__, $thisFileNumber, $lineParent)), PHP_EOL);
@@ -158,7 +155,6 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_UnitT
         $cmpBinData1 = rtrim(B::compressIntArray(array ($parentFileNumber, $lineA_, $parentFileNumber, $lineB_, $parentFileNumber, $lineC_, $thisFileNumber, $lineParent)), PHP_EOL);
         $this->assertTrue(strpos($binData1, $cmpBinData1) !== false);
 
-        //$binData2 = file_get_contents(B::getStatic('$_workDir') . "/ErrorLog/{$thisFileNumber}.bin");
         $binData2 = file_get_contents(B::getStatic('$_workDir') . self::$_errorLogDir . $thisFileNumber . '.bin');
 
         $cmpBinData2 = rtrim(B::compressIntArray(array ($thisFileNumber, $line)), PHP_EOL);
@@ -251,17 +247,14 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_UnitT
 
         // Makes "php_error_1.log".
         $logfileMaximumCapacityException($this);
-        //$stat = stat($workDir . '/ErrorLog/php_error_1.log');
         $stat = stat($workDir . self::$_errorLogDir . 'php_error_1.log');
         $this->assertTrue($stat['size'] === 1024 * 1024 / 8);
         // Makes "php_error_2.log".
         $logStartException();
-        //$stat2 = stat($workDir . '/ErrorLog/php_error_2.log');
         $stat2 = stat($workDir . self::$_errorLogDir . 'php_error_2.log');
         $this->assertTrue(0 < $stat2['size'] && $stat2['size'] < 1024 * 1024 / 8);
         // Makes "php_error_3.log".
         $logfileMaximumCapacityException($this);
-        //$stat3 = stat($workDir . '/ErrorLog/php_error_3.log');
         $stat3 = stat($workDir . self::$_errorLogDir . 'php_error_3.log');
         $this->assertTrue($stat3['size'] === 1024 * 1024 / 8);
         // Makes "php_error_4.log".
@@ -325,7 +318,6 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_UnitT
         test1();
         $line3 = __LINE__ - 1;
 
-        //$binData1 = file_get_contents(B::getStatic('$_workDir') . "/ErrorLog/{$parentFileNumber}.bin");
         $binData1 = file_get_contents(B::getStatic('$_workDir') . self::$_errorLogDir . $parentFileNumber . '.bin');
 
         $cmpBinData1 = rtrim(B::compressIntArray(array ($parentFileNumber, $line_, $thisFileNumber, $lineParent)), PHP_EOL);
@@ -334,7 +326,6 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_UnitT
         $cmpBinData1 = rtrim(B::compressIntArray(array ($parentFileNumber, $lineA, $parentFileNumber, $lineB, $parentFileNumber, $lineC, $thisFileNumber, $lineParent)), PHP_EOL);
         $this->assertTrue(strpos($binData1, $cmpBinData1) !== false);
 
-        //$binData2 = file_get_contents(B::getStatic('$_workDir') . "/ErrorLog/{$thisFileNumber}.bin");
         $binData2 = file_get_contents(B::getStatic('$_workDir') . self::$_errorLogDir . $thisFileNumber . '.bin');
 
         $cmpBinData2 = rtrim(B::compressIntArray(array ($thisFileNumber, $line)), PHP_EOL);

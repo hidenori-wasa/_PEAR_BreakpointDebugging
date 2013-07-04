@@ -19,41 +19,45 @@
  *
  * PHP version 5.3
  *
- * LICENSE OVERVIEW:
- * 1. Do not change license text.
- * 2. Copyrighters do not take responsibility for this file code.
- *
- * LICENSE:
- * Copyright (c) 2012-2013, Hidenori Wasa
+ * Copyright (c) 2001-2013, Sebastian Bergmann <sebastian@phpunit.de>.
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
  *
- * Redistributions of source code must retain the above copyright notice,
- * this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright notice,
- * this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the distribution.
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
- * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *   * Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
  *
- * @category PHP
- * @package  BreakpointDebugging
- * @author   Hidenori Wasa <public@hidenori-wasa.com>
- * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
- * @version  SVN: $Id$
- * @link     http://pear.php.net/package/BreakpointDebugging
+ *   * Redistributions in binary form must reproduce the above copyright
+ *     notice, this list of conditions and the following disclaimer in
+ *     the documentation and/or other materials provided with the
+ *     distribution.
+ *
+ *   * Neither the name of Sebastian Bergmann nor the names of his
+ *     contributors may be used to endorse or promote products derived
+ *     from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *
+ * @package    PHPUnit
+ * @subpackage Framework
+ * @author     Sebastian Bergmann <sebastian@phpunit.de>
+ * @copyright  2001-2013 Sebastian Bergmann <sebastian@phpunit.de>
+ * @license    http://www.opensource.org/licenses/bsd-license.php  BSD License
+ * @link       http://www.phpunit.de/
+ * @since      File available since Release 2.0.0
  */
 // File to have "use" keyword does not inherit scope into a file including itself,
 // also it does not inherit scope into a file including,
@@ -65,12 +69,14 @@ use \BreakpointDebugging as B;
  * Tests the all unit test files by "B::executeUnitTest()" class method.
  * Notice:  You must code all array element comment which hands to "B::executeUnitTest()" before you execute this mode.
  *
- * @category PHP
- * @package  BreakpointDebugging
- * @author   Hidenori Wasa <public@hidenori-wasa.com>
- * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
- * @version  Release: @package_version@
- * @link     http://pear.php.net/package/BreakpointDebugging
+ * @package    PHPUnit
+ * @subpackage Framework
+ * @author     Sebastian Bergmann <sebastian@phpunit.de>
+ * @copyright  2001-2013 Sebastian Bergmann <sebastian@phpunit.de>
+ * @license    http://www.opensource.org/licenses/bsd-license.php  BSD License
+ * @version    Release: 3.6.11
+ * @link       http://www.phpunit.de/
+ * @since      Class available since Release 2.0.0
  */
 class BreakpointDebugging_UnitTestOverridingBase extends \PHPUnit_Framework_TestCase
 {
@@ -250,12 +256,14 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
     /**
      * Debugs unit tests by "B::executeUnitTest()" class method.
      *
-     * @category PHP
-     * @package  BreakpointDebugging
-     * @author   Hidenori Wasa <public@hidenori-wasa.com>
-     * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
-     * @version  Release: @package_version@
-     * @link     http://pear.php.net/package/BreakpointDebugging
+     * @package    PHPUnit
+     * @subpackage Framework
+     * @author     Sebastian Bergmann <sebastian@phpunit.de>
+     * @copyright  2001-2013 Sebastian Bergmann <sebastian@phpunit.de>
+     * @license    http://www.opensource.org/licenses/bsd-license.php  BSD License
+     * @version    Release: 3.6.11
+     * @link       http://www.phpunit.de/
+     * @since      Class available since Release 2.0.0
      */
     class BreakpointDebugging_UnitTestOverriding extends \BreakpointDebugging_UnitTestOverridingBase
     {
@@ -290,7 +298,7 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
                 }
                 // If "@expectedException" annotation is not string.
                 if (!is_string($this->getExpectedException())) {
-                    echo '<pre><b>It is error if this test has been not using "@expectedException" annotation, or it requires "@expectedException" annotation.</b></pre>';
+                    echo '<b>It is error if this test has been not using "@expectedException" annotation, or it requires "@expectedException" annotation.</b>';
                     B::handleException($e); // Displays error call stack information.
                     exit;
                 }
@@ -298,7 +306,7 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
                 try {
                     $this->assertThat($e, new PHPUnit_Framework_Constraint_Exception($this->getExpectedException()));
                 } catch (Exception $dummy) {
-                    echo '<pre><b>Is error, or this test mistook "@expectedException" annotation value.</b></pre>';
+                    echo '<b>Is error, or this test mistook "@expectedException" annotation value.</b>';
                     B::handleException($e); // Displays error call stack information.
                     exit;
                 }
@@ -311,7 +319,7 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
                         $this->assertThat($e, new PHPUnit_Framework_Constraint_ExceptionMessage($expectedExceptionMessage));
                     }
                 } catch (Exception $dummy) {
-                    echo '<pre><b>Is error, or this test mistook "@expectedExceptionMessage" annotation value.</b></pre>';
+                    echo '<b>Is error, or this test mistook "@expectedExceptionMessage" annotation value.</b>';
                     B::handleException($e); // Displays error call stack information.
                     exit;
                 }
@@ -321,7 +329,7 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
                         $this->assertThat($e, new PHPUnit_Framework_Constraint_ExceptionCode($this->expectedExceptionCode));
                     }
                 } catch (Exception $dummy) {
-                    echo '<pre><b>Is error, or this test mistook "@expectedExceptionCode" annotation value.</b></pre>';
+                    echo '<b>Is error, or this test mistook "@expectedExceptionCode" annotation value.</b>';
                     B::handleException($e); // Displays error call stack information.
                     exit;
                 }
@@ -329,7 +337,7 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
             }
             if ($this->getExpectedException() !== NULL) {
                 // "@expectedException" should not exist.
-                echo '<pre>Is error in "' . $class->name . '::' . $name . '".</pre>';
+                echo '<b>Is error in "' . $class->name . '::' . $name . '".</b>';
                 $this->assertThat(NULL, new PHPUnit_Framework_Constraint_Exception($this->getExpectedException()));
             }
 
@@ -381,15 +389,16 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
 
 } else { // In case of command.
     /**
-     * Tests the all unit test files by "B::executeUnitTest()" class method.
-     * Notice:  You must code all array element comment which hands to "B::executeUnitTest()" before you execute this mode.
+     * Dummy class in case of command execution.
      *
-     * @category PHP
-     * @package  BreakpointDebugging
-     * @author   Hidenori Wasa <public@hidenori-wasa.com>
-     * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
-     * @version  Release: @package_version@
-     * @link     http://pear.php.net/package/BreakpointDebugging
+     * @package    PHPUnit
+     * @subpackage Framework
+     * @author     Sebastian Bergmann <sebastian@phpunit.de>
+     * @copyright  2001-2013 Sebastian Bergmann <sebastian@phpunit.de>
+     * @license    http://www.opensource.org/licenses/bsd-license.php  BSD License
+     * @version    Release: 3.6.11
+     * @link       http://www.phpunit.de/
+     * @since      Class available since Release 2.0.0
      */
     class BreakpointDebugging_UnitTestOverriding extends \BreakpointDebugging_UnitTestOverridingBase
     {

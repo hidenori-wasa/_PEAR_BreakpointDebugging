@@ -753,6 +753,94 @@ abstract class BreakpointDebugging_InAllCase
         return self::_clearRecursiveArrayElement($recursiveArray, $parentsArray);
     }
 
+    /**
+     * Stores variables.
+     * NOTICE: A referenced value is not stored. It is until two-dimensional array element that a reference ID is stored.
+     *
+     * We should not store by serialization because serialization cannot store resource and array element reference variable.
+     * However, we may store by serialization because we cannot detect recursive array without changing array and we take time to search deep nest array.
+     * Also, we must store by serialization in case of object because we may not be able to clone object by "__clone()" class method.
+     *
+     * @param array $blacklist                 The list to except from doing variables backup.
+     * @param array $variables                 Array variable to store.
+     * @param array &$variablesStoring         Variables storing.
+     * @param array &$serializationKeysStoring Serialization-keys storing.
+     * @param bool  $isGlobalStoring           Is this the global storing?
+     *
+     * @return void
+     */
+    static function storeVariables(array $blacklist, array $variables, array &$variablesStoring, array &$serializationKeysStoring, $isGlobalStoring = true)
+    {
+        if (!empty($variablesStoring)) {
+            return;
+        }
+
+        foreach ($variables as $key => $value) {
+            if (in_array($key, $blacklist)
+                || $value instanceof Closure
+            ) {
+                continue;
+            }
+            if (($key === 'GLOBALS' && $isGlobalStoring)
+                || (!is_object($value) && !is_array($value))
+            ) {
+                $variablesStoring[$key] = $value;
+                continue;
+            }
+            do {
+                if (is_array($value)) {
+                    foreach ($value as $value2) {
+                        if (is_object($value2)) {
+                            break 2;
+                        }
+                        if (is_array($value2)) {
+                            // For example, increases the speed by searching until "deepest array of super global variable" like "$GLOBALS['_SERVER']['argv']".
+                            // Also, supports recursive array by searching until there.
+                            foreach ($value2 as $value3) {
+                                if (is_object($value3)
+                                    || is_array($value3)
+                                ) {
+                                    break 3;
+                                }
+                            }
+                        }
+                    }
+                    $variablesStoring[$key] = $value;
+                    continue 2;
+                }
+            } while (false);
+            $variablesStoring[$key] = serialize($value);
+            $serializationKeysStoring[$key] = null;
+        }
+    }
+
+    /**
+     * Restores variables. We must not restore by reference copy because variable ID changes.
+     *
+     * @param array &$variables               Array variable to restore.
+     * @param array $variablesStoring         Variables storing.
+     * @param array $serializationKeysStoring Serialization-keys storing.
+     *
+     * @return void
+     */
+    static function restoreVariables(array &$variables, array $variablesStoring, array $serializationKeysStoring)
+    {
+        // Deletes "array variable element to restore" which isn't contained in variables storing.
+        foreach ($variables as $key => $value) {
+            if (!array_key_exists($key, $variablesStoring)) {
+                unset($variables[$key]);
+            }
+        }
+        // Judges serialization or copy, and overwrites array variable to restore or adds.
+        foreach ($variablesStoring as $key => $value) {
+            if (array_key_exists($key, $serializationKeysStoring)) {
+                $variables[$key] = unserialize($value);
+            } else {
+                $variables[$key] = $value;
+            }
+        }
+    }
+
     ///////////////////////////// For package user until here. /////////////////////////////
     /**
      * Initializes static properties.
@@ -1134,8 +1222,10 @@ class BreakpointDebugging_OutOfLogRangeException extends \BreakpointDebugging_Ex
 if (B::getStatic('$exeMode') === B::RELEASE) {
     // Sets global internal exception handler.
     set_exception_handler('\BreakpointDebugging_Error::handleInternalException');
-    // Sets global internal error handler.( -1 sets all bits on 1. Therefore, this specifies error, warning and note of all kinds.)
-    set_error_handler('\BreakpointDebugging_Error::handleInternalError', -1);
+    if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
+        // Sets global internal error handler.( -1 sets all bits on 1. Therefore, this specifies error, warning and note of all kinds.)
+        set_error_handler('\BreakpointDebugging_Error::handleInternalError', -1);
+    }
 } else {
     // Sets global exception handler.
     set_exception_handler('\BreakpointDebugging::handleException');

@@ -94,7 +94,6 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
             $this->tags['font']['int'] = '<font color=\'#4e9a06\'>';
             $this->tags['font']['float'] = '<font color=\'#f57900\'>';
             $this->tags['font']['string'] = '<font color=\'#cc0000\'>';
-            $this->tags['font']['blue'] = '<font color=\'#0000ff\'>';
             $this->tags['font']['null'] = '<font color=\'#3465a4\'>';
             $this->tags['font']['resource'] = '<font color=\'#8080ff\'>';
             $this->tags['font']['=>'] = '<font color=\'#888a85\'>';
@@ -108,6 +107,18 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
         $this->tags['/pre'] = '</pre>';
         $this->tags['i'] = '<i>';
         $this->tags['/i'] = '</i>';
+        $this->tags['strong'] = '<strong>';
+        $this->tags['/strong'] = '</strong>';
+        $this->tags['anchor href'] = '<a href="#';
+        $this->tags['anchor name'] = '<a name="';
+        $this->tags['/anchor'] = '</a>';
+        if (B::getStatic('$exeMode') & B::UNIT_TEST) {
+            $this->tags['uint test anchor href'] = $this->uintTestAnchorHref;
+            $this->tags['uint test anchor name'] = $this->uintTestAnchorName;
+        } else {
+            $this->tags['uint test anchor href'] = '';
+            $this->tags['uint test anchor name'] = '';
+        }
     }
 
     /**
