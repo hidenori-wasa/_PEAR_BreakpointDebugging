@@ -33,16 +33,22 @@ How to sniff my code.
     Please, change following file.
         C:\xampp\php\PEAR\PHP\CodeSniffer\Standards\PEAR\Sniffs\WhiteSpace\ScopeIndentSniff.php
             before:
+
                 protected $nonIndentingScopes = array(T_SWITCH);
+
             after:
+
                 protected $nonIndentingScopes = array();
+
     Please, execute command like following.
+
         phpcs -n <full file path>
 
 Notice
     "Pear-Package" directory is project directory of "NetBeans IDE 7.1.2 for Windows".
     Also, "NetBeans IDE 7.3" cannot keep switchback at April, 2013.
     Example:
+
         if ($a
             && $b
             && ($c || $d)
@@ -50,7 +56,9 @@ Notice
         ) {
             return;
         }
+
     However, "NetBeans IDE 7.3" supports "PHP5.4" and "HTML5".
 
     I have been coding unit test by code coverage report on Windows and Linux.
     Also, I will add rollback feature into error logger because its logger has files which affect code's behavior.
+    Therefore, In case of remote release, at present, it is using internal error handler instead of error handler.

@@ -141,7 +141,7 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
             }
 
             AFTER_TREATMENT:
-            BreakpointDebugging_PHPUnitUtilGlobalState::initializeGlobalsForNextTestFile();
+            BreakpointDebugging_PHPUnitUtilGlobalState::initializeStaticAttributesForNextTestFile();
 
             return $ret;
         }

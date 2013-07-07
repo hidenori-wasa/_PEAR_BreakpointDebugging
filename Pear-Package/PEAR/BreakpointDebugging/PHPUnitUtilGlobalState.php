@@ -176,17 +176,18 @@ class BreakpointDebugging_PHPUnitUtilGlobalState extends \PHPUnit_Util_GlobalSta
             foreach ($staticAttributes as $name => $value) {
                 $reflector = new ReflectionProperty($className, $name);
                 $reflector->setAccessible(TRUE);
+                B::assert($reflector->class === $className);
                 $reflector->setValue($properties[$name]);
             }
         }
     }
 
     /**
-     * Initializes global variables and static attributes for next unit test file.
+     * Initializes static class attributes for next unit test file.
      *
      * @return void
      */
-    static function initializeGlobalsForNextTestFile()
+    static function initializeStaticAttributesForNextTestFile()
     {
         \BreakpointDebugging::limitAccess('BreakpointDebugging/PHPUnitTextUICommand.php', true);
 

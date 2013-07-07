@@ -692,7 +692,7 @@ abstract class BreakpointDebugging_InAllCase
         // If this may be "$GLOBALS".
         if (array_key_exists('GLOBALS', $parentArray) && is_array($parentArray['GLOBALS'])
         ) {
-            // Makes array by copying element because must not do "unset()" of "$GLOBALS".
+            // Makes array by copying element because "$GLOBALS" copy is reference copy and it is special in array.
             foreach ($parentArray as $childKey => $childArray) {
                 // Changes the 'GLOBALS' nest element to string.
                 if ($childKey === 'GLOBALS') {
@@ -1216,10 +1216,12 @@ class BreakpointDebugging_OutOfLogRangeException extends \BreakpointDebugging_Ex
 
 }
 
+spl_autoload_register('\BreakpointDebugging::autoload');
+
 // Has been using internal handler instead of regular error handler and exception handler in case of release.
 // Because running is unstable for using the file which affects on running of code for logging.
 // So, I have been adding rollback feature.
-if (B::getStatic('$exeMode') === B::RELEASE) {
+if (B::getStatic('$exeMode') === (B::REMOTE | B::RELEASE)) {
     // Sets global internal exception handler.
     set_exception_handler('\BreakpointDebugging_Error::handleInternalException');
     if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
@@ -1236,7 +1238,6 @@ if (B::getStatic('$exeMode') === B::RELEASE) {
     }
 }
 
-spl_autoload_register('\BreakpointDebugging::autoload');
 register_shutdown_function('\BreakpointDebugging::shutdown');
 \BreakpointDebugging::initialize();
 

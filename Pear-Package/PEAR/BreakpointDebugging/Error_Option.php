@@ -107,8 +107,8 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
         $this->tags['/pre'] = '</pre>';
         $this->tags['i'] = '<i>';
         $this->tags['/i'] = '</i>';
-        $this->tags['strong'] = '<strong>';
-        $this->tags['/strong'] = '</strong>';
+        $this->tags['b'] = '<b>';
+        $this->tags['/b'] = '</b>';
         $this->tags['anchor href'] = '<a href="#';
         $this->tags['anchor name'] = '<a name="';
         $this->tags['/anchor'] = '</a>';

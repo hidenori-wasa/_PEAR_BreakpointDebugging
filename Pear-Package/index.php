@@ -14,11 +14,15 @@ class TestClassA
 class TestClassB
 {
     public $testPropertyB = 'testPropertyB';
+    static public $testRecursiveArrayProperty = array ();
     public $testObjectProperty;
     static $GLOBALS;
 
     function __construct()
     {
+        self::$testRecursiveArrayProperty[] = &self::$testRecursiveArrayProperty;
+        self::$testRecursiveArrayProperty[0][] = &self::$testRecursiveArrayProperty;
+        self::$testRecursiveArrayProperty[0][0][] = &self::$testRecursiveArrayProperty;
         $this->testObjectProperty = new \TestClassA();
     }
 
@@ -101,6 +105,9 @@ function test()
     // Stores static attributes.
     \BreakpointDebugging_PHPUnitUtilGlobalState::backupStaticAttributes(array ());
     B::assert(\TestClassB::$GLOBALS[0]->testObjectProperty->testPropertyA === 'testPropertyA');
+    ob_start();
+    var_dump(\TestClassB::$testRecursiveArrayProperty);
+    $beforeTestRecursiveArrayProperty = ob_get_clean();
 
     // Change value.
     \TestClassB::$GLOBALS[0]->testObjectProperty->testPropertyA = 'testPropertyZ';
@@ -109,6 +116,10 @@ function test()
     // Restores static attributes.
     \BreakpointDebugging_PHPUnitUtilGlobalState::restoreStaticAttributes();
     B::assert(\TestClassB::$GLOBALS[0]->testObjectProperty->testPropertyA === 'testPropertyA');
+    ob_start();
+    var_dump(\TestClassB::$testRecursiveArrayProperty);
+    $afterTestRecursiveArrayProperty = ob_get_clean();
+    B::assert($beforeTestRecursiveArrayProperty === $afterTestRecursiveArrayProperty);
 
     echo '<pre>Test ended.</pre>';
 }
