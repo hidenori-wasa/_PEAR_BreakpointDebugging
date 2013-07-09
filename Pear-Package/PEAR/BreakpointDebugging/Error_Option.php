@@ -507,4 +507,6 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
 
 }
 
+echo file_get_contents('BreakpointDebugging/css/FontStyle.html', true);
+
 ?>

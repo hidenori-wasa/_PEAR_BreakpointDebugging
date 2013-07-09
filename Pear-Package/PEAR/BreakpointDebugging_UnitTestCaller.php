@@ -168,22 +168,7 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
         parent::$staticPropertyLimitings['$_includePaths'] = '';
         parent::$staticPropertyLimitings['$_valuesToTrace'] = '';
         parent::$staticPropertyLimitings['$exeMode'] = 'BreakpointDebugging/UnitTestOverriding.php';
-
-        $fontCssFileContent = file_get_contents('BreakpointDebugging/css/FontStyle.css', true);
-        self::$_style = <<<EOD
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-
-<html lang="en">
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <style type="text/css">
-        <!--
-        $fontCssFileContent
-        -->
-        </style>
-    </head>
-    <body>
-EOD;
+        self::$_style = file_get_contents('BreakpointDebugging/css/FontStyle.html', true);
     }
 
     /**

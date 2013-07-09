@@ -176,7 +176,6 @@ class BreakpointDebugging_PHPUnitUtilGlobalState extends \PHPUnit_Util_GlobalSta
             foreach ($staticAttributes as $name => $value) {
                 $reflector = new ReflectionProperty($className, $name);
                 $reflector->setAccessible(TRUE);
-                B::assert($reflector->class === $className);
                 $reflector->setValue($properties[$name]);
             }
         }

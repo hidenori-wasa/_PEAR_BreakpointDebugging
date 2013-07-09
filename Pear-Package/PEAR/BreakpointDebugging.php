@@ -903,9 +903,8 @@ abstract class BreakpointDebugging_InAllCase
         // Sets global internal error handler.( -1 sets all bits on 1. Therefore, this specifies error, warning and note of all kinds.)
         set_error_handler('\BreakpointDebugging_Error::handleInternalError', -1);
 
-        // trigger_error('Internal error test.'); // For debug.
-
         try {
+            // trigger_error('Internal error test.'); // For debug.
             // throw new \Exception('Internal exception test.'); // For debug.
 
             $error = new \BreakpointDebugging_Error();
@@ -1218,24 +1217,12 @@ class BreakpointDebugging_OutOfLogRangeException extends \BreakpointDebugging_Ex
 
 spl_autoload_register('\BreakpointDebugging::autoload');
 
-// Has been using internal handler instead of regular error handler and exception handler in case of release.
-// Because running is unstable for using the file which affects on running of code for logging.
-// So, I have been adding rollback feature.
-if (B::getStatic('$exeMode') === (B::REMOTE | B::RELEASE)) {
-    // Sets global internal exception handler.
-    set_exception_handler('\BreakpointDebugging_Error::handleInternalException');
-    if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
-        // Sets global internal error handler.( -1 sets all bits on 1. Therefore, this specifies error, warning and note of all kinds.)
-        set_error_handler('\BreakpointDebugging_Error::handleInternalError', -1);
-    }
-} else {
-    // Sets global exception handler.
-    set_exception_handler('\BreakpointDebugging::handleException');
-    // Uses "PHPUnit" error handler in case of command.
-    if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
-        // Sets global error handler.( -1 sets all bits on 1. Therefore, this specifies error, warning and note of all kinds.)
-        set_error_handler('\BreakpointDebugging::handleError', -1);
-    }
+// Sets global exception handler.
+set_exception_handler('\BreakpointDebugging::handleException');
+// Uses "PHPUnit" error handler in case of command.
+if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
+    // Sets global error handler.( -1 sets all bits on 1. Therefore, this specifies error, warning and note of all kinds.)
+    set_error_handler('\BreakpointDebugging::handleError', -1);
 }
 
 register_shutdown_function('\BreakpointDebugging::shutdown');

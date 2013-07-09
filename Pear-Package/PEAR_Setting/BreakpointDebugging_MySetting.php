@@ -63,8 +63,8 @@ function BreakpointDebugging_setExecutionMode()
 
     // ### Execution mode setting. ===>
     // Please, choose a mode.
-    // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('DEBUG');
-    $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('RELEASE');
+    $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('DEBUG');
+    // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('RELEASE');
     // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('DEBUG_UNIT_TEST');
     // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('RELEASE_UNIT_TEST');
     // ### <=== Execution mode setting.
@@ -263,7 +263,7 @@ function BreakpointDebugging_mySetting()
       // This changes "php.ini" file setting into "ignore_user_abort = Off" because it is purpose to end execution of script when client is disconnected.
       B::iniSet('ignore_user_abort', '');
       ### <=== "Windows" Example. */
-    if (!(B::getStatic('$exeMode') & B::RELEASE)) { // In case of not release.
+    if (!(B::getStatic('$exeMode') & B::RELEASE)) { // In case of debug.
         include_once './' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . '/BreakpointDebugging_MySetting_Option.php';
     } else { // In case of release.
         ////////////////////////////////////////////////////////////////////////////////

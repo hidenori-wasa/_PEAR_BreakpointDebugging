@@ -459,9 +459,6 @@ abstract class BreakpointDebugging_Error_InAllCase
      */
     function handleException2($pException, $prependLog)
     {
-        // trigger_error('Internal error test.'); // For debug.
-        // throw new \Exception('Internal exception test.'); // For debug.
-
         $prependLog = $this->convertMbString($prependLog);
 
         for ($pCurrentException = $pException; $pCurrentException; $pCurrentException = $pCurrentException->getPrevious()) {
@@ -507,9 +504,6 @@ abstract class BreakpointDebugging_Error_InAllCase
      */
     function handleError2($errorNumber, $errorMessage, $prependLog, $callStack)
     {
-        // trigger_error('Internal error test.'); // For debug.
-        // throw new \Exception('Internal exception test.'); // For debug.
-        //
         // This creates error log.
         switch ($errorNumber) {
             case E_USER_DEPRECATED:
@@ -597,61 +591,73 @@ abstract class BreakpointDebugging_Error_InAllCase
      */
     private static function _handleInternal($message, $callStack)
     {
-        // Controls how many nested levels of array elements and object properties.
-        // Display by var_dump(), local variables or Function Traces.
-        ini_set('xdebug.var_display_max_depth', '5');
+        // Does not handle error. Also, displays "XDebug" error except remote release.
+        restore_error_handler(); // Restores from "self::handleInternalError()".
+        restore_error_handler(); // Restores from "B::handleError()".
 
-        $log = 'Internal error message: ' . $message . PHP_EOL;
-        $log .= 'The call stack:' . PHP_EOL;
-        foreach ($callStack as $key => $value) {
-            ob_start();
-            var_dump($value);
-            $log .= ob_get_clean();
-        }
-        // If this does a log.
-        if (B::getStatic('$exeMode') & B::RELEASE) {
-            // Locks internal error log file.
-            $lockByFileExisting = &\BreakpointDebugging_LockByFileExisting::internalSingleton();
-            $lockByFileExisting->lock();
-            // When "ErrorLog" directory does not exist.
-            $errorLogDirectory = B::getStatic('$_workDir') . self::$_errorLogDir;
-            if (!is_dir($errorLogDirectory)) {
-                // Makes directory, sets permission and sets own user.
-                B::mkdir($errorLogDirectory, 0700);
+        try {
+            // trigger_error('Internal error test.', E_USER_WARNING); // For debug.
+            //
+            // Controls how many nested levels of array elements and object properties.
+            // Display by var_dump(), local variables or Function Traces.
+            ini_set('xdebug.var_display_max_depth', '6');
+
+            $log = 'Internal error message: ' . $message . PHP_EOL;
+            $log .= 'The call stack:' . PHP_EOL;
+            foreach ($callStack as $value) {
+                ob_start();
+                var_dump($value);
+                $log .= ob_get_clean();
             }
-            $logFileName = 'InternalError.log';
-            if (B::getStatic('$_os') === 'WIN') { // In case of Windows.
-                $errorLogFilePath = strtolower($errorLogDirectory . $logFileName);
-            } else { // In case of Unix.
-                $errorLogFilePath = $errorLogDirectory . $logFileName;
-            }
-            // Opens error log file as created and written.
-            $pErrorLogFile = fopen($errorLogFilePath, 'ab');
-            $fileStatus = fstat($pErrorLogFile);
-            // If file size is less than (1MB - 2KB).
-            if ($fileStatus['size'] < (1 << 20) - 2048) {
-                try {
-                    $log = B::convertMbString($log);
-                } catch (\BreakpointDebugging_ErrorException $e) {
-                    $log = $e->getMessage() . PHP_EOL;
+            $log = B::convertMbString($log);
+            // If this does a log.
+            if (B::getStatic('$exeMode') & B::RELEASE) {
+                $errorLogDirectory = B::getStatic('$_workDir') . self::$_errorLogDir;
+                $logFileName = 'InternalError.log';
+                if (B::getStatic('$_os') === 'WIN') { // In case of Windows.
+                    $errorLogFilePath = strtolower($errorLogDirectory . $logFileName);
+                } else { // In case of Unix.
+                    $errorLogFilePath = $errorLogDirectory . $logFileName;
+                }
+                // Locks internal error log file.
+                $lockByFileExisting = &\BreakpointDebugging_LockByFileExisting::internalSingleton();
+                $lockByFileExisting->lock();
+                // When "ErrorLog" directory does not exist.
+                if (!is_dir($errorLogDirectory)) {
+                    // Makes directory, sets permission and sets own user.
+                    B::mkdir($errorLogDirectory, 0700);
                 }
                 // Strips HTML and PHP tags.
                 $log = strip_tags($log);
                 // Decodes HTML special characters.
                 $log = htmlspecialchars_decode($log, ENT_QUOTES);
                 $log .= '////////////////////////////////////////////////////////////////////////////////' . PHP_EOL;
-                // Writes error log file.
-                fwrite($pErrorLogFile, $log);
+                // Opens error log file as created and written.
+                $pErrorLogFile = fopen($errorLogFilePath, 'ab');
+                $fileStatus = fstat($pErrorLogFile);
+                // If file size is smaller than 1MB.
+                if ($fileStatus['size'] < (1 << 20)) {
+                    // Writes error log file.
+                    fwrite($pErrorLogFile, $log);
+                }
+                // If file size is bigger than 1MB.
+                if ($fileStatus['size'] > (1 << 20)) {
+                    // Truncates the file size as 1MB.
+                    ftruncate($pErrorLogFile, 1 << 20);
+                }
+                // Closes error log file.
+                fclose($pErrorLogFile);
+                // Unlocks the error log files.
+                $lockByFileExisting->unlock();
+            } else { // If this displays.
+                echo '<pre>' . $log . '</pre>';
             }
-            // Closes error log file.
-            fclose($pErrorLogFile);
-            // Unlocks the error log files.
-            $lockByFileExisting->unlock();
-        } else { // If this displays.
-            echo '<pre>' . $log . '</pre>';
+            B::breakpoint($message, $callStack);
+        } catch (\Exception $e) {
+            $callStack = $e->getTrace();
+            array_unshift($callStack, array ('file' => $e->getFile(), 'line' => $e->getLine()));
+            B::breakpoint($e->getMessage(), $callStack);
         }
-        AFTER_TREATMENT:
-        B::breakpoint($message, $callStack);
     }
 
     /**
@@ -1305,7 +1311,7 @@ if (B::getStatic('$exeMode') & B::RELEASE) { // In case of release.
 
     final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCase
     {
-        
+
     }
 
 } else { // In case of not release.

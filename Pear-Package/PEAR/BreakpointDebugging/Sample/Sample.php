@@ -31,9 +31,8 @@ if ($testNumber === 1) {
 
     function fnTestC()
     {
-        // B::assert(false, 101); // This is error location.
+        // trigger_error('The trigger error test.');
         fnThrow($GLOBALS, array ($GLOBALS)); // This is exception location.
-        // fnThrow($GLOBALS); // This is exception location.
     }
 
     function fnTestB()

@@ -29,7 +29,11 @@
  *
  * ### The advantage of breakpoint debugging. ###
  * Can find a position of a bug immediately.
- * In addition to it, we can examine value of variable.
+ * In addition to it, we can examine its result by selecting and pointing
+ * (variable, function or conditional expression) of code using mouse pointer
+ * except variable of "use as" statement,
+ * if we check "the watch and the balloon evaluation" of "[tool] - [option] - [PHP] - [debug]" in case of "NetBeans IDE 7.1.2".
+ * Also, we have to empty watch variables when its variable does not exist.
  * Therefore, can debug quickly.
  *
  * ### How to code breakpoint debugging. ###
