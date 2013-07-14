@@ -30,6 +30,12 @@
             <line>62</line>
         </file>
         <file>
+            <url>PEAR/BreakpointDebugging/Error.php</url>
+            <line>346</line>
+            <line>405</line>
+            <line>1024</line>
+        </file>
+        <file>
             <url>BreakpointDebugging_MySetting.php</url>
             <line>81</line>
         </file>

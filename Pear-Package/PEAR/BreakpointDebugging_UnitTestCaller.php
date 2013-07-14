@@ -145,11 +145,6 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
     private static $_codeCoverageReportPath;
 
     /**
-     * @var string Font style.
-     */
-    private static $_style;
-
-    /**
      * Limits static properties accessing.
      *
      * @return void
@@ -168,7 +163,6 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
         parent::$staticPropertyLimitings['$_includePaths'] = '';
         parent::$staticPropertyLimitings['$_valuesToTrace'] = '';
         parent::$staticPropertyLimitings['$exeMode'] = 'BreakpointDebugging/UnitTestOverriding.php';
-        self::$_style = file_get_contents('BreakpointDebugging/css/FontStyle.html', true);
     }
 
     /**
@@ -224,12 +218,10 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
     /**
      * Gets unit test directory.
      *
-     * @return string Unit test directory.
+     * @return void
      */
     private static function _getUnitTestDir()
     {
-        B::assert(!isset(self::$unitTestDir));
-
         $unitTestCurrentDir = debug_backtrace();
         $unitTestCurrentDir = dirname($unitTestCurrentDir[1]['file']) . DIRECTORY_SEPARATOR;
         if (B::getStatic('$_os') === 'WIN') { // In case of Windows.
@@ -237,8 +229,6 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
         } else { // In case of Unix.
             self::$unitTestDir = $unitTestCurrentDir;
         }
-
-        return self::$unitTestDir;
     }
 
     //////////////////////////////////////// For package user ////////////////////////////////////////
@@ -372,7 +362,7 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      *
      *      use \BreakpointDebugging as B;
      *
-     *      B::isUnitTestExeMode(true);
+     *      B::checkExeMode(true);
      *
      *      class SomethingTest extends \BreakpointDebugging_UnitTestOverriding
      *      {
@@ -380,7 +370,7 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      *          .
      *          .
      */
-    static function isUnitTestExeMode($isUnitTest = false)
+    static function checkExeMode($isUnitTest = false)
     {
         if (func_num_args() === 0) {
             echo '<pre>You must not set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'..._UNIT_TEST\');" into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php".</pre>';
@@ -405,12 +395,14 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      */
     private static function _runPHPUnitCommand($command)
     {
+        $command = ltrim($command);
         $commandElements = explode(' ', $command);
         $testFileName = array_pop($commandElements);
         array_push($commandElements, self::$unitTestDir . $testFileName);
         array_unshift($commandElements, 'dummy');
         include_once 'PHPUnit/Autoload.php';
         $pPHPUnit_TextUI_Command = new \BreakpointDebugging_PHPUnitTextUICommand;
+        $pPHPUnit_TextUI_Command->prepareRun($commandElements);
         // Uses "PHPUnit" error handler.
         restore_error_handler();
         $pPHPUnit_TextUI_Command->run($commandElements, false);
@@ -422,8 +414,11 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      * Executes unit tests continuously, and debugs with IDE.
      *
      * We must use private static property instead of using local static variable because we can use unit test's "--static-backup" command line switch.
+     *
      * Also, we must not use unit test's "--process-isolation" command line switch because its tests is run in other process.
-     * So, we cannot debug with IDE.
+     * So, we cannot debug unit test code with IDE.
+     *
+     * Also, we must use "--bootstrap" command line switch at later unit test files because it may affect static status.
      *
      * How to run multiprocess unit test (Unix only):
      *      Procedure 1: Use process control functions "pcntl_...()" inside your unit test class method "test...()".
@@ -449,7 +444,8 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      *          Copyright (c) 2001-2012 Sebastian Bergmann <sebastian@phpunit.de>
      * Procedure 3: Run "page like example page" with IDE.
      *
-     * @param array $unitTestFilePaths The file paths of unit tests.
+     * @param array  $unitTestFilePaths   The file paths of unit tests.
+     * @param string $commandLineSwitches Command-line-switches except "--stop-on-failure --static-backup".
      *
      * @return void
      *
@@ -462,7 +458,7 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      *
      * use \BreakpointDebugging as B;
      *
-     * B::isUnitTestExeMode(true);
+     * B::checkExeMode(true);
      *
      * // Please, choose unit tests files by customizing.
      * $unitTestFilePaths = array (
@@ -485,7 +481,7 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      * use \BreakpointDebugging as B;
      * use \BreakpointDebugging_UnitTestCaller as BU;
      *
-     * B::isUnitTestExeMode(true);
+     * B::checkExeMode(true);
      *
      * class SomethingTest extends \BreakpointDebugging_UnitTestOverriding
      * {
@@ -542,13 +538,24 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      * @codeCoverageIgnore
      * Because "phpunit" command cannot run during "phpunit" command running.
      */
-    static function executeUnitTest($unitTestFilePaths)
+    static function executeUnitTest($unitTestFilePaths, $commandLineSwitches = '')
     {
+        static $unitTestFilePathsStoring = array ();
+
         /*         * ***
           $runByCommand = false; // Running by command does not support.
          * *** */
         B::checkDevelopmentSecurity();
-        echo self::$_style . '<pre>';
+
+        foreach ($unitTestFilePaths as $unitTestFilePath) {
+            if (in_array($unitTestFilePath, $unitTestFilePathsStoring, true)) {
+                throw new \BreakpointDebugging_ErrorException('Unit test file path must be unique.', 101);
+            }
+            $unitTestFilePathsStoring[] = $unitTestFilePath;
+        }
+
+        echo file_get_contents('BreakpointDebugging/css/FontStyle.html', true);
+        echo '<pre>';
         $separator = PHP_EOL . '//////////////////////////////////////////////////////////////////////////' . PHP_EOL;
 
         if (self::$exeMode & B::RELEASE) {
@@ -560,8 +567,9 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
         B::assert(func_num_args() <= 2, 1);
         B::assert(is_array($unitTestFilePaths), 2);
         B::assert(!empty($unitTestFilePaths), 3);
+        B::assert(is_string($commandLineSwitches), 4);
 
-        $unitTestCurrentDir = self::_getUnitTestDir();
+        self::_getUnitTestDir();
         /*         * ***
           if ($runByCommand) {
           echo 'Starts unit tests by command.' . PHP_EOL;
@@ -623,7 +631,7 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
                 }
                 continue;
             }
-            $command = '--stop-on-failure --static-backup ' . $unitTestFilePath;
+            $command = $commandLineSwitches . ' --stop-on-failure --static-backup ' . $unitTestFilePath;
             echo $separator;
             echo "Runs <b>\"phpunit $command\"</b> command." . PHP_EOL;
             self::_runPHPUnitCommand($command);
@@ -638,8 +646,9 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
     /**
      * Creates code coverage report, then displays in browser.
      *
-     * @param string $unitTestFilePath Relative path of unit test file.
-     * @param mixed  $classFilePaths   It is relative path of class which see the code coverage, and its current directory must be project directory.
+     * @param string $unitTestFilePath    Relative path of unit test file.
+     * @param mixed  $classFilePaths      It is relative path of class which see the code coverage, and its current directory must be project directory.
+     * @param string $commandLineSwitches Command-line-switches except "--static-backup --coverage-html".
      *
      * @return void
      * @example
@@ -660,7 +669,7 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      * @codeCoverageIgnore
      * Because "phpunit" command cannot run during "phpunit" command running.
      */
-    static function displayCodeCoverageReport($unitTestFilePath, $classFilePaths)
+    static function displayCodeCoverageReport($unitTestFilePath, $classFilePaths, $commandLineSwitches = '')
     {
         B::checkDevelopmentSecurity();
 
@@ -668,7 +677,8 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
         B::assert(is_string($unitTestFilePath), 2);
         B::assert(is_string($classFilePaths) || is_array($classFilePaths), 3);
 
-        echo self::$_style;
+        echo file_get_contents('BreakpointDebugging/css/FontStyle.html', true);
+
         if (!extension_loaded('xdebug')) {
             exit('"BreakpointDebugging::displayCodeCoverageReport()" needs "xdebug" extention.');
         }
@@ -688,9 +698,9 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
         // Creates code coverage report.
         $displayErrorsStoring = ini_get('display_errors');
         ini_set('display_errors', '');
-        echo '<pre>';
-        self::_runPHPUnitCommand("--static-backup --coverage-html $codeCoverageReportPath $unitTestFilePath");
-        echo '</pre>';
+        echo '<pre><b>';
+        self::_runPHPUnitCommand($commandLineSwitches . ' --static-backup --coverage-html ' . $codeCoverageReportPath . ' ' . $unitTestFilePath);
+        echo '</b></pre>';
         ini_set('display_errors', $displayErrorsStoring);
         // Displays the code coverage report in browser.
         self::$_classFilePaths = $classFilePaths;

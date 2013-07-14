@@ -222,9 +222,6 @@ abstract class BreakpointDebugging_Error_InAllCase
         $this->tags['/i'] = '';
         $this->tags['b'] = '';
         $this->tags['/b'] = '';
-        $this->tags['anchor href'] = '';
-        $this->tags['anchor name'] = '';
-        $this->tags['/anchor'] = '';
         if (B::getStatic('$exeMode') & B::UNIT_TEST) {
             $this->tags['uint test anchor href'] = $this->uintTestAnchorHref;
             $this->tags['uint test anchor name'] = $this->uintTestAnchorName;
@@ -317,6 +314,34 @@ abstract class BreakpointDebugging_Error_InAllCase
     }
 
     /**
+     * Lowers hypertext reference anchor.
+     *
+     * @param string $referenceName Reference name of hypertext.
+     */
+    private function _lowerHypertextReferenceAnchor($referenceName)
+    {
+        if (B::getStatic('$exeMode') & B::RELEASE) {
+            return 'same ' . $referenceName;
+        } else {
+            return '<a href="#' . $referenceName . '">same ' . $referenceName . '</a>';
+        }
+    }
+
+    /**
+     * Sets hypertext reference.
+     *
+     * @param string $referenceName Reference name of hypertext.
+     */
+    private function _setHypertextReference($referenceName)
+    {
+        if (B::getStatic('$exeMode') & B::RELEASE) {
+            return $referenceName;
+        } else {
+            return '<a name="' . $referenceName . '">' . $referenceName . '</a>';
+        }
+    }
+
+    /**
      * This method builds array information.
      *
      * @param mixed &$pTmpLog  Error temporary log pointer.
@@ -344,14 +369,14 @@ abstract class BreakpointDebugging_Error_InAllCase
             if ($loggedArray === $array) {
                 // Skips same array.
                 $loggedArrayNumber++;
-                $this->logBufferWriting($pTmpLog, PHP_EOL . $tabs . $paramName . $this->tags['font']['=>'] . ' => ' . $this->tags['/font'] . $this->tags['b'] . "same array #$loggedArrayNumber" . $this->tags['/b'] . ' (');
+                $this->logBufferWriting($pTmpLog, PHP_EOL . $tabs . $paramName . $this->tags['font']['=>'] . ' => ' . $this->tags['/font'] . $this->tags['b'] . $this->_lowerHypertextReferenceAnchor('array #' . $loggedArrayNumber) . $this->tags['/b'] . ' (');
                 $this->logBufferWriting($pTmpLog, PHP_EOL . $tabs . "\t...");
                 goto AFTER_TREATMENT;
             }
         }
         // Memory is not used unless value is overwritten.
         $this->_loggedArrays[] = $array;
-        $this->logBufferWriting($pTmpLog, PHP_EOL . $tabs . $paramName . $this->tags['font']['=>'] . ' => ' . $this->tags['/font'] . $this->tags['b'] . 'array #' . count($this->_loggedArrays) . $this->tags['/b'] . ' (');
+        $this->logBufferWriting($pTmpLog, PHP_EOL . $tabs . $paramName . $this->tags['font']['=>'] . ' => ' . $this->tags['/font'] . $this->tags['b'] . $this->_setHypertextReference('array #' . count($this->_loggedArrays)) . $this->tags['/b'] . ' (');
         // Beyond max log param nesting level.
         if ($tabNumber >= B::getStatic('$_maxLogParamNestingLevel')) {
             $this->logBufferWriting($pTmpLog, PHP_EOL . $tabs . "\t...");
@@ -403,13 +428,14 @@ abstract class BreakpointDebugging_Error_InAllCase
             if ($loggedObject === $object) {
                 // Skips same object.
                 $loggedObjectNumber++;
-                $this->logBufferWriting($pTmpLog, PHP_EOL . $tabs . $paramName . $this->tags['font']['=>'] . ' => ' . $this->tags['/font'] . $this->tags['b'] . "same class object #$loggedObjectNumber " . $this->tags['/b'] . $this->tags['i'] . $className . $this->tags['/i'] . PHP_EOL . $tabs . '{');
+                $this->logBufferWriting($pTmpLog, PHP_EOL . $tabs . $paramName . $this->tags['font']['=>'] . ' => ' . $this->tags['/font'] . $this->tags['b'] . $this->_lowerHypertextReferenceAnchor('class object #' . $loggedObjectNumber) . ' ' . $this->tags['/b'] . $this->tags['i'] . $className . $this->tags['/i'] . PHP_EOL . $tabs . '{');
                 $this->logBufferWriting($pTmpLog, PHP_EOL . $tabs . "\t...");
                 goto AFTER_TREATMENT;
             }
         }
         $this->_loggedObjects[] = $object;
-        $this->logBufferWriting($pTmpLog, PHP_EOL . $tabs . $paramName . $this->tags['font']['=>'] . ' => ' . $this->tags['/font'] . $this->tags['b'] . 'class object #' . count($this->_loggedObjects) . ' ' . $this->tags['/b'] . $this->tags['i'] . $className . $this->tags['/i'] . PHP_EOL . $tabs . '{');
+        $this->logBufferWriting($pTmpLog, PHP_EOL . $tabs . $paramName . $this->tags['font']['=>'] . ' => ' . $this->tags['/font'] . $this->tags['b'] . $this->_setHypertextReference('class object #' . count($this->_loggedObjects)) . ' ' . $this->tags['/b'] . $this->tags['i'] . $className . $this->tags['/i'] . PHP_EOL . $tabs . '{');
+
         // Beyond max log param nesting level.
         if ($tabNumber >= B::getStatic('$_maxLogParamNestingLevel')) {
             $this->logBufferWriting($pTmpLog, PHP_EOL . $tabs . "\t...");
@@ -614,11 +640,7 @@ abstract class BreakpointDebugging_Error_InAllCase
             if (B::getStatic('$exeMode') & B::RELEASE) {
                 $errorLogDirectory = B::getStatic('$_workDir') . self::$_errorLogDir;
                 $logFileName = 'InternalError.log';
-                if (B::getStatic('$_os') === 'WIN') { // In case of Windows.
-                    $errorLogFilePath = strtolower($errorLogDirectory . $logFileName);
-                } else { // In case of Unix.
-                    $errorLogFilePath = $errorLogDirectory . $logFileName;
-                }
+                $errorLogFilePath = $errorLogDirectory . $logFileName;
                 // Locks internal error log file.
                 $lockByFileExisting = &\BreakpointDebugging_LockByFileExisting::internalSingleton();
                 $lockByFileExisting->lock();
@@ -713,14 +735,16 @@ abstract class BreakpointDebugging_Error_InAllCase
      */
     protected function addParameterHeaderToLog(&$pTmpLog, $file, $line, $func, $class)
     {
-        if (strripos($file, 'test.php') === strlen($file) - strlen('test.php')) {
+        $className = B::filePathToClassName($file);
+        if ($className
+            && is_subclass_of($className, 'PHPUnit_Framework_Test')) {
             $this->logBufferWriting($pTmpLog, $this->tags['uint test anchor name']);
             $this->tags['uint test anchor name'] = '';
             if ($file) {
-                $this->logBufferWriting($pTmpLog, PHP_EOL . $this->mark . 'Error file =======>' . $this->tags['b'] . '\'' . $file . '\'' . $this->tags['/b']);
+                $this->logBufferWriting($pTmpLog, PHP_EOL . $this->mark . 'Error file =======>' . $this->tags['font']['string'] . $this->tags['b'] . '\'' . $file . '\'' . $this->tags['/b'] . $this->tags['/font']);
             }
             if ($line) {
-                $this->logBufferWriting($pTmpLog, PHP_EOL . $this->mark . 'Error line =======>' . $this->tags['b'] . $line . $this->tags['/b']);
+                $this->logBufferWriting($pTmpLog, PHP_EOL . $this->mark . 'Error line =======>' . $this->tags['font']['int'] . $this->tags['b'] . $line . $this->tags['/b'] . $this->tags['/font']);
             }
         } else {
             if ($file) {
@@ -904,11 +928,7 @@ abstract class BreakpointDebugging_Error_InAllCase
 
                 // Gets current error log file name.
                 $this->_currentErrorLogFileName = substr(trim(fgets($this->_pVarConfFile)), strlen($this->_keyOfCurrentErrorLogFileName));
-                if (B::getStatic('$_os') === 'WIN') { // In case of Windows.
-                    $this->_errorLogFilePath = strtolower($this->_errorLogDirectory . $this->_currentErrorLogFileName);
-                } else { // In case of Unix.
-                    $this->_errorLogFilePath = $this->_errorLogDirectory . $this->_currentErrorLogFileName;
-                }
+                $this->_errorLogFilePath = $this->_errorLogDirectory . $this->_currentErrorLogFileName;
                 B::assert(is_string($this->_currentErrorLogFileName), 101);
                 // When current error log file does not exist.
                 if (!is_file($this->_errorLogFilePath)) {
@@ -935,11 +955,7 @@ abstract class BreakpointDebugging_Error_InAllCase
                     ) {
                         continue;
                     }
-                    if (B::getStatic('$_os') === 'WIN') { // In case of Windows.
-                        $path = strtolower($call['file']);
-                    } else { // In case of Unix.
-                        $path = $call['file'];
-                    }
+                    $path = $call['file'];
                     // Searches the error file path.
                     if (array_key_exists($path, $nativeCallStackArray)) {
                         $pathNumber = $nativeCallStackArray[$path];
@@ -1022,7 +1038,7 @@ abstract class BreakpointDebugging_Error_InAllCase
                     if ($loggedCall === $call) {
                         // Skips same call stack.
                         $loggedCallNumber++;
-                        $this->logBufferWriting($dummy, PHP_EOL . $this->tags['b'] . "same function call #$loggedCallNumber" . $this->tags['/b'] . " ...");
+                        $this->logBufferWriting($dummy, PHP_EOL . $this->tags['b'] . $this->_lowerHypertextReferenceAnchor('function call #' . $loggedCallNumber) . $this->tags['/b'] . " ...");
                         $file = '';
                         $line = '';
                         $func = '';
@@ -1032,11 +1048,8 @@ abstract class BreakpointDebugging_Error_InAllCase
                 }
                 array_key_exists('file', $call) ? $file = $call['file'] : $file = '';
                 array_key_exists('line', $call) ? $line = $call['line'] : $line = '';
-
                 $this->_loggedCallStacks[] = $call;
-                $this->logBufferWriting($dummy, PHP_EOL . $this->tags['b'] . 'function call #' . count($this->_loggedCallStacks) . $this->tags['/b']);
-
-
+                $this->logBufferWriting($dummy, PHP_EOL . $this->tags['b'] . $this->_setHypertextReference('function call #' . count($this->_loggedCallStacks)) . $this->tags['/b']);
                 $this->outputFixedFunctionToLogging($call, $dummy, $onceFlag2, $func, $class, $file, $line);
                 if (is_array($call)
                     && array_key_exists('args', $call)
@@ -1064,11 +1077,7 @@ abstract class BreakpointDebugging_Error_InAllCase
         // If this does a log.
         if (B::getStatic('$exeMode') & B::RELEASE) {
             // Gets current error log file name.
-            if (B::getStatic('$_os') === 'WIN') { // In case of Windows.
-                $this->_errorLogFilePath = strtolower($this->_errorLogDirectory . $this->_currentErrorLogFileName);
-            } else { // In case of Unix.
-                $this->_errorLogFilePath = $this->_errorLogDirectory . $this->_currentErrorLogFileName;
-            }
+            $this->_errorLogFilePath = $this->_errorLogDirectory . $this->_currentErrorLogFileName;
             // When current error log file does not exist.
             if (!is_file($this->_errorLogFilePath)) {
                 // Creates and opens current error log file.

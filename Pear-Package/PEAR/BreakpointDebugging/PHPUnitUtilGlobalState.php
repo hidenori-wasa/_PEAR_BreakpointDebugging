@@ -110,20 +110,11 @@ class BreakpointDebugging_PHPUnitUtilGlobalState extends \PHPUnit_Util_GlobalSta
         $declaredClasses = get_declared_classes();
         for ($i = count($declaredClasses) - 1; $i >= 0; $i--) {
             $declaredClassName = $declaredClasses[$i];
-            // $declaredClassName = 'PHPUnit_Framework_TestCase'; // For debug.
-            // $declaredClassName = 'BreakpointDebugging_ErrorTest'; // For debug.
-            // $declaredClassName = 'BreakpointDebugging'; // For debug.
             // Excepts unit test classes.
-            if (stripos($declaredClassName, 'PHPUnit') === 0
-                || stripos($declaredClassName, 'File_Iterator') === 0
-                || stripos($declaredClassName, 'PHP_CodeCoverage') === 0
-                || stripos($declaredClassName, 'PHP_Invoker') === 0
-                || stripos($declaredClassName, 'PHP_Timer') === 0
-                || stripos($declaredClassName, 'PHP_TokenStream') === 0
-                || stripos($declaredClassName, 'sfYaml') === 0
-                || stripos($declaredClassName, 'Text_Template') === 0
-                || is_subclass_of($declaredClassName, 'PHPUnit_Util_GlobalState')
-                || is_subclass_of($declaredClassName, 'PHPUnit_Framework_Test')
+            if (preg_match('`^ (PHP (Unit | (_ (CodeCoverage | Invoker | (T (imer | okenStream))))) | File_Iterator | sfYaml | Text_Template )`xXi', $declaredClassName) === 1
+                || is_subclass_of($declaredClassName, 'PHPUnit_Util_GlobalState') // For extended class of my package.
+                || is_subclass_of($declaredClassName, 'PHPUnit_TextUI_Command') // For extended class of my package.
+                || is_subclass_of($declaredClassName, 'PHPUnit_Framework_Test') // For unit test class.
             ) {
                 continue;
             }
@@ -182,11 +173,13 @@ class BreakpointDebugging_PHPUnitUtilGlobalState extends \PHPUnit_Util_GlobalSta
     }
 
     /**
-     * Initializes static class attributes for next unit test file.
+     * Initializes static status for next unit test file.
+     *
+     * @param bool $bootstrapUse Uses bootstrap.
      *
      * @return void
      */
-    static function initializeStaticAttributesForNextTestFile()
+    static function initializeStaticStatusForNextTestFile($bootstrapUse)
     {
         \BreakpointDebugging::limitAccess('BreakpointDebugging/PHPUnitTextUICommand.php', true);
 

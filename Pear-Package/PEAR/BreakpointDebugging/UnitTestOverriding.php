@@ -78,12 +78,31 @@ use \BreakpointDebugging as B;
  * @link       http://www.phpunit.de/
  * @since      Class available since Release 2.0.0
  */
-class BreakpointDebugging_UnitTestOverridingBase extends \PHPUnit_Framework_TestCase
+abstract class BreakpointDebugging_UnitTestOverridingBase extends \PHPUnit_Framework_TestCase
 {
     /**
      * @var int The output buffering level.
      */
     private $_obLevel;
+    private static $_backupGlobalsBlacklist;
+    private static $_backupStaticAttributesBlacklist;
+
+    function __construct($name = NULL, array $data = array (), $dataName = '')
+    {
+        parent::__construct($name, $data, $dataName);
+        self::$_backupGlobalsBlacklist = $this->backupGlobalsBlacklist;
+        self::$_backupStaticAttributesBlacklist = $this->backupStaticAttributesBlacklist;
+    }
+
+    static function getBackupGlobalsBlacklist()
+    {
+        return self::$_backupGlobalsBlacklist;
+    }
+
+    static function getBackupStaticAttributesBlacklist()
+    {
+        return self::$_backupStaticAttributesBlacklist;
+    }
 
     /**
      * This method is called before a test class method is executed.
@@ -122,23 +141,6 @@ class BreakpointDebugging_UnitTestOverridingBase extends \PHPUnit_Framework_Test
     {
         $this->numAssertions = 0;
 
-        // Backup the $GLOBALS array and static attributes.
-        if ($this->runTestInSeparateProcess !== TRUE
-            && $this->inIsolation !== TRUE
-        ) {
-            if ($this->backupGlobals === NULL
-                || $this->backupGlobals === TRUE
-            ) {
-                BreakpointDebugging_PHPUnitUtilGlobalState::backupGlobals($this->backupGlobalsBlacklist);
-            }
-
-            if (version_compare(PHP_VERSION, '5.3', '>')
-                && $this->backupStaticAttributes === TRUE
-            ) {
-                BreakpointDebugging_PHPUnitUtilGlobalState::backupStaticAttributes($this->backupStaticAttributesBlacklist);
-            }
-        }
-
         // Start output buffering.
         ob_start();
         $this->outputBufferingActive = TRUE;
@@ -152,6 +154,25 @@ class BreakpointDebugging_UnitTestOverridingBase extends \PHPUnit_Framework_Test
             }
 
             $this->setExpectedExceptionFromAnnotation();
+
+            // $beforeGlobals = array ();
+            // foreach ($GLOBALS as $globalElementKey => $globalElement) {
+            //     $beforeGlobals[$globalElementKey] = $globalElement;
+            // }
+            //
+            // Restores "$GLOBALS" and static attributes if those have been stored.
+            BreakpointDebugging_PHPUnitUtilGlobalState::restoreGlobals($this->backupGlobalsBlacklist);
+            BreakpointDebugging_PHPUnitUtilGlobalState::restoreStaticAttributes();
+
+            // foreach ($GLOBALS as $globalElementKey => $globalElement) {
+            //     if ($globalElementKey === 'GLOBALS') {
+            //         continue;
+            //     }
+            //     if ($GLOBALS[$globalElementKey] !== $beforeGlobals[$globalElementKey]) {
+            //         xdebug_break();
+            //     }
+            // }
+
             $this->setUp();
             $this->checkRequirements();
             $this->assertPreConditions();
@@ -197,23 +218,6 @@ class BreakpointDebugging_UnitTestOverridingBase extends \PHPUnit_Framework_Test
 
         // Clean up stat cache.
         clearstatcache();
-
-        // Restore the $GLOBALS array and static attributes.
-        if ($this->runTestInSeparateProcess !== TRUE
-            && $this->inIsolation !== TRUE
-        ) {
-            if ($this->backupGlobals === NULL
-                || $this->backupGlobals === TRUE
-            ) {
-                BreakpointDebugging_PHPUnitUtilGlobalState::restoreGlobals($this->backupGlobalsBlacklist);
-            }
-
-            if (version_compare(PHP_VERSION, '5.3', '>')
-                && $this->backupStaticAttributes === TRUE
-            ) {
-                BreakpointDebugging_PHPUnitUtilGlobalState::restoreStaticAttributes();
-            }
-        }
 
         // Clean up INI settings.
         foreach ($this->iniSettings as $varName => $oldValue) {

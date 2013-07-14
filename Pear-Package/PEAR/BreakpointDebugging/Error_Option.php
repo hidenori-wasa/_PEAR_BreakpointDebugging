@@ -109,9 +109,6 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
         $this->tags['/i'] = '</i>';
         $this->tags['b'] = '<b>';
         $this->tags['/b'] = '</b>';
-        $this->tags['anchor href'] = '<a href="#';
-        $this->tags['anchor name'] = '<a name="';
-        $this->tags['/anchor'] = '</a>';
         if (B::getStatic('$exeMode') & B::UNIT_TEST) {
             $this->tags['uint test anchor href'] = $this->uintTestAnchorHref;
             $this->tags['uint test anchor name'] = $this->uintTestAnchorName;
@@ -506,7 +503,5 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
     }
 
 }
-
-echo file_get_contents('BreakpointDebugging/css/FontStyle.html', true);
 
 ?>

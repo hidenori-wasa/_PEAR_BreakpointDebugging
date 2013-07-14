@@ -7,7 +7,7 @@ use \BreakpointDebugging as B;
 use \BreakpointDebugging_InAllCase as BA;
 use \BreakpointDebugging_UnitTestCaller as BU;
 
-B::isUnitTestExeMode(true);
+B::checkExeMode(true);
 
 $testAutoload = 1;
 if ($testAutoload === 1) { // The case which extends base class.

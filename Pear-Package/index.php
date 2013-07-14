@@ -4,7 +4,9 @@ require_once './BreakpointDebugging_Including.php';
 
 use \BreakpointDebugging as B;
 
-B::isUnitTestExeMode(); // Checks the execution mode.
+return;
+
+B::checkExeMode(); // Checks the execution mode.
 class TestClassA
 {
     public $testPropertyA = 'testPropertyA';

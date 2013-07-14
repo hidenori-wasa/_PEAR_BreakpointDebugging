@@ -6,7 +6,7 @@ require_once './BreakpointDebugging_Including.php';
 use \BreakpointDebugging as B;
 use \BreakpointDebugging_UnitTestCaller as BU;
 
-B::isUnitTestExeMode(true);
+B::checkExeMode(true);
 class BreakpointDebuggingTestExampleBase
 {
     private static $privateStaticBase = 'private static base';
@@ -48,31 +48,31 @@ class BreakpointDebugging_UnitTestCallerTest extends \BreakpointDebugging_UnitTe
      */
     public function testIsUnitTestExeMode()
     {
-        B::isUnitTestExeMode(true);
+        B::checkExeMode(true);
     }
 
     /**
      * @covers \BreakpointDebugging<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_UnitTestCaller FUNCTION=isUnitTestExeMode ID=101.
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_UnitTestCaller FUNCTION=checkExeMode ID=101.
      */
     public function testIsUnitTestExeMode_A()
     {
         ob_start();
-        B::isUnitTestExeMode();
+        B::checkExeMode();
     }
 
     /**
      * @covers \BreakpointDebugging<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_UnitTestCaller FUNCTION=isUnitTestExeMode ID=102.
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_UnitTestCaller FUNCTION=checkExeMode ID=102.
      */
     public function testIsUnitTestExeMode_C()
     {
         ob_start();
-        B::isUnitTestExeMode(false);
+        B::checkExeMode(false);
     }
 
 //    /**

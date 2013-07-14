@@ -44,6 +44,29 @@
  * We do not need error and exception handler coding because an error and an exception
  * which wasn't caught are processed by global handler in "BreakpointDebugging" class.
  *
+ * Example:
+ * <?php
+ *
+ * require_once './BreakpointDebugging_Including.php';
+ *
+ * use \BreakpointDebugging as B;
+ *
+ * B::checkExeMode(); // Checks the execution mode.
+ *
+ * $exeMode = B::getStatic('$exeMode');
+ * $logData = 'Data character string.';
+ * if ($exeMode & B::RELEASE) { // If release execution mode.
+ *      $lockByFlock = &\BreakpointDebugging_LockByFlock::singleton(); // Creates a lock instance.
+ *      $lockByFlock->lock(); // Locks php-code.
+ *      file_put_contents('Somethig.log', $logData);
+ *      $lockByFlock->unlock(); // Unlocks php-code.
+ * } else { // If debug execution mode.
+ *      B::assert(is_string($logData), 1);
+ *      echo $logData;
+ * }
+ *
+ * ?>
+ *
  * ### Running procedure. ###
  * Please, run the following procedure.
  * Procedure 1: Install "XDebug" by seeing "http://xdebug.org/docs/install"
@@ -56,12 +79,12 @@
  *      php files because multibyte strings may be destroyed.
  * Procedure 4: Copy "BreakpointDebugging_Including.php" into your project directory.
  * And, copy "BreakpointDebugging_MySetting*.php" to
- * "const BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME" of your project directory.
+ * "const BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME" directory of your project directory.
  * Procedure 5: Edit BreakpointDebugging_MySetting*.php for customize.
  *      Then, it fixes part setting about all debugging modes.
  * Procedure 6: Copy following in your project php code.
  *      require_once './BreakpointDebugging_Including.php';
- * Procedure 7: Check debugging-mode using "B::isUnitTestExeMode()" in start page,
+ * Procedure 7: Check debugging-mode using "B::checkExeMode()" in start page,
  *      and set debugging mode to
  *      "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('...');"
  *      into "BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php'".

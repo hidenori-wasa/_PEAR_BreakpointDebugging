@@ -68,6 +68,9 @@ abstract class BreakpointDebugging_Exception_InAllCase extends \PEAR_Exception
      */
     function __construct($message, $id = null, $previous = null)
     {
+        // trigger_error('Error test.'); // For debug.
+        // throw new \Exception('Exception test.'); // For debug.
+
         if ($previous === null) {
             parent::__construct($message, $id);
         } else {
@@ -325,14 +328,14 @@ abstract class BreakpointDebugging_InAllCase
      *
      *      use \BreakpointDebugging as B;
      *
-     *      B::isUnitTestExeMode(); // Checks the execution mode.
+     *      B::checkExeMode(); // Checks the execution mode.
      *          .
      *          .
      *          .
      * @codeCoverageIgnore
      * Because this class method does not exist in case of unit test.
      */
-    static function isUnitTestExeMode($isUnitTest = false)
+    static function checkExeMode($isUnitTest = false)
     {
         if ($isUnitTest) {
             echo '<pre>You must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'..._UNIT_TEST\');" into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php".</pre>';
@@ -825,6 +828,9 @@ abstract class BreakpointDebugging_InAllCase
      */
     static function restoreVariables(array &$variables, array $variablesStoring, array $serializationKeysStoring)
     {
+        if (empty($variablesStoring)) {
+            return;
+        }
         // Deletes "array variable element to restore" which isn't contained in variables storing.
         foreach ($variables as $key => $value) {
             if (!array_key_exists($key, $variablesStoring)) {
@@ -839,6 +845,38 @@ abstract class BreakpointDebugging_InAllCase
                 $variables[$key] = $value;
             }
         }
+    }
+
+    /**
+     *
+     * @param type $filePath
+     *
+     * @return mixed Class name.
+     */
+    static function filePathToClassName($filePath)
+    {
+        if (empty($filePath)) {
+            return false;
+        }
+        $filePath = realpath($filePath);
+        $includePathString = get_include_path();
+        $includePaths = explode(PATH_SEPARATOR, $includePathString);
+        if (self::$exeMode & self::UNIT_TEST) {
+            array_unshift($includePaths, dirname($_SERVER['SCRIPT_FILENAME']));
+        }
+        foreach ($includePaths as $includePath) {
+            $includePath = realpath($includePath);
+            if (stripos($filePath, $includePath) === 0) {
+                $className = substr($filePath, strlen($includePath) + 1, - strlen('.php'));
+                // Changes directory separator and '-' to underscore.
+                $className = str_replace(array ('/', '\\', '-'), '_', $className);
+                if (!in_array($className, get_declared_classes())) {
+                    continue;
+                }
+                return $className;
+            }
+        }
+        return false;
     }
 
     ///////////////////////////// For package user until here. /////////////////////////////
@@ -884,8 +922,8 @@ abstract class BreakpointDebugging_InAllCase
     final static function autoload($className)
     {
         // Changes underscore and name space separator to directory separator.
-        $className = str_replace(array ('_', '\\'), '/', $className) . '.php';
-        include_once $className;
+        $filePath = str_replace(array ('_', '\\'), '/', $className) . '.php';
+        include_once $filePath;
     }
 
     /**

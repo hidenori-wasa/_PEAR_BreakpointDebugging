@@ -6,7 +6,7 @@ require_once './BreakpointDebugging_Including.php';
 use \BreakpointDebugging as B;
 use \BreakpointDebugging_UnitTestCaller as BU;
 
-B::isUnitTestExeMode(true);
+B::checkExeMode(true);
 class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_UnitTestOverriding
 {
     protected $LockByShmop;

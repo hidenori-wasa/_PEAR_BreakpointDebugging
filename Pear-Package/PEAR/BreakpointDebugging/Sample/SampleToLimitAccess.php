@@ -16,7 +16,7 @@ require_once './BreakpointDebugging_Including.php';
 use \BreakpointDebugging as B;
 use \TestClass as T;
 
-B::isUnitTestExeMode(); // Checks the execution mode.
+B::checkExeMode(); // Checks the execution mode.
 /**
  * Dummy.
  *

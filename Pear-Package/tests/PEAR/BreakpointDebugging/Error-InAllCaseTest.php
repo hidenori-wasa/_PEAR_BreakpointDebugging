@@ -6,7 +6,7 @@ require_once './BreakpointDebugging_Including.php';
 use \BreakpointDebugging as B;
 use \BreakpointDebugging_UnitTestCaller as BU;
 
-B::isUnitTestExeMode(true);
+B::checkExeMode(true);
 class example
 {
     const CONST_TEST = 1; // Tests constant property when unit test reflects object.
@@ -38,7 +38,7 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_UnitT
     {
         $maxLogStringSize = &B::refStatic('$_maxLogStringSize');
         $maxLogStringSize = 8;
-        self::$_errorLogDir = \BreakpointDebugging_Error_InAllCase::getErrorLogDir();
+        self::$_errorLogDir = \BreakpointDebugging_Error::getErrorLogDir();
     }
 
     function setUp()
