@@ -85,7 +85,9 @@ class BreakpointDebugging_Exception extends \BreakpointDebugging_Exception_InAll
         }
 
         // Adds "[[[CLASS=<class name>] FUNCTION=<function name>] ID=<identification number>]" to message in case of unit test.
-        if (B::getStatic('$exeMode') & B::UNIT_TEST) {
+        if ((B::getStatic('$exeMode') & B::UNIT_TEST)
+            && !(B::getStatic('$exeMode') & B::UNIT_TEST_PREPARATION)
+        ) {
             B::assert(is_int($omissionCallStackLevel) && $omissionCallStackLevel >= 0, 5);
 
             if ($id === null) {
@@ -357,7 +359,8 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      * @example
      *      <?php
      *
-     *      chdir(__DIR__ . '/../../');
+     *      $projectDirPath = str_repeat('../', preg_match_all('`/`xX', $_SERVER['PHP_SELF'], $matches) - 2);
+     *      chdir(__DIR__ . '/' . $projectDirPath);
      *      require_once './BreakpointDebugging_Including.php';
      *
      *      use \BreakpointDebugging as B;
@@ -403,22 +406,17 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
         include_once 'PHPUnit/Autoload.php';
         $pPHPUnit_TextUI_Command = new \BreakpointDebugging_PHPUnitTextUICommand;
         $pPHPUnit_TextUI_Command->prepareRun($commandElements);
-        // Uses "PHPUnit" error handler.
-        restore_error_handler();
         $pPHPUnit_TextUI_Command->run($commandElements, false);
-        // Uses my error handler.
-        set_error_handler('\BreakpointDebugging::handleError', -1);
     }
 
     /**
      * Executes unit tests continuously, and debugs with IDE.
      *
-     * We must use private static property instead of using local static variable because we can use unit test's "--static-backup" command line switch.
+     * We have to use private static property instead of using local static variable.
+     * Then, we can use unit test's "--static-backup" command line switch.
      *
      * Also, we must not use unit test's "--process-isolation" command line switch because its tests is run in other process.
-     * So, we cannot debug unit test code with IDE.
-     *
-     * Also, we must use "--bootstrap" command line switch at later unit test files because it may affect static status.
+     * Therefore, we cannot debug unit test code with IDE.
      *
      * How to run multiprocess unit test (Unix only):
      *      Procedure 1: Use process control functions "pcntl_...()" inside your unit test class method "test...()".
@@ -474,8 +472,8 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      * @Example of unit test file.
      * <?php
      *
-     * chdir(__DIR__ . '/../../');
-     *
+     * $projectDirPath = str_repeat('../', preg_match_all('`/`xX', $_SERVER['PHP_SELF'], $matches) - 2);
+     * chdir(__DIR__ . '/' . $projectDirPath);
      * require_once './BreakpointDebugging_Including.php';
      *
      * use \BreakpointDebugging as B;
@@ -489,11 +487,13 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      *
      *     static function setUpBeforeClass()
      *     {
-     *          ...;
+     *          // We can change static status at here.
+     *          ...
      *     }
      *
      *     protected function setUp()
      *     {
+     *          // This is required.
      *          parent::setUp();
      *          // Constructs instance.
      *          $this->_pSomething = new \Something();
@@ -503,6 +503,7 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      *     {
      *          // Destructs instance.
      *          $this->_pSomething = null;
+     *          // This is required.
      *          parent::tearDown();
      *     }
      *
@@ -542,10 +543,13 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
     {
         static $unitTestFilePathsStoring = array ();
 
+        self::$exeMode |= self::UNIT_TEST_PREPARATION;
         /*         * ***
           $runByCommand = false; // Running by command does not support.
          * *** */
-        B::checkDevelopmentSecurity();
+        if (!B::checkDevelopmentSecurity()) {
+            exit;
+        }
 
         foreach ($unitTestFilePaths as $unitTestFilePath) {
             if (in_array($unitTestFilePath, $unitTestFilePathsStoring, true)) {
@@ -671,7 +675,10 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      */
     static function displayCodeCoverageReport($unitTestFilePath, $classFilePaths, $commandLineSwitches = '')
     {
-        B::checkDevelopmentSecurity();
+        self::$exeMode |= self::UNIT_TEST_PREPARATION;
+        if (!B::checkDevelopmentSecurity()) {
+            exit;
+        }
 
         B::assert(func_num_args() === 2, 1);
         B::assert(is_string($unitTestFilePath), 2);
@@ -705,7 +712,7 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
         // Displays the code coverage report in browser.
         self::$_classFilePaths = $classFilePaths;
         self::$_codeCoverageReportPath = $codeCoverageReportPath;
-        require_once __DIR__ . '/BreakpointDebugging/DisplayCodeCoverageReport.php';
+        new \BreakpointDebugging_DisplayCodeCoverageReport();
         exit;
     }
 

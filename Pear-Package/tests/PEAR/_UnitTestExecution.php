@@ -15,7 +15,7 @@ $unitTestCommands = array (
     // 'BreakpointDebugging-UnitTestCallerTest.php',
     // 'BreakpointDebugging/Error-InAllCaseTest.php',
     // 'BreakpointDebugging/ErrorTest.php',
-    // 'BreakpointDebugging/LockByFileExistingTest.php',
+    'BreakpointDebugging/LockByFileExistingTest.php',
     'BreakpointDebugging/LockByFlockTest.php',
     // 'BreakpointDebugging/LockByShmopTest.php',
     // 'BreakpointDebugging/OverrideClassTest.php',

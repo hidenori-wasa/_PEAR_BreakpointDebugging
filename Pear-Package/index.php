@@ -4,6 +4,14 @@ require_once './BreakpointDebugging_Including.php';
 
 use \BreakpointDebugging as B;
 
+$prevErrorHandler = set_error_handler('\BreakpointDebugging_Error::handleInternalError', -1);
+$prevErrorHandler = set_error_handler('\BreakpointDebugging_Error::handleInternalError', -1);
+restore_error_handler();
+restore_error_handler();
+$prevErrorHandler = set_error_handler('\BreakpointDebugging_Error::handleInternalError', -1);
+restore_error_handler();
+restore_error_handler();
+$prevErrorHandler = set_error_handler('\BreakpointDebugging_Error::handleInternalError', -1);
 return;
 
 B::checkExeMode(); // Checks the execution mode.

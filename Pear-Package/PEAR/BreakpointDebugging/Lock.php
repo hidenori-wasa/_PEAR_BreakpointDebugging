@@ -226,9 +226,9 @@ abstract class BreakpointDebugging_Lock
         // Extend maximum execution time.
         set_time_limit($this->timeout + 10);
 
-        restore_error_handler();
+        set_error_handler('\BreakpointDebugging::handleError', 0);
         $this->loopLocking();
-        set_error_handler('\BreakpointDebugging::handleError', -1);
+        restore_error_handler();
 
         B::assert($this->lockCount === 0, 101);
         $this->lockCount++;
@@ -257,9 +257,9 @@ abstract class BreakpointDebugging_Lock
         $this->lockCount--;
         B::assert($this->lockCount === 0, 101);
 
-        restore_error_handler();
+        set_error_handler('\BreakpointDebugging::handleError', 0);
         $this->loopUnlocking();
-        set_error_handler('\BreakpointDebugging::handleError', -1);
+        restore_error_handler();
     }
 
     /**

@@ -115,10 +115,10 @@ final class BreakpointDebugging_LockByFileExisting extends \BreakpointDebugging_
         $stat = stat($lockFilePath);
         // Locking flag file is too old.
         if (time() - $stat['mtime'] > $flagFileExpire) {
-            restore_error_handler();
+            set_error_handler('\BreakpointDebugging::handleError', 0);
             // Delete locking flag file.
             @unlink($lockFilePath);
-            set_error_handler('\BreakpointDebugging::handleError', -1);
+            restore_error_handler();
         }
     }
 

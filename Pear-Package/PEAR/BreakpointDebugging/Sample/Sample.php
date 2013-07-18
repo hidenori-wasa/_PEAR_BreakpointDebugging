@@ -6,7 +6,10 @@ namespace Your_Name;
 
 use \BreakpointDebugging as B;
 
-chdir('../../../');
+$projectDirPath = str_repeat('../', preg_match_all('`/`xX', $_SERVER['PHP_SELF'], $matches) - 2);
+chdir(__DIR__ . '/' . $projectDirPath);
+require_once 'BreakpointDebugging_Including.php';
+
 require_once './NativeClass.php'; // Test class.
 
 B::checkExeMode(false); // Checks the execution mode.

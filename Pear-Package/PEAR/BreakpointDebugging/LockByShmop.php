@@ -299,11 +299,12 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
      */
     private function _getSharedMemoryID()
     {
-        restore_error_handler();
+        set_error_handler('\BreakpointDebugging::handleError', 0);
         $sharedMemoryKey = fread($this->pFile, 10);
         // Open shared memory to read and write.
         $sharedMemoryID = @shmop_open($sharedMemoryKey, 'w', 0, 0);
-        set_error_handler('\BreakpointDebugging::handleError', -1);
+        restore_error_handler();
+
         if ($sharedMemoryID === false
             || $sharedMemoryID === null
             || $sharedMemoryKey === ''
@@ -321,7 +322,7 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
      */
     private function _buildSharedMemory()
     {
-        restore_error_handler();
+        set_error_handler('\BreakpointDebugging::handleError', 0);
         for ($count = 0; $count < 1000; $count++) {
             $sharedMemoryKey = (microtime(true) * 10000) & 0xFFFFFFFF;
             if ($sharedMemoryKey === -1) {
@@ -342,7 +343,8 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
             }
             break;
         }
-        set_error_handler('\BreakpointDebugging::handleError', -1);
+        restore_error_handler();
+
         if (self::$sharedMemoryID === false) {
             // @codeCoverageIgnoreStart
             // Because this is a few probability.

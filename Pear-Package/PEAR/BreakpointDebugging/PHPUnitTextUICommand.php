@@ -47,8 +47,6 @@
  * @link       http://www.phpunit.de/
  * @since      File available since Release 3.0.0
  */
-use \BreakpointDebugging_UnitTestOverriding as BU;
-
 if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
     /**
      * I stripped "exit()" in case of success unit test because I want to execute continuously.
@@ -67,6 +65,7 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
     {
         /**
          * Runs "phpunit" command. Overrides this for running a unit tests continuously.
+         * And, sets autoload class method to store static status by "spl_autoload_register()".
          *
          * @param array   $argv Parameters of "phpunit" command.
          * @param boolean $exit Ends running in case of success?
@@ -86,13 +85,6 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
                 $suite = $runner->getTest(
                     $this->arguments['test'], $this->arguments['testFile']
                 );
-            }
-
-            // Avoids effect by storing earlier than bootstrap and "$this->setUpBeforeClass()" class method because this package runs unit tests continuously on single process.
-            if (in_array('--static-backup', $argv, true)) {
-                // Backup the $GLOBALS array and static attributes.
-                BreakpointDebugging_PHPUnitUtilGlobalState::backupGlobals(BU::getBackupGlobalsBlacklist());
-                BreakpointDebugging_PHPUnitUtilGlobalState::backupStaticAttributes(BU::getBackupStaticAttributesBlacklist());
             }
 
             if (count($suite) == 0) {
@@ -163,27 +155,28 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
          */
         function prepareRun($argv)
         {
-            static $bootstrapStarted = false;
-            $bootstrapUse = false;
+            static $onceFlag = true;
 
             array_shift($argv);
             // Checks command line switches.
             foreach ($argv as $option) {
                 switch ($option) {
-                    case '--bootstrap':
-                        $bootstrapUse = true;
+                    case '--static-backup':
+                        if ($onceFlag) {
+                            $onceFlag = false;
+                            // Stores the "$GLOBALS" and static attributes.
+                            \BreakpointDebugging_PHPUnitUtilGlobalState::backupGlobals(array ());
+                            // Unit test preparation end.
+                            \BreakpointDebugging_UnitTestCaller::$exeMode &= ~\BreakpointDebugging::UNIT_TEST_PREPARATION;
+                            \BreakpointDebugging_PHPUnitUtilGlobalState::backupStaticAttributes(array ());
+                        }
                         break;
                     case '--process-isolation':
                         throw new \BreakpointDebugging_ErrorException('You must not use "--process-isolation" command line switch because this unit test is run in other process.' . PHP_EOL . 'So, you cannot debug unit test code with IDE.', 101);
                 }
             }
-            if ($bootstrapUse) {
-                $bootstrapStarted = true;
-            } else if ($bootstrapStarted) { // If command which is not bootstrap after bootstrap command.
-                throw new \BreakpointDebugging_ErrorException('We must use "--bootstrap" command line switch at later unit test files because it may affect static status.', 102);
-            }
-            // Initializes static status for next unit test file.
-            BreakpointDebugging_PHPUnitUtilGlobalState::initializeStaticStatusForNextTestFile($bootstrapUse);
+            // Unit test preparation end.
+            \BreakpointDebugging_UnitTestCaller::$exeMode &= ~\BreakpointDebugging::UNIT_TEST_PREPARATION;
         }
 
     }

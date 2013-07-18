@@ -61,7 +61,9 @@ require_once './BreakpointDebugging_Including.php';
 
 use \BreakpointDebugging as B;
 
-B::checkDevelopmentSecurity(B::RELEASE);
+if (!B::checkDevelopmentSecurity(B::RELEASE)) {
+    return;
+}
 
 // Cancels the script running time limitation.
 set_time_limit(0);

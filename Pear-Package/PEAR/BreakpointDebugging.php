@@ -109,9 +109,14 @@ abstract class BreakpointDebugging_InAllCase
     const UNIT_TEST = 4;
 
     /**
+     * @const int This flag means unit test preparation. For example, load of "php" files which unit tests execute.
+     */
+    const UNIT_TEST_PREPARATION = 8;
+
+    /**
      * @const int This flag means ignoring break point. This flag means enabling break point if it is not set.
      */
-    const IGNORING_BREAK_POINT = 8;
+    const IGNORING_BREAK_POINT = 16;
 
     /**
      *  @const string Character string which means recursive array.
@@ -281,7 +286,7 @@ abstract class BreakpointDebugging_InAllCase
      *
      * @param mixed $necessaryExeMode Necessary execution mode. Does not check execution mode if this is false.
      *
-     * @return void
+     * @return bool Success or failure.
      */
     static function checkDevelopmentSecurity($necessaryExeMode = false)
     {
@@ -302,16 +307,20 @@ abstract class BreakpointDebugging_InAllCase
                 default :
                     throw new \BreakpointDebugging_ErrorException('"' . __METHOD__ . '" parameter1 is mistake.');
             }
-            exit('<pre>You must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'' . $message . '\');" into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file.</pre>');
+            echo '<pre>You must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'' . $message . '\');" into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file.</pre>';
+            return false;
         }
         // Checks client IP address.
         if ($_SERVER['REMOTE_ADDR'] !== self::$_developerIP) {
-            exit('<pre>You must set "$developerIP = \'' . $_SERVER['REMOTE_ADDR'] . '\';" into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file.</pre>');
+            echo '<pre>You must set "$developerIP = \'' . $_SERVER['REMOTE_ADDR'] . '\';" into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file.</pre>';
+            return false;
         }
         // Checks the request protocol.
         if (empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] === 'off') {
-            exit('<pre>You must use "https" protocol.</pre>');
+            echo '<pre>You must use "https" protocol.</pre>';
+            return false;
         }
+        return true;
     }
 
     /**
@@ -774,12 +783,9 @@ abstract class BreakpointDebugging_InAllCase
      */
     static function storeVariables(array $blacklist, array $variables, array &$variablesStoring, array &$serializationKeysStoring, $isGlobalStoring = true)
     {
-        if (!empty($variablesStoring)) {
-            return;
-        }
-
         foreach ($variables as $key => $value) {
             if (in_array($key, $blacklist)
+                || array_key_exists($key, $variablesStoring)
                 || $value instanceof Closure
             ) {
                 continue;
@@ -848,10 +854,11 @@ abstract class BreakpointDebugging_InAllCase
     }
 
     /**
+     * Changes from file path to a class name.
      *
-     * @param type $filePath
+     * @param type $filePath The file path.
      *
-     * @return mixed Class name.
+     * @return mixed Class name or false.
      */
     static function filePathToClassName($filePath)
     {
@@ -864,9 +871,15 @@ abstract class BreakpointDebugging_InAllCase
         if (self::$exeMode & self::UNIT_TEST) {
             array_unshift($includePaths, dirname($_SERVER['SCRIPT_FILENAME']));
         }
+        $isWindows = B::getStatic('$_os') === 'WIN';
         foreach ($includePaths as $includePath) {
             $includePath = realpath($includePath);
-            if (stripos($filePath, $includePath) === 0) {
+            if ($isWindows) {
+                $result = stripos($filePath, $includePath);
+            } else {
+                $result = strpos($filePath, $includePath);
+            }
+            if ($result === 0) {
                 $className = substr($filePath, strlen($includePath) + 1, - strlen('.php'));
                 // Changes directory separator and '-' to underscore.
                 $className = str_replace(array ('/', '\\', '-'), '_', $className);
@@ -947,12 +960,16 @@ abstract class BreakpointDebugging_InAllCase
 
             $error = new \BreakpointDebugging_Error();
             $error->handleException2($pException, self::$prependExceptionLog);
-            if (self::$_nativeExeMode & self::UNIT_TEST) {
+            if ((self::$_nativeExeMode & self::UNIT_TEST)
+                && !(self::$exeMode & self::UNIT_TEST_PREPARATION)
+            ) {
                 BreakpointDebugging_UnitTestCaller::displaysException($pException);
                 BreakpointDebugging_UnitTestCaller::handleUnitTestException($pException);
             }
         } catch (\Exception $e) {
-            if (self::$_nativeExeMode & self::UNIT_TEST) {
+            if ((self::$_nativeExeMode & self::UNIT_TEST)
+                && !(self::$exeMode & self::UNIT_TEST_PREPARATION)
+            ) {
                 restore_error_handler();
                 throw $e;
             }
@@ -984,7 +1001,9 @@ abstract class BreakpointDebugging_InAllCase
             $error = new \BreakpointDebugging_Error();
             $error->handleError2($errorNumber, $errorMessage, self::$prependErrorLog, debug_backtrace());
         } catch (\Exception $e) {
-            if (self::$_nativeExeMode & self::UNIT_TEST) {
+            if ((self::$_nativeExeMode & self::UNIT_TEST)
+                && !(self::$exeMode & self::UNIT_TEST_PREPARATION)
+            ) {
                 restore_error_handler();
                 throw $e;
             }

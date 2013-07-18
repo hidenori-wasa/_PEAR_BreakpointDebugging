@@ -46,13 +46,13 @@
  * @version  SVN: $Id$
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-$projectDirPath = str_repeat('../', preg_match_all('`/`xX', $_SERVER['PHP_SELF'], $matches) - 2);
-chdir(__DIR__ . '/' . $projectDirPath);
 require_once './BreakpointDebugging_Including.php';
 
 use \BreakpointDebugging as B;
 
-B::checkDevelopmentSecurity();
+if (!B::checkDevelopmentSecurity()) {
+    return;
+}
 B::limitAccess('BreakpointDebugging_UnitTestCaller.php');
 /**
  * Class to display code coverage report.

@@ -13,6 +13,8 @@ B::checkExeMode(true);
  */
 class BreakpointDebugging_ExceptionTest extends \BreakpointDebugging_UnitTestOverriding
 {
+    protected $backupGlobalsBlacklist = array ('globalVariable'); // For debug.
+
     /**
      * @covers \BreakpointDebugging_Exception<extended>
      */

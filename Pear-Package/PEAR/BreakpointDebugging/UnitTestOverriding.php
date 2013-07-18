@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Debugs unit tests by IDE or tests multiprocess unit tests by command.  With "\BreakpointDebugging::executeUnitTest()" class method.
+ * Debugs unit tests code continuously by IDE. With "\BreakpointDebugging::executeUnitTest()" class method.
  *
  * This class extends "PHPUnit_Framework_TestCase".
  * Also, we can execute unit test with remote server without installing "PHPUnit".
@@ -64,10 +64,10 @@
 // and moreover "use" keyword alias has priority over class definition,
 // therefore "use" keyword alias does not be affected by other files.
 use \BreakpointDebugging as B;
+use \BreakpointDebugging_PHPUnitUtilGlobalState as BGS;
 
 /**
- * Tests the all unit test files by "B::executeUnitTest()" class method.
- * Notice:  You must code all array element comment which hands to "B::executeUnitTest()" before you execute this mode.
+ * Tests unit test files by "B::executeUnitTest()" class method.
  *
  * @package    PHPUnit
  * @subpackage Framework
@@ -81,28 +81,14 @@ use \BreakpointDebugging as B;
 abstract class BreakpointDebugging_UnitTestOverridingBase extends \PHPUnit_Framework_TestCase
 {
     /**
+     * @var bool Once flag of "splAutoloadRegister()".
+     */
+    private static $_splAutoloadRegisterOnceFlag = true;
+
+    /**
      * @var int The output buffering level.
      */
     private $_obLevel;
-    private static $_backupGlobalsBlacklist;
-    private static $_backupStaticAttributesBlacklist;
-
-    function __construct($name = NULL, array $data = array (), $dataName = '')
-    {
-        parent::__construct($name, $data, $dataName);
-        self::$_backupGlobalsBlacklist = $this->backupGlobalsBlacklist;
-        self::$_backupStaticAttributesBlacklist = $this->backupStaticAttributesBlacklist;
-    }
-
-    static function getBackupGlobalsBlacklist()
-    {
-        return self::$_backupGlobalsBlacklist;
-    }
-
-    static function getBackupStaticAttributesBlacklist()
-    {
-        return self::$_backupStaticAttributesBlacklist;
-    }
 
     /**
      * This method is called before a test class method is executed.
@@ -117,6 +103,11 @@ abstract class BreakpointDebugging_UnitTestOverridingBase extends \PHPUnit_Frame
             unlink($internalLockFileName);
         }
         $this->_obLevel = ob_get_level();
+        // Uses "PHPUnit" package error handler.
+        while (set_error_handler('\PHPUnit_Util_ErrorHandler::handleError', -1) !== null) {
+            restore_error_handler();
+            restore_error_handler();
+        }
     }
 
     /**
@@ -127,6 +118,11 @@ abstract class BreakpointDebugging_UnitTestOverridingBase extends \PHPUnit_Frame
      */
     protected function tearDown()
     {
+        // Uses "BreakpointDebugging" package error handler.
+        while (set_error_handler('\BreakpointDebugging::handleError', -1) !== null) {
+            restore_error_handler();
+            restore_error_handler();
+        }
         while (ob_get_level() > $this->_obLevel) {
             ob_end_clean();
         }
@@ -141,6 +137,33 @@ abstract class BreakpointDebugging_UnitTestOverridingBase extends \PHPUnit_Frame
     {
         $this->numAssertions = 0;
 
+//        // Backup the $GLOBALS array and static attributes.
+//        if ($this->runTestInSeparateProcess !== TRUE
+//            && $this->inIsolation !== TRUE
+//        ) {
+//            if ($this->backupGlobals === NULL
+//                || $this->backupGlobals === TRUE
+//            ) {
+//                BGS::backupGlobals($this->backupGlobalsBlacklist);
+//            }
+//
+//            if (version_compare(PHP_VERSION, '5.3', '>')
+//                && $this->backupStaticAttributes === TRUE
+//            ) {
+//                BGS::backupStaticAttributes($this->backupStaticAttributesBlacklist);
+//            }
+//        }
+        BGS::$backupGlobalsBlacklist = $this->backupGlobalsBlacklist;
+        BGS::$backupStaticAttributesBlacklist = $this->backupStaticAttributesBlacklist;
+        if (self::$_splAutoloadRegisterOnceFlag
+            && $this->backupStaticAttributes
+        ) {
+            self::$_splAutoloadRegisterOnceFlag = false;
+            B::assert($this->runTestInSeparateProcess === false);
+            B::assert($this->inIsolation === false);
+            spl_autoload_register('\BreakpointDebugging_PHPUnitUtilGlobalState::autoload', true, true);
+        }
+
         // Start output buffering.
         ob_start();
         $this->outputBufferingActive = TRUE;
@@ -152,27 +175,7 @@ abstract class BreakpointDebugging_UnitTestOverridingBase extends \PHPUnit_Frame
             if ($this->inIsolation) {
                 $this->setUpBeforeClass();
             }
-
             $this->setExpectedExceptionFromAnnotation();
-
-            // $beforeGlobals = array ();
-            // foreach ($GLOBALS as $globalElementKey => $globalElement) {
-            //     $beforeGlobals[$globalElementKey] = $globalElement;
-            // }
-            //
-            // Restores "$GLOBALS" and static attributes if those have been stored.
-            BreakpointDebugging_PHPUnitUtilGlobalState::restoreGlobals($this->backupGlobalsBlacklist);
-            BreakpointDebugging_PHPUnitUtilGlobalState::restoreStaticAttributes();
-
-            // foreach ($GLOBALS as $globalElementKey => $globalElement) {
-            //     if ($globalElementKey === 'GLOBALS') {
-            //         continue;
-            //     }
-            //     if ($GLOBALS[$globalElementKey] !== $beforeGlobals[$globalElementKey]) {
-            //         xdebug_break();
-            //     }
-            // }
-
             $this->setUp();
             $this->checkRequirements();
             $this->assertPreConditions();
@@ -218,6 +221,10 @@ abstract class BreakpointDebugging_UnitTestOverridingBase extends \PHPUnit_Frame
 
         // Clean up stat cache.
         clearstatcache();
+
+        // Restores "$GLOBALS" and static attributes if those have been stored.
+        BreakpointDebugging_PHPUnitUtilGlobalState::restoreGlobals($this->backupGlobalsBlacklist);
+        BreakpointDebugging_PHPUnitUtilGlobalState::restoreStaticAttributes();
 
         // Clean up INI settings.
         foreach ($this->iniSettings as $varName => $oldValue) {

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * PHPUnit
+ * Utility for static state.
  *
  * Copyright (c) 2001-2013, Sebastian Bergmann <sebastian@phpunit.de>.
  * All rights reserved.
@@ -60,6 +60,16 @@ use \BreakpointDebugging as B;
 class BreakpointDebugging_PHPUnitUtilGlobalState extends \PHPUnit_Util_GlobalState
 {
     /**
+     * @var array List to except to store global variable.
+     */
+    static $backupGlobalsBlacklist;
+
+    /**
+     * @var array List to except to store static property.
+     */
+    static $backupStaticAttributesBlacklist;
+
+    /**
      * @var array Global variable serialization-keys storing.
      */
     private static $_globalSerializationKeysStoring = array ();
@@ -68,6 +78,30 @@ class BreakpointDebugging_PHPUnitUtilGlobalState extends \PHPUnit_Util_GlobalSta
      * @var array Static attributes serialization-keys storing.
      */
     private static $_staticAttributesSerializationKeysStoring = array ();
+
+    /**
+     * Stores static status inside autoload handler because static status may be changed.
+     *
+     * @param string $className The class name which calls class member of static.
+     *                          Or, the class name which creates new instance.
+     *                          Or, the class name when extends base class.
+     *
+     * @return void
+     */
+    static function autoload($className)
+    {
+        static $nestLevel = 0;
+
+        $nestLevel++;
+        B::autoload($className);
+        $nestLevel--;
+        // If class file has been loaded completely including dependency files.
+        if ($nestLevel === 0) {
+            // Stores the "$GLOBALS" and static attributes before variable value is changed.
+            self::backupGlobals(self::$backupGlobalsBlacklist);
+            self::backupStaticAttributes(self::$backupStaticAttributesBlacklist);
+        }
+    }
 
     /**
      * Stores global variables.
@@ -102,16 +136,16 @@ class BreakpointDebugging_PHPUnitUtilGlobalState extends \PHPUnit_Util_GlobalSta
      */
     static function backupStaticAttributes(array $blacklist)
     {
-        if (!empty(parent::$staticAttributes)) {
-            return;
-        }
-
         // Scans the declared classes.
         $declaredClasses = get_declared_classes();
         for ($i = count($declaredClasses) - 1; $i >= 0; $i--) {
             $declaredClassName = $declaredClasses[$i];
+            // Excepts existing class.
+            if (array_key_exists($declaredClassName, parent::$staticAttributes)) {
+                continue;
+            }
             // Excepts unit test classes.
-            if (preg_match('`^ (PHP (Unit | (_ (CodeCoverage | Invoker | (T (imer | okenStream))))) | File_Iterator | sfYaml | Text_Template )`xXi', $declaredClassName) === 1
+            if (preg_match('`^ (PHP (Unit | (_ (CodeCoverage | Invoker | (T (imer | oken_Stream))))) | File_Iterator | sfYaml | Text_Template )`xXi', $declaredClassName) === 1
                 || is_subclass_of($declaredClassName, 'PHPUnit_Util_GlobalState') // For extended class of my package.
                 || is_subclass_of($declaredClassName, 'PHPUnit_TextUI_Command') // For extended class of my package.
                 || is_subclass_of($declaredClassName, 'PHPUnit_Framework_Test') // For unit test class.
@@ -170,21 +204,6 @@ class BreakpointDebugging_PHPUnitUtilGlobalState extends \PHPUnit_Util_GlobalSta
                 $reflector->setValue($properties[$name]);
             }
         }
-    }
-
-    /**
-     * Initializes static status for next unit test file.
-     *
-     * @param bool $bootstrapUse Uses bootstrap.
-     *
-     * @return void
-     */
-    static function initializeStaticStatusForNextTestFile($bootstrapUse)
-    {
-        \BreakpointDebugging::limitAccess('BreakpointDebugging/PHPUnitTextUICommand.php', true);
-
-        parent::$staticAttributes = array ();
-        self::$_staticAttributesSerializationKeysStoring = array ();
     }
 
 }
