@@ -446,9 +446,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_UnitTestCaller
         self::assert(func_num_args() === 1, 1);
         self::assert($pException instanceof \Exception, 2);
 
-        if ((BA::$exeMode & B::UNIT_TEST)
-            && !(BA::$exeMode & self::UNIT_TEST_PREPARATION)
-        ) {
+        if (BA::$exeMode & B::UNIT_TEST) {
             BreakpointDebugging_UnitTestCaller::handleUnitTestException($pException);
         }
 
@@ -518,10 +516,6 @@ final class BreakpointDebugging extends \BreakpointDebugging_UnitTestCaller
     static function limitAccess($invokerFilePaths, $enableUnitTest = false)
     {
         static $invokingLocations = array ();
-
-        if (BA::$exeMode & self::UNIT_TEST_PREPARATION) {
-            return;
-        }
 
         $callStack = debug_backtrace();
         // Makes invoking location information.

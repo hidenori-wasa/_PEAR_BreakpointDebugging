@@ -65,7 +65,6 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
     {
         /**
          * Runs "phpunit" command. Overrides this for running a unit tests continuously.
-         * And, sets autoload class method to store static status by "spl_autoload_register()".
          *
          * @param array   $argv Parameters of "phpunit" command.
          * @param boolean $exit Ends running in case of success?
@@ -166,8 +165,6 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
                             $onceFlag = false;
                             // Stores the "$GLOBALS" and static attributes.
                             \BreakpointDebugging_PHPUnitUtilGlobalState::backupGlobals(array ());
-                            // Unit test preparation end.
-                            \BreakpointDebugging_UnitTestCaller::$exeMode &= ~\BreakpointDebugging::UNIT_TEST_PREPARATION;
                             \BreakpointDebugging_PHPUnitUtilGlobalState::backupStaticAttributes(array ());
                         }
                         break;
@@ -175,8 +172,6 @@ if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
                         throw new \BreakpointDebugging_ErrorException('You must not use "--process-isolation" command line switch because this unit test is run in other process.' . PHP_EOL . 'So, you cannot debug unit test code with IDE.', 101);
                 }
             }
-            // Unit test preparation end.
-            \BreakpointDebugging_UnitTestCaller::$exeMode &= ~\BreakpointDebugging::UNIT_TEST_PREPARATION;
         }
 
     }

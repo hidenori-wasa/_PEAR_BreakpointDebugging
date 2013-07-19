@@ -85,9 +85,7 @@ class BreakpointDebugging_Exception extends \BreakpointDebugging_Exception_InAll
         }
 
         // Adds "[[[CLASS=<class name>] FUNCTION=<function name>] ID=<identification number>]" to message in case of unit test.
-        if ((B::getStatic('$exeMode') & B::UNIT_TEST)
-            && !(B::getStatic('$exeMode') & B::UNIT_TEST_PREPARATION)
-        ) {
+        if (B::getStatic('$exeMode') & B::UNIT_TEST) {
             B::assert(is_int($omissionCallStackLevel) && $omissionCallStackLevel >= 0, 5);
 
             if ($id === null) {
@@ -406,7 +404,11 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
         include_once 'PHPUnit/Autoload.php';
         $pPHPUnit_TextUI_Command = new \BreakpointDebugging_PHPUnitTextUICommand;
         $pPHPUnit_TextUI_Command->prepareRun($commandElements);
+        // Uses "PHPUnit" package error handler.
+        restore_error_handler();
         $pPHPUnit_TextUI_Command->run($commandElements, false);
+        // Uses "BreakpointDebugging" package error handler.
+        set_error_handler('\BreakpointDebugging::handleError', -1);
     }
 
     /**
@@ -543,7 +545,6 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
     {
         static $unitTestFilePathsStoring = array ();
 
-        self::$exeMode |= self::UNIT_TEST_PREPARATION;
         /*         * ***
           $runByCommand = false; // Running by command does not support.
          * *** */
@@ -675,7 +676,6 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      */
     static function displayCodeCoverageReport($unitTestFilePath, $classFilePaths, $commandLineSwitches = '')
     {
-        self::$exeMode |= self::UNIT_TEST_PREPARATION;
         if (!B::checkDevelopmentSecurity()) {
             exit;
         }
@@ -712,7 +712,7 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
         // Displays the code coverage report in browser.
         self::$_classFilePaths = $classFilePaths;
         self::$_codeCoverageReportPath = $codeCoverageReportPath;
-        new \BreakpointDebugging_DisplayCodeCoverageReport();
+        include_once './BreakpointDebugging_DisplayCodeCoverageReport.php';
         exit;
     }
 

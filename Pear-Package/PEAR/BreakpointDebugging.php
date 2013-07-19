@@ -109,14 +109,9 @@ abstract class BreakpointDebugging_InAllCase
     const UNIT_TEST = 4;
 
     /**
-     * @const int This flag means unit test preparation. For example, load of "php" files which unit tests execute.
-     */
-    const UNIT_TEST_PREPARATION = 8;
-
-    /**
      * @const int This flag means ignoring break point. This flag means enabling break point if it is not set.
      */
-    const IGNORING_BREAK_POINT = 16;
+    const IGNORING_BREAK_POINT = 8;
 
     /**
      *  @const string Character string which means recursive array.
@@ -960,16 +955,12 @@ abstract class BreakpointDebugging_InAllCase
 
             $error = new \BreakpointDebugging_Error();
             $error->handleException2($pException, self::$prependExceptionLog);
-            if ((self::$_nativeExeMode & self::UNIT_TEST)
-                && !(self::$exeMode & self::UNIT_TEST_PREPARATION)
-            ) {
+            if (self::$_nativeExeMode & self::UNIT_TEST) {
                 BreakpointDebugging_UnitTestCaller::displaysException($pException);
                 BreakpointDebugging_UnitTestCaller::handleUnitTestException($pException);
             }
         } catch (\Exception $e) {
-            if ((self::$_nativeExeMode & self::UNIT_TEST)
-                && !(self::$exeMode & self::UNIT_TEST_PREPARATION)
-            ) {
+            if (self::$_nativeExeMode & self::UNIT_TEST) {
                 restore_error_handler();
                 throw $e;
             }
@@ -1001,9 +992,7 @@ abstract class BreakpointDebugging_InAllCase
             $error = new \BreakpointDebugging_Error();
             $error->handleError2($errorNumber, $errorMessage, self::$prependErrorLog, debug_backtrace());
         } catch (\Exception $e) {
-            if ((self::$_nativeExeMode & self::UNIT_TEST)
-                && !(self::$exeMode & self::UNIT_TEST_PREPARATION)
-            ) {
+            if (self::$_nativeExeMode & self::UNIT_TEST) {
                 restore_error_handler();
                 throw $e;
             }

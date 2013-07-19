@@ -103,11 +103,6 @@ abstract class BreakpointDebugging_UnitTestOverridingBase extends \PHPUnit_Frame
             unlink($internalLockFileName);
         }
         $this->_obLevel = ob_get_level();
-        // Uses "PHPUnit" package error handler.
-        while (set_error_handler('\PHPUnit_Util_ErrorHandler::handleError', -1) !== null) {
-            restore_error_handler();
-            restore_error_handler();
-        }
     }
 
     /**
@@ -118,11 +113,6 @@ abstract class BreakpointDebugging_UnitTestOverridingBase extends \PHPUnit_Frame
      */
     protected function tearDown()
     {
-        // Uses "BreakpointDebugging" package error handler.
-        while (set_error_handler('\BreakpointDebugging::handleError', -1) !== null) {
-            restore_error_handler();
-            restore_error_handler();
-        }
         while (ob_get_level() > $this->_obLevel) {
             ob_end_clean();
         }
@@ -130,6 +120,7 @@ abstract class BreakpointDebugging_UnitTestOverridingBase extends \PHPUnit_Frame
 
     /**
      * Overrides "\PHPUnit_Framework_TestCase::runBare()" to display call stack when error occurred.
+     * And, sets autoload class method to store static status by "spl_autoload_register()".
      *
      * @return void
      */
