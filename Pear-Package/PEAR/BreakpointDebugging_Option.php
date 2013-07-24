@@ -47,7 +47,7 @@
  * Example:
  * <?php
  *
- * require_once './BreakpointDebugging_Including.php';
+ * require_once './BreakpointDebugging_Inclusion.php';
  *
  * use \BreakpointDebugging as B;
  *
@@ -77,13 +77,13 @@
  *      "<name or ip of host which debugger exists>"' into "php.ini" file, if remote server supports.
  * Procedure 3: Set *.php file format to utf8, but we should create backup of
  *      php files because multibyte strings may be destroyed.
- * Procedure 4: Copy "BreakpointDebugging_Including.php" into your project directory.
+ * Procedure 4: Copy "BreakpointDebugging_Inclusion.php" into your project directory.
  * And, copy "BreakpointDebugging_MySetting*.php" to
  * "const BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME" directory of your project directory.
  * Procedure 5: Edit BreakpointDebugging_MySetting*.php for customize.
  *      Then, it fixes part setting about all debugging modes.
  * Procedure 6: Copy following in your project php code.
- *      require_once './BreakpointDebugging_Including.php';
+ *      require_once './BreakpointDebugging_Inclusion.php';
  * Procedure 7: Check debugging-mode using "B::checkExeMode()" in start page,
  *      and set debugging mode to
  *      "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('...');"
@@ -233,10 +233,10 @@ final class BreakpointDebugging extends \BreakpointDebugging_UnitTestCaller
         parent::$staticPropertyLimitings['$_maxLogStringSize'] = $tmp;
         parent::$staticPropertyLimitings['$_workDir'] = $tmp;
         parent::$staticPropertyLimitings['$_developerIP'] = $tmp;
-        parent::$staticPropertyLimitings['$_onceErrorDispFlag'] = 'BreakpointDebugging/UnitTestOverriding.php';
+        parent::$staticPropertyLimitings['$_onceErrorDispFlag'] = 'BreakpointDebugging/PHPUnitFrameworkTestCase.php';
         parent::$staticPropertyLimitings['$_callingExceptionHandlerDirectly'] = array (
             'BreakpointDebugging/Error.php',
-            'BreakpointDebugging/UnitTestOverriding.php'
+            'BreakpointDebugging/PHPUnitFrameworkTestCase.php'
         );
     }
 
@@ -354,54 +354,75 @@ final class BreakpointDebugging extends \BreakpointDebugging_UnitTestCaller
     /**
      * For debug.
      *
-     * @param string $name       Same as parent.
-     * @param int    $permission Same as parent.
+     * @param string $name              Same as parent.
+     * @param int    $permission        Same as parent.
+     * @param int    $timeout           Same as parent.
+     * @param int    $sleepMicroSeconds Same as parent.
      *
      * @return Same as parent.
      */
-    protected static function setOwner($name, $permission)
+    protected static function setOwner($name, $permission, $timeout = 10, $sleepMicroSeconds = 100000)
     {
-        self::assert(func_num_args() === 2, 1);
+        self::assert(func_num_args() <= 4, 1);
         self::assert(is_string($name), 2);
         self::assert(is_int($permission), 3);
+        self::assert(is_int($timeout), 4);
+        self::assert(is_int($sleepMicroSeconds), 5);
 
-        parent::setOwner($name, $permission);
+        return parent::setOwner($name, $permission, $timeout, $sleepMicroSeconds);
     }
 
     /**
      * For debug.
      *
-     * @param stirng $dirName    Same as parent.
-     * @param int    $permission Same as parent.
+     * @//param stirng $dirName           Same as parent.
+     * @//param int    $permission        Same as parent.
+     * @param array  $params            Same as parent.
+     * @param int    $timeout           Same as parent.
+     * @param int    $sleepMicroSeconds Same as parent.
      *
      * @return Same as parent.
      */
-    static function mkdir($dirName, $permission = 0777)
+    //static function mkdir($dirName, $permission = 0777, $timeout = 10, $sleepMicroSeconds = 100000)
+    static function mkdir(array $params, $timeout = 10, $sleepMicroSeconds = 100000)
     {
-        self::assert(func_num_args() <= 2, 1);
-        self::assert(is_string($dirName), 2);
-        self::assert(is_int($permission), 3);
+        self::assert(func_num_args() <= 4, 1);
+        //self::assert(is_string($dirName), 2);
+        //self::assert(is_int($permission), 3);
+        self::assert(is_int($timeout), 4);
+        self::assert(is_int($sleepMicroSeconds), 5);
 
-        parent::mkdir($dirName, $permission);
+        //return parent::mkdir($dirName, $permission, $timeout, $sleepMicroSeconds);
+        return parent::mkdir($params, $timeout, $sleepMicroSeconds);
     }
 
     /**
      * For debug.
      *
-     * @param stirng $fileName   Same as parent.
-     * @param stirng $mode       Same as parent.
-     * @param int    $permission Same as parent.
+     * @//param stirng $fileName          Same as parent.
+     * @//param stirng $mode              Same as parent.
+     * @param array  $params            Same as parent.
+     * @param int    $permission        Same as parent.
+     * @param int    $timeout           Same as parent.
+     * @param int    $sleepMicroSeconds Same as parent.
+     *
+     * @example $pFile = B::fopen(array ($filePath, 'w+b'));
      *
      * @return Same as parent.
      */
-    static function fopen($fileName, $mode, $permission)
+    //static function fopen($fileName, $mode, $permission, $timeout = 10, $sleepMicroSeconds = 100000)
+    static function fopen(array $params, $permission = 0700, $timeout = 10, $sleepMicroSeconds = 100000)
     {
-        self::assert(func_num_args() === 3, 1);
-        self::assert(is_string($fileName), 2);
-        self::assert(is_string($mode), 3);
+        //self::assert(func_num_args() <= 5, 1);
+        self::assert(func_num_args() <= 4, 1);
+        //self::assert(is_string($fileName), 2);
+        //self::assert(is_string($mode), 3);
         self::assert(is_int($permission) && 0 <= $permission && $permission <= 0777, 4);
+        self::assert(is_int($timeout), 5);
+        self::assert(is_int($sleepMicroSeconds), 6);
 
-        return parent::fopen($fileName, $mode, $permission);
+        //return parent::fopen($fileName, $mode, $permission, $timeout, $sleepMicroSeconds);
+        return parent::fopen($params, $permission, $timeout, $sleepMicroSeconds);
     }
 
     /**
@@ -466,9 +487,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_UnitTestCaller
         self::assert(is_int($errorNumber), 2);
         self::assert(is_string($errorMessage), 3);
 
-        parent::handleError($errorNumber, $errorMessage);
-
-        return true;
+        return parent::handleError($errorNumber, $errorMessage);
     }
 
     ///////////////////////////// For package user from here in case of debug mode. /////////////////////////////
@@ -792,7 +811,7 @@ EOD;
 // When "Xdebug" does not exist.
 if (!B::getXebugExists()) {
     if (!(B::getStatic('$exeMode') & B::REMOTE)) { // In case of local.
-        exit(
+        B::exitForError(
             '<pre>' .
             '### ERROR ###' . PHP_EOL .
             'FILE: ' . __FILE__ . ' LINE: ' . __LINE__ . PHP_EOL .

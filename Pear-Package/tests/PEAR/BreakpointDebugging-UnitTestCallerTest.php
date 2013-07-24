@@ -1,7 +1,7 @@
 <?php
 
-chdir(__DIR__ . '/../../');
-require_once './BreakpointDebugging_Including.php';
+//chdir(__DIR__ . '/../../');
+//require_once './BreakpointDebugging_Inclusion.php';
 
 use \BreakpointDebugging as B;
 use \BreakpointDebugging_UnitTestCaller as BU;
@@ -25,7 +25,7 @@ class BreakpointDebuggingTestExample extends \BreakpointDebuggingTestExampleBase
 
 }
 
-class BreakpointDebugging_UnitTestCallerTest extends \BreakpointDebugging_UnitTestOverriding
+class BreakpointDebugging_UnitTestCallerTest extends \BreakpointDebugging_PHPUnitFrameworkTestCase
 {
     /**
      * @covers \BreakpointDebugging<extended>

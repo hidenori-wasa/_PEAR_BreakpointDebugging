@@ -1,6 +1,6 @@
 <?php
 
-require_once './BreakpointDebugging_Including.php';
+require_once './BreakpointDebugging_Inclusion.php';
 
 use \BreakpointDebugging as B;
 

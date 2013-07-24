@@ -1765,7 +1765,7 @@ abstract class PHPUnit_Framework_TestCase extends PHPUnit_Framework_Assert imple
 
     function __set($propertyName, $value)
     {
-        \BreakpointDebugging::limitAccess('BreakpointDebugging/UnitTestOverriding.php', true);
+        \BreakpointDebugging::limitAccess('BreakpointDebugging/PHPUnitFrameworkTestCase.php', true);
         $this->$propertyName = $value;
     }
 }

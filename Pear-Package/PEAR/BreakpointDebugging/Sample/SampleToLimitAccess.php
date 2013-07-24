@@ -11,7 +11,7 @@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
 chdir('../../../');
-require_once './BreakpointDebugging_Including.php';
+require_once './BreakpointDebugging_Inclusion.php';
 
 use \BreakpointDebugging as B;
 use \TestClass as T;

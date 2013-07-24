@@ -162,7 +162,7 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
         self::$staticProperties['$_codeCoverageReportPath'] = &self::$_codeCoverageReportPath;
         parent::$staticPropertyLimitings['$_includePaths'] = '';
         parent::$staticPropertyLimitings['$_valuesToTrace'] = '';
-        parent::$staticPropertyLimitings['$exeMode'] = 'BreakpointDebugging/UnitTestOverriding.php';
+        parent::$staticPropertyLimitings['$exeMode'] = 'BreakpointDebugging/PHPUnitFrameworkTestCase.php';
     }
 
     /**
@@ -182,11 +182,11 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
         $callStack = debug_backtrace();
         if (!array_key_exists(1, $callStack)
             || !array_key_exists('file', $callStack[1])
-            || strripos($callStack[1]['file'], 'UnitTestOverriding.php') === strlen($callStack[1]['file']) - strlen('UnitTestOverriding.php')
+            || strripos($callStack[1]['file'], 'PHPUnitFrameworkTestCase.php') === strlen($callStack[1]['file']) - strlen('PHPUnitFrameworkTestCase.php')
         ) {
             B::iniSet('xdebug.var_display_max_depth', '5', false);
             var_dump($pException);
-            exit;
+            B::exitForError();
         }
     }
 
@@ -240,7 +240,7 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
     static function markTestSkippedInDebug()
     {
         if (!(self::$exeMode & B::RELEASE)) {
-            PHPUnit_Framework_Assert::markTestSkipped();
+            \PHPUnit_Framework_Assert::markTestSkipped();
         }
     }
 
@@ -252,7 +252,7 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
     static function markTestSkippedInRelease()
     {
         if (self::$exeMode & B::RELEASE) {
-            PHPUnit_Framework_Assert::markTestSkipped();
+            \PHPUnit_Framework_Assert::markTestSkipped();
         }
     }
 
@@ -359,13 +359,13 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      *
      *      $projectDirPath = str_repeat('../', preg_match_all('`/`xX', $_SERVER['PHP_SELF'], $matches) - 2);
      *      chdir(__DIR__ . '/' . $projectDirPath);
-     *      require_once './BreakpointDebugging_Including.php';
+     *      require_once './BreakpointDebugging_Inclusion.php';
      *
      *      use \BreakpointDebugging as B;
      *
      *      B::checkExeMode(true);
      *
-     *      class SomethingTest extends \BreakpointDebugging_UnitTestOverriding
+     *      class SomethingTest extends \BreakpointDebugging_PHPUnitFrameworkTestCase
      *      {
      *          .
      *          .
@@ -402,10 +402,14 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
         array_push($commandElements, self::$unitTestDir . $testFileName);
         array_unshift($commandElements, 'dummy');
         include_once 'PHPUnit/Autoload.php';
-        $pPHPUnit_TextUI_Command = new \BreakpointDebugging_PHPUnitTextUICommand;
-        $pPHPUnit_TextUI_Command->prepareRun($commandElements);
+        $pPHPUnit_TextUI_Command = new \PHPUnit_TextUI_Command;
+        // Checks command line switches.
+        if (in_array('--process-isolation', $commandElements)) {
+            throw new \BreakpointDebugging_ErrorException('You must not use "--process-isolation" command line switch because this unit test is run in other process.' . PHP_EOL . 'So, you cannot debug unit test code with IDE.', 101);
+        }
         // Uses "PHPUnit" package error handler.
         restore_error_handler();
+        // Runs unit test continuously.
         $pPHPUnit_TextUI_Command->run($commandElements, false);
         // Uses "BreakpointDebugging" package error handler.
         set_error_handler('\BreakpointDebugging::handleError', -1);
@@ -454,7 +458,7 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      *
      * $projectDirPath = str_repeat('../', preg_match_all('`/`xX', $_SERVER['PHP_SELF'], $matches) - 2);
      * chdir(__DIR__ . '/' . $projectDirPath);
-     * require_once './BreakpointDebugging_Including.php';
+     * require_once './BreakpointDebugging_Inclusion.php';
      *
      * use \BreakpointDebugging as B;
      *
@@ -476,20 +480,21 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      *
      * $projectDirPath = str_repeat('../', preg_match_all('`/`xX', $_SERVER['PHP_SELF'], $matches) - 2);
      * chdir(__DIR__ . '/' . $projectDirPath);
-     * require_once './BreakpointDebugging_Including.php';
+     * require_once './BreakpointDebugging_Inclusion.php';
      *
      * use \BreakpointDebugging as B;
      * use \BreakpointDebugging_UnitTestCaller as BU;
      *
      * B::checkExeMode(true);
      *
-     * class SomethingTest extends \BreakpointDebugging_UnitTestOverriding
+     * class SomethingTest extends \BreakpointDebugging_PHPUnitFrameworkTestCase
      * {
      *     private $_pSomething;
      *
      *     static function setUpBeforeClass()
      *     {
-     *          // We can change static status at here.
+     *          // We must not change static status at here because its change affects to next unit test file if you run unit tests continuously.
+     *          // Please, use "setUp()" class method instead of this class method.
      *          ...
      *     }
      *
@@ -543,20 +548,20 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      */
     static function executeUnitTest($unitTestFilePaths, $commandLineSwitches = '')
     {
-        static $unitTestFilePathsStoring = array ();
+        static $unitTestFilePathsStorage = array ();
 
         /*         * ***
           $runByCommand = false; // Running by command does not support.
          * *** */
         if (!B::checkDevelopmentSecurity()) {
-            exit;
+            B::exitForError();
         }
 
         foreach ($unitTestFilePaths as $unitTestFilePath) {
-            if (in_array($unitTestFilePath, $unitTestFilePathsStoring, true)) {
+            if (in_array($unitTestFilePath, $unitTestFilePathsStorage, true)) {
                 throw new \BreakpointDebugging_ErrorException('Unit test file path must be unique.', 101);
             }
-            $unitTestFilePathsStoring[] = $unitTestFilePath;
+            $unitTestFilePathsStorage[] = $unitTestFilePath;
         }
 
         echo file_get_contents('BreakpointDebugging/css/FontStyle.html', true);
@@ -575,61 +580,12 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
         B::assert(is_string($commandLineSwitches), 4);
 
         self::_getUnitTestDir();
-        /*         * ***
-          if ($runByCommand) {
-          echo 'Starts unit tests by command.' . PHP_EOL;
-          // In case of extending test class except "\BreakpointDebugging_UnitTestOverriding" class.
-          if (B::getStatic('$_os') === 'WIN') { // In case of Windows.
-          $phpunit = 'phpunit.bat';
-          } else { // In case of Unix.
-          // Command execution path by "bash" differs because "Apache" is root user in case of default, therefore uses full path for command.
-          while (true) {
-          $phpunit = `which phpunit`;
-          $phpunit = trim($phpunit);
-          if ($phpunit) {
-          break;
-          }
-
-          // $phpunit = `export PATH=/opt/lampp/bin:/opt/local/bin:/usr/bin:/usr/bin/X11:/usr/share/php;which phpunit`;
-          $userName = B::getStatic('$_userName');
-          $phpunit = `sudo -u $userName which phpunit`;
-
-          $phpunit = trim($phpunit);
-          if ($phpunit) {
-          break;
-          }
-          exit('"phpunit" command does not exist.</pre>');
-          }
-          if (!is_executable($phpunit)) {
-          exit('"phpunit" command is not executable. (' . $phpunit . ')</pre>');
-          }
-          }
-          foreach ($unitTestFilePaths as $unitTestFilePath) {
-          $commandElements = '--stop-on-failure --static-backup ' . $unitTestFilePath;
-          $testFileName = array_pop($commandElements);
-          $commandOptions = implode(' ', $commandElements);
-          // If test file path contains '_'.
-          if (strpos($testFileName, '_') !== false) {
-          echo "You have to change from '_' of '$testFileName' to '-' because you cannot run unit tests." . PHP_EOL;
-          if (B::getXebugExists()
-          && !(self::$exeMode & B::IGNORING_BREAK_POINT)
-          ) {
-          xdebug_break();
-          }
-          return;
-          }
-          echo $separator;
-          echo "Runs \"phpunit $command\" command." . PHP_EOL;
-          // Runs unit test command.
-          echo `"$phpunit" $commandOptions "$unitTestCurrentDir$testFileName"`;
-          }
-          } else {
-         * *** */
         foreach ($unitTestFilePaths as $unitTestFilePath) {
             // If test file path contains '_'.
             if (strpos($unitTestFilePath, '_') !== false) {
                 echo "You have to change from '_' of '$unitTestFilePath' to '-' because you cannot run unit tests." . PHP_EOL;
-                if (B::getXebugExists()
+                //if (B::getXebugExists()
+                if (function_exists('xdebug_break')
                     && !(self::$exeMode & B::IGNORING_BREAK_POINT)
                 ) {
                     xdebug_break();
@@ -661,7 +617,7 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      *
      *      $projectDirPath = str_repeat('../', preg_match_all('`/`xX', $_SERVER['PHP_SELF'], $matches) - 2);
      *      chdir(__DIR__ . '/' . $projectDirPath);
-     *      require_once './BreakpointDebugging_Including.php';
+     *      require_once './BreakpointDebugging_Inclusion.php';
      *
      *      use \BreakpointDebugging as B;
      *
@@ -677,7 +633,7 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
     static function displayCodeCoverageReport($unitTestFilePath, $classFilePaths, $commandLineSwitches = '')
     {
         if (!B::checkDevelopmentSecurity()) {
-            exit;
+            B::exitForError();
         }
 
         B::assert(func_num_args() === 2, 1);
@@ -687,7 +643,7 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
         echo file_get_contents('BreakpointDebugging/css/FontStyle.html', true);
 
         if (!extension_loaded('xdebug')) {
-            exit('"BreakpointDebugging::displayCodeCoverageReport()" needs "xdebug" extention.');
+            B::exitForError('"BreakpointDebugging::displayCodeCoverageReport()" needs "xdebug" extention.');
         }
         $codeCoverageReportPath = B::getStatic('$_workDir') . '/CodeCoverageReport/';
         // Deletes code coverage report directory files.
@@ -696,19 +652,19 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
                 $errorLogDirElementPath = $codeCoverageReportPath . $codeCoverageReportDirElement;
                 if (is_file($errorLogDirElementPath)) {
                     // Deletes a file.
-                    unlink($errorLogDirElementPath);
+                    B::unlink(array ($errorLogDirElementPath));
                 }
             }
         }
 
         self::_getUnitTestDir();
         // Creates code coverage report.
-        $displayErrorsStoring = ini_get('display_errors');
+        $displayErrorsStorage = ini_get('display_errors');
         ini_set('display_errors', '');
         echo '<pre><b>';
         self::_runPHPUnitCommand($commandLineSwitches . ' --static-backup --coverage-html ' . $codeCoverageReportPath . ' ' . $unitTestFilePath);
         echo '</b></pre>';
-        ini_set('display_errors', $displayErrorsStoring);
+        ini_set('display_errors', $displayErrorsStorage);
         // Displays the code coverage report in browser.
         self::$_classFilePaths = $classFilePaths;
         self::$_codeCoverageReportPath = $codeCoverageReportPath;

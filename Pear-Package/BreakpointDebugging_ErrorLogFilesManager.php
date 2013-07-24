@@ -57,7 +57,7 @@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
 //////////////////////////////////////////////////////////////////
-require_once './BreakpointDebugging_Including.php';
+require_once './BreakpointDebugging_Inclusion.php';
 
 use \BreakpointDebugging as B;
 
@@ -99,7 +99,8 @@ if (isset($_GET['download'])) {
         header('Pragma: private'); // For HTTP/1.0. "private" is cached on client, but it is not cached on proxy.
         header('Cache-Control: private'); // For HTTP/1.1 instead of "Pragma".
         // Copies error log file to temporary file.
-        $pFile = fopen($filepath, 'rb');
+        //$pFile = B::fopen(array ($filepath, 'rb'), 0400);
+        $pFile = B::fopen(array ($filepath, 'rb'));
         $pTmp = tmpfile();
         $offset = 0;
         while (!feof($pFile)) {
@@ -144,7 +145,7 @@ if (isset($_GET['download'])) {
             continue;
         }
         // Deletes the error log file, variable configuring file or the error location file.
-        unlink($errorLogDirElementPath);
+        B::unlink(array ($errorLogDirElementPath));
     }
     echo '<pre>You must comment out "$developerIP = \'' . $_SERVER['REMOTE_ADDR'] . '\';" inside "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file before your IP is changed.</pre>';
 } else if (isset($_GET['reset'])) { // When you pushed "Reset error log files" button.
@@ -155,7 +156,7 @@ if (isset($_GET['download'])) {
             continue;
         }
         // Deletes the error log file, variable configuring file or the error location file.
-        unlink($errorLogDirElementPath);
+        B::unlink(array ($errorLogDirElementPath));
     }
     echo '<pre>You must comment out "$developerIP = \'' . $_SERVER['REMOTE_ADDR'] . '\';" inside "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file before your IP is changed.</pre>';
 } else { // In case of first time when this page was called.

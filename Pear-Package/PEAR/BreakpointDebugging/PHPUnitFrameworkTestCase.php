@@ -13,7 +13,7 @@
  *
  *      function __set($propertyName, $value)
  *      {
- *          \BreakpointDebugging::limitAccess('BreakpointDebugging/UnitTestOverriding.php', true);
+ *          \BreakpointDebugging::limitAccess('BreakpointDebugging/PHPUnitFrameworkTestCase.php', true);
  *          $this->$propertyName = $value;
  *      }
  *
@@ -78,7 +78,7 @@ use \BreakpointDebugging_PHPUnitUtilGlobalState as BGS;
  * @link       http://www.phpunit.de/
  * @since      Class available since Release 2.0.0
  */
-abstract class BreakpointDebugging_UnitTestOverridingBase extends \PHPUnit_Framework_TestCase
+abstract class BreakpointDebugging_PHPUnitFrameworkTestCase extends \PHPUnit_Framework_TestCase
 {
     /**
      * @var bool Once flag of "splAutoloadRegister()".
@@ -86,9 +86,43 @@ abstract class BreakpointDebugging_UnitTestOverridingBase extends \PHPUnit_Frame
     private static $_splAutoloadRegisterOnceFlag = true;
 
     /**
+     * @var array List to except to store global variable.
+     */
+    private static $_backupGlobalsBlacklist;
+
+    /**
+     * @var array List to except to store static property.
+     */
+    private static $_backupStaticAttributesBlacklist;
+
+    /**
      * @var int The output buffering level.
      */
     private $_obLevel;
+
+    /**
+     * Stores static status inside autoload handler because static status may be changed.
+     *
+     * @param string $className The class name which calls class member of static.
+     *                          Or, the class name which creates new instance.
+     *                          Or, the class name when extends base class.
+     *
+     * @return void
+     */
+    static function autoload($className)
+    {
+        static $nestLevel = 0;
+
+        $nestLevel++;
+        B::autoload($className);
+        $nestLevel--;
+        // If class file has been loaded completely including dependency files.
+        if ($nestLevel === 0) {
+            // Stores the "$GLOBALS" and static attributes before variable value is changed.
+            BGS::backupGlobals(self::$_backupGlobalsBlacklist);
+            BGS::backupStaticAttributes(self::$_backupStaticAttributesBlacklist);
+        }
+    }
 
     /**
      * This method is called before a test class method is executed.
@@ -98,10 +132,12 @@ abstract class BreakpointDebugging_UnitTestOverridingBase extends \PHPUnit_Frame
      */
     protected function setUp()
     {
+        // Unlinks internal synchronization file.
         $internalLockFileName = B::getStatic('$_workDir') . '/LockByFileExistingOfInternal.txt';
         if (is_file($internalLockFileName)) {
-            unlink($internalLockFileName);
+            B::unlink(array ($internalLockFileName));
         }
+        // Stores the output buffering level.
         $this->_obLevel = ob_get_level();
     }
 
@@ -113,6 +149,7 @@ abstract class BreakpointDebugging_UnitTestOverridingBase extends \PHPUnit_Frame
      */
     protected function tearDown()
     {
+        // Restores the output buffering level.
         while (ob_get_level() > $this->_obLevel) {
             ob_end_clean();
         }
@@ -126,33 +163,24 @@ abstract class BreakpointDebugging_UnitTestOverridingBase extends \PHPUnit_Frame
      */
     public function runBare()
     {
+        static $onceFlagPerTestFile = true;
+
         $this->numAssertions = 0;
 
-//        // Backup the $GLOBALS array and static attributes.
-//        if ($this->runTestInSeparateProcess !== TRUE
-//            && $this->inIsolation !== TRUE
-//        ) {
-//            if ($this->backupGlobals === NULL
-//                || $this->backupGlobals === TRUE
-//            ) {
-//                BGS::backupGlobals($this->backupGlobalsBlacklist);
-//            }
-//
-//            if (version_compare(PHP_VERSION, '5.3', '>')
-//                && $this->backupStaticAttributes === TRUE
-//            ) {
-//                BGS::backupStaticAttributes($this->backupStaticAttributesBlacklist);
-//            }
-//        }
-        BGS::$backupGlobalsBlacklist = $this->backupGlobalsBlacklist;
-        BGS::$backupStaticAttributesBlacklist = $this->backupStaticAttributesBlacklist;
+        if ($onceFlagPerTestFile) {
+            $onceFlagPerTestFile = false;
+            self::$_backupGlobalsBlacklist = $this->backupGlobalsBlacklist;
+            self::$_backupStaticAttributesBlacklist = $this->backupStaticAttributesBlacklist;
+            BGS::backupGlobals(self::$_backupGlobalsBlacklist);
+            BGS::backupStaticAttributes(self::$_backupStaticAttributesBlacklist);
+        }
         if (self::$_splAutoloadRegisterOnceFlag
             && $this->backupStaticAttributes
         ) {
             self::$_splAutoloadRegisterOnceFlag = false;
-            B::assert($this->runTestInSeparateProcess === false);
-            B::assert($this->inIsolation === false);
-            spl_autoload_register('\BreakpointDebugging_PHPUnitUtilGlobalState::autoload', true, true);
+            //B::assert($this->runTestInSeparateProcess === false);
+            //B::assert($this->inIsolation === false);
+            spl_autoload_register('\BreakpointDebugging_PHPUnitFrameworkTestCase::autoload', true, true);
         }
 
         // Start output buffering.
@@ -182,10 +210,10 @@ abstract class BreakpointDebugging_UnitTestOverridingBase extends \PHPUnit_Frame
             $this->statusMessage = $e->getMessage();
         } catch (PHPUnit_Framework_AssertionFailedError $e) {
             B::handleException($e); // Displays error call stack information.
-            exit;
+            B::exitForError();
         } catch (Exception $e) {
             B::handleException($e); // Displays error call stack information.
-            exit;
+            B::exitForError();
         }
 
         // Tear down the fixture. An exception raised in tearDown() will be
@@ -197,7 +225,7 @@ abstract class BreakpointDebugging_UnitTestOverridingBase extends \PHPUnit_Frame
             }
         } catch (Exception $_e) {
             B::handleException($_e); // Displays error call stack information.
-            exit;
+            B::exitForError();
         }
 
         // Stop output buffering.
@@ -252,159 +280,122 @@ abstract class BreakpointDebugging_UnitTestOverridingBase extends \PHPUnit_Frame
         }
     }
 
-}
-
-if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
     /**
-     * Debugs unit tests by "B::executeUnitTest()" class method.
+     * Overrides "\PHPUnit_Framework_TestCase::runTest()" to display call stack when annotation failed.
      *
-     * @package    PHPUnit
-     * @subpackage Framework
-     * @author     Sebastian Bergmann <sebastian@phpunit.de>
-     * @copyright  2001-2013 Sebastian Bergmann <sebastian@phpunit.de>
-     * @license    http://www.opensource.org/licenses/bsd-license.php  BSD License
-     * @version    Release: 3.6.11
-     * @link       http://www.phpunit.de/
-     * @since      Class available since Release 2.0.0
+     * @return mixed
+     * @throws RuntimeException
      */
-    class BreakpointDebugging_UnitTestOverriding extends \BreakpointDebugging_UnitTestOverridingBase
+    protected function runTest()
     {
-        /**
-         * Overrides "\PHPUnit_Framework_TestCase::runTest()" to display call stack when annotation failed.
-         *
-         * @return mixed
-         * @throws RuntimeException
-         */
-        protected function runTest()
-        {
-            $name = $this->getName(false);
-            if ($name === NULL) {
-                throw new PHPUnit_Framework_Exception('PHPUnit_Framework_TestCase::$name must not be NULL.');
-            }
+        $name = $this->getName(false);
+        if ($name === NULL) {
+            throw new PHPUnit_Framework_Exception('PHPUnit_Framework_TestCase::$name must not be NULL.');
+        }
 
-            try {
-                $class = new ReflectionClass($this);
-                $method = $class->getMethod($name);
-            } catch (ReflectionException $e) {
-                $this->fail($e->getMessage());
-            }
+        try {
+            $class = new ReflectionClass($this);
+            $method = $class->getMethod($name);
+        } catch (ReflectionException $e) {
+            $this->fail($e->getMessage());
+        }
 
+        try {
+            $testResult = $method->invokeArgs($this, array_merge($this->data, $this->dependencyInput));
+        } catch (Exception $e) {
+            // If "\PHPUnit_Framework_Assert::markTestIncomplete()" was called, or if "\PHPUnit_Framework_Assert::markTestSkipped()" was called.
+            if ($e instanceof PHPUnit_Framework_IncompleteTest
+                || $e instanceof PHPUnit_Framework_SkippedTest
+            ) {
+                throw $e;
+            }
+            // If "@expectedException" annotation is not string.
+            if (!is_string($this->getExpectedException())) {
+                echo '<b>It is error if this test has been not using "@expectedException" annotation, or it requires "@expectedException" annotation.</b>';
+                B::handleException($e); // Displays error call stack information.
+                B::exitForError();
+            }
+            // "@expectedException" annotation should be success.
             try {
-                $testResult = $method->invokeArgs($this, array_merge($this->data, $this->dependencyInput));
-            } catch (Exception $e) {
-                // If "\PHPUnit_Framework_Assert::markTestIncomplete()" was called, or if "\PHPUnit_Framework_Assert::markTestSkipped()" was called.
-                if ($e instanceof PHPUnit_Framework_IncompleteTest
-                    || $e instanceof PHPUnit_Framework_SkippedTest
+                $this->assertThat($e, new PHPUnit_Framework_Constraint_Exception($this->getExpectedException()));
+            } catch (Exception $dummy) {
+                echo '<b>Is error, or this test mistook "@expectedException" annotation value.</b>';
+                B::handleException($e); // Displays error call stack information.
+                B::exitForError();
+            }
+            // "@expectedExceptionMessage" annotation should be success.
+            try {
+                $expectedExceptionMessage = $this->expectedExceptionMessage;
+                if (is_string($expectedExceptionMessage)
+                    && !empty($expectedExceptionMessage)
                 ) {
-                    throw $e;
+                    $this->assertThat($e, new PHPUnit_Framework_Constraint_ExceptionMessage($expectedExceptionMessage));
                 }
-                // If "@expectedException" annotation is not string.
-                if (!is_string($this->getExpectedException())) {
-                    echo '<b>It is error if this test has been not using "@expectedException" annotation, or it requires "@expectedException" annotation.</b>';
-                    B::handleException($e); // Displays error call stack information.
-                    exit;
-                }
-                // "@expectedException" annotation should be success.
-                try {
-                    $this->assertThat($e, new PHPUnit_Framework_Constraint_Exception($this->getExpectedException()));
-                } catch (Exception $dummy) {
-                    echo '<b>Is error, or this test mistook "@expectedException" annotation value.</b>';
-                    B::handleException($e); // Displays error call stack information.
-                    exit;
-                }
-                // "@expectedExceptionMessage" annotation should be success.
-                try {
-                    $expectedExceptionMessage = $this->expectedExceptionMessage;
-                    if (is_string($expectedExceptionMessage)
-                        && !empty($expectedExceptionMessage)
-                    ) {
-                        $this->assertThat($e, new PHPUnit_Framework_Constraint_ExceptionMessage($expectedExceptionMessage));
-                    }
-                } catch (Exception $dummy) {
-                    echo '<b>Is error, or this test mistook "@expectedExceptionMessage" annotation value.</b>';
-                    B::handleException($e); // Displays error call stack information.
-                    exit;
-                }
-                // "@expectedExceptionCode" annotation should be success.
-                try {
-                    if ($this->expectedExceptionCode !== NULL) {
-                        $this->assertThat($e, new PHPUnit_Framework_Constraint_ExceptionCode($this->expectedExceptionCode));
-                    }
-                } catch (Exception $dummy) {
-                    echo '<b>Is error, or this test mistook "@expectedExceptionCode" annotation value.</b>';
-                    B::handleException($e); // Displays error call stack information.
-                    exit;
-                }
-                return;
-            }
-            if ($this->getExpectedException() !== NULL) {
-                // "@expectedException" should not exist.
-                echo '<b>Is error in "' . $class->name . '::' . $name . '".</b>';
-                $this->assertThat(NULL, new PHPUnit_Framework_Constraint_Exception($this->getExpectedException()));
-            }
-
-            return $testResult;
-        }
-
-        /**
-         * Overrides "\PHPUnit_Framework_Assert::assertTrue()" to display error call stack information.
-         *
-         * @param bool   $condition Conditional expression.
-         * @param string $message   Error message.
-         *
-         * @return void
-         */
-        static function assertTrue($condition, $message = '')
-        {
-            B::assert(is_bool($condition), 1);
-            B::assert(is_string($message), 2);
-
-            try {
-                parent::assertTrue($condition, $message);
-            } catch (\Exception $e) {
+            } catch (Exception $dummy) {
+                echo '<b>Is error, or this test mistook "@expectedExceptionMessage" annotation value.</b>';
                 B::handleException($e); // Displays error call stack information.
-                exit;
+                B::exitForError();
             }
-        }
-
-        /**
-         * Overrides "\PHPUnit_Framework_Assert::fail()" to display error call stack information.
-         *
-         * @param string $message The fail message.
-         *
-         * @return void
-         * @throws PHPUnit_Framework_AssertionFailedError
-         */
-        public static function fail($message = '')
-        {
-            B::assert(is_string($message), 1);
-
+            // "@expectedExceptionCode" annotation should be success.
             try {
-                parent::fail($message);
-            } catch (\Exception $e) {
+                if ($this->expectedExceptionCode !== NULL) {
+                    $this->assertThat($e, new PHPUnit_Framework_Constraint_ExceptionCode($this->expectedExceptionCode));
+                }
+            } catch (Exception $dummy) {
+                echo '<b>Is error, or this test mistook "@expectedExceptionCode" annotation value.</b>';
                 B::handleException($e); // Displays error call stack information.
-                exit;
+                B::exitForError();
             }
+            return;
+        }
+        if ($this->getExpectedException() !== NULL) {
+            // "@expectedException" should not exist.
+            echo '<b>Is error in "' . $class->name . '::' . $name . '".</b>';
+            $this->assertThat(NULL, new PHPUnit_Framework_Constraint_Exception($this->getExpectedException()));
         }
 
+        return $testResult;
     }
 
-} else { // In case of command.
     /**
-     * Dummy class in case of command execution.
+     * Overrides "\PHPUnit_Framework_Assert::assertTrue()" to display error call stack information.
      *
-     * @package    PHPUnit
-     * @subpackage Framework
-     * @author     Sebastian Bergmann <sebastian@phpunit.de>
-     * @copyright  2001-2013 Sebastian Bergmann <sebastian@phpunit.de>
-     * @license    http://www.opensource.org/licenses/bsd-license.php  BSD License
-     * @version    Release: 3.6.11
-     * @link       http://www.phpunit.de/
-     * @since      Class available since Release 2.0.0
+     * @param bool   $condition Conditional expression.
+     * @param string $message   Error message.
+     *
+     * @return void
      */
-    class BreakpointDebugging_UnitTestOverriding extends \BreakpointDebugging_UnitTestOverridingBase
+    static function assertTrue($condition, $message = '')
     {
+        B::assert(is_bool($condition), 1);
+        B::assert(is_string($message), 2);
 
+        try {
+            parent::assertTrue($condition, $message);
+        } catch (\Exception $e) {
+            B::handleException($e); // Displays error call stack information.
+            B::exitForError();
+        }
+    }
+
+    /**
+     * Overrides "\PHPUnit_Framework_Assert::fail()" to display error call stack information.
+     *
+     * @param string $message The fail message.
+     *
+     * @return void
+     * @throws PHPUnit_Framework_AssertionFailedError
+     */
+    public static function fail($message = '')
+    {
+        B::assert(is_string($message), 1);
+
+        try {
+            parent::fail($message);
+        } catch (\Exception $e) {
+            B::handleException($e); // Displays error call stack information.
+            B::exitForError();
+        }
     }
 
 }

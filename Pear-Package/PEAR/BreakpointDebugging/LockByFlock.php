@@ -11,7 +11,7 @@
  * @example of usage.
  *      $lockByFlock = &\BreakpointDebugging_LockByFlock::singleton(); // Creates a lock instance.
  *      $lockByFlock->lock(); // Locks php-code.
- *      $pFile = fopen('file.txt', 'w+b'); // Truncates data.
+ *      $pFile = \BreakpointDebugging::fopen(array ('file.txt', 'w+b')); // Truncates data.
  *      $data = fread($pFile, 1); // Reads data.
  *      $data++; // Changes data.
  *      fwrite($pFile, $data); // Writes data.
@@ -95,7 +95,8 @@ final class BreakpointDebugging_LockByFlock extends \BreakpointDebugging_Lock
     {
         parent::__construct($lockFilePath, $timeout, $sleepMicroSeconds);
 
-        $this->pFile = B::fopen($lockFilePath, 'ab', 0600);
+        //$this->pFile = B::fopen(array ($lockFilePath, 'ab'), 0200, $timeout, $sleepMicroSeconds);
+        $this->pFile = B::fopen(array ($lockFilePath, 'ab'));
         B::assert(stream_supports_lock($this->pFile), 101);
     }
 

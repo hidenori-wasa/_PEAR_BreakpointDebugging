@@ -1,7 +1,8 @@
 <?php
 
-chdir(__DIR__ . '/../../../../');
-require_once './BreakpointDebugging_Including.php';
+//chdir(__DIR__ . '/../../../../');
+chdir(str_repeat('../', preg_match_all('`/`xX', $_SERVER['PHP_SELF'], $matches) - 2));
+require_once './BreakpointDebugging_Inclusion.php';
 class Test
 {
     private $shmopId;
@@ -36,6 +37,8 @@ class Test
             $this->_incrementSheredMemory();
             $lockByFlock1->unlock();
         }
+        // sleep(10); // For debug.
+        // clearstatcache(); // For debug.
         var_dump(shmop_read($this->shmopId, 0, 10) + 0, microtime(true) - $start);
     }
 

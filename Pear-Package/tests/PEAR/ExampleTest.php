@@ -1,12 +1,12 @@
 <?php
 
-chdir(__DIR__ . '/../../');
-require_once './BreakpointDebugging_Including.php';
+//chdir(__DIR__ . '/../../');
+//require_once './BreakpointDebugging_Inclusion.php';
 
 use \BreakpointDebugging as B;
 
 B::checkExeMode(true);
-class ExampleTest extends \BreakpointDebugging_UnitTestOverriding
+class ExampleTest extends \BreakpointDebugging_PHPUnitFrameworkTestCase
 {
     /**
      * @expectedException        BreakpointDebugging_ErrorException

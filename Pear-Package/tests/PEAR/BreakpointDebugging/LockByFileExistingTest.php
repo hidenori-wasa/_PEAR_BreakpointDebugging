@@ -1,19 +1,24 @@
 <?php
 
-chdir(__DIR__ . '/../../../');
-require_once './BreakpointDebugging_Including.php';
+//chdir(__DIR__ . '/../../../');
+//require_once './BreakpointDebugging_Inclusion.php';
 
 use \BreakpointDebugging as B;
 use \BreakpointDebugging_UnitTestCaller as BU;
 
 B::checkExeMode(true);
-class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_UnitTestOverriding
+class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_PHPUnitFrameworkTestCase
 {
     protected $lockByFileExisting, $lockByFileExistingInternal;
 
     function setUp()
     {
         parent::setUp();
+        // Unlinks synchronization file.
+        $lockFileName = B::getStatic('$_workDir') . '/LockByFileExisting.txt';
+        if (is_file($lockFileName)) {
+            B::unlink(array ($lockFileName));
+        }
         // Constructs instance.
         $this->lockByFileExistingInternal = &\BreakpointDebugging_LockByFileExisting::internalSingleton(5, 10);
         $this->lockByFileExisting = &\BreakpointDebugging_LockByFileExisting::singleton(5, 10);
@@ -196,7 +201,6 @@ class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_Un
     function testSingleton_C()
     {
         BU::markTestSkippedInRelease(); // Because this unit test is assertion.
-
         // Constructs instance of other class.
         $lockByFlock = &\BreakpointDebugging_LockByFlock::singleton(5, 10); // Error.
     }

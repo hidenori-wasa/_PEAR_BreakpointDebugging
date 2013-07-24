@@ -60,59 +60,25 @@ use \BreakpointDebugging as B;
 class BreakpointDebugging_PHPUnitUtilGlobalState extends \PHPUnit_Util_GlobalState
 {
     /**
-     * @var array List to except to store global variable.
+     * @var array Global variable serialization-keys storage.
      */
-    static $backupGlobalsBlacklist;
+    private static $_globalSerializationKeysStorage = array ();
 
     /**
-     * @var array List to except to store static property.
+     * @var array Static attributes serialization-keys storage.
      */
-    static $backupStaticAttributesBlacklist;
-
-    /**
-     * @var array Global variable serialization-keys storing.
-     */
-    private static $_globalSerializationKeysStoring = array ();
-
-    /**
-     * @var array Static attributes serialization-keys storing.
-     */
-    private static $_staticAttributesSerializationKeysStoring = array ();
-
-    /**
-     * Stores static status inside autoload handler because static status may be changed.
-     *
-     * @param string $className The class name which calls class member of static.
-     *                          Or, the class name which creates new instance.
-     *                          Or, the class name when extends base class.
-     *
-     * @return void
-     */
-    static function autoload($className)
-    {
-        static $nestLevel = 0;
-
-        $nestLevel++;
-        B::autoload($className);
-        $nestLevel--;
-        // If class file has been loaded completely including dependency files.
-        if ($nestLevel === 0) {
-            // Stores the "$GLOBALS" and static attributes before variable value is changed.
-            self::backupGlobals(self::$backupGlobalsBlacklist);
-            self::backupStaticAttributes(self::$backupStaticAttributesBlacklist);
-        }
-    }
+    private static $_staticAttributesSerializationKeysStorage = array ();
 
     /**
      * Stores global variables.
      *
-     * @param array $blacklist The list to except from storing global variables.
+     * @param array $blacklist The list to except from storage global variables.
      *
      * @return void
      */
     static function backupGlobals(array $blacklist)
     {
-        B::storeVariables($blacklist, $GLOBALS, parent::$globals, self::$_globalSerializationKeysStoring);
+        B::storeVariables($blacklist, $GLOBALS, parent::$globals, self::$_globalSerializationKeysStorage);
     }
 
     /**
@@ -124,13 +90,13 @@ class BreakpointDebugging_PHPUnitUtilGlobalState extends \PHPUnit_Util_GlobalSta
      */
     static function restoreGlobals(array $blacklist = array ())
     {
-        B::restoreVariables($GLOBALS, parent::$globals, self::$_globalSerializationKeysStoring);
+        B::restoreVariables($GLOBALS, parent::$globals, self::$_globalSerializationKeysStorage);
     }
 
     /**
      * Stores static class attributes.
      *
-     * @param array $blacklist The list to except from storing static class attributes.
+     * @param array $blacklist The list to except from storage static class attributes.
      *
      * @return void
      */
@@ -147,8 +113,8 @@ class BreakpointDebugging_PHPUnitUtilGlobalState extends \PHPUnit_Util_GlobalSta
             // Excepts unit test classes.
             if (preg_match('`^ (PHP (Unit | (_ (CodeCoverage | Invoker | (T (imer | oken_Stream))))) | File_Iterator | sfYaml | Text_Template )`xXi', $declaredClassName) === 1
                 || is_subclass_of($declaredClassName, 'PHPUnit_Util_GlobalState') // For extended class of my package.
-                || is_subclass_of($declaredClassName, 'PHPUnit_TextUI_Command') // For extended class of my package.
-                || is_subclass_of($declaredClassName, 'PHPUnit_Framework_Test') // For unit test class.
+                //|| is_subclass_of($declaredClassName, 'PHPUnit_TextUI_Command') // For extended class of my package.
+                || is_subclass_of($declaredClassName, 'PHPUnit_Framework_Test')
             ) {
                 continue;
             }
@@ -183,7 +149,7 @@ class BreakpointDebugging_PHPUnitUtilGlobalState extends \PHPUnit_Util_GlobalSta
             if (!empty($backup)) {
                 // Stores static class properties.
                 parent::$staticAttributes[$declaredClassName] = array ();
-                B::storeVariables(array (), $backup, parent::$staticAttributes[$declaredClassName], self::$_staticAttributesSerializationKeysStoring, false);
+                B::storeVariables(array (), $backup, parent::$staticAttributes[$declaredClassName], self::$_staticAttributesSerializationKeysStorage, false);
             }
         }
     }
@@ -197,7 +163,7 @@ class BreakpointDebugging_PHPUnitUtilGlobalState extends \PHPUnit_Util_GlobalSta
     {
         foreach (parent::$staticAttributes as $className => $staticAttributes) {
             $properties = array ();
-            B::restoreVariables($properties, $staticAttributes, self::$_staticAttributesSerializationKeysStoring);
+            B::restoreVariables($properties, $staticAttributes, self::$_staticAttributesSerializationKeysStorage);
             foreach ($staticAttributes as $name => $value) {
                 $reflector = new ReflectionProperty($className, $name);
                 $reflector->setAccessible(TRUE);

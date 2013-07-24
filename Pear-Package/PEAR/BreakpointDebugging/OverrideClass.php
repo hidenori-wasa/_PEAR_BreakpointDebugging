@@ -49,7 +49,7 @@
 
   namespace Your_Name;
 
-  require_once './BreakpointDebugging_Including.php';
+  require_once './BreakpointDebugging_Inclusion.php';
   require_once './NativeClass.php';
 
   use \BreakpointDebugging as B;
@@ -97,7 +97,7 @@
   B::assert(is_array($refParams), 2);
 
   // How to call a function by parameter array.
-  $return = call_user_func_array('override_function_name'), $refParams);
+  $return = call_user_func_array('override_function_name', $refParams);
   B::assert($return !== false, 101);
 
   // How to call an parent object ( dynamic ) method by parameter array.

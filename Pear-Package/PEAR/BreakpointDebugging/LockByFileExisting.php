@@ -11,7 +11,7 @@
  * @example of usage.
  *      $lockByFileExisting = &\BreakpointDebugging_LockByFileExisting::singleton(); // Creates a lock instance.
  *      $lockByFileExisting->lock(); // Locks php-code.
- *      $pFile = fopen('file.txt', 'w+b'); // Truncates data.
+ *      $pFile = \BreakpointDebugging::fopen(array ('file.txt', 'w+b')); // Truncates data.
  *      $data = fread($pFile, 1); // Reads data.
  *      $data++; // Changes data.
  *      fwrite($pFile, $data); // Writes data.
@@ -117,7 +117,7 @@ final class BreakpointDebugging_LockByFileExisting extends \BreakpointDebugging_
         if (time() - $stat['mtime'] > $flagFileExpire) {
             set_error_handler('\BreakpointDebugging::handleError', 0);
             // Delete locking flag file.
-            @unlink($lockFilePath);
+            B::unlink(array ($lockFilePath), $timeout, $sleepMicroSeconds);
             restore_error_handler();
         }
     }
@@ -130,19 +130,26 @@ final class BreakpointDebugging_LockByFileExisting extends \BreakpointDebugging_
      */
     protected function loopLocking()
     {
-        $startTime = time();
-        while (($this->pFile = @B::fopen($this->lockFilePath, 'x+b', 0600)) === false) {
-            // @codeCoverageIgnoreStart
-            // Because the following isn't executed in case of single process.
-            if (time() - $startTime > $this->timeout) {
-                B::internalException('This process has been timeouted.', 1);
-                // We do not delete locking flag file here because we cannot lock php code.
-                break;
-            }
-            // Wait micro seconds.
-            usleep($this->sleepMicroSeconds);
-        }
-        // @codeCoverageIgnoreEnd
+//        $startTime = time();
+//        while (($this->pFile = @fopen($this->lockFilePath, 'x+b')) === false) {
+//            // @codeCoverageIgnoreStart
+//            // Because the following isn't executed in case of single process.
+//            if (time() - $startTime > $this->timeout) {
+//                B::internalException('This process has been timeouted.', 1);
+//                // We do not delete locking flag file here because we cannot lock php code.
+//                break;
+//            }
+//            // Wait micro seconds.
+//            usleep($this->sleepMicroSeconds);
+//        }
+//        // @codeCoverageIgnoreEnd
+        set_error_handler('\BreakpointDebugging::handleError', 0);
+        //try {
+        $this->pFile = @B::fopen(array ($this->lockFilePath, 'x+b'), 0600, $this->timeout, $this->sleepMicroSeconds);
+        //} catch (\BreakpointDebugging_ErrorException $e) {
+        //    $this->pFile = false
+        //}
+        restore_error_handler();
     }
 
     /**
@@ -161,13 +168,20 @@ final class BreakpointDebugging_LockByFileExisting extends \BreakpointDebugging_
             return;
             // @codeCoverageIgnoreEnd
         }
-        while (@unlink($this->lockFilePath) === false) {
-            // @codeCoverageIgnoreStart
-            // Because the following isn't executed in case of single process.
-            // Wait micro seconds.
-            usleep($this->sleepMicroSeconds);
-        }
-        // @codeCoverageIgnoreEnd
+//        while (@unlink($this->lockFilePath) === false) {
+//            // @codeCoverageIgnoreStart
+//            // Because the following isn't executed in case of single process.
+//            // Wait micro seconds.
+//            usleep($this->sleepMicroSeconds);
+//        }
+//        // @codeCoverageIgnoreEnd
+        set_error_handler('\BreakpointDebugging::handleError', 0);
+        //try {
+        @B::unlink(array ($this->lockFilePath), $this->timeout, $this->sleepMicroSeconds);
+        //} catch (\BreakpointDebugging_ErrorException $e) {
+        //
+        //}
+        restore_error_handler();
     }
 
 }

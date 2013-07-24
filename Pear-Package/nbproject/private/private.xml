@@ -10,19 +10,6 @@
             <line>90</line>
         </file>
         <file>
-            <url>PEAR/BreakpointDebugging/PHPUnitUtilGlobalState.php</url>
-            <line>59</line>
-            <line>64</line>
-            <line>69</line>
-            <line>81</line>
-            <line>147</line>
-        </file>
-        <file>
-            <url>PEAR/BreakpointDebugging/UnitTestOverriding.php</url>
-            <line>85</line>
-            <line>130</line>
-        </file>
-        <file>
             <url>PEAR/Validate/MySQLi/Result.php</url>
             <line>195</line>
         </file>

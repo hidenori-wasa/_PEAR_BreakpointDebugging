@@ -1,8 +1,7 @@
 <?php
 
-$projectDirPath = str_repeat('../', preg_match_all('`/`xX', $_SERVER['PHP_SELF'], $matches) - 2);
-chdir(__DIR__ . '/' . $projectDirPath);
-require_once './BreakpointDebugging_Including.php';
+chdir(str_repeat('../', preg_match_all('`/`xX', $_SERVER['PHP_SELF'], $matches) - 2));
+require_once './BreakpointDebugging_Inclusion.php';
 
 use \BreakpointDebugging as B;
 
@@ -22,7 +21,7 @@ $unitTestCommands = array (
 );
 
 // Executes unit tests.
-// B::executeUnitTest($unitTestCommands); exit;
+B::executeUnitTest($unitTestCommands); exit;
 
 // Makes up code coverage report, then displays in browser.
 if (B::getStatic('$exeMode') & B::RELEASE) { // In case of release.

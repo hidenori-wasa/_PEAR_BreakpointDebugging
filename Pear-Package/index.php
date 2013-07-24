@@ -1,19 +1,15 @@
 <?php
 
-require_once './BreakpointDebugging_Including.php';
+require_once './BreakpointDebugging_Inclusion.php';
 
 use \BreakpointDebugging as B;
 
-$prevErrorHandler = set_error_handler('\BreakpointDebugging_Error::handleInternalError', -1);
-$prevErrorHandler = set_error_handler('\BreakpointDebugging_Error::handleInternalError', -1);
-restore_error_handler();
-restore_error_handler();
-$prevErrorHandler = set_error_handler('\BreakpointDebugging_Error::handleInternalError', -1);
-restore_error_handler();
-restore_error_handler();
-$prevErrorHandler = set_error_handler('\BreakpointDebugging_Error::handleInternalError', -1);
+B::checkExeMode(); // Checks the execution mode.
+echo '<pre>';
+B::exitForError('Error message.' . PHP_EOL);
+echo 'Normal end message.';
 return;
-
+////////////////////////////////////////////////////////////////////////////////
 B::checkExeMode(); // Checks the execution mode.
 class TestClassA
 {
@@ -56,7 +52,7 @@ function test()
     $testPropertyA = $testClassB->testObjectProperty->testPropertyA;
     $testPropertyA2 = $testArray[0]->testObjectProperty->testPropertyA;
 
-    // Stores a variable.
+// Stores a variable.
     \BreakpointDebugging_PHPUnitUtilGlobalState::backupGlobals(array ());
     B::assert($referenceA === 'referenced');
     B::assert($referenceB === array ('referenced'));
@@ -70,7 +66,7 @@ function test()
     B::assert($testArray[0]->testObjectProperty->testPropertyA === $testPropertyA2);
     B::assert(!array_key_exists('ADDITION', $GLOBALS));
 
-    // Change value.
+// Change value.
     $referenced = 'referenceDummy';
     $_SERVER['PHP_SELF'] = 'PHP_SELF_DUMMY';
     unset($_SERVER['HTTP_HOST']);
@@ -89,7 +85,7 @@ function test()
     B::assert($testArray[0]->testObjectProperty->testPropertyA === 'testPropertyZ');
     B::assert(array_key_exists('ADDITION', $GLOBALS));
 
-    // Restores variable.
+// Restores variable.
     \BreakpointDebugging_PHPUnitUtilGlobalState::restoreGlobals();
     B::assert($referenceA === 'referenceDummy'); // Copy.
     B::assert($referenceB === array ('referenceDummy')); // Copy.
@@ -103,27 +99,27 @@ function test()
     B::assert($testArray[0]->testObjectProperty->testPropertyA === $testPropertyA2);
     B::assert(!array_key_exists('ADDITION', $GLOBALS));
 
-    // Change value.
+// Change value.
     $referenced = 'referenceConnection';
     B::assert($referenceA === 'referenceConnection'); // Copy. Reference has been connecting.
     B::assert($referenceB === array ('referenceConnection')); // Copy. Reference has been connecting.
     B::assert($referenceC === array (array ('referenceConnection'))); // Copy. Reference has been connecting.
     B::assert($referenceD === array (array (array ('referenced')))); // Serialization. Reference has been broken.
     B::assert($recursiveReferenceA[1] === 'referenced'); // Serialization. Reference has been broken.
-    //////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////
     \TestClassB::$GLOBALS = $testArray;
-    // Stores static attributes.
+// Stores static attributes.
     \BreakpointDebugging_PHPUnitUtilGlobalState::backupStaticAttributes(array ());
     B::assert(\TestClassB::$GLOBALS[0]->testObjectProperty->testPropertyA === 'testPropertyA');
     ob_start();
     var_dump(\TestClassB::$testRecursiveArrayProperty);
     $beforeTestRecursiveArrayProperty = ob_get_clean();
 
-    // Change value.
+// Change value.
     \TestClassB::$GLOBALS[0]->testObjectProperty->testPropertyA = 'testPropertyZ';
     B::assert(\TestClassB::$GLOBALS[0]->testObjectProperty->testPropertyA === 'testPropertyZ');
 
-    // Restores static attributes.
+// Restores static attributes.
     \BreakpointDebugging_PHPUnitUtilGlobalState::restoreStaticAttributes();
     B::assert(\TestClassB::$GLOBALS[0]->testObjectProperty->testPropertyA === 'testPropertyA');
     ob_start();

@@ -265,7 +265,8 @@ abstract class BreakpointDebugging_InAllCase
             }
         }
 
-        if (self::getXebugExists()) {
+        //if (self::getXebugExists()) {
+        if (function_exists('xdebug_break')) {
             xdebug_break(); // Breakpoint. See local variable value by doing step execution here.
             // Push stop button if is thought error message.
         }
@@ -274,6 +275,17 @@ abstract class BreakpointDebugging_InAllCase
             // Remote debug must end immediately to avoid eternal execution.
             exit;
         }
+    }
+
+    /**
+     * Error exit. You can detect error exit location by call stack after break if you use this.
+     *
+     * @param string $errorMessage Error message.
+     */
+    static function exitForError($errorMessage = '')
+    {
+        self::breakpoint($errorMessage, debug_backtrace());
+        exit($errorMessage);
     }
 
     /**
@@ -328,7 +340,7 @@ abstract class BreakpointDebugging_InAllCase
      * @example
      *      <?php
      *
-     *      require_once './BreakpointDebugging_Including.php';
+     *      require_once './BreakpointDebugging_Inclusion.php';
      *
      *      use \BreakpointDebugging as B;
      *
@@ -554,59 +566,170 @@ abstract class BreakpointDebugging_InAllCase
     /**
      * If "Apache" is root user, this method changes the file or directory user to my user. And sets permission.
      *
-     * @param string $name       The file or directory name.
-     * @param int    $permission The file or directory permission.
+     * @param string $name              The file or directory name.
+     * @param int    $permission        The file or directory permission.
+     * @param int    $timeout           Seconds number of timeout.
+     * @param int    $sleepMicroSeconds Micro seconds to sleep.
      *
-     * @return void
+     * @return bool Success or failure.
+     * @//throw \BreakpointDebugging_ErrorException
      */
-    protected static function setOwner($name, $permission)
+    protected static function setOwner($name, $permission, $timeout, $sleepMicroSeconds)
     {
         if (self::$_os === 'WIN') { // In case of Windows.
-            return;
+            return true;
         }
         // In case of Unix.
-        chmod($name, $permission);
+        //if (!self::_retryForFilesystemFunction('chmod', $name, $permission, $timeout, $sleepMicroSeconds)) {
+        //    throw new \BreakpointDebugging_ErrorException('Cannot change "' . $name . '" file or directory permission to "' . sprintf('0%o', $permission) . '".', 102);
+        //}
+        //if (!self::_retryForFilesystemFunction('chmod', $name, $permission, $timeout, $sleepMicroSeconds)) {
+        if (!self::_retryForFilesystemFunction('chmod', array ($name, $permission), $timeout, $sleepMicroSeconds)) {
+            return false;
+        }
         if (trim(`echo \$USER`) === 'root') {
             $user = self::$_userName;
             `chown \$user.\$user \$name`;
         }
+        return true;
     }
 
     /**
      * "mkdir" method which sets permission and sets own user to owner.
      *
-     * @param stirng $dirName    Directory name.
-     * @param int    $permission Directory permission.
+     * @param array  $params            "mkdir()" parameters.
+     * @//param int    $permission        Directory permission.
+     * @param int    $timeout           Seconds number of timeout.
+     * @param int    $sleepMicroSeconds Micro seconds to sleep.
      *
-     * @return void
+     * @return bool Success or failure.
+     * @//throw \BreakpointDebugging_ErrorException
      */
-    static function mkdir($dirName, $permission = 0777)
+    //static function mkdir($dirName, $permission = 0777, $timeout = 10, $sleepMicroSeconds = 100000)
+    static function mkdir(array $params, $timeout = 10, $sleepMicroSeconds = 100000)
     {
+        // mkdir($dirName, $permission); // For debug.
+        // clearstatcache(); // For debug.
+        // return $result; // For debug.
+
         B::limitAccess('BreakpointDebugging_Option.php');
 
-        if (mkdir($dirName)) {
-            B::setOwner($dirName, $permission);
+        //if (self::_retryForFilesystemFunction('mkdir', array($dirName), $timeout, $sleepMicroSeconds)) {
+        if (self::_retryForFilesystemFunction('mkdir', $params, $timeout, $sleepMicroSeconds)) {
+            //return B::setOwner($dirName, $permission, $timeout, $sleepMicroSeconds);
+            if (array_key_exists(1, $params)) {
+                $permission = $params[1];
+            } else {
+                $permission = 0777;
+            }
+            return B::setOwner($params[0], $permission, $timeout, $sleepMicroSeconds);
+        }
+        return false;
+    }
+
+    /**
+     * Retries until specified timeout for function of filesystem because OS has permission and sometimes fails.
+     *
+     * @param string $functionName      Execution function name.
+     * @param array  $params            Execution function parameters.
+     * @param int    $timeout           The timeout.
+     * @param int    $sleepMicroSeconds Micro seconds for sleep.
+     *
+     * @return mixed The result or false.
+     * @throw Instance of \Exception.
+     */
+    //private static function _retryForFilesystemFunction()
+    private static function _retryForFilesystemFunction($functionName, array $params, $timeout, $sleepMicroSeconds)
+    {
+        $startTime = time();
+        //$params = func_get_args();
+        //$functionName = array_shift($params);
+        //$sleepMicroSeconds = array_pop($params);
+        //$timeout = array_pop($params);
+        while (true) {
+            $isEnd = time() - $startTime > $timeout;
+            try {
+                //set_error_handler('\BreakpointDebugging::handleError', 0);
+                //Restrains error display because presuppose that it fails in retry.
+                //$result = @call_user_func_array($functionName, $params);
+                $result = call_user_func_array($functionName, $params);
+                //restore_error_handler();
+                if ($result !== false) {
+                    clearstatcache();
+                    // sleep(1); // For debug.
+                    return $result;
+                }
+                if ($isEnd) {
+                    return false;
+                }
+            } catch (\Exception $e) {
+                if ($isEnd) {
+                    throw $e;
+                    //return false;
+                }
+            }
+            // Waits micro second which is specified.
+            usleep($sleepMicroSeconds);
         }
     }
 
     /**
      * "fopen" method which sets the file mode, permission and sets own user to owner.
      *
-     * @param stirng $fileName   The file name.
-     * @param stirng $mode       The file mode.
-     * @param int    $permission The file permission.
+     * @param array $params            "fopen()" parameters.
+     * @param int   $permission        The file permission.
+     * @param int   $timeout           Seconds number of timeout.
+     * @param int   $sleepMicroSeconds Micro seconds to sleep.
      *
-     * @return resource The file pointer.
+     * @return resource The file pointer resource or false.
+     * @//throw \BreakpointDebugging_ErrorException
      */
-    static function fopen($fileName, $mode, $permission)
+    //static function fopen($fileName, $mode, $permission, $timeout = 10, $sleepMicroSeconds = 100000)
+    static function fopen(array $params, $permission = 0700, $timeout = 10, $sleepMicroSeconds = 100000)
     {
+        // $result = fopen($fileName, $mode); // For debug.
+        // clearstatcache(); // For debug.
+        // return $result; // For debug.
+
         B::limitAccess('BreakpointDebugging_Option.php');
 
-        $pFile = fopen($fileName, $mode);
+        //$pFile = self::_retryForFilesystemFunction('fopen', $fileName, $mode, $timeout, $sleepMicroSeconds);
+        $pFile = self::_retryForFilesystemFunction('fopen', $params, $timeout, $sleepMicroSeconds);
         if ($pFile) {
-            B::setOwner($fileName, $permission);
+            //if (B::setOwner($fileName, $permission, $timeout, $sleepMicroSeconds)) {
+            if (B::setOwner($params[0], $permission, $timeout, $sleepMicroSeconds)) {
+                return $pFile;
+            }
         }
-        return $pFile;
+        //else {
+        //    throw new \BreakpointDebugging_ErrorException('Cannot fopen "' . $fileName . '" file with "' . $mode . '" mode.', 101);
+        //}
+        //return $pFile;
+        return false;
+    }
+
+    /**
+     * Unlinks with retry.
+     *
+     * @//param string $filePath The file path to unlink.
+     * @param array $params            "unlink()" parameters.
+     * @param int   $timeout           Seconds number of timeout.
+     * @param int   $sleepMicroSeconds Micro seconds to sleep.
+     *
+     * @return bool Success or failure.
+     * @//throw \BreakpointDebugging_ErrorException
+     */
+    //static function unlink($filePath, $timeout = 10, $sleepMicroSeconds = 100000)
+    static function unlink(array $params, $timeout = 10, $sleepMicroSeconds = 100000)
+    {
+        // $result = unlink($filePath); // For debug.
+        // clearstatcache(); // For debug.
+        // return $result; // For debug.
+        //if (!self::_retryForFilesystemFunction('unlink', $filePath, $timeout, $sleepMicroSeconds)) {
+        //    throw new \BreakpointDebugging_ErrorException('Cannot unlink "' . $filePath . '" file.', 101);
+        //}
+        //return self::_retryForFilesystemFunction('unlink', $filePath, $timeout, $sleepMicroSeconds);
+        return self::_retryForFilesystemFunction('unlink', $params, $timeout, $sleepMicroSeconds);
     }
 
     /**
@@ -720,7 +843,7 @@ abstract class BreakpointDebugging_InAllCase
                 continue;
             }
             // Stores the child array.
-            $elementStoring = $parentArray[$childKey];
+            $elementStorage = $parentArray[$childKey];
             // Checks reference of parents array by changing from child array to string.
             $parentArray[$childKey] = self::RECURSIVE_ARRAY;
             foreach ($parentsArray as $cmpParentArrays) {
@@ -731,12 +854,12 @@ abstract class BreakpointDebugging_InAllCase
                     // Marks recursive array.
                     $changingArray[$childKey] = self::RECURSIVE_ARRAY;
                     // Restores child array.
-                    $parentArray[$childKey] = $elementStoring;
+                    $parentArray[$childKey] = $elementStorage;
                     continue 2;
                 }
             }
             // Restores child array.
-            $parentArray[$childKey] = $elementStoring;
+            $parentArray[$childKey] = $elementStorage;
             // Adds current child element to parents array. Also, does reference copy because checks recursive-reference by using this.
             $parentsArray[][$childKey] = &$parentArray[$childKey];
             // Clears recursive array element in under hierarchy.
@@ -770,25 +893,25 @@ abstract class BreakpointDebugging_InAllCase
      *
      * @param array $blacklist                 The list to except from doing variables backup.
      * @param array $variables                 Array variable to store.
-     * @param array &$variablesStoring         Variables storing.
-     * @param array &$serializationKeysStoring Serialization-keys storing.
-     * @param bool  $isGlobalStoring           Is this the global storing?
+     * @param array &$variablesStorage         Variables storage.
+     * @param array &$serializationKeysStorage Serialization-keys storage.
+     * @param bool  $isGlobalStorage           Is this the global storage?
      *
      * @return void
      */
-    static function storeVariables(array $blacklist, array $variables, array &$variablesStoring, array &$serializationKeysStoring, $isGlobalStoring = true)
+    static function storeVariables(array $blacklist, array $variables, array &$variablesStorage, array &$serializationKeysStorage, $isGlobalStorage = true)
     {
         foreach ($variables as $key => $value) {
             if (in_array($key, $blacklist)
-                || array_key_exists($key, $variablesStoring)
+                || array_key_exists($key, $variablesStorage)
                 || $value instanceof Closure
             ) {
                 continue;
             }
-            if (($key === 'GLOBALS' && $isGlobalStoring)
+            if (($key === 'GLOBALS' && $isGlobalStorage)
                 || (!is_object($value) && !is_array($value))
             ) {
-                $variablesStoring[$key] = $value;
+                $variablesStorage[$key] = $value;
                 continue;
             }
             do {
@@ -809,12 +932,12 @@ abstract class BreakpointDebugging_InAllCase
                             }
                         }
                     }
-                    $variablesStoring[$key] = $value;
+                    $variablesStorage[$key] = $value;
                     continue 2;
                 }
             } while (false);
-            $variablesStoring[$key] = serialize($value);
-            $serializationKeysStoring[$key] = null;
+            $variablesStorage[$key] = serialize($value);
+            $serializationKeysStorage[$key] = null;
         }
     }
 
@@ -822,25 +945,25 @@ abstract class BreakpointDebugging_InAllCase
      * Restores variables. We must not restore by reference copy because variable ID changes.
      *
      * @param array &$variables               Array variable to restore.
-     * @param array $variablesStoring         Variables storing.
-     * @param array $serializationKeysStoring Serialization-keys storing.
+     * @param array $variablesStorage         Variables storage.
+     * @param array $serializationKeysStorage Serialization-keys storage.
      *
      * @return void
      */
-    static function restoreVariables(array &$variables, array $variablesStoring, array $serializationKeysStoring)
+    static function restoreVariables(array &$variables, array $variablesStorage, array $serializationKeysStorage)
     {
-        if (empty($variablesStoring)) {
+        if (empty($variablesStorage)) {
             return;
         }
-        // Deletes "array variable element to restore" which isn't contained in variables storing.
+        // Deletes "array variable element to restore" which isn't contained in variables storage.
         foreach ($variables as $key => $value) {
-            if (!array_key_exists($key, $variablesStoring)) {
+            if (!array_key_exists($key, $variablesStorage)) {
                 unset($variables[$key]);
             }
         }
         // Judges serialization or copy, and overwrites array variable to restore or adds.
-        foreach ($variablesStoring as $key => $value) {
-            if (array_key_exists($key, $serializationKeysStoring)) {
+        foreach ($variablesStorage as $key => $value) {
+            if (array_key_exists($key, $serializationKeysStorage)) {
                 $variables[$key] = unserialize($value);
             } else {
                 $variables[$key] = $value;
@@ -899,6 +1022,7 @@ abstract class BreakpointDebugging_InAllCase
 
         B::limitAccess(array ('BreakpointDebugging_UnitTestCaller.php', 'BreakpointDebugging_Option.php'));
 
+        //self::$_runStartTime = time();
         self::$_pwd = getcwd();
         self::$_nativeExeMode = self::$exeMode = $_BreakpointDebugging_EXE_MODE;
         unset($_BreakpointDebugging_EXE_MODE);
@@ -1265,11 +1389,11 @@ spl_autoload_register('\BreakpointDebugging::autoload');
 
 // Sets global exception handler.
 set_exception_handler('\BreakpointDebugging::handleException');
-// Uses "PHPUnit" error handler in case of command.
-if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
-    // Sets global error handler.( -1 sets all bits on 1. Therefore, this specifies error, warning and note of all kinds.)
-    set_error_handler('\BreakpointDebugging::handleError', -1);
-}
+//// Uses "PHPUnit" error handler in case of command.
+//if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
+// Sets global error handler.( -1 sets all bits on 1. Therefore, this specifies error, warning and note of all kinds.)
+set_error_handler('\BreakpointDebugging::handleError', -1);
+//}
 
 register_shutdown_function('\BreakpointDebugging::shutdown');
 \BreakpointDebugging::initialize();

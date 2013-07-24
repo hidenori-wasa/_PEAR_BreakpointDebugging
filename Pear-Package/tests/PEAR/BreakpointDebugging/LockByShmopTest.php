@@ -1,24 +1,29 @@
 <?php
 
-chdir(__DIR__ . '/../../../');
-require_once './BreakpointDebugging_Including.php';
+//chdir(__DIR__ . '/../../../');
+//require_once './BreakpointDebugging_Inclusion.php';
 
 use \BreakpointDebugging as B;
 use \BreakpointDebugging_UnitTestCaller as BU;
 
 B::checkExeMode(true);
-class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_UnitTestOverriding
+class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_PHPUnitFrameworkTestCase
 {
     protected $LockByShmop;
 
     function setUp()
     {
         parent::setUp();
-
+        // Checks shared memory operation extension existence.
         if ((BU::$exeMode & B::REMOTE)
             && !extension_loaded('shmop')
         ) {
             $this->markTestSkipped('"shmop" extention has been not loaded.');
+        }
+        // Unlinks synchronization file.
+        $lockFileName = B::getStatic('$_workDir') . '/LockByShmop.txt';
+        if (is_file($lockFileName)) {
+            B::unlink(array ($lockFileName));
         }
         // Constructs instance.
         $this->LockByShmop = &\BreakpointDebugging_LockByShmop::singleton(5, 10);
@@ -49,15 +54,18 @@ class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_UnitTestO
      */
     function testSingleton()
     {
-        B::setPropertyForTest('\BreakpointDebugging_Lock', '$_instance', null);
-        \BreakpointDebugging_LockByShmop::singleton(5, 0);
+        //B::setPropertyForTest('\BreakpointDebugging_Lock', '$_instance', null);
+        //// Unlinks synchronization file.
+        //B::unlink(array (B::getStatic('$_workDir') . '/LockByShmop.txt'));
+        //\BreakpointDebugging_LockByShmop::singleton(5, 0);
 
-        $pFile = fopen(B::getStatic('$_workDir') . '/LockByShmop.txt', 'wb');
+        //$pFile = B::fopen(array (B::getStatic('$_workDir') . '/LockByShmop.txt', 'wb'), 0200);
+        $pFile = B::fopen(array (B::getStatic('$_workDir') . '/LockByShmop.txt', 'wb'));
         fwrite($pFile, 'dummydummy');
         fclose($pFile);
         B::setPropertyForTest('\BreakpointDebugging_Lock', '$_instance', null);
         \BreakpointDebugging_LockByShmop::singleton(5, 10);
-        unlink(B::getStatic('$_workDir') . '/LockByShmop.txt');
+        //B::unlink(array (B::getStatic('$_workDir') . '/LockByShmop.txt'));
     }
 
     /**

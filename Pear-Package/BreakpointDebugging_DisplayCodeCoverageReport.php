@@ -46,7 +46,7 @@
  * @version  SVN: $Id$
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-require_once './BreakpointDebugging_Including.php';
+require_once './BreakpointDebugging_Inclusion.php';
 
 use \BreakpointDebugging as B;
 
@@ -80,7 +80,8 @@ class BreakpointDebugging_DisplayCodeCoverageReport
             $classFileName = str_replace(array ('/', '\\'), '_', $_GET['classFilePath']);
             $codeCoverageReportPath = str_replace('\\', '/', $_GET['codeCoverageReportPath']);
             // Opens code coverage report.
-            $pFile = fopen($codeCoverageReportPath . $classFileName . '.html', 'rb');
+            //$pFile = B::fopen(array ($codeCoverageReportPath . $classFileName . '.html', 'rb'), 0400);
+            $pFile = B::fopen(array ($codeCoverageReportPath . $classFileName . '.html', 'rb'));
             while (!feof($pFile)) {
                 $line = fgets($pFile);
                 // Outputs raw data after that if header ends.
@@ -98,7 +99,7 @@ class BreakpointDebugging_DisplayCodeCoverageReport
                     for ($count = 0; $count < count($matches[1]); $count++) {
                         echo $matches[1][$count];
                         $cssFilePath = $codeCoverageReportPath . $matches[3][$count];
-                        if (file_exists($cssFilePath)) {
+                        if (is_file($cssFilePath)) {
                             echo '<style type="text/css">' . PHP_EOL
                             . '<!--' . PHP_EOL;
                             readfile($cssFilePath);
