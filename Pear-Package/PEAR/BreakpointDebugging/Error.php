@@ -623,7 +623,6 @@ abstract class BreakpointDebugging_Error_InAllCase
 
         try {
             // trigger_error('Internal error test.', E_USER_WARNING); // For debug.
-            //
             // Controls how many nested levels of array elements and object properties.
             // Display by var_dump(), local variables or Function Traces.
             ini_set('xdebug.var_display_max_depth', '6');
@@ -655,7 +654,6 @@ abstract class BreakpointDebugging_Error_InAllCase
                 $log = htmlspecialchars_decode($log, ENT_QUOTES);
                 $log .= '////////////////////////////////////////////////////////////////////////////////' . PHP_EOL;
                 // Opens error log file as created and written.
-                //$pErrorLogFile = B::fopen(array ($errorLogFilePath, 'ab'), 0200);
                 $pErrorLogFile = B::fopen(array ($errorLogFilePath, 'ab'));
                 $fileStatus = fstat($pErrorLogFile);
                 // If file size is smaller than 1MB.
@@ -917,11 +915,9 @@ abstract class BreakpointDebugging_Error_InAllCase
                 // If variable configuring file exists.
                 if (is_file($varConfFilePath)) {
                     // Opens variable configuring file.
-                    //$this->_pVarConfFile = B::fopen(array ($varConfFilePath, 'r+b'), 0600);
                     $this->_pVarConfFile = B::fopen(array ($varConfFilePath, 'r+b'));
                 } else {
                     // Creates and opens variable configuring file.
-                    //$this->_pVarConfFile = B::fopen(array ($varConfFilePath, 'x+b'), 0600);
                     $this->_pVarConfFile = B::fopen(array ($varConfFilePath, 'x+b'));
                     // Sets current error log file name.
                     fwrite($this->_pVarConfFile, $this->_keyOfCurrentErrorLogFileName . $this->_prefixOfErrorLogFileName . '1.log' . PHP_EOL);
@@ -991,11 +987,9 @@ abstract class BreakpointDebugging_Error_InAllCase
                 // If error location file exists.
                 if (is_file($errorLocationFilePath)) {
                     // Opens the error location file.
-                    //$pErrorLocationFile = B::fopen(array ($errorLocationFilePath, 'r+b'), 0600);
                     $pErrorLocationFile = B::fopen(array ($errorLocationFilePath, 'r+b'));
                 } else {
                     // Creates the error location file.
-                    //$pErrorLocationFile = B::fopen(array ($errorLocationFilePath, 'x+b'), 0600);
                     $pErrorLocationFile = B::fopen(array ($errorLocationFilePath, 'x+b'));
                 }
                 $isExisting = false;
@@ -1086,11 +1080,9 @@ abstract class BreakpointDebugging_Error_InAllCase
             // When current error log file does not exist.
             if (!is_file($this->_errorLogFilePath)) {
                 // Creates and opens current error log file.
-                //$pErrorLogFile = B::fopen(array ($this->_errorLogFilePath, 'xb'), 0600);
                 $pErrorLogFile = B::fopen(array ($this->_errorLogFilePath, 'xb'));
             } else {
                 // Opens current error log file.
-                //$pErrorLogFile = B::fopen(array ($this->_errorLogFilePath, 'ab'), 0200);
                 $pErrorLogFile = B::fopen(array ($this->_errorLogFilePath, 'ab'));
             }
             // Writes to error log.

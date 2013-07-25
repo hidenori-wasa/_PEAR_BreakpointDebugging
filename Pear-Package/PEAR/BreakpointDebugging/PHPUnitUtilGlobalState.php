@@ -113,25 +113,45 @@ class BreakpointDebugging_PHPUnitUtilGlobalState extends \PHPUnit_Util_GlobalSta
             // Excepts unit test classes.
             if (preg_match('`^ (PHP (Unit | (_ (CodeCoverage | Invoker | (T (imer | oken_Stream))))) | File_Iterator | sfYaml | Text_Template )`xXi', $declaredClassName) === 1
                 || is_subclass_of($declaredClassName, 'PHPUnit_Util_GlobalState') // For extended class of my package.
-                //|| is_subclass_of($declaredClassName, 'PHPUnit_TextUI_Command') // For extended class of my package.
                 || is_subclass_of($declaredClassName, 'PHPUnit_Framework_Test')
             ) {
                 continue;
             }
             // Class reflection.
-            $classReflection = new ReflectionClass($declaredClassName);
+            $classReflection = new \ReflectionClass($declaredClassName);
             if (!$classReflection->isUserDefined()) {
                 break;
             }
+            // Checks existence of local static variable of static class method.
+            foreach ($classReflection->getMethods(ReflectionMethod::IS_STATIC) as $methodReflection) {
+                if ($methodReflection->class === $declaredClassName) {
+                    $result = $methodReflection->getStaticVariables();
+                    // If static variable has been existing.
+                    if (!empty($result)) {
+                        if (B::$exeMode & B::RELEASE) { // In case of release mode.
+                            echo '';
+                        } else { // In case of debug mode.
+                            echo '<b>';
+                        }
+                        throw new \BreakpointDebugging_ErrorException(
+                            PHP_EOL
+                            . "\tWe have to use private static property instead of using local static variable of static class method because its value cannot restore." . PHP_EOL
+                            . "\tFILE: " . $methodReflection->getFileName() . PHP_EOL
+                            . "\tLINE: " . $methodReflection->getStartLine() . PHP_EOL
+                            . "\tCLASS: " . $methodReflection->class . PHP_EOL
+                            . "\tMETHOD: " . $methodReflection->name . PHP_EOL
+                            . PHP_EOL
+                        );
+                    }
+                }
+            }
 
             $backup = array ();
-            // Properties reflection.
-            foreach ($classReflection->getProperties() as $attribute) {
-                // If static property existing in declared class.
-                if ($attribute->isStatic()
-                    && $attribute->class === $declaredClassName
-                ) {
-                    $attributeName = $attribute->getName();
+            // Static properties reflection.
+            foreach ($classReflection->getProperties(\ReflectionProperty::IS_STATIC) as $attribute) {
+                // If it is not property of base class. Because reference variable cannot be extended.
+                if ($attribute->class === $declaredClassName) {
+                    $attributeName = $attribute->name;
                     // If static property does not exist in black list (PHPUnit_Framework_TestCase::$backupStaticAttributesBlacklist).
                     if (!isset($blacklist[$declaredClassName])
                         || !in_array($attributeName, $blacklist[$declaredClassName])

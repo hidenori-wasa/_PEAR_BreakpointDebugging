@@ -1,6 +1,5 @@
 <?php
 
-//chdir(__DIR__ . '/../../../../');
 chdir(str_repeat('../', preg_match_all('`/`xX', $_SERVER['PHP_SELF'], $matches) - 2));
 require_once './BreakpointDebugging_Inclusion.php';
 class Test
@@ -31,15 +30,14 @@ class Test
         // Extend maximum execution time.
         set_time_limit(300);
         $start = microtime(true);
+
         $lockByShmop1 = &\BreakpointDebugging_LockByShmop::singleton(60, 300, 1000);
-        // sleep(10); // For debug.
         for ($count = 0; $count < 125; $count++) {
             $lockByShmop1->lock();
             $this->_incrementSheredMemory();
             $lockByShmop1->unlock();
         }
-        // clearstatcache(); // For debug.
-        // sleep(10); // For debug.
+
         var_dump(shmop_read($this->shmopId, 0, 10) + 0, microtime(true) - $start);
     }
 

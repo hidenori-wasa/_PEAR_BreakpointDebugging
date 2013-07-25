@@ -99,7 +99,6 @@ if (isset($_GET['download'])) {
         header('Pragma: private'); // For HTTP/1.0. "private" is cached on client, but it is not cached on proxy.
         header('Cache-Control: private'); // For HTTP/1.1 instead of "Pragma".
         // Copies error log file to temporary file.
-        //$pFile = B::fopen(array ($filepath, 'rb'), 0400);
         $pFile = B::fopen(array ($filepath, 'rb'));
         $pTmp = tmpfile();
         $offset = 0;

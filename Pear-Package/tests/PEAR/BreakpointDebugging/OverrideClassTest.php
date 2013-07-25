@@ -1,8 +1,5 @@
 <?php
 
-//chdir(__DIR__ . '/../../../');
-//require_once './NativeClass.php';
-
 use \BreakpointDebugging as B;
 
 B::checkExeMode(true);

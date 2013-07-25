@@ -80,7 +80,6 @@ class BreakpointDebugging_DisplayCodeCoverageReport
             $classFileName = str_replace(array ('/', '\\'), '_', $_GET['classFilePath']);
             $codeCoverageReportPath = str_replace('\\', '/', $_GET['codeCoverageReportPath']);
             // Opens code coverage report.
-            //$pFile = B::fopen(array ($codeCoverageReportPath . $classFileName . '.html', 'rb'), 0400);
             $pFile = B::fopen(array ($codeCoverageReportPath . $classFileName . '.html', 'rb'));
             while (!feof($pFile)) {
                 $line = fgets($pFile);

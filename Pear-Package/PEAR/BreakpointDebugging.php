@@ -265,8 +265,7 @@ abstract class BreakpointDebugging_InAllCase
             }
         }
 
-        //if (self::getXebugExists()) {
-        if (function_exists('xdebug_break')) {
+        if (self::getXebugExists()) {
             xdebug_break(); // Breakpoint. See local variable value by doing step execution here.
             // Push stop button if is thought error message.
         }
@@ -572,7 +571,6 @@ abstract class BreakpointDebugging_InAllCase
      * @param int    $sleepMicroSeconds Micro seconds to sleep.
      *
      * @return bool Success or failure.
-     * @//throw \BreakpointDebugging_ErrorException
      */
     protected static function setOwner($name, $permission, $timeout, $sleepMicroSeconds)
     {
@@ -580,10 +578,6 @@ abstract class BreakpointDebugging_InAllCase
             return true;
         }
         // In case of Unix.
-        //if (!self::_retryForFilesystemFunction('chmod', $name, $permission, $timeout, $sleepMicroSeconds)) {
-        //    throw new \BreakpointDebugging_ErrorException('Cannot change "' . $name . '" file or directory permission to "' . sprintf('0%o', $permission) . '".', 102);
-        //}
-        //if (!self::_retryForFilesystemFunction('chmod', $name, $permission, $timeout, $sleepMicroSeconds)) {
         if (!self::_retryForFilesystemFunction('chmod', array ($name, $permission), $timeout, $sleepMicroSeconds)) {
             return false;
         }
@@ -598,25 +592,16 @@ abstract class BreakpointDebugging_InAllCase
      * "mkdir" method which sets permission and sets own user to owner.
      *
      * @param array  $params            "mkdir()" parameters.
-     * @//param int    $permission        Directory permission.
      * @param int    $timeout           Seconds number of timeout.
      * @param int    $sleepMicroSeconds Micro seconds to sleep.
      *
      * @return bool Success or failure.
-     * @//throw \BreakpointDebugging_ErrorException
      */
-    //static function mkdir($dirName, $permission = 0777, $timeout = 10, $sleepMicroSeconds = 100000)
     static function mkdir(array $params, $timeout = 10, $sleepMicroSeconds = 100000)
     {
-        // mkdir($dirName, $permission); // For debug.
-        // clearstatcache(); // For debug.
-        // return $result; // For debug.
-
         B::limitAccess('BreakpointDebugging_Option.php');
 
-        //if (self::_retryForFilesystemFunction('mkdir', array($dirName), $timeout, $sleepMicroSeconds)) {
         if (self::_retryForFilesystemFunction('mkdir', $params, $timeout, $sleepMicroSeconds)) {
-            //return B::setOwner($dirName, $permission, $timeout, $sleepMicroSeconds);
             if (array_key_exists(1, $params)) {
                 $permission = $params[1];
             } else {
@@ -638,25 +623,15 @@ abstract class BreakpointDebugging_InAllCase
      * @return mixed The result or false.
      * @throw Instance of \Exception.
      */
-    //private static function _retryForFilesystemFunction()
     private static function _retryForFilesystemFunction($functionName, array $params, $timeout, $sleepMicroSeconds)
     {
         $startTime = time();
-        //$params = func_get_args();
-        //$functionName = array_shift($params);
-        //$sleepMicroSeconds = array_pop($params);
-        //$timeout = array_pop($params);
         while (true) {
             $isEnd = time() - $startTime > $timeout;
             try {
-                //set_error_handler('\BreakpointDebugging::handleError', 0);
-                //Restrains error display because presuppose that it fails in retry.
-                //$result = @call_user_func_array($functionName, $params);
                 $result = call_user_func_array($functionName, $params);
-                //restore_error_handler();
                 if ($result !== false) {
                     clearstatcache();
-                    // sleep(1); // For debug.
                     return $result;
                 }
                 if ($isEnd) {
@@ -665,7 +640,6 @@ abstract class BreakpointDebugging_InAllCase
             } catch (\Exception $e) {
                 if ($isEnd) {
                     throw $e;
-                    //return false;
                 }
             }
             // Waits micro second which is specified.
@@ -682,53 +656,33 @@ abstract class BreakpointDebugging_InAllCase
      * @param int   $sleepMicroSeconds Micro seconds to sleep.
      *
      * @return resource The file pointer resource or false.
-     * @//throw \BreakpointDebugging_ErrorException
      */
-    //static function fopen($fileName, $mode, $permission, $timeout = 10, $sleepMicroSeconds = 100000)
-    static function fopen(array $params, $permission = 0700, $timeout = 10, $sleepMicroSeconds = 100000)
+    static function fopen(array $params, $permission = null, $timeout = 10, $sleepMicroSeconds = 100000)
     {
-        // $result = fopen($fileName, $mode); // For debug.
-        // clearstatcache(); // For debug.
-        // return $result; // For debug.
-
         B::limitAccess('BreakpointDebugging_Option.php');
 
-        //$pFile = self::_retryForFilesystemFunction('fopen', $fileName, $mode, $timeout, $sleepMicroSeconds);
         $pFile = self::_retryForFilesystemFunction('fopen', $params, $timeout, $sleepMicroSeconds);
         if ($pFile) {
-            //if (B::setOwner($fileName, $permission, $timeout, $sleepMicroSeconds)) {
-            if (B::setOwner($params[0], $permission, $timeout, $sleepMicroSeconds)) {
+            if (is_null($permission)
+                || B::setOwner($params[0], $permission, $timeout, $sleepMicroSeconds)
+            ) {
                 return $pFile;
             }
         }
-        //else {
-        //    throw new \BreakpointDebugging_ErrorException('Cannot fopen "' . $fileName . '" file with "' . $mode . '" mode.', 101);
-        //}
-        //return $pFile;
         return false;
     }
 
     /**
      * Unlinks with retry.
      *
-     * @//param string $filePath The file path to unlink.
      * @param array $params            "unlink()" parameters.
      * @param int   $timeout           Seconds number of timeout.
      * @param int   $sleepMicroSeconds Micro seconds to sleep.
      *
      * @return bool Success or failure.
-     * @//throw \BreakpointDebugging_ErrorException
      */
-    //static function unlink($filePath, $timeout = 10, $sleepMicroSeconds = 100000)
     static function unlink(array $params, $timeout = 10, $sleepMicroSeconds = 100000)
     {
-        // $result = unlink($filePath); // For debug.
-        // clearstatcache(); // For debug.
-        // return $result; // For debug.
-        //if (!self::_retryForFilesystemFunction('unlink', $filePath, $timeout, $sleepMicroSeconds)) {
-        //    throw new \BreakpointDebugging_ErrorException('Cannot unlink "' . $filePath . '" file.', 101);
-        //}
-        //return self::_retryForFilesystemFunction('unlink', $filePath, $timeout, $sleepMicroSeconds);
         return self::_retryForFilesystemFunction('unlink', $params, $timeout, $sleepMicroSeconds);
     }
 
@@ -1022,7 +976,6 @@ abstract class BreakpointDebugging_InAllCase
 
         B::limitAccess(array ('BreakpointDebugging_UnitTestCaller.php', 'BreakpointDebugging_Option.php'));
 
-        //self::$_runStartTime = time();
         self::$_pwd = getcwd();
         self::$_nativeExeMode = self::$exeMode = $_BreakpointDebugging_EXE_MODE;
         unset($_BreakpointDebugging_EXE_MODE);
@@ -1385,17 +1338,15 @@ class BreakpointDebugging_OutOfLogRangeException extends \BreakpointDebugging_Ex
 
 }
 
+// Pushes autoload class method.
 spl_autoload_register('\BreakpointDebugging::autoload');
-
-// Sets global exception handler.
+// Shifts global exception handler.
 set_exception_handler('\BreakpointDebugging::handleException');
-//// Uses "PHPUnit" error handler in case of command.
-//if (isset($_SERVER['SERVER_ADDR'])) { // In case of not command.
-// Sets global error handler.( -1 sets all bits on 1. Therefore, this specifies error, warning and note of all kinds.)
+// Shifts global error handler.( -1 sets all bits on 1. Therefore, this specifies error, warning and note of all kinds.)
 set_error_handler('\BreakpointDebugging::handleError', -1);
-//}
-
+// Pushes the shutdown class method.
 register_shutdown_function('\BreakpointDebugging::shutdown');
+// Initializes static class.
 \BreakpointDebugging::initialize();
 
 ?>

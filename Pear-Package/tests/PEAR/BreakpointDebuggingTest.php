@@ -1,8 +1,5 @@
 <?php
 
-//chdir(__DIR__ . '/../../');
-//require_once './BreakpointDebugging_Inclusion.php';
-
 use \BreakpointDebugging as B;
 use \BreakpointDebugging_UnitTestCaller as BU;
 
@@ -118,7 +115,6 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_PHPUnitFrameworkTestC
     function testFopen_A()
     {
         $testFileName = B::getStatic('$_workDir') . '/TestFile.txt';
-        //$pFile = B::fopen(array ($testFileName, 'wb'), 0700);
         $pFile = B::fopen(array ($testFileName, 'wb'));
         fclose($pFile);
     }

@@ -1,8 +1,5 @@
 <?php
 
-//chdir(__DIR__ . '/../../../');
-//require_once './BreakpointDebugging_Inclusion.php';
-
 use \BreakpointDebugging as B;
 use \BreakpointDebugging_UnitTestCaller as BU;
 
@@ -15,9 +12,9 @@ class BreakpointDebugging_LockByFlockTest extends \BreakpointDebugging_PHPUnitFr
     {
         parent::setUp();
         // Unlinks synchronization file.
-        $lockFileName = B::getStatic('$_workDir') . '/LockByFlock.txt';
-        if (is_file($lockFileName)) {
-            B::unlink(array ($lockFileName));
+        $lockFilePath = B::getStatic('$_workDir') . '/LockByFlock.txt';
+        if (is_file($lockFilePath)) {
+            B::unlink(array ($lockFilePath));
         }
         // Constructs instance.
         $this->lockByFlock = &\BreakpointDebugging_LockByFlock::singleton(5, 10);

@@ -58,13 +58,12 @@ function BreakpointDebugging_setExecutionMode()
     global $_BreakpointDebugging_EXE_MODE;
 
     $REMOTE = 1;
-    //$RELEASE = 2;
-    //$UNIT_TEST = 4;
+
     // ### Execution mode setting. ===>
     // Please, choose a mode.
-    // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('DEBUG');
+    $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('DEBUG');
     // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('RELEASE');
-    $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('DEBUG_UNIT_TEST');
+    // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('DEBUG_UNIT_TEST');
     // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('RELEASE_UNIT_TEST');
     // ### <=== Execution mode setting.
     //
@@ -273,7 +272,6 @@ function BreakpointDebugging_mySetting()
             ini_set('error_reporting', (string) (PHP_INT_MAX & ~(E_NOTICE | E_DEPRECATED | E_STRICT)));
             // This changes "php.ini" file setting into "log_errors = On" to record log for security.
             ini_set('log_errors', '1');
-            //if ($_SERVER['SERVER_ADDR'] === '127.0.0.1') { // In case of local host.
             if (!(B::getStatic('$exeMode') & B::REMOTE)) { // In case of local host.
                 return;
             }

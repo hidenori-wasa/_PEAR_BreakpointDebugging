@@ -1,8 +1,5 @@
 <?php
 
-//chdir(__DIR__ . '/../../');
-//require_once './BreakpointDebugging_Inclusion.php';
-
 use \BreakpointDebugging as B;
 use \BreakpointDebugging_InAllCase as BA;
 use \BreakpointDebugging_UnitTestCaller as BU;
@@ -175,8 +172,6 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_PHPUnitFram
         if (is_file($testFileName)) {
             BA::unlink(array ($testFileName));
         }
-        //$pFile = BA::fopen($testFileName, 'w+b', 0700);
-        //$pFile = BA::fopen(array ($testFileName, 'w+b'), 0600);
         $pFile = BA::fopen(array ($testFileName, 'w+b'));
         fclose($pFile);
         $this->assertTrue(is_file($testFileName));
@@ -196,7 +191,6 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_PHPUnitFram
         for ($count = 0; $count <= 400; $count++) {
             $intArray[] = $count;
         }
-        //$pFile = B::fopen(array (BA::getStatic('$_workDir') . '/test.bin', 'w+b'), 0600);
         $pFile = B::fopen(array (BA::getStatic('$_workDir') . '/test.bin', 'w+b'));
         fwrite($pFile, BA::compressIntArray($intArray));
         fwrite($pFile, BA::compressIntArray($intArray));

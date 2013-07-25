@@ -1,8 +1,5 @@
 <?php
 
-//chdir(__DIR__ . '/../../../');
-//require_once './BreakpointDebugging_Inclusion.php';
-
 use \BreakpointDebugging as B;
 use \BreakpointDebugging_UnitTestCaller as BU;
 

@@ -1,8 +1,5 @@
 <?php
 
-//chdir(__DIR__ . '/../../../');
-//require_once './BreakpointDebugging_Inclusion.php';
-
 use \BreakpointDebugging as B;
 use \BreakpointDebugging_UnitTestCaller as BU;
 
@@ -82,7 +79,6 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_PHPUn
     private function _getFileNumber($fileName)
     {
         $fileName = str_replace('\\', '/', $fileName);
-        //$pFile = B::fopen(array (B::getStatic('$_workDir') . self::$_errorLogDir . 'ErrorLog.var.conf', 'rb'), 0400);
         $pFile = B::fopen(array (B::getStatic('$_workDir') . self::$_errorLogDir . 'ErrorLog.var.conf', 'rb'));
         fgets($pFile);
         while ($readFileLine = fgets($pFile)) {

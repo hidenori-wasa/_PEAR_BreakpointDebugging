@@ -95,7 +95,6 @@ final class BreakpointDebugging_LockByFlock extends \BreakpointDebugging_Lock
     {
         parent::__construct($lockFilePath, $timeout, $sleepMicroSeconds);
 
-        //$this->pFile = B::fopen(array ($lockFilePath, 'ab'), 0200, $timeout, $sleepMicroSeconds);
         $this->pFile = B::fopen(array ($lockFilePath, 'ab'));
         B::assert(stream_supports_lock($this->pFile), 101);
     }

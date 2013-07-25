@@ -125,6 +125,11 @@ class BreakpointDebugging_Exception extends \BreakpointDebugging_Exception_InAll
 abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_InAllCase
 {
     /**
+     * @var array Unit test file paths storage.
+     */
+    private static $_unitTestFilePathsStorage = array ();
+
+    /**
      * @var int Execution mode.
      */
     static $exeMode;
@@ -418,7 +423,7 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
     /**
      * Executes unit tests continuously, and debugs with IDE.
      *
-     * We have to use private static property instead of using local static variable.
+     * We have to use private static property instead of using local static variable of static class method because its value cannot restore.
      * Then, we can use unit test's "--static-backup" command line switch.
      *
      * Also, we must not use unit test's "--process-isolation" command line switch because its tests is run in other process.
@@ -495,6 +500,7 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      *     {
      *          // We must not change static status at here because its change affects to next unit test file if you run unit tests continuously.
      *          // Please, use "setUp()" class method instead of this class method.
+     *          // Also, we must not construct test instance here because we want to initialize class auto attribute.
      *          ...
      *     }
      *
@@ -502,13 +508,13 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      *     {
      *          // This is required.
      *          parent::setUp();
-     *          // Constructs instance.
+     *          // Constructs an instance per test.
      *          $this->_pSomething = new \Something();
      *     }
      *
      *     protected function tearDown()
      *     {
-     *          // Destructs instance.
+     *          // Destructs an instance per test.
      *          $this->_pSomething = null;
      *          // This is required.
      *          parent::tearDown();
@@ -521,6 +527,9 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      *     function testSomething_A()
      *     {
      *          BU::markTestSkippedInDebug();
+     *
+     *          // Constructs an instance inside this local scope.
+     *          $localInstance = new \Something();
      *
      *          BU::$exeMode |= B::IGNORING_BREAK_POINT;
      *          throw new \Something_ErrorException('Something message.', 101);
@@ -548,20 +557,15 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      */
     static function executeUnitTest($unitTestFilePaths, $commandLineSwitches = '')
     {
-        static $unitTestFilePathsStorage = array ();
-
-        /*         * ***
-          $runByCommand = false; // Running by command does not support.
-         * *** */
         if (!B::checkDevelopmentSecurity()) {
             B::exitForError();
         }
 
         foreach ($unitTestFilePaths as $unitTestFilePath) {
-            if (in_array($unitTestFilePath, $unitTestFilePathsStorage, true)) {
+            if (in_array($unitTestFilePath, self::$_unitTestFilePathsStorage, true)) {
                 throw new \BreakpointDebugging_ErrorException('Unit test file path must be unique.', 101);
             }
-            $unitTestFilePathsStorage[] = $unitTestFilePath;
+            self::$_unitTestFilePathsStorage[] = $unitTestFilePath;
         }
 
         echo file_get_contents('BreakpointDebugging/css/FontStyle.html', true);
@@ -584,7 +588,6 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
             // If test file path contains '_'.
             if (strpos($unitTestFilePath, '_') !== false) {
                 echo "You have to change from '_' of '$unitTestFilePath' to '-' because you cannot run unit tests." . PHP_EOL;
-                //if (B::getXebugExists()
                 if (function_exists('xdebug_break')
                     && !(self::$exeMode & B::IGNORING_BREAK_POINT)
                 ) {

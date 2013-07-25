@@ -202,6 +202,11 @@ use \BreakpointDebugging_InAllCase as BA;
 final class BreakpointDebugging extends \BreakpointDebugging_UnitTestCaller
 {
     /**
+     * @var array The class method call locations.
+     */
+    private static $_callLocations = array ();
+
+    /**
      * @var array Setting option filenames.
      */
     private static $_onceFlag = array ();
@@ -375,32 +380,24 @@ final class BreakpointDebugging extends \BreakpointDebugging_UnitTestCaller
     /**
      * For debug.
      *
-     * @//param stirng $dirName           Same as parent.
-     * @//param int    $permission        Same as parent.
      * @param array  $params            Same as parent.
      * @param int    $timeout           Same as parent.
      * @param int    $sleepMicroSeconds Same as parent.
      *
      * @return Same as parent.
      */
-    //static function mkdir($dirName, $permission = 0777, $timeout = 10, $sleepMicroSeconds = 100000)
     static function mkdir(array $params, $timeout = 10, $sleepMicroSeconds = 100000)
     {
-        self::assert(func_num_args() <= 4, 1);
-        //self::assert(is_string($dirName), 2);
-        //self::assert(is_int($permission), 3);
+        self::assert(func_num_args() <= 3, 1);
         self::assert(is_int($timeout), 4);
         self::assert(is_int($sleepMicroSeconds), 5);
 
-        //return parent::mkdir($dirName, $permission, $timeout, $sleepMicroSeconds);
         return parent::mkdir($params, $timeout, $sleepMicroSeconds);
     }
 
     /**
      * For debug.
      *
-     * @//param stirng $fileName          Same as parent.
-     * @//param stirng $mode              Same as parent.
      * @param array  $params            Same as parent.
      * @param int    $permission        Same as parent.
      * @param int    $timeout           Same as parent.
@@ -410,18 +407,13 @@ final class BreakpointDebugging extends \BreakpointDebugging_UnitTestCaller
      *
      * @return Same as parent.
      */
-    //static function fopen($fileName, $mode, $permission, $timeout = 10, $sleepMicroSeconds = 100000)
-    static function fopen(array $params, $permission = 0700, $timeout = 10, $sleepMicroSeconds = 100000)
+    static function fopen(array $params, $permission = null, $timeout = 10, $sleepMicroSeconds = 100000)
     {
-        //self::assert(func_num_args() <= 5, 1);
         self::assert(func_num_args() <= 4, 1);
-        //self::assert(is_string($fileName), 2);
-        //self::assert(is_string($mode), 3);
-        self::assert(is_int($permission) && 0 <= $permission && $permission <= 0777, 4);
-        self::assert(is_int($timeout), 5);
-        self::assert(is_int($sleepMicroSeconds), 6);
+        self::assert((is_int($permission) || is_null($permission)) && 0 <= $permission && $permission <= 0777, 2);
+        self::assert(is_int($timeout), 3);
+        self::assert(is_int($sleepMicroSeconds), 4);
 
-        //return parent::fopen($fileName, $mode, $permission, $timeout, $sleepMicroSeconds);
         return parent::fopen($params, $permission, $timeout, $sleepMicroSeconds);
     }
 
@@ -534,8 +526,6 @@ final class BreakpointDebugging extends \BreakpointDebugging_UnitTestCaller
      */
     static function limitAccess($invokerFilePaths, $enableUnitTest = false)
     {
-        static $invokingLocations = array ();
-
         $callStack = debug_backtrace();
         // Makes invoking location information.
         $count = count($callStack);
@@ -558,14 +548,14 @@ final class BreakpointDebugging extends \BreakpointDebugging_UnitTestCaller
             $fullFilePath = strtolower($fullFilePath);
         }
         $line = $callStack[$key]['line'];
-        if (array_key_exists($fullFilePath, $invokingLocations)
-            && array_key_exists($line, $invokingLocations[$fullFilePath])
+        if (array_key_exists($fullFilePath, self::$_callLocations)
+            && array_key_exists($line, self::$_callLocations[$fullFilePath])
         ) {
             // Skips same.
             return;
         }
         // Stores the invoking location information.
-        $invokingLocations[$fullFilePath][$line] = true;
+        self::$_callLocations[$fullFilePath][$line] = true;
 
         self::assert(func_num_args() <= 2, 1);
         self::assert(is_array($invokerFilePaths) || is_string($invokerFilePaths), 2);

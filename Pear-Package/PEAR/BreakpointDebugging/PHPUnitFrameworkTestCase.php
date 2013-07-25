@@ -133,9 +133,9 @@ abstract class BreakpointDebugging_PHPUnitFrameworkTestCase extends \PHPUnit_Fra
     protected function setUp()
     {
         // Unlinks internal synchronization file.
-        $internalLockFileName = B::getStatic('$_workDir') . '/LockByFileExistingOfInternal.txt';
-        if (is_file($internalLockFileName)) {
-            B::unlink(array ($internalLockFileName));
+        $internalLockFilePath = B::getStatic('$_workDir') . '/LockByFileExistingOfInternal.txt';
+        if (is_file($internalLockFilePath)) {
+            B::unlink(array ($internalLockFilePath));
         }
         // Stores the output buffering level.
         $this->_obLevel = ob_get_level();
@@ -178,8 +178,6 @@ abstract class BreakpointDebugging_PHPUnitFrameworkTestCase extends \PHPUnit_Fra
             && $this->backupStaticAttributes
         ) {
             self::$_splAutoloadRegisterOnceFlag = false;
-            //B::assert($this->runTestInSeparateProcess === false);
-            //B::assert($this->inIsolation === false);
             spl_autoload_register('\BreakpointDebugging_PHPUnitFrameworkTestCase::autoload', true, true);
         }
 

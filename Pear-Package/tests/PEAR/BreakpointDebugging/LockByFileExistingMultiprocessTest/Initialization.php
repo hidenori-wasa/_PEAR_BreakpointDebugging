@@ -1,6 +1,5 @@
 <?php
 
-//chdir(__DIR__ . '/../../../../');
 chdir(str_repeat('../', preg_match_all('`/`xX', $_SERVER['PHP_SELF'], $matches) - 2));
 require_once './BreakpointDebugging_Inclusion.php';
 
@@ -17,9 +16,9 @@ class Initialization
         shmop_write($shmopId, '0x00000000', 0);
         shmop_close($shmopId);
         // Unlinks internal synchronization file.
-        $internalLockFileName = B::getStatic('$_workDir') . '/LockByFileExistingOfInternal.txt';
-        if (is_file($internalLockFileName)) {
-            B::unlink(array ($internalLockFileName));
+        $internalLockFilePath = B::getStatic('$_workDir') . '/LockByFileExistingOfInternal.txt';
+        if (is_file($internalLockFilePath)) {
+            B::unlink(array ($internalLockFilePath));
         }
         // Unlinks synchronization file.
         $lockFileName = B::getStatic('$_workDir') . '/LockByFileExisting.txt';

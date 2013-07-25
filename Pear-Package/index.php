@@ -5,9 +5,59 @@ require_once './BreakpointDebugging_Inclusion.php';
 use \BreakpointDebugging as B;
 
 B::checkExeMode(); // Checks the execution mode.
-echo '<pre>';
-B::exitForError('Error message.' . PHP_EOL);
-echo 'Normal end message.';
+class TestBaseClass
+{
+    protected $baseAuto = 'baseAutoA';
+    protected static $baseStatic = 'baseStaticA';
+
+    protected function baseAutoMethod()
+    {
+        static $staticOfbaseAutoMethod = 'staticOfbaseAutoMethodA';
+
+        $staticOfbaseAutoMethod = 'staticOfbaseAutoMethodB';
+    }
+
+    protected static function baseStaticMethod()
+    {
+        static $staticOfbaseStaticMethod = 'staticOfbaseStaticMethodA';
+
+        $staticOfbaseStaticMethod = 'staticOfbaseStaticMethodB';
+    }
+
+}
+
+class TestClass extends \TestBaseClass
+{
+    private $_auto = '_autoA';
+    private static $_static = '_staticA';
+
+    private function autoMethod()
+    {
+        static $staticOfAutoMethod = 'staticOfAutoMethodA';
+
+        $staticOfAutoMethod = 'staticOfAutoMethodB';
+    }
+
+    private static function StaticMethod()
+    {
+        // static $staticOfStaticMethod = 'staticOfStaticMethodA';
+
+        $staticOfStaticMethod = 'staticOfStaticMethodB';
+    }
+
+}
+
+$classReflection = new \ReflectionClass('TestClass');
+foreach ($classReflection->getMethods(ReflectionMethod::IS_STATIC) as $methodReflection) {
+    if ($methodReflection->class === 'TestClass') {
+        $result = $methodReflection->getStaticVariables();
+        if (!empty($result)) {
+            throw new \BreakpointDebugging_ErrorException('We have to use private static property instead of using local static variable of static class method because its value cannot restore.');
+        }
+    }
+}
+echo '<pre>Test end.</pre>';
+
 return;
 ////////////////////////////////////////////////////////////////////////////////
 B::checkExeMode(); // Checks the execution mode.
@@ -52,7 +102,7 @@ function test()
     $testPropertyA = $testClassB->testObjectProperty->testPropertyA;
     $testPropertyA2 = $testArray[0]->testObjectProperty->testPropertyA;
 
-// Stores a variable.
+    // Stores a variable.
     \BreakpointDebugging_PHPUnitUtilGlobalState::backupGlobals(array ());
     B::assert($referenceA === 'referenced');
     B::assert($referenceB === array ('referenced'));
@@ -66,7 +116,7 @@ function test()
     B::assert($testArray[0]->testObjectProperty->testPropertyA === $testPropertyA2);
     B::assert(!array_key_exists('ADDITION', $GLOBALS));
 
-// Change value.
+    // Change value.
     $referenced = 'referenceDummy';
     $_SERVER['PHP_SELF'] = 'PHP_SELF_DUMMY';
     unset($_SERVER['HTTP_HOST']);
@@ -85,7 +135,7 @@ function test()
     B::assert($testArray[0]->testObjectProperty->testPropertyA === 'testPropertyZ');
     B::assert(array_key_exists('ADDITION', $GLOBALS));
 
-// Restores variable.
+    // Restores variable.
     \BreakpointDebugging_PHPUnitUtilGlobalState::restoreGlobals();
     B::assert($referenceA === 'referenceDummy'); // Copy.
     B::assert($referenceB === array ('referenceDummy')); // Copy.
@@ -99,27 +149,27 @@ function test()
     B::assert($testArray[0]->testObjectProperty->testPropertyA === $testPropertyA2);
     B::assert(!array_key_exists('ADDITION', $GLOBALS));
 
-// Change value.
+    // Change value.
     $referenced = 'referenceConnection';
     B::assert($referenceA === 'referenceConnection'); // Copy. Reference has been connecting.
     B::assert($referenceB === array ('referenceConnection')); // Copy. Reference has been connecting.
     B::assert($referenceC === array (array ('referenceConnection'))); // Copy. Reference has been connecting.
     B::assert($referenceD === array (array (array ('referenced')))); // Serialization. Reference has been broken.
     B::assert($recursiveReferenceA[1] === 'referenced'); // Serialization. Reference has been broken.
-//////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
     \TestClassB::$GLOBALS = $testArray;
-// Stores static attributes.
+    // Stores static attributes.
     \BreakpointDebugging_PHPUnitUtilGlobalState::backupStaticAttributes(array ());
     B::assert(\TestClassB::$GLOBALS[0]->testObjectProperty->testPropertyA === 'testPropertyA');
     ob_start();
     var_dump(\TestClassB::$testRecursiveArrayProperty);
     $beforeTestRecursiveArrayProperty = ob_get_clean();
 
-// Change value.
+    // Change value.
     \TestClassB::$GLOBALS[0]->testObjectProperty->testPropertyA = 'testPropertyZ';
     B::assert(\TestClassB::$GLOBALS[0]->testObjectProperty->testPropertyA === 'testPropertyZ');
 
-// Restores static attributes.
+    // Restores static attributes.
     \BreakpointDebugging_PHPUnitUtilGlobalState::restoreStaticAttributes();
     B::assert(\TestClassB::$GLOBALS[0]->testObjectProperty->testPropertyA === 'testPropertyA');
     ob_start();
