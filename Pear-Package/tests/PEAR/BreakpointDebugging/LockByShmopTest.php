@@ -3,7 +3,6 @@
 use \BreakpointDebugging as B;
 use \BreakpointDebugging_UnitTestCaller as BU;
 
-B::checkExeMode(true);
 class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_PHPUnitFrameworkTestCase
 {
     protected $LockByShmop;

@@ -1,6 +1,7 @@
 <?php
 
 chdir(str_repeat('../', preg_match_all('`/`xX', $_SERVER['PHP_SELF'], $matches) - 2));
+// chdir(__DIR__ . '/../../../../');
 require_once './BreakpointDebugging_Inclusion.php';
 
 use \BreakpointDebugging as B;

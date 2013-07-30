@@ -133,8 +133,6 @@ class BreakpointDebugging_DisplayCodeCoverageReport
 <form method="post" action="$thisFileURI?$data">
     <input type="submit" value="Code coverage report of ($classFilePath)."/>
 </form>
-</body>
-</html>
 EOD;
             }
         }

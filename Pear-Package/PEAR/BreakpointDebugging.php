@@ -283,6 +283,7 @@ abstract class BreakpointDebugging_InAllCase
      */
     static function exitForError($errorMessage = '')
     {
+        self::$exeMode &= ~B::IGNORING_BREAK_POINT;
         self::breakpoint($errorMessage, debug_backtrace());
         exit($errorMessage);
     }
@@ -353,7 +354,9 @@ abstract class BreakpointDebugging_InAllCase
     static function checkExeMode($isUnitTest = false)
     {
         if ($isUnitTest) {
-            echo '<pre>You must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'..._UNIT_TEST\');" into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php".</pre>';
+            echo '<pre><b>You must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'..._UNIT_TEST\');"' . PHP_EOL
+            . "\t" . 'into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php".' . PHP_EOL
+            . 'Or, you mistook start "php" page.</b></pre>';
             self::$exeMode |= self::IGNORING_BREAK_POINT;
             throw new \BreakpointDebugging_ErrorException('', 101);
         }
@@ -613,6 +616,20 @@ abstract class BreakpointDebugging_InAllCase
     }
 
     /**
+     * Removes directory with retry.
+     *
+     * @param array  $params            "rmdir()" parameters.
+     * @param int    $timeout           Seconds number of timeout.
+     * @param int    $sleepMicroSeconds Micro seconds to sleep.
+     *
+     * @return bool Success or failure.
+     */
+    static function rmdir(array $params, $timeout = 10, $sleepMicroSeconds = 100000)
+    {
+        return self::_retryForFilesystemFunction('rmdir', $params, $timeout, $sleepMicroSeconds);
+    }
+
+    /**
      * Retries until specified timeout for function of filesystem because OS has permission and sometimes fails.
      *
      * @param string $functionName      Execution function name.
@@ -623,22 +640,40 @@ abstract class BreakpointDebugging_InAllCase
      * @return mixed The result or false.
      * @throw Instance of \Exception.
      */
-    private static function _retryForFilesystemFunction($functionName, array $params, $timeout, $sleepMicroSeconds)
+    private static function _retryForFilesystemFunction($functionName, array $params, $timeout, $sleepMicroSeconds, $isTermination = false)
     {
-        $startTime = time();
+        if (!$isTermination) {
+            $startTime = time();
+        }
         while (true) {
-            $isEnd = time() - $startTime > $timeout;
+            $isTimeout = time() - $startTime > $timeout;
             try {
-                $result = call_user_func_array($functionName, $params);
+                if ($isTermination) {
+                    // Detects error last.
+                    $result = call_user_func_array($functionName, $params);
+                } else {
+                    // Does not detect error except last.
+                    set_error_handler('\BreakpointDebugging::handleError', 0);
+                    $result = @call_user_func_array($functionName, $params);
+                    restore_error_handler();
+                }
                 if ($result !== false) {
                     clearstatcache();
                     return $result;
                 }
-                if ($isEnd) {
+                if ($isTermination) {
                     return false;
                 }
+                if ($isTimeout) {
+                    usleep($sleepMicroSeconds);
+                    return self::_retryForFilesystemFunction($functionName, $params, $timeout, $sleepMicroSeconds, true);
+                }
             } catch (\Exception $e) {
-                if ($isEnd) {
+                if (!$isTermination) {
+                    restore_error_handler();
+                }
+                if ($isTimeout) {
+                    // Detects exception last.
                     throw $e;
                 }
             }
@@ -845,15 +880,17 @@ abstract class BreakpointDebugging_InAllCase
      * However, we may store by serialization because we cannot detect recursive array without changing array and we take time to search deep nest array.
      * Also, we must store by serialization in case of object because we may not be able to clone object by "__clone()" class method.
      *
-     * @param array $blacklist                 The list to except from doing variables backup.
-     * @param array $variables                 Array variable to store.
-     * @param array &$variablesStorage         Variables storage.
-     * @param array &$serializationKeysStorage Serialization-keys storage.
-     * @param bool  $isGlobalStorage           Is this the global storage?
+     * @param array  $blacklist                 The list to except from doing variables backup.
+     * @param array  $variables                 Array variable to store.
+     * @param array  &$variablesStorage         Variables storage.
+     * @param array  &$serializationKeysStorage Serialization-keys storage.
+     * @param bool   $isGlobalStorage           Is this the global storage?
+     * @param bool   $checkJustice              Checks justice?
+     * @param string $testMethodName            The test class method name.
      *
      * @return void
      */
-    static function storeVariables(array $blacklist, array $variables, array &$variablesStorage, array &$serializationKeysStorage, $isGlobalStorage = true)
+    static function storeVariables(array $blacklist, array $variables, array &$variablesStorage, array &$serializationKeysStorage, $isGlobalStorage = false, $checkJustice = false, $testMethodName = '')
     {
         foreach ($variables as $key => $value) {
             if (in_array($key, $blacklist)
@@ -861,6 +898,33 @@ abstract class BreakpointDebugging_InAllCase
                 || $value instanceof Closure
             ) {
                 continue;
+            }
+            if ($checkJustice) {
+                if (self::$exeMode & self::UNIT_TEST) {
+                    if ($testMethodName === '') {
+                        $testMethodName = 'Global variable had been defined outside unit test class or function!';
+                    } else {
+                        $testMethodName = 'Global variable had been defined inside unit test class method "' . $testMethodName . '"!';
+                    }
+                    B::exitForError(
+                        PHP_EOL
+                        . PHP_EOL
+                        . '<b>' . $testMethodName . PHP_EOL
+                        . 'We must use public static property instead of use global variable inside unit test file (*Test.php)' . PHP_EOL
+                        . "\t" . 'because "php" version 5.3.0 cannot detect global variable definition except unit test file realtime.' . PHP_EOL
+                        . 'Or, we must use autoload by "new" instead of include "*.php" file which defines static status inside function or class method' . PHP_EOL
+                        . "\t" . 'because "php" version 5.3.0 cannot detect an included static status definition realtime.</b>' . PHP_EOL
+                        . ' '
+                    );
+                } else {
+                    B::exitForError(
+                        PHP_EOL
+                        . PHP_EOL
+                        . '<b>We must use autoload by "new" instead of include "*.php" file which defines static status inside function or class method' . PHP_EOL
+                        . "\t" . 'because "php" version 5.3.0 cannot detect an included static status definition realtime.</b>' . PHP_EOL
+                        . ' '
+                    );
+                }
             }
             if (($key === 'GLOBALS' && $isGlobalStorage)
                 || (!is_object($value) && !is_array($value))
@@ -926,33 +990,31 @@ abstract class BreakpointDebugging_InAllCase
     }
 
     /**
-     * Changes from file path to a class name.
+     * Changes from full file path to a class name.
      *
-     * @param type $filePath The file path.
+     * @param type $filePath $fullFilePath Full file path.
      *
      * @return mixed Class name or false.
      */
-    static function filePathToClassName($filePath)
+    static function fullFilePathToClassName($fullFilePath)
     {
-        if (empty($filePath)) {
+        if (empty($fullFilePath)) {
             return false;
         }
-        $filePath = realpath($filePath);
-        $includePathString = get_include_path();
-        $includePaths = explode(PATH_SEPARATOR, $includePathString);
+        $includePaths = explode(PATH_SEPARATOR, get_include_path());
         if (self::$exeMode & self::UNIT_TEST) {
             array_unshift($includePaths, dirname($_SERVER['SCRIPT_FILENAME']));
         }
         $isWindows = B::getStatic('$_os') === 'WIN';
         foreach ($includePaths as $includePath) {
-            $includePath = realpath($includePath);
+            $fullIncludePath = realpath($includePath);
             if ($isWindows) {
-                $result = stripos($filePath, $includePath);
+                $result = stripos($fullFilePath, $fullIncludePath);
             } else {
-                $result = strpos($filePath, $includePath);
+                $result = strpos($fullFilePath, $fullIncludePath);
             }
             if ($result === 0) {
-                $className = substr($filePath, strlen($includePath) + 1, - strlen('.php'));
+                $className = substr($fullFilePath, strlen($fullIncludePath) + 1, - strlen('.php'));
                 // Changes directory separator and '-' to underscore.
                 $className = str_replace(array ('/', '\\', '-'), '_', $className);
                 if (!in_array($className, get_declared_classes())) {

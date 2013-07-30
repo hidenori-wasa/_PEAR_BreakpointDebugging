@@ -115,10 +115,8 @@ final class BreakpointDebugging_LockByFileExisting extends \BreakpointDebugging_
         $stat = stat($lockFilePath);
         // Locking flag file is too old.
         if (time() - $stat['mtime'] > $flagFileExpire) {
-            set_error_handler('\BreakpointDebugging::handleError', 0);
             // Delete locking flag file.
-            @B::unlink(array ($lockFilePath), $timeout, $sleepMicroSeconds);
-            restore_error_handler();
+            B::unlink(array ($lockFilePath), $timeout, $sleepMicroSeconds);
         }
     }
 
@@ -130,9 +128,7 @@ final class BreakpointDebugging_LockByFileExisting extends \BreakpointDebugging_
      */
     protected function loopLocking()
     {
-        set_error_handler('\BreakpointDebugging::handleError', 0);
-        $this->pFile = @B::fopen(array ($this->lockFilePath, 'x+b'), 0600, $this->timeout, $this->sleepMicroSeconds);
-        restore_error_handler();
+        $this->pFile = B::fopen(array ($this->lockFilePath, 'x+b'), 0600, $this->timeout, $this->sleepMicroSeconds);
     }
 
     /**
@@ -151,9 +147,7 @@ final class BreakpointDebugging_LockByFileExisting extends \BreakpointDebugging_
             return;
             // @codeCoverageIgnoreEnd
         }
-        set_error_handler('\BreakpointDebugging::handleError', 0);
-        @B::unlink(array ($this->lockFilePath), $this->timeout, $this->sleepMicroSeconds);
-        restore_error_handler();
+        B::unlink(array ($this->lockFilePath), $this->timeout, $this->sleepMicroSeconds);
     }
 
 }

@@ -3,60 +3,29 @@
 require_once './BreakpointDebugging_Inclusion.php';
 
 use \BreakpointDebugging as B;
+use \BreakpointDebugging_PHPUnitUtilFilesystem as BF;
 
 B::checkExeMode(); // Checks the execution mode.
-class TestBaseClass
-{
-    protected $baseAuto = 'baseAutoA';
-    protected static $baseStatic = 'baseStaticA';
 
-    protected function baseAutoMethod()
-    {
-        static $staticOfbaseAutoMethod = 'staticOfbaseAutoMethodA';
+$handle = popen('/path/to/executable 2>&1', 'r');
+echo B::convertMbString("'$handle'; " . gettype($handle) . "\n");
+$read = fread($handle, 2096);
+echo B::convertMbString($read);
+pclose($handle);
+return;
 
-        $staticOfbaseAutoMethod = 'staticOfbaseAutoMethodB';
-    }
 
-    protected static function baseStaticMethod()
-    {
-        static $staticOfbaseStaticMethod = 'staticOfbaseStaticMethodA';
+$exePath = BF::streamResolveIncludePath('BreakpointDebugging/MultiprocessUnitTestForWindows.exe');
+$testPathA = BF::streamResolveIncludePath('tests/PEAR/BreakpointDebugging-ExceptionTest.php');
+// Runs multiprocess unit test for Windows.
+// $result = `MultiprocessUnitTestForWindows.exe`;
+// $result = `$exePath -h`;
+// $result = `$exePath -help`;
+$result = `$exePath $testPathA 2`;
+// $result = `$exePath "TestA.php" 3`;
+// $result = `$exePath TestA.php 2 "TestB.php" 3`;
 
-        $staticOfbaseStaticMethod = 'staticOfbaseStaticMethodB';
-    }
-
-}
-
-class TestClass extends \TestBaseClass
-{
-    private $_auto = '_autoA';
-    private static $_static = '_staticA';
-
-    private function autoMethod()
-    {
-        static $staticOfAutoMethod = 'staticOfAutoMethodA';
-
-        $staticOfAutoMethod = 'staticOfAutoMethodB';
-    }
-
-    private static function StaticMethod()
-    {
-        // static $staticOfStaticMethod = 'staticOfStaticMethodA';
-
-        $staticOfStaticMethod = 'staticOfStaticMethodB';
-    }
-
-}
-
-$classReflection = new \ReflectionClass('TestClass');
-foreach ($classReflection->getMethods(ReflectionMethod::IS_STATIC) as $methodReflection) {
-    if ($methodReflection->class === 'TestClass') {
-        $result = $methodReflection->getStaticVariables();
-        if (!empty($result)) {
-            throw new \BreakpointDebugging_ErrorException('We have to use private static property instead of using local static variable of static class method because its value cannot restore.');
-        }
-    }
-}
-echo '<pre>Test end.</pre>';
+echo "<pre>$result</pre>";
 
 return;
 ////////////////////////////////////////////////////////////////////////////////

@@ -1,24 +1,22 @@
 <?php
 
 use \BreakpointDebugging as B;
+use \BreakpointDebugging_Error_InAllCaseTest as T;
 
 function test4()
 {
-    global $lineA;
     static $isRegister = false;
 
     B::registerNotFixedLocation($isRegister);
 
     trigger_error2();
-    $lineA = __LINE__ - 1;
+    T::$lineA = __LINE__ - 1;
 }
 
 function test3()
 {
-    global $lineB;
-
     test4();
-    $lineB = __LINE__ - 1;
+    T::$lineB = __LINE__ - 1;
 }
 
 trigger_error2();

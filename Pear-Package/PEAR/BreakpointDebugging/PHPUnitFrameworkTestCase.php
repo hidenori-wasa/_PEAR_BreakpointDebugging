@@ -51,6 +51,7 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *
+ * @category   PHP
  * @package    PHPUnit
  * @subpackage Framework
  * @author     Sebastian Bergmann <sebastian@phpunit.de>
@@ -69,6 +70,7 @@ use \BreakpointDebugging_PHPUnitUtilGlobalState as BGS;
 /**
  * Tests unit test files by "B::executeUnitTest()" class method.
  *
+ * @category   PHP
  * @package    PHPUnit
  * @subpackage Framework
  * @author     Sebastian Bergmann <sebastian@phpunit.de>
@@ -84,6 +86,11 @@ abstract class BreakpointDebugging_PHPUnitFrameworkTestCase extends \PHPUnit_Fra
      * @var bool Once flag of "splAutoloadRegister()".
      */
     private static $_splAutoloadRegisterOnceFlag = true;
+
+    /**
+     * @var string The test class method name.
+     */
+    private static $_testMethodName;
 
     /**
      * @var array List to except to store global variable.
@@ -108,11 +115,18 @@ abstract class BreakpointDebugging_PHPUnitFrameworkTestCase extends \PHPUnit_Fra
      *                          Or, the class name when extends base class.
      *
      * @return void
+     * @author Hidenori Wasa <public@hidenori-wasa.com>
      */
     static function autoload($className)
     {
         static $nestLevel = 0;
 
+        // If class file has been loaded first.
+        if ($nestLevel === 0) {
+            // Checks justice.
+            BGS::backupGlobals(self::$_backupGlobalsBlacklist, true, self::$_testMethodName);
+            BGS::backupStaticAttributes(self::$_backupStaticAttributesBlacklist, true);
+        }
         $nestLevel++;
         B::autoload($className);
         $nestLevel--;
@@ -129,6 +143,7 @@ abstract class BreakpointDebugging_PHPUnitFrameworkTestCase extends \PHPUnit_Fra
      * Sets up initializing which is needed at least in unit test.
      *
      * @return void
+     * @author Hidenori Wasa <public@hidenori-wasa.com>
      */
     protected function setUp()
     {
@@ -146,6 +161,7 @@ abstract class BreakpointDebugging_PHPUnitFrameworkTestCase extends \PHPUnit_Fra
      * Cleans up environment which is needed at least in unit test.
      *
      * @return void
+     * @author Hidenori Wasa <public@hidenori-wasa.com>
      */
     protected function tearDown()
     {
@@ -160,6 +176,7 @@ abstract class BreakpointDebugging_PHPUnitFrameworkTestCase extends \PHPUnit_Fra
      * And, sets autoload class method to store static status by "spl_autoload_register()".
      *
      * @return void
+     * @author Hidenori Wasa <public@hidenori-wasa.com>
      */
     public function runBare()
     {
@@ -167,18 +184,23 @@ abstract class BreakpointDebugging_PHPUnitFrameworkTestCase extends \PHPUnit_Fra
 
         $this->numAssertions = 0;
 
-        if ($onceFlagPerTestFile) {
-            $onceFlagPerTestFile = false;
-            self::$_backupGlobalsBlacklist = $this->backupGlobalsBlacklist;
-            self::$_backupStaticAttributesBlacklist = $this->backupStaticAttributesBlacklist;
-            BGS::backupGlobals(self::$_backupGlobalsBlacklist);
-            BGS::backupStaticAttributes(self::$_backupStaticAttributesBlacklist);
-        }
-        if (self::$_splAutoloadRegisterOnceFlag
-            && $this->backupStaticAttributes
-        ) {
-            self::$_splAutoloadRegisterOnceFlag = false;
-            spl_autoload_register('\BreakpointDebugging_PHPUnitFrameworkTestCase::autoload', true, true);
+        if ($this->backupStaticAttributes) {
+            // For autoload.
+            self::$_testMethodName = $this->getName();
+            if ($onceFlagPerTestFile) {
+                $onceFlagPerTestFile = false;
+                // For autoload.
+                self::$_backupGlobalsBlacklist = $this->backupGlobalsBlacklist;
+                self::$_backupStaticAttributesBlacklist = $this->backupStaticAttributesBlacklist;
+                // Checks justice of global variables after unit test file is included.
+                BGS::backupGlobals(self::$_backupGlobalsBlacklist, true);
+                // Stores static attributes.
+                BGS::backupStaticAttributes(self::$_backupStaticAttributesBlacklist);
+            }
+            if (self::$_splAutoloadRegisterOnceFlag) {
+                self::$_splAutoloadRegisterOnceFlag = false;
+                spl_autoload_register('\BreakpointDebugging_PHPUnitFrameworkTestCase::autoload', true, true);
+            }
         }
 
         // Start output buffering.
@@ -239,9 +261,11 @@ abstract class BreakpointDebugging_PHPUnitFrameworkTestCase extends \PHPUnit_Fra
         // Clean up stat cache.
         clearstatcache();
 
+        // Checks justice of global variables which had been defined inside unit test method.
+        BGS::backupGlobals(self::$_backupGlobalsBlacklist, true, self::$_testMethodName);
         // Restores "$GLOBALS" and static attributes if those have been stored.
-        BreakpointDebugging_PHPUnitUtilGlobalState::restoreGlobals($this->backupGlobalsBlacklist);
-        BreakpointDebugging_PHPUnitUtilGlobalState::restoreStaticAttributes();
+        BGS::restoreGlobals($this->backupGlobalsBlacklist);
+        BGS::restoreStaticAttributes();
 
         // Clean up INI settings.
         foreach ($this->iniSettings as $varName => $oldValue) {
@@ -283,6 +307,7 @@ abstract class BreakpointDebugging_PHPUnitFrameworkTestCase extends \PHPUnit_Fra
      *
      * @return mixed
      * @throws RuntimeException
+     * @author Hidenori Wasa <public@hidenori-wasa.com>
      */
     protected function runTest()
     {
@@ -362,6 +387,7 @@ abstract class BreakpointDebugging_PHPUnitFrameworkTestCase extends \PHPUnit_Fra
      * @param string $message   Error message.
      *
      * @return void
+     * @author Hidenori Wasa <public@hidenori-wasa.com>
      */
     static function assertTrue($condition, $message = '')
     {
@@ -383,6 +409,7 @@ abstract class BreakpointDebugging_PHPUnitFrameworkTestCase extends \PHPUnit_Fra
      *
      * @return void
      * @throws PHPUnit_Framework_AssertionFailedError
+     * @author Hidenori Wasa <public@hidenori-wasa.com>
      */
     public static function fail($message = '')
     {

@@ -150,6 +150,11 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
     private static $_codeCoverageReportPath;
 
     /**
+     *
+     */
+    private static $_separator;
+
+    /**
      * Limits static properties accessing.
      *
      * @return void
@@ -168,6 +173,7 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
         parent::$staticPropertyLimitings['$_includePaths'] = '';
         parent::$staticPropertyLimitings['$_valuesToTrace'] = '';
         parent::$staticPropertyLimitings['$exeMode'] = 'BreakpointDebugging/PHPUnitFrameworkTestCase.php';
+        self::$_separator = PHP_EOL . '//////////////////////////////////////////////////////////////////////////' . PHP_EOL;
     }
 
     /**
@@ -378,17 +384,16 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      */
     static function checkExeMode($isUnitTest = false)
     {
-        if (func_num_args() === 0) {
-            echo '<pre>You must not set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'..._UNIT_TEST\');" into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php".</pre>';
-            self::$exeMode |= B::IGNORING_BREAK_POINT;
-            throw new \BreakpointDebugging_ErrorException('', 101);
-        }
         B::assert(is_bool($isUnitTest), 1);
 
-        if (!$isUnitTest) {
-            echo '<pre>You must not set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'..._UNIT_TEST\');" into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php".</pre>';
+        if (func_num_args() === 0
+            || !$isUnitTest
+        ) {
+            echo '<pre><b>You must not set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'..._UNIT_TEST\');"' . PHP_EOL
+            . "\t" . ' into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php".' . PHP_EOL
+            . 'Or, you mistook start "php" page.</b></pre>';
             self::$exeMode |= B::IGNORING_BREAK_POINT;
-            throw new \BreakpointDebugging_ErrorException('', 102);
+            throw new \BreakpointDebugging_ErrorException('', 101);
         }
     }
 
@@ -402,6 +407,8 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
     private static function _runPHPUnitCommand($command)
     {
         $command = ltrim($command);
+        echo self::$_separator;
+        echo "Runs <b>\"phpunit $command\"</b> command." . PHP_EOL;
         $commandElements = explode(' ', $command);
         $testFileName = array_pop($commandElements);
         array_push($commandElements, self::$unitTestDir . $testFileName);
@@ -412,6 +419,8 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
         if (in_array('--process-isolation', $commandElements)) {
             throw new \BreakpointDebugging_ErrorException('You must not use "--process-isolation" command line switch because this unit test is run in other process.' . PHP_EOL . 'So, you cannot debug unit test code with IDE.', 101);
         }
+        // Stores global variables before unit test file is included.
+        \BreakpointDebugging_PHPUnitUtilGlobalState::backupGlobals(array ());
         // Uses "PHPUnit" package error handler.
         restore_error_handler();
         // Runs unit test continuously.
@@ -423,14 +432,20 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
     /**
      * Executes unit tests continuously, and debugs with IDE.
      *
-     * We have to use private static property instead of using local static variable of static class method because its value cannot restore.
-     * Then, we can use unit test's "--static-backup" command line switch.
+     * Please, follow rule, then, we can use unit test's "--static-backup" command line switch. Also, those rule violation is detected.
+     * The rule 1: We must use private static property instead of use local static variable of class static method
+     *      because "php" version 5.3.0 cannot restore its value.
+     * The rule 2: We must use public static property instead of use global variable inside unit test file (*Test.php)
+     *      because "php" version 5.3.0 cannot detect global variable definition except unit test file realtime.
+     * The rule 3: We must use autoload by "new" instead of include "*.php" file which defines static status inside function or class method
+     *      because "php" version 5.3.0 cannot detect an included static status definition realtime.
+     * Also, we should not use global variable to avoid variable crash in all "php" code.
      *
      * Also, we must not use unit test's "--process-isolation" command line switch because its tests is run in other process.
      * Therefore, we cannot debug unit test code with IDE.
      *
-     * How to run multiprocess unit test (Unix only):
-     *      Procedure 1: Use process control functions "pcntl_...()" inside your unit test class method "test...()".
+     * How to run multiprocess unit test: (This has not been testing.)
+     *      Procedure 1: Use "popen()" or "proc_open()" inside your unit test class method "test...()".
      *      Procedure 2: Judge by using "parent::assertTrue(<conditional expression>)".
      *
      * ### Running procedure. ###
@@ -461,8 +476,7 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      * @Example page which runs unit tests.
      * <?php
      *
-     * $projectDirPath = str_repeat('../', preg_match_all('`/`xX', $_SERVER['PHP_SELF'], $matches) - 2);
-     * chdir(__DIR__ . '/' . $projectDirPath);
+     * chdir(str_repeat('../', preg_match_all('`/`xX', $_SERVER['PHP_SELF'], $matches) - 2));
      * require_once './BreakpointDebugging_Inclusion.php';
      *
      * use \BreakpointDebugging as B;
@@ -482,10 +496,6 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      *
      * @Example of unit test file.
      * <?php
-     *
-     * $projectDirPath = str_repeat('../', preg_match_all('`/`xX', $_SERVER['PHP_SELF'], $matches) - 2);
-     * chdir(__DIR__ . '/' . $projectDirPath);
-     * require_once './BreakpointDebugging_Inclusion.php';
      *
      * use \BreakpointDebugging as B;
      * use \BreakpointDebugging_UnitTestCaller as BU;
@@ -521,17 +531,19 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      *     }
      *
      *     /*
-     *      * @expectedException        \BreakpointDebugging_ErrorException
+     *      * @expectedException        \Something_ErrorException
      *      * @expectedExceptionMessage CLASS=SomethingTest FUNCTION=testSomething_A ID=101
      *      *
      *     function testSomething_A()
      *     {
      *          BU::markTestSkippedInDebug();
      *
+     *          // Calls "__destruct()".
+     *          $this->_pSomething = null;
      *          // Constructs an instance inside this local scope.
      *          $localInstance = new \Something();
      *
-     *          BU::$exeMode |= B::IGNORING_BREAK_POINT;
+     *          BU::$exeMode |= B::IGNORING_BREAK_POINT; // Reference variable must specify class name because it cannot extend.
      *          throw new \Something_ErrorException('Something message.', 101);
      *     }
      *
@@ -542,7 +554,7 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      *          try {
      *              B::assert(true, 101);
      *              B::assert(false, 102);
-     *          } catch (\BreakpointDebugging_ErrorException $e) {
+     *          } catch (\Something_ErrorException $e) {
      *              $this->assertTrue(strripos($e->getMessage(), 'CLASS=SomethingTest FUNCTION=testSomething_B ID=102'));
      *              return;
      *          }
@@ -570,7 +582,6 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
 
         echo file_get_contents('BreakpointDebugging/css/FontStyle.html', true);
         echo '<pre>';
-        $separator = PHP_EOL . '//////////////////////////////////////////////////////////////////////////' . PHP_EOL;
 
         if (self::$exeMode & B::RELEASE) {
             echo '<b>\'RELEASE_UNIT_TEST\' execution mode.</b>' . PHP_EOL;
@@ -595,15 +606,12 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
                 }
                 continue;
             }
-            $command = $commandLineSwitches . ' --stop-on-failure --static-backup ' . $unitTestFilePath;
-            echo $separator;
-            echo "Runs <b>\"phpunit $command\"</b> command." . PHP_EOL;
-            self::_runPHPUnitCommand($command);
+            self::_runPHPUnitCommand($commandLineSwitches . ' --stop-on-failure --static-backup ' . $unitTestFilePath);
         }
         /*         * ***
           }
          * *** */
-        echo $separator;
+        echo self::$_separator;
         echo '<b>Unit tests have done.</b></pre>';
     }
 
@@ -664,14 +672,20 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
         // Creates code coverage report.
         $displayErrorsStorage = ini_get('display_errors');
         ini_set('display_errors', '');
-        echo '<pre><b>';
+        echo '<pre>';
+        if (self::$exeMode & B::RELEASE) {
+            echo '<b>\'RELEASE_UNIT_TEST\' execution mode.</b>' . PHP_EOL;
+        } else {
+            echo '<b>\'DEBUG_UNIT_TEST\' execution mode.</b>' . PHP_EOL;
+        }
         self::_runPHPUnitCommand($commandLineSwitches . ' --static-backup --coverage-html ' . $codeCoverageReportPath . ' ' . $unitTestFilePath);
-        echo '</b></pre>';
+        echo '</pre>';
         ini_set('display_errors', $displayErrorsStorage);
         // Displays the code coverage report in browser.
         self::$_classFilePaths = $classFilePaths;
         self::$_codeCoverageReportPath = $codeCoverageReportPath;
         include_once './BreakpointDebugging_DisplayCodeCoverageReport.php';
+        echo '</body></html>';
         exit;
     }
 

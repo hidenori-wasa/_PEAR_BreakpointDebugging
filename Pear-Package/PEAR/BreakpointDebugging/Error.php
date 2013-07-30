@@ -734,7 +734,7 @@ abstract class BreakpointDebugging_Error_InAllCase
      */
     protected function addParameterHeaderToLog(&$pTmpLog, $file, $line, $func, $class)
     {
-        $className = B::filePathToClassName($file);
+        $className = B::fullFilePathToClassName($file);
         if ($className
             && is_subclass_of($className, 'PHPUnit_Framework_Test')) {
             $this->logBufferWriting($pTmpLog, $this->tags['uint test anchor name']);
@@ -798,7 +798,7 @@ abstract class BreakpointDebugging_Error_InAllCase
                     && $file === $noFixFile
                 ) {
                     $marks = str_repeat($this->mark, 10);
-                    $this->logBufferWriting($pTmpLog, PHP_EOL . $tabs . $this->tags['b'] . $marks . ' This function has been not fixed. ' . $marks . $this->tags['/b']);
+                    $this->logBufferWriting($pTmpLog, PHP_EOL . $tabs . $this->tags['font']['caution'] . $this->tags['b'] . $marks . ' This function has been not fixed. ' . $marks . $this->tags['/b'] . $this->tags['/font']);
                     if ($onceFlag2) {
                         $onceFlag2 = false;
                         $this->addParameterHeaderToLog($pTmpLog, $noFixFile, $line, $func, $class);

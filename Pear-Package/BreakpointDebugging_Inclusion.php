@@ -45,4 +45,6 @@
 const BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME = './PEAR_Setting/';
 require_once BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php';
 
+\BreakpointDebugging::assert(version_compare(PHP_VERSION, '5.3', '>'));
+
 ?>

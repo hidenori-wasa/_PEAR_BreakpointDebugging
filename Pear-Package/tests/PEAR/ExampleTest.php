@@ -2,7 +2,6 @@
 
 use \BreakpointDebugging as B;
 
-B::checkExeMode(true);
 class ExampleTest extends \BreakpointDebugging_PHPUnitFrameworkTestCase
 {
     /**

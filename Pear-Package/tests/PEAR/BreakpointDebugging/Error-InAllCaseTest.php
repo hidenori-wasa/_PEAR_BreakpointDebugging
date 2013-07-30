@@ -2,8 +2,8 @@
 
 use \BreakpointDebugging as B;
 use \BreakpointDebugging_UnitTestCaller as BU;
+use \BreakpointDebugging_Error_InAllCaseTest as T;
 
-B::checkExeMode(true);
 class example
 {
     const CONST_TEST = 1; // Tests constant property when unit test reflects object.
@@ -30,6 +30,8 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_PHPUn
 {
     static $error;
     private static $_errorLogDir;
+    static $line1_, $line2_, $lineA_, $lineB_;
+    static $line1, $line2, $lineA, $lineB;
 
     static function setUpBeforeClass()
     {
@@ -53,7 +55,7 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_PHPUn
                 // Deletes the error log file, variable configuring file and the error location file.
                 B::unlink(array ($errorLogDirElementPath));
             }
-            rmdir($errorLogDirectory);
+            B::rmdir(array ($errorLogDirectory));
         }
         self::$error = new \BreakpointDebugging_Error();
     }
@@ -100,8 +102,6 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_PHPUn
     {
         BU::markTestSkippedInDebug(); // Because this unit test is the logging check.
 
-        global $line1_, $line2_, $lineA_, $lineB_;
-
         $testString = 'Test string.';
         B::addValuesToTrace(array ('$testString' => $testString));
         B::addValuesToTrace(array ('$testString' => $testString));
@@ -118,22 +118,18 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_PHPUn
         $thisFileNumber = $this->_getFileNumber(__FILE__);
         function test2_()
         {
-            global $line1_;
-
             BU::$exeMode |= B::IGNORING_BREAK_POINT;
             for ($count = 0; $count < 2; $count++) {
                 \BreakpointDebugging_Error_InAllCaseTest::$error->handleException2(new \Exception(), B::$prependExceptionLog);
-                $line1_ = __LINE__ - 1;
+                T::$line1_ = __LINE__ - 1;
             }
             BU::$exeMode &= ~B::IGNORING_BREAK_POINT;
         }
 
         function test1_()
         {
-            global $line2_;
-
             test2_();
-            $line2_ = __LINE__ - 1;
+            T::$line2_ = __LINE__ - 1;
         }
 
         BU::$exeMode |= B::IGNORING_BREAK_POINT;
@@ -149,7 +145,7 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_PHPUn
         $cmpBinData1 = rtrim(B::compressIntArray(array ($parentFileNumber, $line__, $thisFileNumber, $lineParent)), PHP_EOL);
         $this->assertTrue(strpos($binData1, $cmpBinData1) !== false);
 
-        $cmpBinData1 = rtrim(B::compressIntArray(array ($parentFileNumber, $lineA_, $parentFileNumber, $lineB_, $parentFileNumber, $lineC_, $thisFileNumber, $lineParent)), PHP_EOL);
+        $cmpBinData1 = rtrim(B::compressIntArray(array ($parentFileNumber, self::$lineA_, $parentFileNumber, self::$lineB_, $parentFileNumber, $lineC_, $thisFileNumber, $lineParent)), PHP_EOL);
         $this->assertTrue(strpos($binData1, $cmpBinData1) !== false);
 
         $binData2 = file_get_contents(B::getStatic('$_workDir') . self::$_errorLogDir . $thisFileNumber . '.bin');
@@ -157,7 +153,7 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_PHPUn
         $cmpBinData2 = rtrim(B::compressIntArray(array ($thisFileNumber, $line)), PHP_EOL);
         $this->assertTrue(strpos($binData2, $cmpBinData2) !== false);
 
-        $cmpBinData2 = rtrim(B::compressIntArray(array ($thisFileNumber, $line1_, $thisFileNumber, $line2_, $thisFileNumber, $line3)), PHP_EOL);
+        $cmpBinData2 = rtrim(B::compressIntArray(array ($thisFileNumber, self::$line1_, $thisFileNumber, self::$line2_, $thisFileNumber, $line3)), PHP_EOL);
         $this->assertTrue(strpos($binData2, $cmpBinData2) !== false);
 
         B::addValuesToTrace(array ('$parentFileNumber' => $parentFileNumber, '$thisFileNumber' => $thisFileNumber));
@@ -274,8 +270,6 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_PHPUn
     function testHandleError2()
     {
         BU::markTestSkippedInDebug(); // Because this unit test is the logging check.
-
-        global $line1, $line2, $lineA, $lineB;
         function handleError()
         {
             BU::$exeMode |= B::IGNORING_BREAK_POINT;
@@ -296,18 +290,14 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_PHPUn
         $thisFileNumber = $this->_getFileNumber(__FILE__);
         function test2()
         {
-            global $line1;
-
             trigger_error2();
-            $line1 = __LINE__ - 1;
+            T::$line1 = __LINE__ - 1;
         }
 
         function test1()
         {
-            global $line2;
-
             test2();
-            $line2 = __LINE__ - 1;
+            T::$line2 = __LINE__ - 1;
         }
 
         trigger_error2();
@@ -320,7 +310,7 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_PHPUn
         $cmpBinData1 = rtrim(B::compressIntArray(array ($parentFileNumber, $line_, $thisFileNumber, $lineParent)), PHP_EOL);
         $this->assertTrue(strpos($binData1, $cmpBinData1) !== false);
 
-        $cmpBinData1 = rtrim(B::compressIntArray(array ($parentFileNumber, $lineA, $parentFileNumber, $lineB, $parentFileNumber, $lineC, $thisFileNumber, $lineParent)), PHP_EOL);
+        $cmpBinData1 = rtrim(B::compressIntArray(array ($parentFileNumber, self::$lineA, $parentFileNumber, self::$lineB, $parentFileNumber, $lineC, $thisFileNumber, $lineParent)), PHP_EOL);
         $this->assertTrue(strpos($binData1, $cmpBinData1) !== false);
 
         $binData2 = file_get_contents(B::getStatic('$_workDir') . self::$_errorLogDir . $thisFileNumber . '.bin');
@@ -328,7 +318,7 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_PHPUn
         $cmpBinData2 = rtrim(B::compressIntArray(array ($thisFileNumber, $line)), PHP_EOL);
         $this->assertTrue(strpos($binData2, $cmpBinData2) !== false);
 
-        $cmpBinData2 = rtrim(B::compressIntArray(array ($thisFileNumber, $line1, $thisFileNumber, $line2, $thisFileNumber, $line3)), PHP_EOL);
+        $cmpBinData2 = rtrim(B::compressIntArray(array ($thisFileNumber, self::$line1, $thisFileNumber, self::$line2, $thisFileNumber, $line3)), PHP_EOL);
         $this->assertTrue(strpos($binData2, $cmpBinData2) !== false);
 
         ob_start();

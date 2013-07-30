@@ -35,6 +35,7 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *
+ * @category   PHP
  * @package    PHPUnit
  * @subpackage Util
  * @author     Sebastian Bergmann <sebastian@phpunit.de>
@@ -46,8 +47,9 @@
 use \BreakpointDebugging as B;
 
 /**
+ * Utility for static state.
  *
- *
+ * @category   PHP
  * @package    PHPUnit
  * @subpackage Util
  * @author     Sebastian Bergmann <sebastian@phpunit.de>
@@ -72,13 +74,16 @@ class BreakpointDebugging_PHPUnitUtilGlobalState extends \PHPUnit_Util_GlobalSta
     /**
      * Stores global variables.
      *
-     * @param array $blacklist The list to except from storage global variables.
+     * @param array  $blacklist      The list to except from storage global variables.
+     * @param bool   $checkJustice   Checks justice?
+     * @param string $testMethodName The test class method name.
      *
      * @return void
+     * @author Hidenori Wasa <public@hidenori-wasa.com>
      */
-    static function backupGlobals(array $blacklist)
+    static function backupGlobals(array $blacklist, $checkJustice = false, $testMethodName = '')
     {
-        B::storeVariables($blacklist, $GLOBALS, parent::$globals, self::$_globalSerializationKeysStorage);
+        B::storeVariables($blacklist, $GLOBALS, parent::$globals, self::$_globalSerializationKeysStorage, true, $checkJustice, $testMethodName);
     }
 
     /**
@@ -87,6 +92,7 @@ class BreakpointDebugging_PHPUnitUtilGlobalState extends \PHPUnit_Util_GlobalSta
      * @param array $blacklist Does not use.
      *
      * @return void
+     * @author Hidenori Wasa <public@hidenori-wasa.com>
      */
     static function restoreGlobals(array $blacklist = array ())
     {
@@ -96,11 +102,13 @@ class BreakpointDebugging_PHPUnitUtilGlobalState extends \PHPUnit_Util_GlobalSta
     /**
      * Stores static class attributes.
      *
-     * @param array $blacklist The list to except from storage static class attributes.
+     * @param array $blacklist    The list to except from storage static class attributes.
+     * @param bool  $checkJustice Checks justice?
      *
      * @return void
+     * @author Hidenori Wasa <public@hidenori-wasa.com>
      */
-    static function backupStaticAttributes(array $blacklist)
+    static function backupStaticAttributes(array $blacklist, $checkJustice = false)
     {
         // Scans the declared classes.
         $declaredClasses = get_declared_classes();
@@ -119,31 +127,9 @@ class BreakpointDebugging_PHPUnitUtilGlobalState extends \PHPUnit_Util_GlobalSta
             }
             // Class reflection.
             $classReflection = new \ReflectionClass($declaredClassName);
+            // If it is not user defined class.
             if (!$classReflection->isUserDefined()) {
-                break;
-            }
-            // Checks existence of local static variable of static class method.
-            foreach ($classReflection->getMethods(ReflectionMethod::IS_STATIC) as $methodReflection) {
-                if ($methodReflection->class === $declaredClassName) {
-                    $result = $methodReflection->getStaticVariables();
-                    // If static variable has been existing.
-                    if (!empty($result)) {
-                        if (B::$exeMode & B::RELEASE) { // In case of release mode.
-                            echo '';
-                        } else { // In case of debug mode.
-                            echo '<b>';
-                        }
-                        throw new \BreakpointDebugging_ErrorException(
-                            PHP_EOL
-                            . "\tWe have to use private static property instead of using local static variable of static class method because its value cannot restore." . PHP_EOL
-                            . "\tFILE: " . $methodReflection->getFileName() . PHP_EOL
-                            . "\tLINE: " . $methodReflection->getStartLine() . PHP_EOL
-                            . "\tCLASS: " . $methodReflection->class . PHP_EOL
-                            . "\tMETHOD: " . $methodReflection->name . PHP_EOL
-                            . PHP_EOL
-                        );
-                    }
-                }
+                continue;
             }
 
             $backup = array ();
@@ -151,6 +137,16 @@ class BreakpointDebugging_PHPUnitUtilGlobalState extends \PHPUnit_Util_GlobalSta
             foreach ($classReflection->getProperties(\ReflectionProperty::IS_STATIC) as $attribute) {
                 // If it is not property of base class. Because reference variable cannot be extended.
                 if ($attribute->class === $declaredClassName) {
+                    if ($checkJustice) {
+                        B::exitForError(
+                            PHP_EOL
+                            . PHP_EOL
+                            . '<b>We must use autoload by "new ' . $declaredClassName . '"' . PHP_EOL
+                            . "\t" . 'instead of include "*.php" file of "class ' . $declaredClassName . '" which defines static status inside function or class method' . PHP_EOL
+                            . "\t" . 'because "php" version 5.3.0 cannot detect an included static status definition realtime.</b>' . PHP_EOL
+                            . ' '
+                        );
+                    }
                     $attributeName = $attribute->name;
                     // If static property does not exist in black list (PHPUnit_Framework_TestCase::$backupStaticAttributesBlacklist).
                     if (!isset($blacklist[$declaredClassName])
@@ -165,11 +161,35 @@ class BreakpointDebugging_PHPUnitUtilGlobalState extends \PHPUnit_Util_GlobalSta
                     }
                 }
             }
+            if ($checkJustice) {
+                continue;
+            }
 
+            parent::$staticAttributes[$declaredClassName] = array ();
             if (!empty($backup)) {
                 // Stores static class properties.
-                parent::$staticAttributes[$declaredClassName] = array ();
-                B::storeVariables(array (), $backup, parent::$staticAttributes[$declaredClassName], self::$_staticAttributesSerializationKeysStorage, false);
+                B::storeVariables(array (), $backup, parent::$staticAttributes[$declaredClassName], self::$_staticAttributesSerializationKeysStorage);
+            }
+
+            // Checks existence of local static variable of static class method.
+            foreach ($classReflection->getMethods(ReflectionMethod::IS_STATIC) as $methodReflection) {
+                if ($methodReflection->class === $declaredClassName) {
+                    $result = $methodReflection->getStaticVariables();
+                    // If static variable has been existing.
+                    if (!empty($result)) {
+                        B::exitForError(
+                            PHP_EOL
+                            . PHP_EOL
+                            . '<b>We must use private static property instead of use local static variable of class static method' . PHP_EOL
+                            . "\t" . 'because "php" version 5.3.0 cannot restore its value.' . PHP_EOL
+                            . "\t" . 'FILE: ' . $methodReflection->getFileName() . PHP_EOL
+                            . "\t" . 'LINE: ' . $methodReflection->getStartLine() . PHP_EOL
+                            . "\t" . 'CLASS: ' . $methodReflection->class . PHP_EOL
+                            . "\t" . 'METHOD: ' . $methodReflection->name . '</b>' . PHP_EOL
+                            . ' '
+                        );
+                    }
+                }
             }
         }
     }
@@ -178,6 +198,7 @@ class BreakpointDebugging_PHPUnitUtilGlobalState extends \PHPUnit_Util_GlobalSta
      * Restores static class attributes.
      *
      * @return void
+     * @author Hidenori Wasa <public@hidenori-wasa.com>
      */
     static function restoreStaticAttributes()
     {

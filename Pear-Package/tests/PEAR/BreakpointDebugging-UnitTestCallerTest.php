@@ -3,7 +3,6 @@
 use \BreakpointDebugging as B;
 use \BreakpointDebugging_UnitTestCaller as BU;
 
-B::checkExeMode(true);
 class BreakpointDebuggingTestExampleBase
 {
     private static $privateStaticBase = 'private static base';
@@ -64,7 +63,7 @@ class BreakpointDebugging_UnitTestCallerTest extends \BreakpointDebugging_PHPUni
      * @covers \BreakpointDebugging<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_UnitTestCaller FUNCTION=checkExeMode ID=102.
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_UnitTestCaller FUNCTION=checkExeMode ID=101.
      */
     public function testIsUnitTestExeMode_C()
     {

@@ -2,7 +2,6 @@
 
 use \BreakpointDebugging as B;
 
-B::checkExeMode(true);
 // Overrides a class without inheritance.
 class NativeClassOverriding extends \BreakpointDebugging_OverrideClass
 {
