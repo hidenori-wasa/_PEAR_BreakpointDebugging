@@ -964,8 +964,7 @@ abstract class BreakpointDebugging_InAllCase
     /**
      * Does autoload by path which was divided by name space separator and underscore separator as directory.
      *
-     * @param string $className the included class name
-     *                          Or, the class name which calls class member of static.
+     * @param string $className The class name which calls class member of static.
      *                          Or, the class name which creates new instance.
      *                          Or, the class name when extends base class.
      *

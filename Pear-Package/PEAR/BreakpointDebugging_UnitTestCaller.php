@@ -474,58 +474,76 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      * @return void
      *
      * @Example page which runs unit tests.
-     * <?php
+     *  <?php
      *
-     * chdir(str_repeat('../', preg_match_all('`/`xX', $_SERVER['PHP_SELF'], $matches) - 2));
-     * require_once './BreakpointDebugging_Inclusion.php';
+     *  chdir(str_repeat('../', preg_match_all('`/`xX', $_SERVER['PHP_SELF'], $matches) - 2));
+     *  require_once './BreakpointDebugging_Inclusion.php';
      *
-     * use \BreakpointDebugging as B;
+     *  use \BreakpointDebugging as B;
      *
-     * B::checkExeMode(true);
+     *  B::checkExeMode(true);
      *
-     * // Please, choose unit tests files by customizing.
-     * $unitTestFilePaths = array (
-     *     'SomethingTest.php',
-     *     'Something/SubTest.php',
-     * );
+     *  // Please, choose unit tests files by customizing.
+     *  $unitTestFilePaths = array (
+     *      'SomethingTest.php',
+     *      'Something/SubTest.php',
+     *  );
      *
-     * // Executes unit tests.
-     * B::executeUnitTest($unitTestFilePaths); exit;
+     *  // Executes unit tests.
+     *  B::executeUnitTest($unitTestFilePaths); exit;
      *
-     * ?>
+     *  ?>
      *
      * @Example of unit test file.
-     * <?php
+     *  <?php
      *
-     * use \BreakpointDebugging as B;
-     * use \BreakpointDebugging_UnitTestCaller as BU;
+     *  use \BreakpointDebugging as B;
+     *  use \BreakpointDebugging_UnitTestCaller as BU;
      *
-     * B::checkExeMode(true);
+     *  // $somethingGlobal = ''; // We must not add global variable here.
+     *  // unset($_POST); // We must not delete global variable here.
+     *  // include_once 'AFileWhichHasStaticStatus'; // We must not include a file which has static status here.
      *
-     * class SomethingTest extends \BreakpointDebugging_PHPUnitFrameworkTestCase
-     * {
-     *     private $_pSomething;
+     *  class SomethingTest extends \BreakpointDebugging_PHPUnitFrameworkTestCase
+     *  {
+     *      private $_pSomething;
      *
-     *     static function setUpBeforeClass()
-     *     {
-     *          // We must not change static status at here because its change affects to next unit test file if you run unit tests continuously.
-     *          // Please, use "setUp()" class method instead of this class method.
-     *          // Also, we must not construct test instance here because we want to initialize class auto attribute.
+     *      static function setUpBeforeClass()
+     *      {
+     *          // global $somethingGlobal;
+     *          // $somethingGlobal = ''; // We must not add global variable here.
+     *          // unset($_POST); // We must not delete global variable here.
+     *          // include_once 'AFileWhichHasStaticStatus'; // We must not include a file which has static status here.
+     *          // $this->_pSomething = new \Something(); // We must not construct test instance here
+     *                                                    // because we want to initialize class auto attribute (auto class method's local static and auto property).
      *          ...
-     *     }
+     *      }
      *
-     *     protected function setUp()
-     *     {
+     *      protected function setUp()
+     *      {
      *          // This is required.
      *          parent::setUp();
-     *          // Constructs an instance per test.
-     *          $this->_pSomething = new \Something();
-     *     }
      *
-     *     protected function tearDown()
-     *     {
+     *          // Constructs an instance per test.
+     *          $this->_pSomething = new \Something(); // We must construct test instance here
+     *                                                 // because we want to initialize class auto attribute (auto class method's local static and auto property).
+     *
+     *          // global $somethingGlobal;
+     *          // $somethingGlobal = ''; // We must not add global variable here.
+     *          // unset($_POST); // We must not delete global variable here.
+     *          // include_once 'AFileWhichHasStaticStatus'; // We must not include a file which has static status here.
+     *      }
+     *
+     *      protected function tearDown()
+     *      {
+     *          // global $somethingGlobal;
+     *          // $somethingGlobal = ''; // We must not add global variable here.
+     *          // unset($_POST); // We must not delete global variable here.
+     *          // include_once 'AFileWhichHasStaticStatus'; // We must not include a file which has static status here.
+     *
      *          // Destructs an instance per test.
-     *          $this->_pSomething = null;
+     *          $this->_pSomething = null; // We must destruct test instance here
+     *                                     // because we want to initialize class auto attribute (auto class method's local static and auto property).
      *          // This is required.
      *          parent::tearDown();
      *     }
@@ -534,23 +552,34 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      *      * @expectedException        \Something_ErrorException
      *      * @expectedExceptionMessage CLASS=SomethingTest FUNCTION=testSomething_A ID=101
      *      *
-     *     function testSomething_A()
-     *     {
+     *      function testSomething_A()
+     *      {
      *          BU::markTestSkippedInDebug();
+     *
+     *          // global $somethingGlobal;
+     *          // $somethingGlobal = ''; // We must not add global variable here.
+     *          // unset($_POST); // We must not delete global variable here.
+     *          // include_once 'AFileWhichHasStaticStatus'; // We must not include a file which has static status here.
      *
      *          // Calls "__destruct()".
      *          $this->_pSomething = null;
-     *          // Constructs an instance inside this local scope.
-     *          $localInstance = new \Something();
      *
      *          BU::$exeMode |= B::IGNORING_BREAK_POINT; // Reference variable must specify class name because it cannot extend.
-     *          throw new \Something_ErrorException('Something message.', 101);
-     *     }
      *
-     *     function testSomething_B()
-     *     {
+     *          throw new \Something_ErrorException('Something message.', 101); // This is reflected in "@expectedException" and "@expectedExceptionMessage".
+     *      }
+     *
+     *      function testSomething_B()
+     *      {
      *          BU::markTestSkippedInRelease();
      *
+     *          // global $somethingGlobal;
+     *          // $somethingGlobal = ''; // We must not add global variable here.
+     *          // unset($_POST); // We must not delete global variable here.
+     *          // include_once 'AFileWhichHasStaticStatus'; // We must not include a file which has static status here.
+     *
+     *          // How to use "try-catch" syntax instead of "@expectedException" and "@expectedExceptionMessage".
+     *          // This way can test an error after static status was changed.
      *          try {
      *              B::assert(true, 101);
      *              B::assert(false, 102);
@@ -562,7 +591,7 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      *      }
      *  }
      *
-     * ?>
+     *  ?>
      *
      * @codeCoverageIgnore
      * Because "phpunit" command cannot run during "phpunit" command running.

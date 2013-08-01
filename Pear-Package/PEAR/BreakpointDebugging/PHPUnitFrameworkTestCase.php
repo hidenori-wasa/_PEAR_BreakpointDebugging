@@ -110,8 +110,7 @@ abstract class BreakpointDebugging_PHPUnitFrameworkTestCase extends \PHPUnit_Fra
     /**
      * Stores static status inside autoload handler because static status may be changed.
      *
-     * @param string $className the included class name
-     *                          Or, the class name which calls class member of static.
+     * @param string $className The class name which calls class member of static.
      *                          Or, the class name which creates new instance.
      *                          Or, the class name when extends base class.
      *
