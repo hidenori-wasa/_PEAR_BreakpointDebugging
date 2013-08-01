@@ -61,9 +61,9 @@ function BreakpointDebugging_setExecutionMode()
 
     // ### Execution mode setting. ===>
     // Please, choose a mode.
-    // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('DEBUG');
+    $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('DEBUG');
     // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('RELEASE');
-    $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('DEBUG_UNIT_TEST');
+    // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('DEBUG_UNIT_TEST');
     // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('RELEASE_UNIT_TEST');
     // ### <=== Execution mode setting.
     //
@@ -134,7 +134,11 @@ function BreakpointDebugging_setExecutionModeFlags($executionMode)
                 return $REMOTE | $UNIT_TEST; // Unit test of debug code on remote server.
         }
     }
-    B::exitForError('<pre>You must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'...\');" into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" because you mistook.</pre>');
+    exit(
+        '<pre>You must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'...\');"' . PHP_EOL
+        . "\t" . 'into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" because you mistook.' . PHP_EOL
+        . ' </pre>'
+    );
 }
 
 BreakpointDebugging_setExecutionMode();

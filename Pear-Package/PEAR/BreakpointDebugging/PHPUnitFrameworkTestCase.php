@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Debugs unit tests code continuously by IDE. With "\BreakpointDebugging::executeUnitTest()" class method.
+ * Debugs unit tests code continuously by IDE. With "\BreakpointDebugging::executeUnitTest()" class method. Supports "php" version 5.3.0 since then.
  *
  * This class extends "PHPUnit_Framework_TestCase".
  * Also, we can execute unit test with remote server without installing "PHPUnit".
@@ -68,7 +68,7 @@ use \BreakpointDebugging as B;
 use \BreakpointDebugging_PHPUnitUtilGlobalState as BGS;
 
 /**
- * Tests unit test files by "B::executeUnitTest()" class method.
+ * Debugs unit tests code continuously by IDE. With "\BreakpointDebugging::executeUnitTest()" class method. Supports "php" version 5.3.0 since then.
  *
  * @category   PHP
  * @package    PHPUnit
@@ -110,7 +110,8 @@ abstract class BreakpointDebugging_PHPUnitFrameworkTestCase extends \PHPUnit_Fra
     /**
      * Stores static status inside autoload handler because static status may be changed.
      *
-     * @param string $className The class name which calls class member of static.
+     * @param string $className the included class name
+     *                          Or, the class name which calls class member of static.
      *                          Or, the class name which creates new instance.
      *                          Or, the class name when extends base class.
      *
@@ -124,8 +125,8 @@ abstract class BreakpointDebugging_PHPUnitFrameworkTestCase extends \PHPUnit_Fra
         // If class file has been loaded first.
         if ($nestLevel === 0) {
             // Checks justice.
-            BGS::backupGlobals(self::$_backupGlobalsBlacklist, true, self::$_testMethodName);
-            BGS::backupStaticAttributes(self::$_backupStaticAttributesBlacklist, true);
+            BGS::checkGlobals(self::$_testMethodName);
+            BGS::checkStaticAttributes();
         }
         $nestLevel++;
         B::autoload($className);
@@ -193,7 +194,7 @@ abstract class BreakpointDebugging_PHPUnitFrameworkTestCase extends \PHPUnit_Fra
                 self::$_backupGlobalsBlacklist = $this->backupGlobalsBlacklist;
                 self::$_backupStaticAttributesBlacklist = $this->backupStaticAttributesBlacklist;
                 // Checks justice of global variables after unit test file is included.
-                BGS::backupGlobals(self::$_backupGlobalsBlacklist, true);
+                BGS::checkGlobals();
                 // Stores static attributes.
                 BGS::backupStaticAttributes(self::$_backupStaticAttributesBlacklist);
             }
@@ -229,11 +230,9 @@ abstract class BreakpointDebugging_PHPUnitFrameworkTestCase extends \PHPUnit_Fra
             $this->status = PHPUnit_Runner_BaseTestRunner::STATUS_SKIPPED;
             $this->statusMessage = $e->getMessage();
         } catch (PHPUnit_Framework_AssertionFailedError $e) {
-            B::handleException($e); // Displays error call stack information.
-            B::exitForError();
+            B::exitForError($e); // Displays error call stack information.
         } catch (Exception $e) {
-            B::handleException($e); // Displays error call stack information.
-            B::exitForError();
+            B::exitForError($e); // Displays error call stack information.
         }
 
         // Tear down the fixture. An exception raised in tearDown() will be
@@ -244,8 +243,7 @@ abstract class BreakpointDebugging_PHPUnitFrameworkTestCase extends \PHPUnit_Fra
                 $this->tearDownAfterClass();
             }
         } catch (Exception $_e) {
-            B::handleException($_e); // Displays error call stack information.
-            B::exitForError();
+            B::exitForError($_e); // Displays error call stack information.
         }
 
         // Stop output buffering.
@@ -262,7 +260,7 @@ abstract class BreakpointDebugging_PHPUnitFrameworkTestCase extends \PHPUnit_Fra
         clearstatcache();
 
         // Checks justice of global variables which had been defined inside unit test method.
-        BGS::backupGlobals(self::$_backupGlobalsBlacklist, true, self::$_testMethodName);
+        BGS::checkGlobals(self::$_testMethodName);
         // Restores "$GLOBALS" and static attributes if those have been stored.
         BGS::restoreGlobals($this->backupGlobalsBlacklist);
         BGS::restoreStaticAttributes();
@@ -335,16 +333,14 @@ abstract class BreakpointDebugging_PHPUnitFrameworkTestCase extends \PHPUnit_Fra
             // If "@expectedException" annotation is not string.
             if (!is_string($this->getExpectedException())) {
                 echo '<b>It is error if this test has been not using "@expectedException" annotation, or it requires "@expectedException" annotation.</b>';
-                B::handleException($e); // Displays error call stack information.
-                B::exitForError();
+                B::exitForError($e); // Displays error call stack information.
             }
             // "@expectedException" annotation should be success.
             try {
                 $this->assertThat($e, new PHPUnit_Framework_Constraint_Exception($this->getExpectedException()));
             } catch (Exception $dummy) {
                 echo '<b>Is error, or this test mistook "@expectedException" annotation value.</b>';
-                B::handleException($e); // Displays error call stack information.
-                B::exitForError();
+                B::exitForError($e); // Displays error call stack information.
             }
             // "@expectedExceptionMessage" annotation should be success.
             try {
@@ -356,8 +352,7 @@ abstract class BreakpointDebugging_PHPUnitFrameworkTestCase extends \PHPUnit_Fra
                 }
             } catch (Exception $dummy) {
                 echo '<b>Is error, or this test mistook "@expectedExceptionMessage" annotation value.</b>';
-                B::handleException($e); // Displays error call stack information.
-                B::exitForError();
+                B::exitForError($e); // Displays error call stack information.
             }
             // "@expectedExceptionCode" annotation should be success.
             try {
@@ -366,8 +361,7 @@ abstract class BreakpointDebugging_PHPUnitFrameworkTestCase extends \PHPUnit_Fra
                 }
             } catch (Exception $dummy) {
                 echo '<b>Is error, or this test mistook "@expectedExceptionCode" annotation value.</b>';
-                B::handleException($e); // Displays error call stack information.
-                B::exitForError();
+                B::exitForError($e); // Displays error call stack information.
             }
             return;
         }
@@ -397,8 +391,7 @@ abstract class BreakpointDebugging_PHPUnitFrameworkTestCase extends \PHPUnit_Fra
         try {
             parent::assertTrue($condition, $message);
         } catch (\Exception $e) {
-            B::handleException($e); // Displays error call stack information.
-            B::exitForError();
+            B::exitForError($e); // Displays error call stack information.
         }
     }
 
@@ -418,8 +411,7 @@ abstract class BreakpointDebugging_PHPUnitFrameworkTestCase extends \PHPUnit_Fra
         try {
             parent::fail($message);
         } catch (\Exception $e) {
-            B::handleException($e); // Displays error call stack information.
-            B::exitForError();
+            B::exitForError($e); // Displays error call stack information.
         }
     }
 

@@ -265,6 +265,7 @@ abstract class BreakpointDebugging_InAllCase
             }
         }
 
+        flush();
         if (self::getXebugExists()) {
             xdebug_break(); // Breakpoint. See local variable value by doing step execution here.
             // Push stop button if is thought error message.
@@ -279,13 +280,30 @@ abstract class BreakpointDebugging_InAllCase
     /**
      * Error exit. You can detect error exit location by call stack after break if you use this.
      *
-     * @param string $errorMessage Error message.
+     * @param mixed $error Error message or error exception instance.
      */
-    static function exitForError($errorMessage = '')
+    static function exitForError($error = '')
     {
         self::$exeMode &= ~B::IGNORING_BREAK_POINT;
-        self::breakpoint($errorMessage, debug_backtrace());
-        exit($errorMessage);
+        // If this is not actual environment release.
+        if (self::$_nativeExeMode !== (self::REMOTE | self::RELEASE)) {
+            // Displays error call stack instead of log.
+            self::$exeMode &= ~self::RELEASE;
+            // Avoids exception throw.
+            self::$_nativeExeMode &= ~self::UNIT_TEST;
+            // Ends the output buffering.
+            while (ob_get_level() > 0) {
+                ob_end_flush();
+            }
+        }
+        if (is_string($error)) {
+            self::handleError(E_USER_ERROR, $error);
+        } else if ($error instanceof \Exception) {
+            self::handleException($error);
+        } else {
+            throw new \BreakpointDebugging_ErrorException('You mistook type of first parameter.');
+        }
+        exit;
     }
 
     /**
@@ -636,13 +654,16 @@ abstract class BreakpointDebugging_InAllCase
      * @param array  $params            Execution function parameters.
      * @param int    $timeout           The timeout.
      * @param int    $sleepMicroSeconds Micro seconds for sleep.
+     * @param bool   $isTermination     This call is termination?
      *
      * @return mixed The result or false.
      * @throw Instance of \Exception.
      */
     private static function _retryForFilesystemFunction($functionName, array $params, $timeout, $sleepMicroSeconds, $isTermination = false)
     {
-        if (!$isTermination) {
+        if ($isTermination) {
+            $startTime = 0;
+        } else {
             $startTime = time();
         }
         while (true) {
@@ -873,123 +894,6 @@ abstract class BreakpointDebugging_InAllCase
     }
 
     /**
-     * Stores variables.
-     * NOTICE: A referenced value is not stored. It is until two-dimensional array element that a reference ID is stored.
-     *
-     * We should not store by serialization because serialization cannot store resource and array element reference variable.
-     * However, we may store by serialization because we cannot detect recursive array without changing array and we take time to search deep nest array.
-     * Also, we must store by serialization in case of object because we may not be able to clone object by "__clone()" class method.
-     *
-     * @param array  $blacklist                 The list to except from doing variables backup.
-     * @param array  $variables                 Array variable to store.
-     * @param array  &$variablesStorage         Variables storage.
-     * @param array  &$serializationKeysStorage Serialization-keys storage.
-     * @param bool   $isGlobalStorage           Is this the global storage?
-     * @param bool   $checkJustice              Checks justice?
-     * @param string $testMethodName            The test class method name.
-     *
-     * @return void
-     */
-    static function storeVariables(array $blacklist, array $variables, array &$variablesStorage, array &$serializationKeysStorage, $isGlobalStorage = false, $checkJustice = false, $testMethodName = '')
-    {
-        foreach ($variables as $key => $value) {
-            if (in_array($key, $blacklist)
-                || array_key_exists($key, $variablesStorage)
-                || $value instanceof Closure
-            ) {
-                continue;
-            }
-            if ($checkJustice) {
-                if (self::$exeMode & self::UNIT_TEST) {
-                    if ($testMethodName === '') {
-                        $testMethodName = 'Global variable had been defined outside unit test class or function!';
-                    } else {
-                        $testMethodName = 'Global variable had been defined inside unit test class method "' . $testMethodName . '"!';
-                    }
-                    B::exitForError(
-                        PHP_EOL
-                        . PHP_EOL
-                        . '<b>' . $testMethodName . PHP_EOL
-                        . 'We must use public static property instead of use global variable inside unit test file (*Test.php)' . PHP_EOL
-                        . "\t" . 'because "php" version 5.3.0 cannot detect global variable definition except unit test file realtime.' . PHP_EOL
-                        . 'Or, we must use autoload by "new" instead of include "*.php" file which defines static status inside function or class method' . PHP_EOL
-                        . "\t" . 'because "php" version 5.3.0 cannot detect an included static status definition realtime.</b>' . PHP_EOL
-                        . ' '
-                    );
-                } else {
-                    B::exitForError(
-                        PHP_EOL
-                        . PHP_EOL
-                        . '<b>We must use autoload by "new" instead of include "*.php" file which defines static status inside function or class method' . PHP_EOL
-                        . "\t" . 'because "php" version 5.3.0 cannot detect an included static status definition realtime.</b>' . PHP_EOL
-                        . ' '
-                    );
-                }
-            }
-            if (($key === 'GLOBALS' && $isGlobalStorage)
-                || (!is_object($value) && !is_array($value))
-            ) {
-                $variablesStorage[$key] = $value;
-                continue;
-            }
-            do {
-                if (is_array($value)) {
-                    foreach ($value as $value2) {
-                        if (is_object($value2)) {
-                            break 2;
-                        }
-                        if (is_array($value2)) {
-                            // For example, increases the speed by searching until "deepest array of super global variable" like "$GLOBALS['_SERVER']['argv']".
-                            // Also, supports recursive array by searching until there.
-                            foreach ($value2 as $value3) {
-                                if (is_object($value3)
-                                    || is_array($value3)
-                                ) {
-                                    break 3;
-                                }
-                            }
-                        }
-                    }
-                    $variablesStorage[$key] = $value;
-                    continue 2;
-                }
-            } while (false);
-            $variablesStorage[$key] = serialize($value);
-            $serializationKeysStorage[$key] = null;
-        }
-    }
-
-    /**
-     * Restores variables. We must not restore by reference copy because variable ID changes.
-     *
-     * @param array &$variables               Array variable to restore.
-     * @param array $variablesStorage         Variables storage.
-     * @param array $serializationKeysStorage Serialization-keys storage.
-     *
-     * @return void
-     */
-    static function restoreVariables(array &$variables, array $variablesStorage, array $serializationKeysStorage)
-    {
-        if (empty($variablesStorage)) {
-            return;
-        }
-        // Deletes "array variable element to restore" which isn't contained in variables storage.
-        foreach ($variables as $key => $value) {
-            if (!array_key_exists($key, $variablesStorage)) {
-                unset($variables[$key]);
-            }
-        }
-        // Judges serialization or copy, and overwrites array variable to restore or adds.
-        foreach ($variablesStorage as $key => $value) {
-            if (array_key_exists($key, $serializationKeysStorage)) {
-                $variables[$key] = unserialize($value);
-            } else {
-                $variables[$key] = $value;
-            }
-        }
-    }
-
-    /**
      * Changes from full file path to a class name.
      *
      * @param type $filePath $fullFilePath Full file path.
@@ -1060,7 +964,8 @@ abstract class BreakpointDebugging_InAllCase
     /**
      * Does autoload by path which was divided by name space separator and underscore separator as directory.
      *
-     * @param string $className The class name which calls class member of static.
+     * @param string $className the included class name
+     *                          Or, the class name which calls class member of static.
      *                          Or, the class name which creates new instance.
      *                          Or, the class name when extends base class.
      *
@@ -1083,7 +988,12 @@ abstract class BreakpointDebugging_InAllCase
      */
     static function handleException($pException)
     {
-        B::limitAccess('BreakpointDebugging_Option.php');
+        B::limitAccess(
+            array (
+                'BreakpointDebugging.php',
+                'BreakpointDebugging_Option.php',
+            )
+        );
 
         // Sets global internal error handler.( -1 sets all bits on 1. Therefore, this specifies error, warning and note of all kinds.)
         set_error_handler('\BreakpointDebugging_Error::handleInternalError', -1);
@@ -1119,7 +1029,12 @@ abstract class BreakpointDebugging_InAllCase
      */
     static function handleError($errorNumber, $errorMessage)
     {
-        B::limitAccess('BreakpointDebugging_Option.php');
+        B::limitAccess(
+            array (
+                'BreakpointDebugging.php',
+                'BreakpointDebugging_Option.php',
+            )
+        );
 
         // Sets global internal error handler.( -1 sets all bits on 1. Therefore, this specifies error, warning and note of all kinds.)
         set_error_handler('\BreakpointDebugging_Error::handleInternalError', -1);

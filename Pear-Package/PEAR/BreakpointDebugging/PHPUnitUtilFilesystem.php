@@ -1,7 +1,7 @@
 <?php
 
 /**
- * PHPUnit's file system general class methods.
+ * PHPUnit's file system general class methods. Supports "php" version 5.3.0 since then.
  *
  * Copyright (c) 2001-2013, Sebastian Bergmann <sebastian@phpunit.de>.
  * All rights reserved.
@@ -45,7 +45,7 @@
  * @since      File available since Release 3.0.0
  */
 /**
- * Filesystem helpers.
+ * PHPUnit's file system general class methods. Supports "php" version 5.3.0 since then.
  *
  * @category   PHP
  * @package    PHPUnit
@@ -57,7 +57,7 @@
  * @link       http://www.phpunit.de/
  * @since      Class available since Release 3.0.0
  */
-class BreakpointDebugging_PHPUnitUtilFilesystem
+class BreakpointDebugging_PHPUnitUtilFilesystem extends \PHPUnit_Util_Filesystem
 {
     /**
      * Uses this class method instead of "stream_resolve_include_path()" before "php" version 5.3.2.

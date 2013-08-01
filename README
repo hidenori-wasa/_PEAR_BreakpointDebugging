@@ -53,4 +53,4 @@ Notice
     However, "NetBeans IDE 7.3" supports "PHP5.4" and "HTML5".
 
     I have been coding new feature.
-    Also, I will add rollback feature into error logger because its logger has files which affect code's behavior.
+    Also, I will add auto repair feature into error logger because its logger has files which affect code's behavior.

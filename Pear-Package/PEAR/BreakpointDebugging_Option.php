@@ -802,12 +802,11 @@ EOD;
 if (!B::getXebugExists()) {
     if (!(B::getStatic('$exeMode') & B::REMOTE)) { // In case of local.
         B::exitForError(
-            '<pre>' .
-            '### ERROR ###' . PHP_EOL .
-            'FILE: ' . __FILE__ . ' LINE: ' . __LINE__ . PHP_EOL .
-            '"Xdebug" extension has been not loaded though this is a local host.' . PHP_EOL .
-            '"Xdebug" extension is required because (uses breakpoint, displays for fatal error and avoids infinity recursive function call).' .
-            '</pre>'
+            PHP_EOL
+            . '### ERROR ###' . PHP_EOL
+            . 'FILE: ' . __FILE__ . ' LINE: ' . __LINE__ . PHP_EOL
+            . '"Xdebug" extension has been not loaded though this is a local host.' . PHP_EOL
+            . '"Xdebug" extension is required because (uses breakpoint, displays for fatal error and avoids infinity recursive function call).' . PHP_EOL
         );
     }
 }

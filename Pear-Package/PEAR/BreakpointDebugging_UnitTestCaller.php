@@ -437,7 +437,7 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      *      because "php" version 5.3.0 cannot restore its value.
      * The rule 2: We must use public static property instead of use global variable inside unit test file (*Test.php)
      *      because "php" version 5.3.0 cannot detect global variable definition except unit test file realtime.
-     * The rule 3: We must use autoload by "new" instead of include "*.php" file which defines static status inside function or class method
+     * The rule 3: We must use autoload by "new" instead of include "*.php" file which defines static status inside unit test class method
      *      because "php" version 5.3.0 cannot detect an included static status definition realtime.
      * Also, we should not use global variable to avoid variable crash in all "php" code.
      *
