@@ -16,11 +16,6 @@ class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_PHPUnitFr
         ) {
             $this->markTestSkipped('"shmop" extention has been not loaded.');
         }
-        // Unlinks synchronization file.
-        $lockFilePath = B::getStatic('$_workDir') . '/LockByShmop.txt';
-        if (is_file($lockFilePath)) {
-            B::unlink(array ($lockFilePath));
-        }
         // Constructs instance.
         $this->LockByShmop = &\BreakpointDebugging_LockByShmop::singleton(5, 10);
     }

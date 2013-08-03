@@ -179,7 +179,7 @@ class BreakpointDebugging_PHPUnitUtilGlobalState extends \PHPUnit_Util_GlobalSta
     }
 
     /**
-     * Checks global variables storage.
+     * Checks definition change violation of global variables.
      *
      * @param string $testMethodName The test class method name.
      *
@@ -206,9 +206,9 @@ class BreakpointDebugging_PHPUnitUtilGlobalState extends \PHPUnit_Util_GlobalSta
         }
         $message = PHP_EOL;
         if ($testMethodName === '') {
-            $message .= 'Global variable had been ' . $definedOrDeleted . ' outside unit test class or function!' . PHP_EOL;
+            $message .= 'Global variable had been ' . $definedOrDeleted . ' outside unit test class or function! Or, inside of "setUpBeforeClass()"!' . PHP_EOL;
         } else {
-            $message .= 'Global variable had been ' . $definedOrDeleted . ' inside unit test class method "' . $testMethodName . '"!' . PHP_EOL;
+            $message .= 'Global variable had been ' . $definedOrDeleted . ' inside unit test class method "' . $testMethodName . '", "setUp()" or "tearDown()"!' . PHP_EOL;
         }
         $message .= PHP_EOL;
         if (!empty($additionalVariable)) {
@@ -223,18 +223,25 @@ class BreakpointDebugging_PHPUnitUtilGlobalState extends \PHPUnit_Util_GlobalSta
     }
 
     /**
+     * Resets global variables storage.
+     */
+    static function resetGlobals()
+    {
+        parent::$globals = array ();
+        self::$_globalSerializationKeysStorage = array ();
+    }
+
+    /**
      * Stores global variables.
      *
      * @param array  $blacklist      The list to except from storage global variables.
-     * @param bool   $checkJustice   Checks justice?
-     * @param string $testMethodName The test class method name.
      *
      * @return void
      * @author Hidenori Wasa <public@hidenori-wasa.com>
      */
-    static function backupGlobals(array $blacklist, $checkJustice = false, $testMethodName = '')
+    static function backupGlobals(array $blacklist)
     {
-        self::_storeVariables($blacklist, $GLOBALS, parent::$globals, self::$_globalSerializationKeysStorage, true, $checkJustice, $testMethodName);
+        self::_storeVariables($blacklist, $GLOBALS, parent::$globals, self::$_globalSerializationKeysStorage, true);
     }
 
     /**

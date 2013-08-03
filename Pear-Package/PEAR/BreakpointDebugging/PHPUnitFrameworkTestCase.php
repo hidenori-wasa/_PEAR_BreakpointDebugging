@@ -147,10 +147,18 @@ abstract class BreakpointDebugging_PHPUnitFrameworkTestCase extends \PHPUnit_Fra
      */
     protected function setUp()
     {
-        // Unlinks internal synchronization file.
-        $internalLockFilePath = B::getStatic('$_workDir') . '/LockByFileExistingOfInternal.txt';
-        if (is_file($internalLockFilePath)) {
-            B::unlink(array ($internalLockFilePath));
+        // Unlinks synchronization files.
+        $lockFilePaths = array (
+            'LockByFileExistingOfInternal.txt',
+            'LockByFileExisting.txt',
+            'LockByFlock.txt',
+            'LockByShmop.txt',
+        );
+        $workDir = B::getStatic('$_workDir');
+        foreach ($lockFilePaths as $lockFilePath) {
+            if (is_file($lockFilePath)) {
+                B::unlink(array (realpath($workDir . '/' . $lockFilePath)));
+            }
         }
         // Stores the output buffering level.
         $this->_obLevel = ob_get_level();
@@ -168,6 +176,32 @@ abstract class BreakpointDebugging_PHPUnitFrameworkTestCase extends \PHPUnit_Fra
         // Restores the output buffering level.
         while (ob_get_level() > $this->_obLevel) {
             ob_end_clean();
+        }
+    }
+
+    /**
+     * Checks an annotation.
+     *
+     * @return void
+     * @author Hidenori Wasa <public@hidenori-wasa.com>
+     */
+    private function _checkAnnotation()
+    {
+        $className = get_class($this);
+        $methodName = $this->name;
+        $errorMessage = '"' . $className . '::' . $methodName . '" unit test class method requires ';
+        $methodReflection = new ReflectionMethod($className, $methodName);
+        $docComment = $methodReflection->getDocComment();
+        if ($docComment === false) {
+            B::exitForError($errorMessage . 'document comment.');
+        }
+
+        if (preg_match('`@covers [[:blank:]]+ \\\\? [_[:alpha:]] [_[:alnum:]]* <extended> [[:space:]]+`xX', $docComment) !== 1) {
+            B::exitForError(
+                PHP_EOL
+                . $errorMessage . '"@covers ...<extended>" annotation' . PHP_EOL
+                . "\t" . 'because we may use code coverage report of base abstract class.' . PHP_EOL
+            );
         }
     }
 
@@ -192,8 +226,12 @@ abstract class BreakpointDebugging_PHPUnitFrameworkTestCase extends \PHPUnit_Fra
                 // For autoload.
                 self::$_backupGlobalsBlacklist = $this->backupGlobalsBlacklist;
                 self::$_backupStaticAttributesBlacklist = $this->backupStaticAttributesBlacklist;
-                // Checks justice of global variables after unit test file is included.
+                // Checks definition change violation of global variables when unit test file was included.
                 BGS::checkGlobals();
+                // Resets global variables storage.
+                BGS::resetGlobals();
+                // Stores the value change of global variables at "self::setUpBeforeClass()".
+                BGS::backupGlobals(self::$_backupGlobalsBlacklist);
                 // Stores static attributes.
                 BGS::backupStaticAttributes(self::$_backupStaticAttributesBlacklist);
             }
@@ -214,6 +252,9 @@ abstract class BreakpointDebugging_PHPUnitFrameworkTestCase extends \PHPUnit_Fra
             if ($this->inIsolation) {
                 $this->setUpBeforeClass();
             }
+
+            $this->_checkAnnotation();
+
             $this->setExpectedExceptionFromAnnotation();
             $this->setUp();
             $this->checkRequirements();

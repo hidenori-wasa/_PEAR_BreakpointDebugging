@@ -10,11 +10,6 @@ class BreakpointDebugging_LockByFlockTest extends \BreakpointDebugging_PHPUnitFr
     function setUp()
     {
         parent::setUp();
-        // Unlinks synchronization file.
-        $lockFilePath = B::getStatic('$_workDir') . '/LockByFlock.txt';
-        if (is_file($lockFilePath)) {
-            B::unlink(array ($lockFilePath));
-        }
         // Constructs instance.
         $this->lockByFlock = &\BreakpointDebugging_LockByFlock::singleton(5, 10);
     }
