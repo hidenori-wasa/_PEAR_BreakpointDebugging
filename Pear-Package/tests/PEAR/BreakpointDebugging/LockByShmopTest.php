@@ -29,6 +29,20 @@ class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_PHPUnitFr
 
     /**
      * @covers \BreakpointDebugging_LockByShmop<extended>
+     */
+    function testMultiprocess()
+    {
+        // Destructs instance.
+        $this->LockByShmop = null;
+
+        $main = new \Tests_PEAR_BreakpointDebugging_MultiprocessTest_Main();
+        if (!$main->test(1234, '\BreakpointDebugging_LockByShmop')) {
+            parent::fail();
+        }
+    }
+
+    /**
+     * @covers \BreakpointDebugging_LockByShmop<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
      * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=__clone ID=101.

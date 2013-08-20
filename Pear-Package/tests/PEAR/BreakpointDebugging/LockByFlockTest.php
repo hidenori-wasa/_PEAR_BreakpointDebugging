@@ -23,6 +23,18 @@ class BreakpointDebugging_LockByFlockTest extends \BreakpointDebugging_PHPUnitFr
 
     /**
      * @covers \BreakpointDebugging_LockByFlock<extended>
+     */
+    function testMultiprocess()
+    {
+        $main = new \Tests_PEAR_BreakpointDebugging_MultiprocessTest_Main();
+        if (!$main->test(1234, '\BreakpointDebugging_LockByFlock')) {
+            // Displays error call stack information, then stops at breakpoint, then exits.
+            parent::fail();
+        }
+    }
+
+    /**
+     * @covers \BreakpointDebugging_LockByFlock<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
      * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=__clone ID=101.

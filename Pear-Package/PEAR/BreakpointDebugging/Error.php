@@ -1173,6 +1173,11 @@ abstract class BreakpointDebugging_Error_InAllCase
                 $this->tags['i'] . get_resource_type($paramValue) . $this->tags['/i'] . ' ' .
                 $this->tags['font']['resource'] . $paramValue . $this->tags['/font'];
             $this->logBufferWriting($pTmpLog, $tmp);
+        } else if (preg_match("`^Resource [[:blank:]]+ id [[:blank:]]+ #[[:digit:]]+$`xX", (string) $paramValue)) {
+            $tmp = $this->tags['b'] . 'closed resource' . $this->tags['/b'] . ' ' .
+                $this->tags['i'] . get_resource_type($paramValue) . $this->tags['/i'] . ' ' .
+                $this->tags['font']['resource'] . $paramValue . $this->tags['/font'];
+            $this->logBufferWriting($pTmpLog, $tmp);
         } else {
             // @codeCoverageIgnoreStart
             B::internalException('', 2);

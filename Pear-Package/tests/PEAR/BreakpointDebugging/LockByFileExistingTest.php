@@ -25,6 +25,17 @@ class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_PH
 
     /**
      * @covers \BreakpointDebugging_LockByFileExisting<extended>
+     */
+    function testMultiprocess()
+    {
+        $main = new \Tests_PEAR_BreakpointDebugging_MultiprocessTest_Main();
+        if (!$main->test(1234, '\BreakpointDebugging_LockByFileExisting')) {
+            parent::fail();
+        }
+    }
+
+    /**
+     * @covers \BreakpointDebugging_LockByFileExisting<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
      * @expectedExceptionMessage CLASS=BreakpointDebugging_Lock FUNCTION=__clone ID=101.

@@ -188,7 +188,19 @@ class BreakpointDebugging_PHPUnitUtilGlobalState extends \PHPUnit_Util_GlobalSta
     static function checkGlobals($testMethodName = '')
     {
         $additionalVariable = array_diff_key($GLOBALS, parent::$globals);
+        foreach ($additionalVariable as $key => $value) {
+            if ($value === null) {
+                unset($additionalVariable[$key]);
+            }
+        }
+
         $deletionalVariable = array_diff_key(parent::$globals, $GLOBALS);
+        foreach ($deletionalVariable as $key => $value) {
+            if ($value === null) {
+                unset($deletionalVariable[$key]);
+            }
+        }
+
         $isError = false;
         if (!empty($additionalVariable)) {
             $isError = true;
@@ -204,7 +216,8 @@ class BreakpointDebugging_PHPUnitUtilGlobalState extends \PHPUnit_Util_GlobalSta
         if (!$isError) {
             return;
         }
-        $message = PHP_EOL;
+
+        $message = '<pre><b>';
         if ($testMethodName === '') {
             $message .= 'Global variable had been ' . $definedOrDeleted . ' outside unit test class or function! Or, inside of "setUpBeforeClass()"!' . PHP_EOL;
         } else {
@@ -218,8 +231,8 @@ class BreakpointDebugging_PHPUnitUtilGlobalState extends \PHPUnit_Util_GlobalSta
         }
         $message .= "\t" . 'because "php" version 5.3.0 cannot detect ' . $definedOrDeleted . ' global variable except unit test file realtime.' . PHP_EOL
             . 'Or, we must use autoload by "new" instead of include "*.php" file which ' . $definesOrDeletes . ' static status inside unit test class method' . PHP_EOL
-            . "\t" . 'because "php" version 5.3.0 cannot detect an included static status ' . $definitionOrDeletion . ' realtime.' . PHP_EOL;
-        B::exitForError($message);
+            . "\t" . 'because "php" version 5.3.0 cannot detect an included static status ' . $definitionOrDeletion . ' realtime.</b></pre>';
+        exit($message);
     }
 
     /**
@@ -268,12 +281,19 @@ class BreakpointDebugging_PHPUnitUtilGlobalState extends \PHPUnit_Util_GlobalSta
         // If the declared-classes-number increases.
         if ($currentDeclaredClassesNumber > self::$_prevDeclaredClassesNumber) {
             // If the included unit test class before test.
-            if (is_subclass_of($declaredClassName, 'PHPUnit_Framework_Test')) {
+            if (is_subclass_of($declaredClassName, 'PHPUnit_Framework_Test')
+                || $declaredClassName === 'PHP_Token_BACKTICK' // For code coverage report.
+            ) {
                 return;
             }
-            xdebug_break(); // For debug.
+            exit(
+                '<pre><b>"class ' . $declaredClassName . '" definition violation.' . PHP_EOL
+                . "\t" . 'We must use autoload by "new" instead of include "*.php" file which defines static property' . PHP_EOL
+                . "\t" . 'inside unit test class method' . PHP_EOL
+                . "\t" . 'because "php" version 5.3.0 cannot detect an included static property definition realtime.</b></pre>'
+            );
         } else if ($currentDeclaredClassesNumber < self::$_prevDeclaredClassesNumber) {
-            xdebug_break(); // For debug.
+            xdebug_break(); // For debug. Will not stop.
         }
     }
 

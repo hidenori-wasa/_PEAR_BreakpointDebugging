@@ -177,6 +177,20 @@ abstract class BreakpointDebugging_PHPUnitFrameworkTestCase extends \PHPUnit_Fra
         while (ob_get_level() > $this->_obLevel) {
             ob_end_clean();
         }
+        // Checks the autoload functions.
+        $autoloadFunctions = spl_autoload_functions();
+        if ($autoloadFunctions[0] !== array ('BreakpointDebugging_PHPUnitFrameworkTestCase', 'autoload')) {
+            if (is_array($autoloadFunctions[0])) {
+                $autoloadFunctions[0] = $autoloadFunctions[0][0] . '::' . $autoloadFunctions[0][1];
+            }
+            $className = get_class($this);
+            $methodName = $this->name;
+            throw new \BreakpointDebugging_ErrorException(
+                'You must not register autoload function "' . $autoloadFunctions[0] . '" by "spl_autoload_register()"' . PHP_EOL
+                . 'at top of stack in "' . $className . '::' . $methodName . '"' . PHP_EOL
+                . 'because you cannot store static status.'
+            );
+        }
     }
 
     /**
@@ -215,6 +229,9 @@ abstract class BreakpointDebugging_PHPUnitFrameworkTestCase extends \PHPUnit_Fra
     public function runBare()
     {
         static $onceFlagPerTestFile = true;
+
+        // Displays the progress.
+        flush();
 
         $this->numAssertions = 0;
 

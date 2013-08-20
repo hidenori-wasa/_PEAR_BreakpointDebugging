@@ -439,14 +439,61 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      *      because "php" version 5.3.0 cannot detect global variable definition except unit test file realtime.
      * The rule 3: We must use autoload by "new" instead of include "*.php" file which defines static status inside unit test class method
      *      because "php" version 5.3.0 cannot detect an included static status definition realtime.
+     * The rule 4: We must not register autoload function by "spl_autoload_register()" at top of stack
+     *      because we cannot store static status.
      * Also, we should not use global variable to avoid variable crash in all "php" code.
      *
      * Also, we must not use unit test's "--process-isolation" command line switch because its tests is run in other process.
      * Therefore, we cannot debug unit test code with IDE.
      *
+     * Caution: Don't test an unit when practical use server has been running with synchronization file because synchronization is destroyed.
+     *
      * How to run multiprocess unit test: (This has not been testing.)
      *      Procedure 1: Use "popen()" or "proc_open()" inside your unit test class method "test...()".
      *      Procedure 2: Judge by using "parent::assertTrue(<conditional expression>)".
+     * @Example of multiprocess unit test file.
+     *  <?php
+     *
+     *  use \BreakpointDebugging as B;
+     *  use \BreakpointDebugging_UnitTestCaller as BU;
+     *
+     *  class BreakpointDebugging_LockTest extends \BreakpointDebugging_PHPUnitFrameworkTestCase
+     *  {
+     *      /**
+     *       * @covers \BreakpointDebugging_Lock<extended>
+     *       * /
+     *      function testMultiprocess()
+     *      {
+     *          $pHandles = array ();
+     *          for ($count = 0; $count < 8; $count++) {
+     *              // Creates and runs a test process.
+     *              $pHandles[] = popen('php ./tests/PEAR/BreakpointDebugging/MultiprocessTest/Lock.php "param1" "param2"', 'r');
+     *          }
+     *
+     *          $results = array ();
+     *          foreach ($pHandles as $pHandle) {
+     *              while (!feof($pHandle)) {
+     *                  // Gets a result.
+     *                  $results[] = fgets($pHandle);
+     *              }
+     *          }
+     *
+     *          foreach ($pHandles as $pHandle) {
+     *              // Deletes a test process.
+     *              pclose($pHandle);
+     *          }
+     *
+     *          // Asserts the results.
+     *          if (max($results) !== '1000') {
+     *              // Displays error.
+     *              foreach ($results as $result) {
+     *                  echo $result;
+     *              }
+     *              // Displays error call stack information, then stops at breakpoint, then exits.
+     *              parent::fail();
+     *          }
+     *      }
+     *  }
      *
      * ### Running procedure. ###
      * Please, run the following procedure.

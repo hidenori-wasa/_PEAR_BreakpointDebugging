@@ -161,7 +161,6 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
                     B::assert($sharedMemoryAccessTime !== false);
                     $sharedMemoryAccessTime += 0;
                     if (time() - $sharedMemoryAccessTime >= $sharedMemoryExpire) {
-                        // var_dump('Shared memory expired.'); // For debug.
                         // Delete shared memory.
                         $result = shmop_delete(self::$sharedMemoryID);
                         B::assert($result !== false);
@@ -271,7 +270,6 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
             $nextCurrentProcessNumber = $this->_getNextCurrentProcessNumber();
             // When other process has been created.
             if ($nextCurrentProcessNumber !== false) {
-                // var_dump('Other process has been created.'); // For debug.
                 // Register next current process number as current process number.
                 $result = shmop_write(self::$sharedMemoryID, sprintf('0x%08X', $nextCurrentProcessNumber), 0);
                 B::assert($result !== false);

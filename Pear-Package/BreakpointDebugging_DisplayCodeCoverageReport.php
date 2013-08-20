@@ -92,7 +92,7 @@ class BreakpointDebugging_DisplayCodeCoverageReport
                 // $line = '    <link rel="stylesheet" type="text/css" href="style.css">    <link rel="stylesheet" type="text/css" href="other_style.css">'; // For debug.
                 $matches = array ();
                 // Embeds its content if cascading style sheet file path exists.
-                if (preg_match_all('`(.*)(<link[[:blank:]].*href[[:blank:]]*=[[:blank:]]*"(.*\.css)"[[:blank:]]*>)`xXiU', $line, $matches)) {
+                if (preg_match_all('`(.*) (<link [[:blank:]] .* href [[:blank:]]* = [[:blank:]]* "(.* \.css)" [[:blank:]]* >)`xXiU', $line, $matches)) {
                     $lastStrlen = 0;
                     $replaceLine = '';
                     for ($count = 0; $count < count($matches[1]); $count++) {

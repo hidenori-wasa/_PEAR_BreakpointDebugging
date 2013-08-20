@@ -1,7 +1,7 @@
 <?php
 
-global $dummyGlobal;
-$dummyGlobal = '';
+// global $dummyGlobal;
+// $dummyGlobal = '';
 class AFileWhichHasStaticStatus
 {
     private static $_privateStatic = array ();
