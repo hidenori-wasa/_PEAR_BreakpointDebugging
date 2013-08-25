@@ -61,25 +61,20 @@ require_once './BreakpointDebugging_Inclusion.php';
 
 use \BreakpointDebugging as B;
 
-if (!B::checkDevelopmentSecurity(B::RELEASE)) {
-    return;
-}
+/**
+ * Error log files manager.
+ *
+ * @category PHP
+ * @package  BreakpointDebugging
+ * @author   Hidenori Wasa <public@hidenori-wasa.com>
+ * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
+ * @version  Release: @package_version@
+ * @link     http://pear.php.net/package/BreakpointDebugging
+ */
+final class BreakpointDebugging_ErrorLogFilesManager
+{
+    private static $_lockByFileExisting;
 
-// Cancels the script running time limitation.
-set_time_limit(0);
-
-// Locks error log files.
-$lockByFileExisting = &\BreakpointDebugging_LockByFileExisting::internalSingleton();
-$lockByFileExisting->lock();
-
-$errorLogDirectory = B::getStatic('$_workDir') . \BreakpointDebugging_Error::getErrorLogDir();
-if (!is_dir($errorLogDirectory)) {
-    echo 'Error log directory does not exist.';
-    goto END_LABEL;
-}
-$errorLogDirElements = scandir($errorLogDirectory);
-// When you pushed "Download error log files" button.
-if (isset($_GET['download'])) {
     /**
      * Downloads a file.
      *
@@ -87,10 +82,8 @@ if (isset($_GET['download'])) {
      *
      * @return void
      */
-    function download($filepath)
+    private static function _download($filepath)
     {
-        global $lockByFileExisting;
-
         // Sends HTML header.
         header('Content-Disposition: attachment; filename="' . basename($filepath) . '"'); // Established file name. "filename" is sending-data file name.
         header('Content-Type: application/octet-stream'); // Content type. "application/octet-stream" is dialog which saves response by naming.
@@ -109,7 +102,7 @@ if (isset($_GET['download'])) {
         fclose($pFile);
 
         // Unlocks error log files.
-        $lockByFileExisting->unlock();
+        self::$_lockByFileExisting->unlock();
 
         // Downloads by sector unit to avoid memory lack.
         rewind($pTmp);
@@ -121,71 +114,102 @@ if (isset($_GET['download'])) {
         exit;
     }
 
-    // Searches the error log file which should download.
-    foreach ($errorLogDirElements as $errorLogDirElement) {
-        $errorLogDirElementPath = $errorLogDirectory . $errorLogDirElement;
-        if (!is_file($errorLogDirElementPath)) {
-            continue;
+    /**
+     * Manages error log files.
+     *
+     * @return void
+     */
+    static function manageErrorLogFiles()
+    {
+        if (!B::checkDevelopmentSecurity(B::RELEASE)) {
+            return;
         }
-        if ($_GET['download'] !== $errorLogDirElement) {
-            continue;
+
+        // Cancels the script running time limitation.
+        set_time_limit(0);
+
+        // Locks error log files.
+        self::$_lockByFileExisting = &\BreakpointDebugging_LockByFileExisting::internalSingleton();
+        self::$_lockByFileExisting->lock();
+
+        $errorLogDirectory = B::getStatic('$_workDir') . \BreakpointDebugging_Error::getErrorLogDir();
+        if (!is_dir($errorLogDirectory)) {
+            echo 'Error log directory does not exist.';
+            goto END_LABEL;
         }
-        // Downloads the error log file.
-        download($errorLogDirElementPath);
-    }
-} else if (isset($_GET['deleteErrorLogs'])) { // When you pushed "Delete all error log files" button.
-    // Searches the files which should delete.
-    foreach ($errorLogDirElements as $errorLogDirElement) {
-        if (!preg_match('`\.log$`xX', $errorLogDirElement)) {
-            continue;
-        }
-        $errorLogDirElementPath = $errorLogDirectory . $errorLogDirElement;
-        if (!is_file($errorLogDirElementPath)) {
-            continue;
-        }
-        // Deletes the error log file, variable configuring file or the error location file.
-        B::unlink(array ($errorLogDirElementPath));
-    }
-    echo '<pre>You must comment out "$developerIP = \'' . $_SERVER['REMOTE_ADDR'] . '\';" inside "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file before your IP is changed.</pre>';
-} else if (isset($_GET['reset'])) { // When you pushed "Reset error log files" button.
-    // Searches the files which should delete.
-    foreach ($errorLogDirElements as $errorLogDirElement) {
-        $errorLogDirElementPath = $errorLogDirectory . $errorLogDirElement;
-        if (!is_file($errorLogDirElementPath)) {
-            continue;
-        }
-        // Deletes the error log file, variable configuring file or the error location file.
-        B::unlink(array ($errorLogDirElementPath));
-    }
-    echo '<pre>You must comment out "$developerIP = \'' . $_SERVER['REMOTE_ADDR'] . '\';" inside "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file before your IP is changed.</pre>';
-} else { // In case of first time when this page was called.
-    $thisFileName = basename(__FILE__);
-    // Makes error log download-buttons.
-    foreach ($errorLogDirElements as $errorLogDirElement) {
-        if (!preg_match('`\.log$`xX', $errorLogDirElement)) {
-            continue;
-        }
-        echo <<<EOD
+        $errorLogDirElements = scandir($errorLogDirectory);
+        // When you pushed "Download error log files" button.
+        if (isset($_GET['download'])) {
+            // Searches the error log file which should download.
+            foreach ($errorLogDirElements as $errorLogDirElement) {
+                $errorLogDirElementPath = $errorLogDirectory . $errorLogDirElement;
+                if (!is_file($errorLogDirElementPath)) {
+                    continue;
+                }
+                if ($_GET['download'] !== $errorLogDirElement) {
+                    continue;
+                }
+                // Downloads the error log file.
+                self::_download($errorLogDirElementPath);
+            }
+        } else if (isset($_GET['deleteErrorLogs'])) { // When you pushed "Delete all error log files" button.
+            // Searches the files which should delete.
+            foreach ($errorLogDirElements as $errorLogDirElement) {
+                if (!preg_match('`\.log$`xX', $errorLogDirElement)) {
+                    continue;
+                }
+                $errorLogDirElementPath = $errorLogDirectory . $errorLogDirElement;
+                if (!is_file($errorLogDirElementPath)) {
+                    continue;
+                }
+                // Deletes the error log file, variable configuring file or the error location file.
+                B::unlink(array ($errorLogDirElementPath));
+            }
+            echo '<pre>You must comment out "$developerIP = \'' . $_SERVER['REMOTE_ADDR'] . '\';" inside "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file before your IP is changed.</pre>';
+        } else if (isset($_GET['reset'])) { // When you pushed "Reset error log files" button.
+            // Searches the files which should delete.
+            foreach ($errorLogDirElements as $errorLogDirElement) {
+                $errorLogDirElementPath = $errorLogDirectory . $errorLogDirElement;
+                if (!is_file($errorLogDirElementPath)) {
+                    continue;
+                }
+                // Deletes the error log file, variable configuring file or the error location file.
+                B::unlink(array ($errorLogDirElementPath));
+            }
+            echo '<pre>You must comment out "$developerIP = \'' . $_SERVER['REMOTE_ADDR'] . '\';" inside "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file before your IP is changed.</pre>';
+        } else { // In case of first time when this page was called.
+            $thisFileName = basename(__FILE__);
+            // Makes error log download-buttons.
+            foreach ($errorLogDirElements as $errorLogDirElement) {
+                if (!preg_match('`\.log$`xX', $errorLogDirElement)) {
+                    continue;
+                }
+                echo <<<EOD
 <form method="post" action="{$thisFileName}?download={$errorLogDirElement}">
     <input type="submit" value="Download error log file ({$errorLogDirElement})"/>
 
 </form>
 EOD;
-    }
-    echo <<<EOD
+            }
+            echo <<<EOD
 <form method="post" action="{$thisFileName}?deleteErrorLogs">
     <input type="submit" value="Delete all error log files (You must download all error log files before you push this button.)"></input>
 </form>
 EOD;
-    echo <<<EOD
+            echo <<<EOD
 <form method="post" action="{$thisFileName}?reset">
     <input type="submit" value="Reset error log files (You must debug and upload all error code before you push this button.)"></input>
 </form>
 EOD;
+        }
+
+        END_LABEL:
+        // Unlocks error log files.
+        self::$_lockByFileExisting->unlock();
+    }
+
 }
 
-END_LABEL:
-// Unlocks error log files.
-$lockByFileExisting->unlock();
+\BreakpointDebugging_ErrorLogFilesManager::manageErrorLogFiles();
 
 ?>

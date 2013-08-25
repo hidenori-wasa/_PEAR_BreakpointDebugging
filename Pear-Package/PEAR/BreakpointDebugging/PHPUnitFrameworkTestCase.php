@@ -5,7 +5,25 @@
  *
  * This class extends "PHPUnit_Framework_TestCase".
  * Also, we can execute unit test with remote server without installing "PHPUnit".
- * Please, add following into "\PHPUnit_Framework_TestCase" class.
+ *
+ * ### About "PHPUnit" package component. ###
+ * I copied following "PHPUnit" package files into "PEAR/BreakpointDebugging/Component/" directory
+ * because it avoids "PHPUnit" package version control.
+ *      PEAR/PHP/CodeCoverage.php
+ *      PEAR/PHP/CodeCoverage/
+ *          Copyright (c) 2009-2012 Sebastian Bergmann <sb@sebastian-bergmann.de>
+ *      PEAR/PHP/Invoker.php
+ *      PEAR/PHP/Invoker/
+ *          Copyright (c) 2011-2012 Sebastian Bergmann <sb@sebastian-bergmann.de>
+ *      PEAR/PHP/Timer.php
+ *      PEAR/PHP/Timer/
+ *          Copyright (c) 2010-2011 Sebastian Bergmann <sb@sebastian-bergmann.de>
+ *      PEAR/PHP/Token.php
+ *      PEAR/PHP/Token/
+ *          Copyright (c) 2009-2012 Sebastian Bergmann <sb@sebastian-bergmann.de>
+ *      PEAR/PHPUnit/
+ *          Copyright (c) 2001-2012 Sebastian Bergmann <sebastian@phpunit.de>
+ * Then, I added following into "\PHPUnit_Framework_TestCase" class because this class needed private property.
  *      function __get($propertyName)
  *      {
  *          return $this->$propertyName;

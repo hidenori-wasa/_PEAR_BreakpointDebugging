@@ -98,10 +98,9 @@ class BreakpointDebugging_PHPUnitUtilGlobalState extends \PHPUnit_Util_GlobalSta
         if ($isGlobal) {
             // Deletes "unset()" variable from storage because we can do "unset()" except property.
             foreach ($variablesStorage as $key => $value) {
-                if (array_key_exists($key, $variables)) {
-                    continue;
+                if (!array_key_exists($key, $variables)) {
+                    unset($variablesStorage[$key]);
                 }
-                unset($variablesStorage[$key]);
             }
         }
 
@@ -161,10 +160,9 @@ class BreakpointDebugging_PHPUnitUtilGlobalState extends \PHPUnit_Util_GlobalSta
         if (empty($variablesStorage)) {
             return;
         }
-        // Deletes "array variable element to restore" which isn't contained in variables storage.
+        // This loop will not need.
         foreach ($variables as $key => $value) {
             if (!array_key_exists($key, $variablesStorage)) {
-                // unset($variables[$key]);
                 xdebug_break(); // For debug. Will not stop.
             }
         }

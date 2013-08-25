@@ -406,6 +406,10 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      */
     private static function _runPHPUnitCommand($command)
     {
+        // Sets component pear package inclusion paths.
+        $includePath = ini_get('include_path');
+        ini_set('include_path', './PEAR/BreakpointDebugging/Component' . PATH_SEPARATOR . getenv('PHP_PEAR_INSTALL_DIR') . '/BreakpointDebugging/Component' . PATH_SEPARATOR . $includePath);
+
         $command = ltrim($command);
         echo self::$_separator;
         echo "Runs <b>\"phpunit $command\"</b> command." . PHP_EOL;
@@ -498,27 +502,7 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      * ### Running procedure. ###
      * Please, run the following procedure.
      * Procedure 1: Make "page like example page" and unit test files.
-     * Procedure 2: Copy following "PHPUnit" files into "PEAR" directory of project directory.
-     *      PEAR/PHP/CodeCoverage.php
-     *      PEAR/PHP/CodeCoverage/
-     *          Copyright (c) 2009-2012 Sebastian Bergmann <sb@sebastian-bergmann.de>
-     *      PEAR/PHP/Invoker.php
-     *      PEAR/PHP/Invoker/
-     *          Copyright (c) 2011-2012 Sebastian Bergmann <sb@sebastian-bergmann.de>
-     *      PEAR/PHP/Timer.php
-     *      PEAR/PHP/Timer/
-     *          Copyright (c) 2010-2011 Sebastian Bergmann <sb@sebastian-bergmann.de>
-     *      PEAR/PHP/Token.php
-     *      PEAR/PHP/Token/
-     *          Copyright (c) 2009-2012 Sebastian Bergmann <sb@sebastian-bergmann.de>
-     *      PEAR/PHPUnit/
-     *          Copyright (c) 2001-2012 Sebastian Bergmann <sebastian@phpunit.de>
-     * Procedure 3: Run "page like example page" with IDE.
-     *
-     * @param array  $unitTestFilePaths   The file paths of unit tests.
-     * @param string $commandLineSwitches Command-line-switches except "--stop-on-failure --static-backup".
-     *
-     * @return void
+     * Procedure 2: Run "page like example page" with IDE.
      *
      * @Example page which runs unit tests.
      *  <?php
@@ -672,6 +656,11 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      *
      * @codeCoverageIgnore
      * Because "phpunit" command cannot run during "phpunit" command running.
+     *
+     * @param array  $unitTestFilePaths   The file paths of unit tests.
+     * @param string $commandLineSwitches Command-line-switches except "--stop-on-failure --static-backup".
+     *
+     * @return void
      */
     static function executeUnitTest($unitTestFilePaths, $commandLineSwitches = '')
     {
@@ -792,6 +781,13 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
         echo '</pre>';
         ini_set('display_errors', $displayErrorsStorage);
         // Displays the code coverage report in browser.
+        $documentRoot = $_SERVER['DOCUMENT_ROOT'];
+        $dir = str_replace('\\', '/', __DIR__);
+        if (preg_match("`^$documentRoot`xX", $dir) === 0) {
+            foreach ($classFilePaths as &$classFilePath) {
+                $classFilePath = 'php/' . $classFilePath;
+            }
+        }
         self::$_classFilePaths = $classFilePaths;
         self::$_codeCoverageReportPath = $codeCoverageReportPath;
         include_once './BreakpointDebugging_DisplayCodeCoverageReport.php';

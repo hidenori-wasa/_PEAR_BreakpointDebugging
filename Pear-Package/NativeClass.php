@@ -106,9 +106,16 @@ class OtherClass
 
 }
 
+global $baseArray;
 $baseArray = array (' baseArrayElement1', 'baseArrayElement2 ');
+
+global $object;
 $object = new \OtherClass();
+
+global $array;
 $array = array (true, 'bool' => false, 222 => 2, 2.2, 'DEF', $object, $baseArray, tmpfile(), null);
+
+global $varietyObject;
 $varietyObject = new \NativeClass();
 
 ?>

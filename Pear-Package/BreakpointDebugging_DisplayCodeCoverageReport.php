@@ -76,11 +76,10 @@ class BreakpointDebugging_DisplayCodeCoverageReport
     function __construct()
     {
         // If we pushed "Code coverage report" button.
-        if (isset($_GET['classFilePath'])) {
-            $classFileName = str_replace(array ('/', '\\'), '_', $_GET['classFilePath']);
-            $codeCoverageReportPath = str_replace('\\', '/', $_GET['codeCoverageReportPath']);
+        if (isset($_GET['codeCoverageReportPath'])) {
+            $codeCoverageReportPath = $_GET['codeCoverageReportPath'];
             // Opens code coverage report.
-            $pFile = B::fopen(array ($codeCoverageReportPath . $classFileName . '.html', 'rb'));
+            $pFile = B::fopen(array ($codeCoverageReportPath, 'rb'));
             while (!feof($pFile)) {
                 $line = fgets($pFile);
                 // Outputs raw data after that if header ends.
@@ -94,10 +93,9 @@ class BreakpointDebugging_DisplayCodeCoverageReport
                 // Embeds its content if cascading style sheet file path exists.
                 if (preg_match_all('`(.*) (<link [[:blank:]] .* href [[:blank:]]* = [[:blank:]]* "(.* \.css)" [[:blank:]]* >)`xXiU', $line, $matches)) {
                     $lastStrlen = 0;
-                    $replaceLine = '';
                     for ($count = 0; $count < count($matches[1]); $count++) {
                         echo $matches[1][$count];
-                        $cssFilePath = $codeCoverageReportPath . $matches[3][$count];
+                        $cssFilePath = dirname($codeCoverageReportPath) . '/' . $matches[3][$count];
                         if (is_file($cssFilePath)) {
                             echo '<style type="text/css">' . PHP_EOL
                             . '<!--' . PHP_EOL;
@@ -124,10 +122,18 @@ class BreakpointDebugging_DisplayCodeCoverageReport
             }
             // Makes the "Code coverage report" buttons.
             foreach ($classFilePaths as $classFilePath) {
-                $data = array (
-                    'classFilePath' => $classFilePath,
-                    'codeCoverageReportPath' => B::getStatic('$_codeCoverageReportPath'),
-                );
+                $classFileName = str_replace(array ('/', '\\'), '_', $classFilePath);
+                $codeCoverageReportPath = str_replace('\\', '/', B::getStatic('$_codeCoverageReportPath')) . $classFileName . '.html';
+                if (!is_file($codeCoverageReportPath)) {
+                    echo <<<EOD
+<form>
+    <input type="submit" value="Code coverage report of ($classFilePath)." disabled="disabled"/>
+</form>
+EOD;
+                    continue;
+                }
+
+                $data = array ('codeCoverageReportPath' => $codeCoverageReportPath);
                 $data = http_build_query($data);
                 echo <<<EOD
 <form method="post" action="$thisFileURI?$data">

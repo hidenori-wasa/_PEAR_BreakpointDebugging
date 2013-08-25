@@ -281,6 +281,8 @@ abstract class BreakpointDebugging_InAllCase
      * Error exit. You can detect error exit location by call stack after break if you use this.
      *
      * @param mixed $error Error message or error exception instance.
+     *
+     * @return void
      */
     static function exitForError($error = '')
     {
@@ -332,17 +334,22 @@ abstract class BreakpointDebugging_InAllCase
                 default :
                     throw new \BreakpointDebugging_ErrorException('"' . __METHOD__ . '" parameter1 is mistake.');
             }
-            echo '<pre>You must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'' . $message . '\');" into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file.</pre>';
+            echo '<pre>You must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'' . $message . '\');" ' . PHP_EOL
+            . "\t" . 'into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file.' . PHP_EOL
+            . ' </pre>';
             return false;
         }
         // Checks client IP address.
         if ($_SERVER['REMOTE_ADDR'] !== self::$_developerIP) {
-            echo '<pre>You must set "$developerIP = \'' . $_SERVER['REMOTE_ADDR'] . '\';" into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file.</pre>';
+            echo '<pre>You must set "$developerIP = \'' . $_SERVER['REMOTE_ADDR'] . '\';" ' . PHP_EOL
+            . "\t" . 'into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file.' . PHP_EOL
+            . ' </pre>';
             return false;
         }
         // Checks the request protocol.
         if (empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] === 'off') {
-            echo '<pre>You must use "https" protocol.</pre>';
+            echo '<pre>You must use "https" protocol.' . PHP_EOL
+            . ' </pre>';
             return false;
         }
         return true;
@@ -612,9 +619,9 @@ abstract class BreakpointDebugging_InAllCase
     /**
      * "mkdir" method which sets permission and sets own user to owner.
      *
-     * @param array  $params            "mkdir()" parameters.
-     * @param int    $timeout           Seconds number of timeout.
-     * @param int    $sleepMicroSeconds Micro seconds to sleep.
+     * @param array $params            "mkdir()" parameters.
+     * @param int   $timeout           Seconds number of timeout.
+     * @param int   $sleepMicroSeconds Micro seconds to sleep.
      *
      * @return bool Success or failure.
      */
@@ -636,9 +643,9 @@ abstract class BreakpointDebugging_InAllCase
     /**
      * Removes directory with retry.
      *
-     * @param array  $params            "rmdir()" parameters.
-     * @param int    $timeout           Seconds number of timeout.
-     * @param int    $sleepMicroSeconds Micro seconds to sleep.
+     * @param array $params            "rmdir()" parameters.
+     * @param int   $timeout           Seconds number of timeout.
+     * @param int   $sleepMicroSeconds Micro seconds to sleep.
      *
      * @return bool Success or failure.
      */
@@ -896,7 +903,7 @@ abstract class BreakpointDebugging_InAllCase
     /**
      * Changes from full file path to a class name.
      *
-     * @param type $filePath $fullFilePath Full file path.
+     * @param string $fullFilePath Full file path.
      *
      * @return mixed Class name or false.
      */
