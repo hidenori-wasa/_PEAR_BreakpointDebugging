@@ -62,9 +62,9 @@ function BreakpointDebugging_setExecutionMode()
     // ### Execution mode setting. ===>
     // Please, choose a mode.
     // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('DEBUG');
-    $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('RELEASE');
+    // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('RELEASE');
     // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('DEBUG_UNIT_TEST');
-    // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('RELEASE_UNIT_TEST');
+    $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('RELEASE_UNIT_TEST');
     // ### <=== Execution mode setting.
     //
     // $_BreakpointDebugging_EXE_MODE |= $REMOTE; // Emulates remote by local host.
@@ -151,11 +151,15 @@ require_once 'BreakpointDebugging.php'; // 'BreakpointDebugging.php' must requir
  */
 function BreakpointDebugging_mySetting()
 {
+    global $_BreakpointDebugging_EXE_MODE;
+
+    $REMOTE = 1;
+
     // ### Item setting. ===>
     $developerIP = &B::refStatic('$_developerIP');
     // Please, enter developer IP address.
     // However, comment out this when running code is local or running code does not use.
-    // $developerIP = '61.121.83.86';
+    // $developerIP = '218.217.194.48';
     $language = 'Japanese';
     $timezone = 'Asia/Tokyo';
     $SMTP = '<Your SMTP server>';
@@ -164,11 +168,14 @@ function BreakpointDebugging_mySetting()
     $userName = &B::refStatic('$_userName');
     $userName = 'root'; // Example: 'hidenori'
     // PHP It limits directory which opens a file.
-    if (B::getStatic('$_os') === 'WIN') { // In case of Windows.
+    if (BREAKPOINTDEBUGGING_IS_WINDOWS) { // In case of Windows.
         $openBasedir = 'C:\xampp\;.\\;' . sys_get_temp_dir();
     } else { // In case of Unix.
-        // $openBasedir = '/opt/lampp/:./:' . sys_get_temp_dir();
-        $openBasedir = '/home/users/2/lolipop.jp-92350a29e84a878a/web/:./:' . sys_get_temp_dir(); // For debug.
+        if ($_BreakpointDebugging_EXE_MODE & $REMOTE) { // In case of remote.
+            $openBasedir = '/home/users/2/lolipop.jp-92350a29e84a878a/web/:./:' . sys_get_temp_dir(); // For debug.
+        } else { // In case of local.
+            $openBasedir = '/opt/lampp/:./:' . sys_get_temp_dir();
+        }
     }
     // Maximum log file sum mega byte size. Recommendation size is 1 MB.
     // Log file rotation is from "php_error_1.log" file to "php_error_8.log" file.

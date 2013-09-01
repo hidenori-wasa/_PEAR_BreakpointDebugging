@@ -119,8 +119,7 @@ if (B::getXebugExists()) {
     B::iniSet('xdebug.overload_var_dump', '1', false);
     // Connects automatically. Therefore, does not use because other human can debug.
     B::iniSet('xdebug.remote_autostart', '0', false);
-    // Ignores "xdebug.remote_host", then connects by sending client IP. Therefore, does not use because anybody can debug.
-    B::iniSet('xdebug.remote_connect_back', '0', false);
+    B::iniCheck('xdebug.remote_connect_back', '0', 'Ignores "xdebug.remote_host", then connects by sending client IP. Therefore, does not use because anybody can debug.');
     // Deadline of remote debug by session cookie.
     B::iniSet('xdebug.remote_cookie_expire_time', '3600', false);
     B::iniCheck('xdebug.remote_enable', '1', 'Set "xdebug.remote_enable = 1" of "php.ini" file because this is needed to do breakpoint debugging if server permits.');
@@ -191,7 +190,7 @@ B::iniSet('memory_limit', '128M');
 // This changes "php.ini" file setting into "implicit_flush = Off" because it is purpose to prevent a remarkable degradation.
 B::iniSet('implicit_flush', '');
 B::iniCheck('scream.enabled', '', 'This should change "php.ini" file setting into "scream.enabled = false" because it does not make "@" error display control operator invalid.');
-if (B::getStatic('$_os') === 'WIN') { // In case of Windows.
+if (BREAKPOINTDEBUGGING_IS_WINDOWS) { // In case of Windows.
     B::iniCheck('post_max_size', '128M', 'We recommend to set "post_max_size = 128M" of "php.ini" file because maximum size which is permitted to a POST data is different from the default.');
     B::iniCheck('upload_max_filesize', '128M', 'We recommend to set "upload_max_filesize = 128M" of "php.ini" file because it is "XAMPP" value.');
 } else { // In case of Unix.

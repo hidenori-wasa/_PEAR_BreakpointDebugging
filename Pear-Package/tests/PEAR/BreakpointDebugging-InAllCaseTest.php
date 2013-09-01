@@ -149,7 +149,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_PHPUnitFram
         }
         BA::mkdir(array ($testDirName, 0700));
         $this->assertTrue(is_dir($testDirName));
-        if (BA::getStatic('$_os') === 'WIN') {
+        if (BREAKPOINTDEBUGGING_IS_WINDOWS) {
             return;
         }
         clearstatcache();
@@ -165,10 +165,10 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_PHPUnitFram
         if (is_file($testFileName)) {
             BA::unlink(array ($testFileName));
         }
-        $pFile = BA::fopen(array ($testFileName, 'w+b'));
+        $pFile = BA::fopen(array ($testFileName, 'w+b'), 0700);
         fclose($pFile);
         $this->assertTrue(is_file($testFileName));
-        if (BA::getStatic('$_os') === 'WIN') {
+        if (BREAKPOINTDEBUGGING_IS_WINDOWS) {
             return;
         }
         clearstatcache();
@@ -308,7 +308,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_PHPUnitFram
 
 T::$testAutoload = 1;
 if (T::$testAutoload === 1) { // The case which extends base class.
-    class AutoloadTest extends \NativeClass
+    class AutoloadTest extends \tests_PEAR_AutoloadTestBase
     {
 
     }

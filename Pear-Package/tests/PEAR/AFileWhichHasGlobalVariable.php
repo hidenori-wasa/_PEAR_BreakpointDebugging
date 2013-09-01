@@ -1,0 +1,6 @@
+<?php
+
+global $dummyGlobal;
+$dummyGlobal = '';
+
+?>

@@ -101,11 +101,6 @@ use \BreakpointDebugging_PHPUnitUtilGlobalState as BGS;
 abstract class BreakpointDebugging_PHPUnitFrameworkTestCase extends \PHPUnit_Framework_TestCase
 {
     /**
-     * @var bool Once flag of "splAutoloadRegister()".
-     */
-    private static $_splAutoloadRegisterOnceFlag = true;
-
-    /**
      * @var string The test class method name.
      */
     private static $_testMethodName;
@@ -113,12 +108,12 @@ abstract class BreakpointDebugging_PHPUnitFrameworkTestCase extends \PHPUnit_Fra
     /**
      * @var array List to except to store global variable.
      */
-    private static $_backupGlobalsBlacklist;
+    private static $_backupGlobalsBlacklist = array ();
 
     /**
      * @var array List to except to store static property.
      */
-    private static $_backupStaticAttributesBlacklist;
+    private static $_backupStaticAttributesBlacklist = array ();
 
     /**
      * @var int The output buffering level.
@@ -144,16 +139,38 @@ abstract class BreakpointDebugging_PHPUnitFrameworkTestCase extends \PHPUnit_Fra
             // Checks justice.
             BGS::checkGlobals(self::$_testMethodName);
             BGS::checkStaticAttributes();
-        }
-        $nestLevel++;
-        B::autoload($className);
-        $nestLevel--;
-        // If class file has been loaded completely including dependency files.
-        if ($nestLevel === 0) {
-            // Stores the "$GLOBALS" and static attributes before variable value is changed.
+            $nestLevel = 1;
+            try {
+                B::autoload($className);
+            } catch (\Exception $exception) {
+                $forBreakpoint = 0;
+            }
+            $nestLevel = 0;
+            // If class file has been loaded completely including dependency files.
+            // Stores global variables and static attributes before variable value is changed.
             BGS::backupGlobals(self::$_backupGlobalsBlacklist);
             BGS::backupStaticAttributes(self::$_backupStaticAttributesBlacklist);
+            if (isset($exception)) {
+                throw $exception;
+            }
+        } else { // In case of auto load inside auto load.
+            $nestLevel++;
+            B::autoload($className);
+            $nestLevel--;
         }
+    }
+
+    /**
+     * This method is called after the last test of this test class is run.
+     *
+     * @return void
+     * @author Hidenori Wasa <public@hidenori-wasa.com>
+     */
+    static function tearDownAfterClass()
+    {
+        // Unregisters autoload class method to store static status because we does not want to store static status in "*Test.php" loading.
+        $result = spl_autoload_unregister('\BreakpointDebugging_PHPUnitFrameworkTestCase::autoload');
+        B::assert($result);
     }
 
     /**
@@ -249,7 +266,13 @@ abstract class BreakpointDebugging_PHPUnitFrameworkTestCase extends \PHPUnit_Fra
         static $onceFlagPerTestFile = true;
 
         // Displays the progress.
+        for ($count = 0; ob_get_level() > 0; $count++) {
+            ob_end_flush();
+        }
         flush();
+        for (; $count > 0; $count--) {
+            ob_start();
+        }
 
         $this->numAssertions = 0;
 
@@ -269,10 +292,9 @@ abstract class BreakpointDebugging_PHPUnitFrameworkTestCase extends \PHPUnit_Fra
                 BGS::backupGlobals(self::$_backupGlobalsBlacklist);
                 // Stores static attributes.
                 BGS::backupStaticAttributes(self::$_backupStaticAttributesBlacklist);
-            }
-            if (self::$_splAutoloadRegisterOnceFlag) {
-                self::$_splAutoloadRegisterOnceFlag = false;
-                spl_autoload_register('\BreakpointDebugging_PHPUnitFrameworkTestCase::autoload', true, true);
+                // Registers autoload class method to store static status.
+                $result = spl_autoload_register('\BreakpointDebugging_PHPUnitFrameworkTestCase::autoload', true, true);
+                B::assert($result);
             }
         }
 
@@ -334,8 +356,9 @@ abstract class BreakpointDebugging_PHPUnitFrameworkTestCase extends \PHPUnit_Fra
         // Clean up stat cache.
         clearstatcache();
 
-        // Checks justice of global variables which had been defined inside unit test method.
+        // Checks justice of static status which had been defined inside unit test method.
         BGS::checkGlobals(self::$_testMethodName);
+        BGS::checkStaticAttributes();
         // Restores "$GLOBALS" and static attributes if those have been stored.
         BGS::restoreGlobals($this->backupGlobalsBlacklist);
         BGS::restoreStaticAttributes();

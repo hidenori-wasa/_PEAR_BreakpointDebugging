@@ -34,8 +34,7 @@ class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_PHPUnitFr
     {
         // Destructs instance.
         $this->LockByShmop = null;
-
-        $main = new \Tests_PEAR_BreakpointDebugging_MultiprocessTest_Main();
+        $main = new \tests_PEAR_BreakpointDebugging_MultiprocessTest_Main();
         if (!$main->test(1234, '\BreakpointDebugging_LockByShmop')) {
             parent::fail();
         }

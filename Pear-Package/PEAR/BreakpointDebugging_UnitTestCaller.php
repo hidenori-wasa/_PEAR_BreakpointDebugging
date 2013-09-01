@@ -150,9 +150,14 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
     private static $_codeCoverageReportPath;
 
     /**
-     *
+     * @var string Separator for display.
      */
     private static $_separator;
+
+    /**
+     * @var bool Inclusion path setting flag.
+     */
+    private static $_inclusionPathSettingFlag = true;
 
     /**
      * Limits static properties accessing.
@@ -235,7 +240,7 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
     {
         $unitTestCurrentDir = debug_backtrace();
         $unitTestCurrentDir = dirname($unitTestCurrentDir[1]['file']) . DIRECTORY_SEPARATOR;
-        if (B::getStatic('$_os') === 'WIN') { // In case of Windows.
+        if (BREAKPOINTDEBUGGING_IS_WINDOWS) { // In case of Windows.
             self::$unitTestDir = strtolower($unitTestCurrentDir);
         } else { // In case of Unix.
             self::$unitTestDir = $unitTestCurrentDir;
@@ -406,10 +411,12 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      */
     private static function _runPHPUnitCommand($command)
     {
-        // Sets component pear package inclusion paths.
-        $includePath = ini_get('include_path');
-        ini_set('include_path', './PEAR/BreakpointDebugging/Component' . PATH_SEPARATOR . getenv('PHP_PEAR_INSTALL_DIR') . '/BreakpointDebugging/Component' . PATH_SEPARATOR . $includePath);
-
+        if (self::$_inclusionPathSettingFlag) {
+            self::$_inclusionPathSettingFlag = false;
+            // Sets component pear package inclusion paths.
+            $includePath = ini_get('include_path');
+            ini_set('include_path', './PEAR/BreakpointDebugging/Component' . PATH_SEPARATOR . getenv('PHP_PEAR_INSTALL_DIR') . '/BreakpointDebugging/Component' . PATH_SEPARATOR . $includePath);
+        }
         $command = ltrim($command);
         echo self::$_separator;
         echo "Runs <b>\"phpunit $command\"</b> command." . PHP_EOL;
@@ -531,11 +538,17 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      *  use \BreakpointDebugging as B;
      *  use \BreakpointDebugging_UnitTestCaller as BU;
      *
+     *  class UnstoringTest
+     *  {
+     *      // We can define static property in "*Test.php" because static property is not stored in "*Test.php".
+     *      static $staticProperty = null;
+     *  }
+     *
      *  // $somethingGlobal = ''; // We must not add global variable here. (Autodetects)
      *  //
-     *  // unset($_POST); // We must not delete global variable here. (Autodetects)
+     *  // unset($_FILES); // We must not delete global variable here. (Autodetects)
      *  //
-     *  // include_once __DIR__ . '/AFileWhichHasStaticStatus.php'; // We must not include a file which has static status here. (Autodetects)
+     *  // include_once __DIR__ . '/AFileWhichHasGlobalVariable.php'; // We must not include a file which has global variable here. (Autodetects)
      *  class ExampleTest extends \BreakpointDebugging_PHPUnitFrameworkTestCase
      *  {
      *      private $_pSomething;
@@ -546,9 +559,9 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      *          // global $somethingGlobal;
      *          // $somethingGlobal = ''; // We must not add global variable here. (Autodetects)
      *          //
-     *          // unset($_POST); // We must not delete global variable here. (Autodetects)
+     *          // unset($_FILES); // We must not delete global variable here. (Autodetects)
      *          //
-     *          // include_once __DIR__ . '/AFileWhichHasStaticStatus.php'; // We must not include a file which has static status here. (Autodetects)
+     *          // include_once __DIR__ . '/AFileWhichHasGlobalVariable.php'; // We must not include a file which has global variable here. (Autodetects)
      *          //
      *          // We must not construct test instance here. (Cannot autodetect)
      *          // because we want to initialize class auto attribute (auto class method's local static and auto property).
@@ -566,7 +579,7 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      *
      *      protected function setUp()
      *      {
-     *          // This is required.
+     *          // This is required at top of "setUp()".
      *          parent::setUp();
      *
      *          // Constructs an instance per test.
@@ -577,9 +590,9 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      *          // global $somethingGlobal;
      *          // $somethingGlobal = ''; // We must not add global variable here. (Autodetects)
      *          //
-     *          // unset($_POST); // We must not delete global variable here. (Autodetects)
+     *          // unset($_FILES); // We must not delete global variable here. (Autodetects)
      *          //
-     *          // include_once __DIR__ . '/AFileWhichHasStaticStatus.php'; // We must not include a file which has static status here. (Autodetects)
+     *          // include_once __DIR__ . '/AFileWhichHasGlobalVariable.php'; // We must not include a file which has global variable here. (Autodetects)
      *      }
      *
      *      protected function tearDown()
@@ -587,11 +600,13 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      *          // global $somethingGlobal;
      *          // $somethingGlobal = ''; // We must not add global variable here. (Autodetects)
      *          //
-     *          // unset($_POST); // We must not delete global variable here. (Autodetects)
+     *          // unset($_FILES); // We must not delete global variable here. (Autodetects)
      *          //
-     *          // include_once __DIR__ . '/AFileWhichHasStaticStatus.php'; // We must not include a file which has static status here. (Autodetects)
+     *          // include_once __DIR__ . '/AFileWhichHasGlobalVariable.php'; // We must not include a file which has global variable here. (Autodetects)
      *          //
-     *          // This is required.
+     *          // Destructs the instance.
+     *          $this->_pSomething = null;
+     *          // This is required at bottom of "tearDown()".
      *          parent::tearDown();
      *      }
      *
@@ -613,9 +628,9 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      *          // global $somethingGlobal;
      *          // $somethingGlobal = ''; // We must not add global variable here. (Autodetects)
      *          //
-     *          // unset($_POST); // We must not delete global variable here. (Autodetects)
+     *          // unset($_FILES); // We must not delete global variable here. (Autodetects)
      *          //
-     *          // include_once __DIR__ . '/AFileWhichHasStaticStatus.php'; // We must not include a file which has static status here. (Autodetects)
+     *          // include_once __DIR__ . '/AFileWhichHasGlobalVariable.php'; // We must not include a file which has global variable here. (Autodetects)
      *          //
      *          // Destructs the instance.
      *          $this->_pSomething = null;
@@ -634,9 +649,9 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      *          // global $somethingGlobal;
      *          // $somethingGlobal = ''; // We must not add global variable here. (Autodetects)
      *          //
-     *          // unset($_POST); // We must not delete global variable here. (Autodetects)
+     *          // unset($_FILES); // We must not delete global variable here. (Autodetects)
      *          //
-     *          // include_once __DIR__ . '/AFileWhichHasStaticStatus.php'; // We must not include a file which has static status here. (Autodetects)
+     *          // include_once __DIR__ . '/AFileWhichHasGlobalVariable.php'; // We must not include a file which has global variable here. (Autodetects)
      *          //
      *          // How to use "try-catch" syntax instead of "@expectedException" and "@expectedExceptionMessage".
      *          // This way can test an error after static status was changed.

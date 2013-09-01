@@ -41,8 +41,12 @@
  * @version  SVN: $Id$
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-
-const BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME = './PEAR_Setting/';
+define('BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME', './PEAR_Setting/');
+if (preg_match('`^WIN`xXi', PHP_OS)) {
+    define('BREAKPOINTDEBUGGING_IS_WINDOWS', true);
+} else {
+    define('BREAKPOINTDEBUGGING_IS_WINDOWS', false);
+}
 require_once BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php';
 
 \BreakpointDebugging::assert(version_compare(PHP_VERSION, '5.3', '>'));

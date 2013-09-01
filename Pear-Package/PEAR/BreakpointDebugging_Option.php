@@ -254,7 +254,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_UnitTestCaller
     {
         // If this is remote debug, unix and root user.
         if (BA::$exeMode & B::REMOTE
-            && B::getStatic('$_os') !== 'WIN'
+            && !BREAKPOINTDEBUGGING_IS_WINDOWS
             && trim(`echo \$USER`) === 'root'
         ) {
             echo '<pre>Security warning: Recommends to change to "Apache HTTP Server" which Supported "suEXEC" because this "Apache HTTP Server" is executed by "root" user.</pre>';
@@ -718,7 +718,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_UnitTestCaller
                 $backTrace = debug_backtrace();
                 $baseName = basename($backTrace[0]['file']);
                 $cmpName = '_MySetting_Option.php';
-                if (B::getStatic('$_os') === 'WIN') {
+                if (BREAKPOINTDEBUGGING_IS_WINDOWS) {
                     $baseName = strtolower($baseName);
                     $cmpName = strtolower($cmpName);
                 }

@@ -7,27 +7,7 @@ use \BreakpointDebugging_PHPUnitUtilFilesystem as BF;
 
 B::checkExeMode(); // Checks the execution mode.
 
-include_once './tests/PEAR/BreakpointDebugging/LockByFlockMultiprocessTest/Initialization.php';
-
-$pHandles = array ();
-for ($count = 0; $count < 8; $count++) {
-    $pHandles[] = popen('php ./tests/PEAR/BreakpointDebugging/LockByFlockMultiprocessTest/Test.php', 'r');
-}
-
-$result = array ();
-foreach ($pHandles as $pHandle) {
-    while (!feof($pHandle)) {
-        $result[] = fgets($pHandle);
-    }
-}
-
-foreach ($pHandles as $pHandle) {
-    pclose($pHandle);
-}
-
-B::assert(max($result) === '1000');
-
-echo '<pre>Test ended.</pre>';
+phpinfo();
 return;
 
 

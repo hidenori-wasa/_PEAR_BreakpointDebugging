@@ -26,7 +26,9 @@ class BreakpointDebugging_LockByFlockTest extends \BreakpointDebugging_PHPUnitFr
      */
     function testMultiprocess()
     {
-        $main = new \Tests_PEAR_BreakpointDebugging_MultiprocessTest_Main();
+        // Destructs instance.
+        $this->lockByFlock = null;
+        $main = new \tests_PEAR_BreakpointDebugging_MultiprocessTest_Main();
         if (!$main->test(1234, '\BreakpointDebugging_LockByFlock')) {
             // Displays error call stack information, then stops at breakpoint, then exits.
             parent::fail();

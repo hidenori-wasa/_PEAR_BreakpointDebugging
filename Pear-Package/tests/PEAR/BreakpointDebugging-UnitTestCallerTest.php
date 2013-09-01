@@ -144,7 +144,7 @@ class BreakpointDebugging_UnitTestCallerTest extends \BreakpointDebugging_PHPUni
      * @covers \BreakpointDebugging<extended>
      *
      * @expectedException        \PHPUnit_Framework_Error_Warning
-     * @expectedExceptionMessage failed to open stream: No such file or directory
+     * @expectedExceptionMessage failed to open stream:
      */
     public function testGetPropertyForTest_E()
     {

@@ -144,11 +144,6 @@ abstract class BreakpointDebugging_InAllCase
     private static $_xdebugExists;
 
     /**
-     * @var string Upper case 3 character prefix of operating system name.
-     */
-    private static $_os = '';
-
-    /**
      * @var stirng Your username.
      */
     private static $_userName = '';
@@ -339,6 +334,9 @@ abstract class BreakpointDebugging_InAllCase
             . ' </pre>';
             return false;
         }
+        if (!(self::$exeMode & self::REMOTE)) { // In case of local.
+            return true;
+        }
         // Checks client IP address.
         if ($_SERVER['REMOTE_ADDR'] !== self::$_developerIP) {
             echo '<pre>You must set "$developerIP = \'' . $_SERVER['REMOTE_ADDR'] . '\';" ' . PHP_EOL
@@ -347,7 +345,10 @@ abstract class BreakpointDebugging_InAllCase
             return false;
         }
         // Checks the request protocol.
-        if (empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] === 'off') {
+        if (!array_key_exists('HTTPS', $_SERVER)
+            || empty($_SERVER['HTTPS'])
+            || $_SERVER['HTTPS'] === 'off'
+        ) {
             echo '<pre>You must use "https" protocol.' . PHP_EOL
             . ' </pre>';
             return false;
@@ -602,7 +603,7 @@ abstract class BreakpointDebugging_InAllCase
      */
     protected static function setOwner($name, $permission, $timeout, $sleepMicroSeconds)
     {
-        if (self::$_os === 'WIN') { // In case of Windows.
+        if (BREAKPOINTDEBUGGING_IS_WINDOWS) {
             return true;
         }
         // In case of Unix.
@@ -916,10 +917,9 @@ abstract class BreakpointDebugging_InAllCase
         if (self::$exeMode & self::UNIT_TEST) {
             array_unshift($includePaths, dirname($_SERVER['SCRIPT_FILENAME']));
         }
-        $isWindows = B::getStatic('$_os') === 'WIN';
         foreach ($includePaths as $includePath) {
             $fullIncludePath = realpath($includePath);
-            if ($isWindows) {
+            if (BREAKPOINTDEBUGGING_IS_WINDOWS) {
                 $result = stripos($fullFilePath, $fullIncludePath);
             } else {
                 $result = strpos($fullFilePath, $fullIncludePath);
@@ -953,8 +953,6 @@ abstract class BreakpointDebugging_InAllCase
         self::$_nativeExeMode = self::$exeMode = $_BreakpointDebugging_EXE_MODE;
         unset($_BreakpointDebugging_EXE_MODE);
         self::$staticProperties['$exeMode'] = &self::$exeMode;
-        self::$_os = strtoupper(substr(PHP_OS, 0, 3));
-        self::$staticProperties['$_os'] = &self::$_os;
         self::$staticProperties['$_userName'] = &self::$_userName;
         self::$staticProperties['$_developerIP'] = &self::$_developerIP;
         self::$staticProperties['$_maxLogFileByteSize'] = &self::$_maxLogFileByteSize;
@@ -979,6 +977,8 @@ abstract class BreakpointDebugging_InAllCase
      */
     final static function autoload($className)
     {
+        // Trims the left name space root.
+        $className = ltrim($className, '\\');
         // Changes underscore and name space separator to directory separator.
         $filePath = str_replace(array ('_', '\\'), '/', $className) . '.php';
         include_once $filePath;
@@ -1192,11 +1192,13 @@ if ($_BreakpointDebugging_EXE_MODE & BA::RELEASE) { // In case of release.
         /**
          * Empties in release.
          *
+         * @param bool $assertion Dummy.
+         *
          * @return void
          * @codeCoverageIgnore
          * Because this class method is overridden.
          */
-        static function assert()
+        static function assert($assertion)
         {
 
         }
@@ -1248,8 +1250,9 @@ if ($_BreakpointDebugging_EXE_MODE & BA::RELEASE) { // In case of release.
                         // Because unit test is exited.
                         ini_set('xdebug.var_display_max_depth', 5);
                         var_dump(debug_backtrace());
-                        while (ob_get_level() > 1) {
-                            ob_end_clean();
+                        // Ends the output buffering.
+                        while (ob_get_level() > 0) {
+                            ob_end_flush();
                         }
                         exit;
                     }

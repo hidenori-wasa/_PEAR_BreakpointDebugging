@@ -22,7 +22,7 @@ $unitTestCommands = array (
 );
 
 // Executes unit tests.
-// B::executeUnitTest($unitTestCommands); exit;
+B::executeUnitTest($unitTestCommands); exit;
 
 // Makes up code coverage report, then displays in browser.
 if (B::getStatic('$exeMode') & B::RELEASE) { // In case of release.

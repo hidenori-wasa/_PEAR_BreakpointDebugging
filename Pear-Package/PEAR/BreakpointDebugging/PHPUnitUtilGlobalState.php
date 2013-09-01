@@ -182,23 +182,12 @@ class BreakpointDebugging_PHPUnitUtilGlobalState extends \PHPUnit_Util_GlobalSta
      * @param string $testMethodName The test class method name.
      *
      * @return void
+     * @author Hidenori Wasa <public@hidenori-wasa.com>
      */
     static function checkGlobals($testMethodName = '')
     {
         $additionalVariable = array_diff_key($GLOBALS, parent::$globals);
-        foreach ($additionalVariable as $key => $value) {
-            if ($value === null) {
-                unset($additionalVariable[$key]);
-            }
-        }
-
         $deletionalVariable = array_diff_key(parent::$globals, $GLOBALS);
-        foreach ($deletionalVariable as $key => $value) {
-            if ($value === null) {
-                unset($deletionalVariable[$key]);
-            }
-        }
-
         $isError = false;
         if (!empty($additionalVariable)) {
             $isError = true;
@@ -235,6 +224,9 @@ class BreakpointDebugging_PHPUnitUtilGlobalState extends \PHPUnit_Util_GlobalSta
 
     /**
      * Resets global variables storage.
+     *
+     * @return void
+     * @author Hidenori Wasa <public@hidenori-wasa.com>
      */
     static function resetGlobals()
     {
@@ -270,6 +262,9 @@ class BreakpointDebugging_PHPUnitUtilGlobalState extends \PHPUnit_Util_GlobalSta
 
     /**
      *  Checks the declared classes number.
+     *
+     * @return void
+     * @author Hidenori Wasa <public@hidenori-wasa.com>
      */
     static function checkStaticAttributes()
     {
@@ -284,8 +279,7 @@ class BreakpointDebugging_PHPUnitUtilGlobalState extends \PHPUnit_Util_GlobalSta
             ) {
                 return;
             }
-            exit(
-                '<pre><b>"class ' . $declaredClassName . '" definition violation.' . PHP_EOL
+            exit('<pre><b>"class ' . $declaredClassName . '" definition violation.' . PHP_EOL
                 . "\t" . 'We must use autoload by "new" instead of include "*.php" file which defines static property' . PHP_EOL
                 . "\t" . 'inside unit test class method' . PHP_EOL
                 . "\t" . 'because "php" version 5.3.0 cannot detect an included static property definition realtime.</b></pre>'
