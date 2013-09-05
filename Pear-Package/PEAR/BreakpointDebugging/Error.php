@@ -648,31 +648,37 @@ abstract class BreakpointDebugging_Error_InAllCase
                 // Locks internal error log file.
                 $lockByFileExisting = &\BreakpointDebugging_LockByFileExisting::internalSingleton();
                 $lockByFileExisting->lock();
-                // When "ErrorLog" directory does not exist.
-                if (!is_dir($errorLogDirectory)) {
-                    // Makes directory, sets permission and sets own user.
-                    B::mkdir(array ($errorLogDirectory, 0700));
+                try {
+                    // When "ErrorLog" directory does not exist.
+                    if (!is_dir($errorLogDirectory)) {
+                        // Makes directory, sets permission and sets own user.
+                        B::mkdir(array ($errorLogDirectory, 0700));
+                    }
+                    // Strips HTML and PHP tags.
+                    $log = strip_tags($log);
+                    // Decodes HTML special characters.
+                    $log = htmlspecialchars_decode($log, ENT_QUOTES);
+                    $log .= '////////////////////////////////////////////////////////////////////////////////' . PHP_EOL;
+                    // Opens error log file as created and written.
+                    $pErrorLogFile = B::fopen(array ($errorLogFilePath, 'ab'));
+                    $fileStatus = fstat($pErrorLogFile);
+                    // If file size is smaller than 1MB.
+                    if ($fileStatus['size'] < (1 << 20)) {
+                        // Writes error log file.
+                        fwrite($pErrorLogFile, $log);
+                    }
+                    // If file size is bigger than 1MB.
+                    if ($fileStatus['size'] > (1 << 20)) {
+                        // Truncates the file size as 1MB.
+                        ftruncate($pErrorLogFile, 1 << 20);
+                    }
+                    // Closes error log file.
+                    fclose($pErrorLogFile);
+                } catch (\Exception $e) {
+                    // Unlocks the error log files.
+                    $lockByFileExisting->unlock();
+                    throw $e;
                 }
-                // Strips HTML and PHP tags.
-                $log = strip_tags($log);
-                // Decodes HTML special characters.
-                $log = htmlspecialchars_decode($log, ENT_QUOTES);
-                $log .= '////////////////////////////////////////////////////////////////////////////////' . PHP_EOL;
-                // Opens error log file as created and written.
-                $pErrorLogFile = B::fopen(array ($errorLogFilePath, 'ab'));
-                $fileStatus = fstat($pErrorLogFile);
-                // If file size is smaller than 1MB.
-                if ($fileStatus['size'] < (1 << 20)) {
-                    // Writes error log file.
-                    fwrite($pErrorLogFile, $log);
-                }
-                // If file size is bigger than 1MB.
-                if ($fileStatus['size'] > (1 << 20)) {
-                    // Truncates the file size as 1MB.
-                    ftruncate($pErrorLogFile, 1 << 20);
-                }
-                // Closes error log file.
-                fclose($pErrorLogFile);
                 // Unlocks the error log files.
                 $lockByFileExisting->unlock();
             } else { // If this displays.
@@ -919,7 +925,8 @@ abstract class BreakpointDebugging_Error_InAllCase
             }
             $fileNumbers[] = base_convert($matches[2], 36, 10);
         }
-        $line1pre = self::ENABLED_ERROR_LOG_FILE_NAME . 'php_error_';
+        //$line1pre = self::ENABLED_ERROR_LOG_FILE_NAME . 'php_error_';
+        $line1pre = self::ENABLED_ERROR_LOG_FILE_NAME . $this->_prefixOfErrorLogFileName;
         $line1sa = '.log' . PHP_EOL;
         $line1 = $line1pre . '1' . $line1sa;
         $line = $lines[$count];
@@ -950,12 +957,14 @@ abstract class BreakpointDebugging_Error_InAllCase
             while ($line = fgets($pErrorLocationFile)) {
                 $lines[] = $line;
             }
+            $isWritten = false;
             for ($count = count($lines) - 1; $count >= 0; $count--) {
                 $callStackInfoArray = B::decompressIntArray($lines[$count]);
                 $lineNumber = count($callStackInfoArray);
                 if ($lineNumber % 2 !== 0 // If the decompressed data is not even number.
                     || $lineNumber - 2 < 0 // If the decompressed data is less than 2.
                 ) {
+                    $isWritten = true;
                     // Deletes incorrect line.
                     unset($lines[$count]);
                     continue;
@@ -963,16 +972,19 @@ abstract class BreakpointDebugging_Error_InAllCase
                 for ($count2 = $lineNumber - 2; $count2 >= 0; $count2 -= 2) {
                     // If error file number does not exist.
                     if (!in_array($callStackInfoArray[$count2], $fileNumbers)) {
+                        $isWritten = true;
                         unset($lines[$count]);
                         continue 2;
                     }
                 }
             }
-            rewind($pErrorLocationFile);
-            foreach ($lines as $line) {
-                fwrite($pErrorLocationFile, $line);
+            if ($isWritten) {
+                rewind($pErrorLocationFile);
+                foreach ($lines as $line) {
+                    fwrite($pErrorLocationFile, $line);
+                }
+                ftruncate($pErrorLocationFile, ftell($pErrorLocationFile));
             }
-            ftruncate($pErrorLocationFile, ftell($pErrorLocationFile));
             fclose($pErrorLocationFile);
         }
     }
@@ -1000,228 +1012,239 @@ abstract class BreakpointDebugging_Error_InAllCase
             return;
         }
 
+        // Locks the error log files.
+        $this->_lockByFileExisting = &\BreakpointDebugging_LockByFileExisting::internalSingleton();
+        $this->_lockByFileExisting->lock();
         try {
+            try {
+                // If this does a log.
+                if (B::getStatic('$exeMode') & B::RELEASE) {
+                    //// Locks the error log files.
+                    //$this->_lockByFileExisting = &\BreakpointDebugging_LockByFileExisting::internalSingleton();
+                    //$this->_lockByFileExisting->lock();
+                    // When "ErrorLog" directory does not exist.
+                    $this->_errorLogDirectory = B::getStatic('$_workDir') . self::$_errorLogDir;
+                    if (!is_dir($this->_errorLogDirectory)) {
+                        // Makes directory, sets permission and sets own user.
+                        B::mkdir(array ($this->_errorLogDirectory, 0700));
+                    }
+                    $varConfFilePath = $this->_errorLogDirectory . $this->_varConfFileName;
+                    // If variable configuring file exists.
+                    if (is_file($varConfFilePath)) {
+                        // Opens variable configuring file.
+                        $this->_pVarConfFile = B::fopen(array ($varConfFilePath, 'r+b'));
+                        // Checks the abnormal termination.
+                        $logEnableString = fread($this->_pVarConfFile, strlen(self::DISABLED_ERROR_LOG_FILE_NAME));
+                        if ($logEnableString !== self::DISABLED_ERROR_LOG_FILE_NAME) {
+                            $this->_repairLoggingSystemFile($logEnableString);
+                        } else {
+                            rewind($this->_pVarConfFile);
+                            fwrite($this->_pVarConfFile, self::ENABLED_ERROR_LOG_FILE_NAME);
+                        }
+                    } else {
+                        // Creates and opens variable configuring file.
+                        $this->_pVarConfFile = B::fopen(array ($varConfFilePath, 'x+b'));
+                        // Sets current error log file name.
+                        fwrite($this->_pVarConfFile, self::ENABLED_ERROR_LOG_FILE_NAME . $this->_prefixOfErrorLogFileName . '1.log' . PHP_EOL);
+                    }
+                    fflush($this->_pVarConfFile);
+                    rewind($this->_pVarConfFile);
+
+                    // Gets current error log file name.
+                    $this->_currentErrorLogFileName = substr(trim(fgets($this->_pVarConfFile)), strlen(self::ENABLED_ERROR_LOG_FILE_NAME));
+                    $this->_errorLogFilePath = $this->_errorLogDirectory . $this->_currentErrorLogFileName;
+                    // When current error log file does not exist.
+                    if (!is_file($this->_errorLogFilePath)) {
+                        // Creates and opens current error log file.
+                        $this->_pCurrentErrorLogFileSize = 0;
+                    } else {
+                        // Opens current error log file.
+                        $errorLogFileStatus = stat($this->_errorLogFilePath);
+                        $this->_pCurrentErrorLogFileSize = $errorLogFileStatus['size'];
+                    }
+                    // Reads native call stack paths and its number.
+                    $nativeCallStackArray = array ();
+                    $count = 1;
+                    while ($varConfLineString = fgets($this->_pVarConfFile)) {
+                        $key = base_convert($count, 10, 36);
+                        if ($varConfLineString === PHP_EOL) {
+                            $nativeCallStackArray[$key] = PHP_EOL;
+                        } else {
+                            $varConfLineString = trim($varConfLineString);
+                            list($value, $dummy) = explode('?', $varConfLineString);
+                            $nativeCallStackArray[$key] = $value;
+                        }
+                        $count++;
+                    }
+                    // The call stack loop.
+                    $callStackInfoArray = array ();
+                    foreach ($this->_callStack as $call) {
+                        if (empty($call)
+                            || !array_key_exists('file', $call)
+                            || !array_key_exists('line', $call)
+                        ) {
+                            continue;
+                        }
+                        $path = $call['file'];
+                        // Searches the error file path.
+                        while (true) {
+                            foreach ($nativeCallStackArray as $key => $nativeCallStack) {
+                                if ($path === $nativeCallStackArray[$key]) {
+                                    $pathNumber = $key;
+                                    break 2;
+                                }
+                            }
+                            $count = count($nativeCallStackArray);
+                            if ($count) {
+                                $pathNumber = base_convert($count + 1, 10, 36);
+                            } else {
+                                $pathNumber = 1;
+                            }
+                            $nativeCallStackArray[$pathNumber] = $path;
+                            // Sets the error path and its number.
+                            // Disk access is executed per sector.
+                            // Therefore, compresses from error path to sequential number because it is purpose to decrease disk access.
+                            fwrite($this->_pVarConfFile, $path . '?' . $pathNumber . PHP_EOL);
+                            break;
+                        }
+                        // Creates the call stack information character string.
+                        $callStackInfoArray[] = base_convert($pathNumber, 36, 10);
+                        $callStackInfoArray[] = $call['line'];
+                        if (!isset($errorPathNumber)) {
+                            // Sets the error location file number.
+                            $errorPathNumber = $pathNumber;
+                        }
+                    }
+                    // Compresses integer array.
+                    $callStackInfoString = B::compressIntArray($callStackInfoArray);
+                    // Disk access is executed per sector.
+                    // Therefore, partitions out error locations to error location files because it is purpose to decrease disk access.
+                    $errorLocationFilePath = $this->_errorLogDirectory . $errorPathNumber . '.bin';
+                    // If error location file exists.
+                    if (is_file($errorLocationFilePath)) {
+                        // Opens the error location file.
+                        $pErrorLocationFile = B::fopen(array ($errorLocationFilePath, 'r+b'));
+                    } else {
+                        // Creates the error location file.
+                        $pErrorLocationFile = B::fopen(array ($errorLocationFilePath, 'x+b'));
+                    }
+                    $isExisting = false;
+                    while ($callStackInfoStringLine = fgets($pErrorLocationFile)) {
+                        if ($callStackInfoStringLine === $callStackInfoString) {
+                            $isExisting = true;
+                            break;
+                        }
+                    }
+                    if ($isExisting) {
+                        // Skips same error.
+                        goto END_LABEL;
+                    } else {
+                        // Registers the call stack information character string.
+                        fseek($pErrorLocationFile, 0, SEEK_END);
+                        fwrite($pErrorLocationFile, $callStackInfoString);
+                    }
+                }
+
+                $this->pErrorLogFile = $this->logPointerOpening();
+                $tmp = date('[Y-m-d H:i:s]') . PHP_EOL;
+                $dummy = null;
+                $this->logBufferWriting($dummy, $this->tags['pre'] . $prependLog);
+                // Create error log from the argument.
+                $tmp .= '/////////////////////////////// CALL STACK BEGIN ///////////////////////////////' .
+                    PHP_EOL . $this->mark . 'Error kind =======>' . $this->tags['font']['string'] . '\'' . $errorKind . '\'' . $this->tags['/font'] .
+                    PHP_EOL . $this->mark . 'Error message ====>' . $this->tags['font']['string'] . '\'' . $errorMessage . '\'' . $this->tags['/font'] .
+                    PHP_EOL . $this->tags['uint test anchor href'] .
+                    PHP_EOL;
+                $this->logBufferWriting($dummy, $tmp);
+                // Search array which debug_backtrace() or getTrace() returns, and add a parametric information.
+                foreach ($this->_callStack as $call) {
+                    $onceFlag2 = true;
+                    $pTmpLog2 = $this->logPointerOpening();
+                    if ($call === array ()) {
+                        continue;
+                    }
+                    if ($call === '') {
+                        $this->logBufferWriting($pTmpLog2, PHP_EOL . 'Omits call stack because exceeded "\BreakpointDebugging::$_maxLogElementNumber".' . PHP_EOL . "\t." . PHP_EOL . "\t." . PHP_EOL . "\t." . PHP_EOL);
+                        $this->logWriting($pTmpLog2);
+                        continue;
+                    }
+                    B::assert(is_array($call), 102);
+                    foreach ($this->_loggedCallStacks as $loggedCallNumber => $loggedCall) {
+                        if ($loggedCall === $call) {
+                            // Skips same call stack.
+                            $loggedCallNumber++;
+                            $this->logBufferWriting($dummy, PHP_EOL . $this->tags['b'] . $this->_lowerHypertextReferenceAnchor('function call #' . $loggedCallNumber) . $this->tags['/b'] . " ...");
+                            $file = '';
+                            $line = '';
+                            $func = '';
+                            $class = '';
+                            goto AFTER_TREATMENT;
+                        }
+                    }
+                    array_key_exists('file', $call) ? $file = $call['file'] : $file = '';
+                    array_key_exists('line', $call) ? $line = $call['line'] : $line = '';
+                    $this->_loggedCallStacks[] = $call;
+                    $this->logBufferWriting($dummy, PHP_EOL . $this->tags['b'] . $this->_setHypertextReference('function call #' . count($this->_loggedCallStacks)) . $this->tags['/b']);
+                    $this->outputFixedFunctionToLogging($call, $dummy, $onceFlag2, $func, $class, $file, $line);
+                    if (is_array($call)
+                        && array_key_exists('args', $call)
+                    ) {
+                        // Analyze parameters part of trace array, and return character string.
+                        $this->searchDebugBacktraceArgsToString($pTmpLog2, $call['args']);
+                        $this->logBufferWriting($pTmpLog2, PHP_EOL . ');');
+                    }
+                    $this->addFunctionValuesToLog($pTmpLog, $dummy, $onceFlag2, $func, $class, $line);
+
+                    AFTER_TREATMENT:
+                    if ($onceFlag2) {
+                        $this->addParameterHeaderToLog($dummy, $file, $line, $func, $class);
+                    }
+                    $this->logBufferWriting($pTmpLog2, PHP_EOL);
+                    $this->checkLogByteSize($pTmpLog2);
+                    $this->logWriting($pTmpLog2);
+                }
+                $this->logBufferWriting($dummy, '//////////////////////////////// CALL STACK END ////////////////////////////////');
+                $this->logBufferWriting($dummy, $this->tags['/pre']);
+            } catch (\BreakpointDebugging_OutOfLogRangeException $e) {
+
+            }
+
             // If this does a log.
             if (B::getStatic('$exeMode') & B::RELEASE) {
-                // Locks the error log files.
-                $this->_lockByFileExisting = &\BreakpointDebugging_LockByFileExisting::internalSingleton();
-                $this->_lockByFileExisting->lock();
-                // When "ErrorLog" directory does not exist.
-                $this->_errorLogDirectory = B::getStatic('$_workDir') . self::$_errorLogDir;
-                if (!is_dir($this->_errorLogDirectory)) {
-                    // Makes directory, sets permission and sets own user.
-                    B::mkdir(array ($this->_errorLogDirectory, 0700));
-                }
-                $varConfFilePath = $this->_errorLogDirectory . $this->_varConfFileName;
-                // If variable configuring file exists.
-                if (is_file($varConfFilePath)) {
-                    // Opens variable configuring file.
-                    $this->_pVarConfFile = B::fopen(array ($varConfFilePath, 'r+b'));
-                    // Checks the abnormal termination.
-                    $logEnableString = fread($this->_pVarConfFile, strlen(self::DISABLED_ERROR_LOG_FILE_NAME));
-                    if ($logEnableString !== self::DISABLED_ERROR_LOG_FILE_NAME) {
-                        $this->_repairLoggingSystemFile($logEnableString);
-                    } else {
-                        rewind($this->_pVarConfFile);
-                        fwrite($this->_pVarConfFile, self::ENABLED_ERROR_LOG_FILE_NAME);
-                    }
-                } else {
-                    // Creates and opens variable configuring file.
-                    $this->_pVarConfFile = B::fopen(array ($varConfFilePath, 'x+b'));
-                    // Sets current error log file name.
-                    fwrite($this->_pVarConfFile, self::ENABLED_ERROR_LOG_FILE_NAME . $this->_prefixOfErrorLogFileName . '1.log' . PHP_EOL);
-                }
-                fflush($this->_pVarConfFile);
-                rewind($this->_pVarConfFile);
-
                 // Gets current error log file name.
-                $this->_currentErrorLogFileName = substr(trim(fgets($this->_pVarConfFile)), strlen(self::ENABLED_ERROR_LOG_FILE_NAME));
                 $this->_errorLogFilePath = $this->_errorLogDirectory . $this->_currentErrorLogFileName;
                 // When current error log file does not exist.
                 if (!is_file($this->_errorLogFilePath)) {
                     // Creates and opens current error log file.
-                    $this->_pCurrentErrorLogFileSize = 0;
+                    $pErrorLogFile = B::fopen(array ($this->_errorLogFilePath, 'xb'));
                 } else {
                     // Opens current error log file.
-                    $errorLogFileStatus = stat($this->_errorLogFilePath);
-                    $this->_pCurrentErrorLogFileSize = $errorLogFileStatus['size'];
+                    $pErrorLogFile = B::fopen(array ($this->_errorLogFilePath, 'ab'));
                 }
-                // Reads native call stack paths and its number.
-                $nativeCallStackArray = array ();
-                $count = 1;
-                while ($varConfLineString = fgets($this->_pVarConfFile)) {
-                    $key = base_convert($count, 10, 36);
-                    if ($varConfLineString === PHP_EOL) {
-                        $nativeCallStackArray[$key] = PHP_EOL;
-                    } else {
-                        $varConfLineString = trim($varConfLineString);
-                        list($value, $dummy) = explode('?', $varConfLineString);
-                        $nativeCallStackArray[$key] = $value;
-                    }
-                    $count++;
+                // Writes to error log.
+                $this->logWriting($this->pErrorLogFile, $pErrorLogFile);
+                // Closes current error log file.
+                fclose($pErrorLogFile);
+
+                END_LABEL:
+                if (is_resource($pErrorLocationFile)) {
+                    // Closes the error location file.
+                    fclose($pErrorLocationFile);
                 }
-                // The call stack loop.
-                $callStackInfoArray = array ();
-                foreach ($this->_callStack as $call) {
-                    if (empty($call)
-                        || !array_key_exists('file', $call)
-                        || !array_key_exists('line', $call)
-                    ) {
-                        continue;
-                    }
-                    $path = $call['file'];
-                    // Searches the error file path.
-                    while (true) {
-                        foreach ($nativeCallStackArray as $key => $nativeCallStack) {
-                            if ($path === $nativeCallStackArray[$key]) {
-                                $pathNumber = $key;
-                                break 2;
-                            }
-                        }
-                        $count = count($nativeCallStackArray);
-                        if ($count) {
-                            $pathNumber = base_convert($count + 1, 10, 36);
-                        } else {
-                            $pathNumber = 1;
-                        }
-                        $nativeCallStackArray[$pathNumber] = $path;
-                        // Sets the error path and its number.
-                        // Disk access is executed per sector.
-                        // Therefore, compresses from error path to sequential number because it is purpose to decrease disk access.
-                        fwrite($this->_pVarConfFile, $path . '?' . $pathNumber . PHP_EOL);
-                        break;
-                    }
-                    // Creates the call stack information character string.
-                    $callStackInfoArray[] = base_convert($pathNumber, 36, 10);
-                    $callStackInfoArray[] = $call['line'];
-                    if (!isset($errorPathNumber)) {
-                        // Sets the error location file number.
-                        $errorPathNumber = $pathNumber;
-                    }
-                }
-                // Compresses integer array.
-                $callStackInfoString = B::compressIntArray($callStackInfoArray);
-                // Disk access is executed per sector.
-                // Therefore, partitions out error locations to error location files because it is purpose to decrease disk access.
-                $errorLocationFilePath = $this->_errorLogDirectory . $errorPathNumber . '.bin';
-                // If error location file exists.
-                if (is_file($errorLocationFilePath)) {
-                    // Opens the error location file.
-                    $pErrorLocationFile = B::fopen(array ($errorLocationFilePath, 'r+b'));
-                } else {
-                    // Creates the error location file.
-                    $pErrorLocationFile = B::fopen(array ($errorLocationFilePath, 'x+b'));
-                }
-                $isExisting = false;
-                while ($callStackInfoStringLine = fgets($pErrorLocationFile)) {
-                    if ($callStackInfoStringLine === $callStackInfoString) {
-                        $isExisting = true;
-                        break;
-                    }
-                }
-                if ($isExisting) {
-                    // Skips same error.
-                    goto END_LABEL;
-                } else {
-                    // Registers the call stack information character string.
-                    fseek($pErrorLocationFile, 0, SEEK_END);
-                    fwrite($pErrorLocationFile, $callStackInfoString);
-                }
+                rewind($this->_pVarConfFile);
+                fwrite($this->_pVarConfFile, self::DISABLED_ERROR_LOG_FILE_NAME);
+                // Closes variable configuring file.
+                fclose($this->_pVarConfFile);
+                //// Unlocks the error log files.
+                //$this->_lockByFileExisting->unlock();
             }
-
-            $this->pErrorLogFile = $this->logPointerOpening();
-            $tmp = date('[Y-m-d H:i:s]') . PHP_EOL;
-            $dummy = null;
-            $this->logBufferWriting($dummy, $this->tags['pre'] . $prependLog);
-            // Create error log from the argument.
-            $tmp .= '/////////////////////////////// CALL STACK BEGIN ///////////////////////////////' .
-                PHP_EOL . $this->mark . 'Error kind =======>' . $this->tags['font']['string'] . '\'' . $errorKind . '\'' . $this->tags['/font'] .
-                PHP_EOL . $this->mark . 'Error message ====>' . $this->tags['font']['string'] . '\'' . $errorMessage . '\'' . $this->tags['/font'] .
-                PHP_EOL . $this->tags['uint test anchor href'] .
-                PHP_EOL;
-            $this->logBufferWriting($dummy, $tmp);
-            // Search array which debug_backtrace() or getTrace() returns, and add a parametric information.
-            foreach ($this->_callStack as $call) {
-                $onceFlag2 = true;
-                $pTmpLog2 = $this->logPointerOpening();
-                if ($call === array ()) {
-                    continue;
-                }
-                if ($call === '') {
-                    $this->logBufferWriting($pTmpLog2, PHP_EOL . 'Omits call stack because exceeded "\BreakpointDebugging::$_maxLogElementNumber".' . PHP_EOL . "\t." . PHP_EOL . "\t." . PHP_EOL . "\t." . PHP_EOL);
-                    $this->logWriting($pTmpLog2);
-                    continue;
-                }
-                B::assert(is_array($call), 102);
-                foreach ($this->_loggedCallStacks as $loggedCallNumber => $loggedCall) {
-                    if ($loggedCall === $call) {
-                        // Skips same call stack.
-                        $loggedCallNumber++;
-                        $this->logBufferWriting($dummy, PHP_EOL . $this->tags['b'] . $this->_lowerHypertextReferenceAnchor('function call #' . $loggedCallNumber) . $this->tags['/b'] . " ...");
-                        $file = '';
-                        $line = '';
-                        $func = '';
-                        $class = '';
-                        goto AFTER_TREATMENT;
-                    }
-                }
-                array_key_exists('file', $call) ? $file = $call['file'] : $file = '';
-                array_key_exists('line', $call) ? $line = $call['line'] : $line = '';
-                $this->_loggedCallStacks[] = $call;
-                $this->logBufferWriting($dummy, PHP_EOL . $this->tags['b'] . $this->_setHypertextReference('function call #' . count($this->_loggedCallStacks)) . $this->tags['/b']);
-                $this->outputFixedFunctionToLogging($call, $dummy, $onceFlag2, $func, $class, $file, $line);
-                if (is_array($call)
-                    && array_key_exists('args', $call)
-                ) {
-                    // Analyze parameters part of trace array, and return character string.
-                    $this->searchDebugBacktraceArgsToString($pTmpLog2, $call['args']);
-                    $this->logBufferWriting($pTmpLog2, PHP_EOL . ');');
-                }
-                $this->addFunctionValuesToLog($pTmpLog, $dummy, $onceFlag2, $func, $class, $line);
-
-                AFTER_TREATMENT:
-                if ($onceFlag2) {
-                    $this->addParameterHeaderToLog($dummy, $file, $line, $func, $class);
-                }
-                $this->logBufferWriting($pTmpLog2, PHP_EOL);
-                $this->checkLogByteSize($pTmpLog2);
-                $this->logWriting($pTmpLog2);
-            }
-            $this->logBufferWriting($dummy, '//////////////////////////////// CALL STACK END ////////////////////////////////');
-            $this->logBufferWriting($dummy, $this->tags['/pre']);
-        } catch (\BreakpointDebugging_OutOfLogRangeException $e) {
-
-        }
-
-        // If this does a log.
-        if (B::getStatic('$exeMode') & B::RELEASE) {
-            // Gets current error log file name.
-            $this->_errorLogFilePath = $this->_errorLogDirectory . $this->_currentErrorLogFileName;
-            // When current error log file does not exist.
-            if (!is_file($this->_errorLogFilePath)) {
-                // Creates and opens current error log file.
-                $pErrorLogFile = B::fopen(array ($this->_errorLogFilePath, 'xb'));
-            } else {
-                // Opens current error log file.
-                $pErrorLogFile = B::fopen(array ($this->_errorLogFilePath, 'ab'));
-            }
-            // Writes to error log.
-            $this->logWriting($this->pErrorLogFile, $pErrorLogFile);
-            // Closes current error log file.
-            fclose($pErrorLogFile);
-
-            END_LABEL:
-            if (is_resource($pErrorLocationFile)) {
-                // Closes the error location file.
-                fclose($pErrorLocationFile);
-            }
-            rewind($this->_pVarConfFile);
-            fwrite($this->_pVarConfFile, self::DISABLED_ERROR_LOG_FILE_NAME);
-            // Closes variable configuring file.
-            fclose($this->_pVarConfFile);
+        } catch (\Exception $e) {
             // Unlocks the error log files.
             $this->_lockByFileExisting->unlock();
+            throw $e;
         }
+        // Unlocks the error log files.
+        $this->_lockByFileExisting->unlock();
     }
 
     /**

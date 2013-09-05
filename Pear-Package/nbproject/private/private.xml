@@ -15,7 +15,7 @@
         </file>
         <file>
             <url>PEAR/BreakpointDebugging/LockByShmop.php</url>
-            <line>471</line>
+            <line>480</line>
         </file>
         <file>
             <url>PEAR/Validate/MySQLi/Result.php</url>
@@ -40,6 +40,10 @@
         <file>
             <url>PEAR/BreakpointDebugging.php</url>
             <line>93</line>
+        </file>
+        <file>
+            <url>PEAR/BreakpointDebugging/Error.php</url>
+            <line>927</line>
         </file>
         <file>
             <url>BreakpointDebugging_MySetting.php</url>

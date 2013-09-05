@@ -11,11 +11,16 @@
  * @example of usage.
  *      $lockByShmop = &\BreakpointDebugging_LockByShmop::singleton(); // Creates a lock instance.
  *      $lockByShmop->lock(); // Locks php-code.
- *      $pFile = \BreakpointDebugging::fopen(array ('file.txt', 'w+b')); // Truncates data.
- *      $data = fread($pFile, 1); // Reads data.
- *      $data++; // Changes data.
- *      fwrite($pFile, $data); // Writes data.
- *      fclose($pFile); // Flushes data, and releases file pointer resource.
+ *      try {
+ *          $pFile = \BreakpointDebugging::fopen(array ('file.txt', 'w+b')); // Truncates data.
+ *          $data = fread($pFile, 1); // Reads data.
+ *          $data++; // Changes data.
+ *          fwrite($pFile, $data); // Writes data.
+ *          fclose($pFile); // Flushes data, and releases file pointer resource.
+ *      } catch (\Exception $e) {
+ *          $lockByShmop->unlock(); // Unlocks php-code.
+ *          throw $e;
+ *      }
  *      $lockByShmop->unlock(); // Unlocks php-code.
  *
  * This class is same as BreakpointDebugging_LockByFileExisting.
@@ -144,102 +149,106 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
         self::$_lockingObject = &\BreakpointDebugging_LockByFileExisting::internalSingleton();
         // Lock php code.
         self::$_lockingObject->lock();
+        try {
+            while (true) {
+                // In case of existing file.
+                if (is_file($lockFilePath)) {
+                    // The file header is opened reading and writing mode.
+                    $this->pFile = B::fopen(array ($lockFilePath, 'r+b'));
 
-        while (true) {
-            // In case of existing file.
-            if (is_file($lockFilePath)) {
-                // The file header is opened reading and writing mode.
-                $this->pFile = B::fopen(array ($lockFilePath, 'r+b'));
-
-                $isContinue = false;
-                // Shared memory does not exist.
-                if ($this->_getSharedMemoryID() === false) {
-                    $isContinue = true;
-                } else {
-                    // Shared memory is too old.
-                    $sharedMemoryAccessTime = shmop_read(self::$sharedMemoryID, self::HEXADECIMAL_SIZE * 3, self::HEXADECIMAL_SIZE);
-                    B::assert($sharedMemoryAccessTime !== false);
-                    $sharedMemoryAccessTime += 0;
-                    if (time() - $sharedMemoryAccessTime >= $sharedMemoryExpire) {
-                        // Delete shared memory.
-                        $result = shmop_delete(self::$sharedMemoryID);
-                        B::assert($result !== false);
-                        shmop_close(self::$sharedMemoryID);
+                    $isContinue = false;
+                    // Shared memory does not exist.
+                    if ($this->_getSharedMemoryID() === false) {
                         $isContinue = true;
+                    } else {
+                        // Shared memory is too old.
+                        $sharedMemoryAccessTime = shmop_read(self::$sharedMemoryID, self::HEXADECIMAL_SIZE * 3, self::HEXADECIMAL_SIZE);
+                        B::assert($sharedMemoryAccessTime !== false);
+                        $sharedMemoryAccessTime += 0;
+                        if (time() - $sharedMemoryAccessTime >= $sharedMemoryExpire) {
+                            // Delete shared memory.
+                            $result = shmop_delete(self::$sharedMemoryID);
+                            B::assert($result !== false);
+                            shmop_close(self::$sharedMemoryID);
+                            $isContinue = true;
+                        }
                     }
+                    if ($isContinue) {
+                        $result = fclose($this->pFile);
+                        B::assert($result !== false);
+                        // Delete locking flag file.
+                        B::unlink(array ($lockFilePath));
+                        continue;
+                    }
+                } else { // In case of not existing file.
+                    $this->pFile = B::fopen(array ($lockFilePath, 'w+b'));
+                    // Build shared memory.
+                    $this->_buildSharedMemory();
                 }
-                if ($isContinue) {
-                    $result = fclose($this->pFile);
-                    B::assert($result !== false);
-                    // Delete locking flag file.
-                    B::unlink(array ($lockFilePath));
-                    continue;
-                }
-            } else { // In case of not existing file.
-                $this->pFile = B::fopen(array ($lockFilePath, 'w+b'));
-                // Build shared memory.
-                $this->_buildSharedMemory();
+                break;
             }
-            break;
-        }
-        // Close file handle.
-        $result = fclose($this->pFile);
-        B::assert($result !== false);
-
-        // Lock for current process of between "$this->loopLocking()" and "$this->loopUnlocking()".
-        $this->_lockOn2Processes(self::HEXADECIMAL_SIZE * 4, self::HEXADECIMAL_SIZE * 4 + 1);
-
-        // Get minimum empty process number.
-        $minimumEmptyProcessNumber = shmop_read(self::$sharedMemoryID, self::HEXADECIMAL_SIZE, self::HEXADECIMAL_SIZE);
-        B::assert($minimumEmptyProcessNumber !== false);
-        $minimumEmptyProcessNumber += 0;
-        // Register this process.
-        $result = shmop_write(self::$sharedMemoryID, '1', $minimumEmptyProcessNumber);
-        B::assert($result !== false);
-        // Register this process number.
-        self::$_processNumber = $minimumEmptyProcessNumber;
-        // Get maximum process number.
-        $maximumProcessNumber = shmop_read(self::$sharedMemoryID, self::HEXADECIMAL_SIZE * 2, self::HEXADECIMAL_SIZE);
-        B::assert($maximumProcessNumber !== false);
-        $maximumProcessNumber += 0;
-        if ($maximumProcessNumber < self::$_processNumber) {
-            // @codeCoverageIgnoreStart
-            // Because the following isn't executed in case of single process.
-            // Register maximum process number.
-            $result = shmop_write(self::$sharedMemoryID, sprintf('0x%08X', self::$_processNumber), self::HEXADECIMAL_SIZE * 2);
+            // Close file handle.
+            $result = fclose($this->pFile);
             B::assert($result !== false);
-        }
-        // @codeCoverageIgnoreEnd
-        // Search minimum empty process number.
-        while (true) {
-            for ($searchLocation = $minimumEmptyProcessNumber; $searchLocation < self::MEMORY_BLOCK_SIZE; $searchLocation++) {
-                $result = shmop_read(self::$sharedMemoryID, $searchLocation, 1);
-                if ($result === '0') {
-                    break 2;
-                }
+
+            // Lock for current process of between "$this->loopLocking()" and "$this->loopUnlocking()".
+            $this->_lockOn2Processes(self::HEXADECIMAL_SIZE * 4, self::HEXADECIMAL_SIZE * 4 + 1);
+
+            // Get minimum empty process number.
+            $minimumEmptyProcessNumber = shmop_read(self::$sharedMemoryID, self::HEXADECIMAL_SIZE, self::HEXADECIMAL_SIZE);
+            B::assert($minimumEmptyProcessNumber !== false);
+            $minimumEmptyProcessNumber += 0;
+            // Register this process.
+            $result = shmop_write(self::$sharedMemoryID, '1', $minimumEmptyProcessNumber);
+            B::assert($result !== false);
+            // Register this process number.
+            self::$_processNumber = $minimumEmptyProcessNumber;
+            // Get maximum process number.
+            $maximumProcessNumber = shmop_read(self::$sharedMemoryID, self::HEXADECIMAL_SIZE * 2, self::HEXADECIMAL_SIZE);
+            B::assert($maximumProcessNumber !== false);
+            $maximumProcessNumber += 0;
+            if ($maximumProcessNumber < self::$_processNumber) {
+                // @codeCoverageIgnoreStart
+                // Because the following isn't executed in case of single process.
+                // Register maximum process number.
+                $result = shmop_write(self::$sharedMemoryID, sprintf('0x%08X', self::$_processNumber), self::HEXADECIMAL_SIZE * 2);
                 B::assert($result !== false);
             }
-            // @codeCoverageIgnoreStart
-            // Because the following isn't executed in case of single process.
+            // @codeCoverageIgnoreEnd
+            // Search minimum empty process number.
+            while (true) {
+                for ($searchLocation = $minimumEmptyProcessNumber; $searchLocation < self::MEMORY_BLOCK_SIZE; $searchLocation++) {
+                    $result = shmop_read(self::$sharedMemoryID, $searchLocation, 1);
+                    if ($result === '0') {
+                        break 2;
+                    }
+                    B::assert($result !== false);
+                }
+                // @codeCoverageIgnoreStart
+                // Because the following isn't executed in case of single process.
+                // Unlock for current process.
+                $this->_unlockOn2Processes(self::HEXADECIMAL_SIZE * 4);
+                // Unlock php code.
+                self::$_lockingObject->unlock();
+                // Sleep 1 second.
+                usleep(1000000);
+                // Lock php code.
+                self::$_lockingObject->lock();
+                // Lock for current process.
+                $this->_lockOn2Processes(self::HEXADECIMAL_SIZE * 4, self::HEXADECIMAL_SIZE * 4 + 1);
+            }
+            // @codeCoverageIgnoreEnd
+            // Register minimum empty process number.
+            $result = shmop_write(self::$sharedMemoryID, sprintf('0x%08X', $searchLocation), self::HEXADECIMAL_SIZE);
+            B::assert($result !== false);
+
             // Unlock for current process.
             $this->_unlockOn2Processes(self::HEXADECIMAL_SIZE * 4);
+        } catch (\Exception $e) {
             // Unlock php code.
             self::$_lockingObject->unlock();
-            // Sleep 1 second.
-            usleep(1000000);
-            // Lock php code.
-            self::$_lockingObject->lock();
-            // Lock for current process.
-            $this->_lockOn2Processes(self::HEXADECIMAL_SIZE * 4, self::HEXADECIMAL_SIZE * 4 + 1);
+            throw $e;
         }
-        // @codeCoverageIgnoreEnd
-        // Register minimum empty process number.
-        $result = shmop_write(self::$sharedMemoryID, sprintf('0x%08X', $searchLocation), self::HEXADECIMAL_SIZE);
-        B::assert($result !== false);
-
-        // Unlock for current process.
-        $this->_unlockOn2Processes(self::HEXADECIMAL_SIZE * 4);
-
         // Unlock php code.
         self::$_lockingObject->unlock();
     }

@@ -11,11 +11,16 @@
  * @example of usage.
  *      $lockByFlock = &\BreakpointDebugging_LockByFlock::singleton(); // Creates a lock instance.
  *      $lockByFlock->lock(); // Locks php-code.
- *      $pFile = \BreakpointDebugging::fopen(array ('file.txt', 'w+b')); // Truncates data.
- *      $data = fread($pFile, 1); // Reads data.
- *      $data++; // Changes data.
- *      fwrite($pFile, $data); // Writes data.
- *      fclose($pFile); // Flushes data, and releases file pointer resource.
+ *      try {
+ *          $pFile = \BreakpointDebugging::fopen(array ('file.txt', 'w+b')); // Truncates data.
+ *          $data = fread($pFile, 1); // Reads data.
+ *          $data++; // Changes data.
+ *          fwrite($pFile, $data); // Writes data.
+ *          fclose($pFile); // Flushes data, and releases file pointer resource.
+ *      } catch (\Exception $e) {
+ *          $lockByFlock->unlock(); // Unlocks php-code.
+ *          throw $e;
+ *      }
  *      $lockByFlock->unlock(); // Unlocks php-code.
  *
  * PHP version 5.3
