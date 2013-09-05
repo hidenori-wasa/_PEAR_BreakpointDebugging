@@ -253,7 +253,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_UnitTestCaller
     static function checkSuperUserExecution()
     {
         // If this is remote debug, unix and root user.
-        if (BA::$exeMode & B::REMOTE
+        if (BA::$exeMode === B::REMOTE
             && !BREAKPOINTDEBUGGING_IS_WINDOWS
             && trim(`echo \$USER`) === 'root'
         ) {

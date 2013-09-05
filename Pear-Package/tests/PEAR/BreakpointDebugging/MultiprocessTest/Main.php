@@ -4,8 +4,7 @@ use \BreakpointDebugging as B;
 
 class tests_PEAR_BreakpointDebugging_MultiprocessTest_Main
 {
-    // private function _initializeCounter($shmopKey)
-    static function _initializeCounter($shmopKey)
+    private function _initializeCounter($shmopKey)
     {
         B::assert(extension_loaded('shmop'), 101);
         // Allocate shared memory area.
@@ -27,10 +26,6 @@ class tests_PEAR_BreakpointDebugging_MultiprocessTest_Main
         $this->_initializeCounter($shmopKey);
 
         $fullFilePath = __DIR__ . '/Lock.php';
-        if ($fullFilePath === false) {
-            throw new \BreakpointDebugging_ErrorException('"' . $filePath . '" file does not exist.');
-        }
-
         $pPipes = array ();
         for ($count = 0; $count < 8; $count++) {
             // Creates and runs a test process.

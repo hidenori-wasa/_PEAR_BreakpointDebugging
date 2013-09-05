@@ -82,9 +82,14 @@ abstract class BreakpointDebugging_Error_InAllCase
     private $_varConfFileName = 'ErrorLog.var.conf';
 
     /**
-     * @var string Key of current error log file name.
+     * @const string Key of enabled error log file name.
      */
-    private $_keyOfCurrentErrorLogFileName = 'CURRENT_ERROR_LOG_FILE_NAME=';
+    const ENABLED_ERROR_LOG_FILE_NAME = 'ENABLED_ERROR_LOG_FILE_NAME_=';
+
+    /**
+     * @const string Key of disabled error log file name.
+     */
+    const DISABLED_ERROR_LOG_FILE_NAME = 'DISABLED_ERROR_LOG_FILE_NAME=';
 
     /**
      * @var string Prefix of error log file name.
@@ -849,7 +854,8 @@ abstract class BreakpointDebugging_Error_InAllCase
             B::unlink(array ($nextErrorLogFilePath));
         }
         // Seeks to error log file number.
-        fseek($this->_pVarConfFile, strlen($this->_keyOfCurrentErrorLogFileName . $this->_prefixOfErrorLogFileName));
+        fseek($this->_pVarConfFile, strlen(self::ENABLED_ERROR_LOG_FILE_NAME . $this->_prefixOfErrorLogFileName));
+
         // Sets next error log file name number to variable configuring file.
         fwrite($this->_pVarConfFile, $nextNumber);
         // Creates current error log filename.
@@ -873,6 +879,101 @@ abstract class BreakpointDebugging_Error_InAllCase
         $errorLogFileStatus2 = fstat($pTmpLog);
         if ($this->_pCurrentErrorLogFileSize + $errorLogFileStatus1['size'] + $errorLogFileStatus2['size'] > $this->maxLogFileByteSize) {
             $this->changeLogFile($pTmpLog);
+        }
+    }
+
+    /**
+     * Repairs the logging system file.
+     *
+     * @return void
+     */
+    private function _repairLoggingSystemFile()
+    {
+        // Repairs variable configuring file.
+        $lines = array ();
+        // Gets first line.
+        $lines[] = self::ENABLED_ERROR_LOG_FILE_NAME . fgets($this->_pVarConfFile);
+        while ($line = fgets($this->_pVarConfFile)) {
+            $lines[] = $line;
+        }
+        $isWritten = false;
+        $fileNumbers = array ();
+        for ($count = count($lines) - 1; $count >= 1; $count--) {
+            $line = $lines[$count];
+            $matches = array ();
+            $result = preg_match('`^ ([^?]+) \? ([[:alnum:]]+) \r? \n $`xX', $line, $matches);
+            if ($result !== 1 // If not matches.
+                || !is_file($matches[1]) // If error "*.php" file does not exist.
+            ) {
+                $isWritten = true;
+                // Deletes incorrect line.
+                $lines[$count] = PHP_EOL;
+                if (array_key_exists(2, $matches)) {
+                    $errorLocationFileName = $this->_errorLogDirectory . $matches[2] . '.bin';
+                    if (is_file($errorLocationFileName)) {
+                        // Deletes the error location file.
+                        B::unlink(array ($this->_errorLogDirectory . $matches[2] . '.bin'));
+                    }
+                }
+                continue;
+            }
+            $fileNumbers[] = base_convert($matches[2], 36, 10);
+        }
+        $line1pre = self::ENABLED_ERROR_LOG_FILE_NAME . 'php_error_';
+        $line1sa = '.log' . PHP_EOL;
+        $line1 = $line1pre . '1' . $line1sa;
+        $line = $lines[$count];
+        if (preg_match("`^ $line1pre [1-8] $line1sa`xXD", $line) !== 1) {
+            $isWritten = true;
+            // Repairs incorrect line.
+            $lines[$count] = $line1;
+        }
+        if ($isWritten) {
+            rewind($this->_pVarConfFile);
+            foreach ($lines as $line) {
+                fwrite($this->_pVarConfFile, $line);
+            }
+            ftruncate($this->_pVarConfFile, ftell($this->_pVarConfFile));
+        }
+
+        // Repairs the error location files.
+        foreach (scandir($this->_errorLogDirectory) as $errorLocationFileName) {
+            $errorLocationFileName = $this->_errorLogDirectory . $errorLocationFileName;
+            if (!is_file($errorLocationFileName)
+                || pathinfo($errorLocationFileName, PATHINFO_EXTENSION) !== 'bin'
+            ) {
+                continue;
+            }
+            // Opens the error location file.
+            $pErrorLocationFile = B::fopen(array ($errorLocationFileName, 'r+b'));
+            $lines = array ();
+            while ($line = fgets($pErrorLocationFile)) {
+                $lines[] = $line;
+            }
+            for ($count = count($lines) - 1; $count >= 0; $count--) {
+                $callStackInfoArray = B::decompressIntArray($lines[$count]);
+                $lineNumber = count($callStackInfoArray);
+                if ($lineNumber % 2 !== 0 // If the decompressed data is not even number.
+                    || $lineNumber - 2 < 0 // If the decompressed data is less than 2.
+                ) {
+                    // Deletes incorrect line.
+                    unset($lines[$count]);
+                    continue;
+                }
+                for ($count2 = $lineNumber - 2; $count2 >= 0; $count2 -= 2) {
+                    // If error file number does not exist.
+                    if (!in_array($callStackInfoArray[$count2], $fileNumbers)) {
+                        unset($lines[$count]);
+                        continue 2;
+                    }
+                }
+            }
+            rewind($pErrorLocationFile);
+            foreach ($lines as $line) {
+                fwrite($pErrorLocationFile, $line);
+            }
+            ftruncate($pErrorLocationFile, ftell($pErrorLocationFile));
+            fclose($pErrorLocationFile);
         }
     }
 
@@ -916,19 +1017,26 @@ abstract class BreakpointDebugging_Error_InAllCase
                 if (is_file($varConfFilePath)) {
                     // Opens variable configuring file.
                     $this->_pVarConfFile = B::fopen(array ($varConfFilePath, 'r+b'));
+                    // Checks the abnormal termination.
+                    $logEnableString = fread($this->_pVarConfFile, strlen(self::DISABLED_ERROR_LOG_FILE_NAME));
+                    if ($logEnableString !== self::DISABLED_ERROR_LOG_FILE_NAME) {
+                        $this->_repairLoggingSystemFile($logEnableString);
+                    } else {
+                        rewind($this->_pVarConfFile);
+                        fwrite($this->_pVarConfFile, self::ENABLED_ERROR_LOG_FILE_NAME);
+                    }
                 } else {
                     // Creates and opens variable configuring file.
                     $this->_pVarConfFile = B::fopen(array ($varConfFilePath, 'x+b'));
                     // Sets current error log file name.
-                    fwrite($this->_pVarConfFile, $this->_keyOfCurrentErrorLogFileName . $this->_prefixOfErrorLogFileName . '1.log' . PHP_EOL);
-                    fflush($this->_pVarConfFile);
-                    rewind($this->_pVarConfFile);
+                    fwrite($this->_pVarConfFile, self::ENABLED_ERROR_LOG_FILE_NAME . $this->_prefixOfErrorLogFileName . '1.log' . PHP_EOL);
                 }
+                fflush($this->_pVarConfFile);
+                rewind($this->_pVarConfFile);
 
                 // Gets current error log file name.
-                $this->_currentErrorLogFileName = substr(trim(fgets($this->_pVarConfFile)), strlen($this->_keyOfCurrentErrorLogFileName));
+                $this->_currentErrorLogFileName = substr(trim(fgets($this->_pVarConfFile)), strlen(self::ENABLED_ERROR_LOG_FILE_NAME));
                 $this->_errorLogFilePath = $this->_errorLogDirectory . $this->_currentErrorLogFileName;
-                B::assert(is_string($this->_currentErrorLogFileName), 101);
                 // When current error log file does not exist.
                 if (!is_file($this->_errorLogFilePath)) {
                     // Creates and opens current error log file.
@@ -940,10 +1048,17 @@ abstract class BreakpointDebugging_Error_InAllCase
                 }
                 // Reads native call stack paths and its number.
                 $nativeCallStackArray = array ();
+                $count = 1;
                 while ($varConfLineString = fgets($this->_pVarConfFile)) {
-                    $varConfLineString = trim($varConfLineString);
-                    list($key, $value) = explode('?', $varConfLineString);
-                    $nativeCallStackArray[$key] = $value;
+                    $key = base_convert($count, 10, 36);
+                    if ($varConfLineString === PHP_EOL) {
+                        $nativeCallStackArray[$key] = PHP_EOL;
+                    } else {
+                        $varConfLineString = trim($varConfLineString);
+                        list($value, $dummy) = explode('?', $varConfLineString);
+                        $nativeCallStackArray[$key] = $value;
+                    }
+                    $count++;
                 }
                 // The call stack loop.
                 $callStackInfoArray = array ();
@@ -956,20 +1071,25 @@ abstract class BreakpointDebugging_Error_InAllCase
                     }
                     $path = $call['file'];
                     // Searches the error file path.
-                    if (array_key_exists($path, $nativeCallStackArray)) {
-                        $pathNumber = $nativeCallStackArray[$path];
-                    } else {
+                    while (true) {
+                        foreach ($nativeCallStackArray as $key => $nativeCallStack) {
+                            if ($path === $nativeCallStackArray[$key]) {
+                                $pathNumber = $key;
+                                break 2;
+                            }
+                        }
                         $count = count($nativeCallStackArray);
                         if ($count) {
                             $pathNumber = base_convert($count + 1, 10, 36);
                         } else {
                             $pathNumber = 1;
                         }
-                        $nativeCallStackArray[$path] = $pathNumber;
+                        $nativeCallStackArray[$pathNumber] = $path;
                         // Sets the error path and its number.
                         // Disk access is executed per sector.
                         // Therefore, compresses from error path to sequential number because it is purpose to decrease disk access.
                         fwrite($this->_pVarConfFile, $path . '?' . $pathNumber . PHP_EOL);
+                        break;
                     }
                     // Creates the call stack information character string.
                     $callStackInfoArray[] = base_convert($pathNumber, 36, 10);
@@ -1095,6 +1215,8 @@ abstract class BreakpointDebugging_Error_InAllCase
                 // Closes the error location file.
                 fclose($pErrorLocationFile);
             }
+            rewind($this->_pVarConfFile);
+            fwrite($this->_pVarConfFile, self::DISABLED_ERROR_LOG_FILE_NAME);
             // Closes variable configuring file.
             fclose($this->_pVarConfFile);
             // Unlocks the error log files.

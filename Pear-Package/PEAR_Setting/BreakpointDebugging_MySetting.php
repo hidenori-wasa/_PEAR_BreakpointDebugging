@@ -63,8 +63,8 @@ function BreakpointDebugging_setExecutionMode()
     // Please, choose a mode.
     // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('DEBUG');
     // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('RELEASE');
-    // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('DEBUG_UNIT_TEST');
-    $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('RELEASE_UNIT_TEST');
+    $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('DEBUG_UNIT_TEST');
+    // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('RELEASE_UNIT_TEST');
     // ### <=== Execution mode setting.
     //
     // $_BreakpointDebugging_EXE_MODE |= $REMOTE; // Emulates remote by local host.
@@ -172,7 +172,7 @@ function BreakpointDebugging_mySetting()
         $openBasedir = 'C:\xampp\;.\\;' . sys_get_temp_dir();
     } else { // In case of Unix.
         if ($_BreakpointDebugging_EXE_MODE & $REMOTE) { // In case of remote.
-            $openBasedir = '/home/users/2/lolipop.jp-92350a29e84a878a/web/:./:' . sys_get_temp_dir(); // For debug.
+            $openBasedir = '/home/users/2/lolipop.jp-92350a29e84a878a/web/:./:' . sys_get_temp_dir();
         } else { // In case of local.
             $openBasedir = '/opt/lampp/:./:' . sys_get_temp_dir();
         }
