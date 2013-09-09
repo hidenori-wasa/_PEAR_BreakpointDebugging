@@ -319,9 +319,11 @@ abstract class BreakpointDebugging_Error_InAllCase
     }
 
     /**
-     * Lowers hypertext reference anchor.
+     * Returns hypertext reference of lowered anchor except release mode.
      *
      * @param string $referenceName Reference name of hypertext.
+     *
+     * @return string Returns hypertext reference of lowered anchor except release mode.
      */
     private function _lowerHypertextReferenceAnchor($referenceName)
     {
@@ -333,9 +335,11 @@ abstract class BreakpointDebugging_Error_InAllCase
     }
 
     /**
-     * Sets hypertext reference.
+     * Returns hypertext reference except release mode.
      *
      * @param string $referenceName Reference name of hypertext.
+     *
+     * @return string Returns hypertext reference except release mode.
      */
     private function _setHypertextReference($referenceName)
     {
@@ -747,7 +751,8 @@ abstract class BreakpointDebugging_Error_InAllCase
     {
         $className = B::fullFilePathToClassName($file);
         if ($className
-            && is_subclass_of($className, 'PHPUnit_Framework_Test')) {
+            && is_subclass_of($className, 'PHPUnit_Framework_Test')
+        ) {
             $this->logBufferWriting($pTmpLog, $this->tags['uint test anchor name']);
             $this->tags['uint test anchor name'] = '';
             if ($file) {

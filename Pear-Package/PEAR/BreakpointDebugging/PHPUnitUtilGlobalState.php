@@ -84,11 +84,11 @@ class BreakpointDebugging_PHPUnitUtilGlobalState extends \PHPUnit_Util_GlobalSta
      * However, we may store by serialization because we cannot detect recursive array without changing array and we take time to search deep nest array.
      * Also, we must store by serialization in case of object because we may not be able to clone object by "__clone()" class method.
      *
-     * @param array  $blacklist                 The list to except from doing variables backup.
-     * @param array  $variables                 Array variable to store.
-     * @param array  &$variablesStorage         Variables storage.
-     * @param array  &$serializationKeysStorage Serialization-keys storage.
-     * @param bool   $isGlobal                  Is this the global variables?
+     * @param array $blacklist                 The list to except from doing variables backup.
+     * @param array $variables                 Array variable to store.
+     * @param array &$variablesStorage         Variables storage.
+     * @param array &$serializationKeysStorage Serialization-keys storage.
+     * @param bool  $isGlobal                  Is this the global variables?
      *
      * @return void
      * @author Hidenori Wasa <public@hidenori-wasa.com>
@@ -237,7 +237,7 @@ class BreakpointDebugging_PHPUnitUtilGlobalState extends \PHPUnit_Util_GlobalSta
     /**
      * Stores global variables.
      *
-     * @param array  $blacklist      The list to except from storage global variables.
+     * @param array $blacklist The list to except from storage global variables.
      *
      * @return void
      * @author Hidenori Wasa <public@hidenori-wasa.com>
@@ -292,7 +292,7 @@ class BreakpointDebugging_PHPUnitUtilGlobalState extends \PHPUnit_Util_GlobalSta
     /**
      * Stores static class attributes.
      *
-     * @param array $blacklist    The list to except from storage static class attributes.
+     * @param array $blacklist The list to except from storage static class attributes.
      *
      * @return void
      * @author Hidenori Wasa <public@hidenori-wasa.com>

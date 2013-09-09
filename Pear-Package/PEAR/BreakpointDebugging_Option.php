@@ -380,9 +380,9 @@ final class BreakpointDebugging extends \BreakpointDebugging_UnitTestCaller
     /**
      * For debug.
      *
-     * @param array  $params            Same as parent.
-     * @param int    $timeout           Same as parent.
-     * @param int    $sleepMicroSeconds Same as parent.
+     * @param array $params            Same as parent.
+     * @param int   $timeout           Same as parent.
+     * @param int   $sleepMicroSeconds Same as parent.
      *
      * @return Same as parent.
      */
@@ -398,10 +398,10 @@ final class BreakpointDebugging extends \BreakpointDebugging_UnitTestCaller
     /**
      * For debug.
      *
-     * @param array  $params            Same as parent.
-     * @param int    $permission        Same as parent.
-     * @param int    $timeout           Same as parent.
-     * @param int    $sleepMicroSeconds Same as parent.
+     * @param array $params            Same as parent.
+     * @param int   $permission        Same as parent.
+     * @param int   $timeout           Same as parent.
+     * @param int   $sleepMicroSeconds Same as parent.
      *
      * @example $pFile = B::fopen(array ($filePath, 'w+b'));
      *

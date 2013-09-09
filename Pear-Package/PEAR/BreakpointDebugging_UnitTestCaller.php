@@ -443,6 +443,11 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
     /**
      * Executes unit tests continuously, and debugs with IDE.
      *
+     * @param array  $unitTestFilePaths   The file paths of unit tests.
+     * @param string $commandLineSwitches Command-line-switches except "--stop-on-failure --static-backup".
+     *
+     * @return void
+     *
      * Please, follow rule, then, we can use unit test's "--static-backup" command line switch. Also, those rule violation is detected.
      * The rule 1: We must use private static property instead of use local static variable of class static method
      *      because "php" version 5.3.0 cannot restore its value.
@@ -459,9 +464,10 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      *
      * Caution: Don't test an unit when practical use server has been running with synchronization file because synchronization is destroyed.
      *
-     * How to run multiprocess unit test: (This has not been testing.)
-     *      Procedure 1: Use "popen()" or "proc_open()" inside your unit test class method "test...()".
+     * How to run multiprocess unit test:
+     *      Procedure 1: Use "popen()" inside your unit test class method "test...()".
      *      Procedure 2: Judge by using "parent::assertTrue(<conditional expression>)".
+     *
      * @Example of multiprocess unit test file.
      *  <?php
      *
@@ -564,7 +570,7 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      *          // include_once __DIR__ . '/AFileWhichHasGlobalVariable.php'; // We must not include a file which has global variable here. (Autodetects)
      *          //
      *          // We must not construct test instance here. (Cannot autodetect)
-     *          // because we want to initialize class auto attribute (auto class method's local static and auto property).
+     *          // Because we want to initialize class auto attribute (auto class method's local static and auto property).
      *          // self::$_pStaticSomething = &BreakpointDebugging_LockByFlock::singleton();
      *
      *          $_POST = 'DUMMY_POST'; // We can change global variable here.
@@ -671,11 +677,6 @@ abstract class BreakpointDebugging_UnitTestCaller extends \BreakpointDebugging_I
      *
      * @codeCoverageIgnore
      * Because "phpunit" command cannot run during "phpunit" command running.
-     *
-     * @param array  $unitTestFilePaths   The file paths of unit tests.
-     * @param string $commandLineSwitches Command-line-switches except "--stop-on-failure --static-backup".
-     *
-     * @return void
      */
     static function executeUnitTest($unitTestFilePaths, $commandLineSwitches = '')
     {

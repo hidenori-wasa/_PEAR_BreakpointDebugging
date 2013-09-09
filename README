@@ -2,11 +2,11 @@ The basic concept
     This is package for breakpoint debugging.
     Also, you can use as basics of other PHP program or PEAR package if you want
     because this package has necessary minimum features.
-        It is "php.ini" file setting fixation feature, PHP code synchronization feature,
-        error log feature by global handler, PHPUnit PEAR package extension feature,
-        the override class feature and execution mode.
 
 The features list
+    "php.ini"-file setting fixation feature, PHP code synchronization feature,
+    error log feature by global handler, PHPUnit PEAR package extension feature,
+    the override class feature and execution mode.
     Please, read the file level document block of "PEAR/BreakpointDebugging_Option.php".
 
 The dependences
@@ -16,16 +16,11 @@ The dependences
     Requires "Xdebug" extension in case of local host.
         "Xdebug" extension is required because (uses breakpoint,
         displays for fatal error and detects infinity recursive function call).
-    Requires "Xdebug" extension if you want above in case of
+    Requires "Xdebug" extension if you want features of above in case of
         "$_BreakpointDebugging_EXE_MODE = B::REMOTE" mode. (optional).
     Requires "shmop" extension if you use "\BreakpointDebugging_LockByShmop" class. (optional).
     Requires environment which "flock()" enables
         if you use "\BreakpointDebugging_LockByFlock" class. (optional).
-    Requires "PHPUnit 3.6.11" pear package
-        if you use "\BreakpointDebugging::executeUnitTest()" class method. (optional).
-        However, does not use "phpunit" command to debug its unit test file
-        if array parameter element of "\BreakpointDebugging::executeUnitTest()" is one.
-        Therefore, we can execute unit test with remote server without installing "PHPUnit".
 
 How to sniff my code.
     I customized code sniff because "which" statement indent is "PEAR" special.
@@ -38,10 +33,12 @@ How to sniff my code.
                 protected $nonIndentingScopes = array();
     Please, execute command like following.
         phpcs -n <full file path>
+    Or, execute command like following with short cut file.
+        %SystemRoot%\system32\cmd.exe /k phpcs -v -n "<full file path>"
 
 Notice
-    "Pear-Package" directory is project directory of "NetBeans IDE 7.1.2 for Windows".
-    Also, "NetBeans IDE 7.3" cannot keep switchback at April, 2013.
+    "Pear-Package/nbproject/" directory is project directory of "NetBeans IDE 7.1.2 for Windows".
+    Also, "NetBeans IDE 7.3" cannot keep switchback in format at April, 2013.
     Example:
         if ($a
             && $b
@@ -52,5 +49,10 @@ Notice
         }
     However, "NetBeans IDE 7.3" supports "PHP5.4" and "HTML5".
 
-    I have been coding an unit test.
-    Then, I have been debugging by code coverage report.
+I have been hoping developers which reply about following document as "Re:" of my "pear-dev" mail.
+    I have done coding of this package's all features.
+    And, I have been coding the unit tests.
+    So, I will change a few code only about this package.
+    And, I want to repair code by other developer's advice before proposal stage.
+
+    Please, send mail for me evaluation, feature which should add, bug and so on.
