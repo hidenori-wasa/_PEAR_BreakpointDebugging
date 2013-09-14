@@ -930,7 +930,6 @@ abstract class BreakpointDebugging_Error_InAllCase
             }
             $fileNumbers[] = base_convert($matches[2], 36, 10);
         }
-        //$line1pre = self::ENABLED_ERROR_LOG_FILE_NAME . 'php_error_';
         $line1pre = self::ENABLED_ERROR_LOG_FILE_NAME . $this->_prefixOfErrorLogFileName;
         $line1sa = '.log' . PHP_EOL;
         $line1 = $line1pre . '1' . $line1sa;
@@ -1024,9 +1023,6 @@ abstract class BreakpointDebugging_Error_InAllCase
             try {
                 // If this does a log.
                 if (B::getStatic('$exeMode') & B::RELEASE) {
-                    //// Locks the error log files.
-                    //$this->_lockByFileExisting = &\BreakpointDebugging_LockByFileExisting::internalSingleton();
-                    //$this->_lockByFileExisting->lock();
                     // When "ErrorLog" directory does not exist.
                     $this->_errorLogDirectory = B::getStatic('$_workDir') . self::$_errorLogDir;
                     if (!is_dir($this->_errorLogDirectory)) {
@@ -1240,8 +1236,6 @@ abstract class BreakpointDebugging_Error_InAllCase
                 fwrite($this->_pVarConfFile, self::DISABLED_ERROR_LOG_FILE_NAME);
                 // Closes variable configuring file.
                 fclose($this->_pVarConfFile);
-                //// Unlocks the error log files.
-                //$this->_lockByFileExisting->unlock();
             }
         } catch (\Exception $e) {
             // Unlocks the error log files.

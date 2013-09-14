@@ -18,6 +18,78 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_PHPUnitFram
     /**
      * @covers \BreakpointDebugging_InAllCase<extended>
      */
+    function testCheckDevelopmentSecurity_A()
+    {
+        ob_start();
+
+        BU::$exeMode = 0; // Change to local debug mode.
+        parent::assertTrue(BA::checkDevelopmentSecurity());
+        parent::assertTrue(!BA::checkDevelopmentSecurity(B::RELEASE));
+        parent::assertTrue(!BA::checkDevelopmentSecurity(B::UNIT_TEST));
+
+        BU::$exeMode = B::REMOTE; // Change to remote debug mode.
+        BA::checkDevelopmentSecurity();
+        parent::assertTrue(!BA::checkDevelopmentSecurity(B::RELEASE));
+        parent::assertTrue(!BA::checkDevelopmentSecurity(B::UNIT_TEST));
+        $_SERVER['HTTPS'] = 'off';
+        parent::assertTrue(!BA::checkDevelopmentSecurity());
+        unset($_SERVER['HTTPS']);
+        parent::assertTrue(!BA::checkDevelopmentSecurity());
+        $_SERVER['REMOTE_ADDR'] = 'DUMMY';
+        parent::assertTrue(!BA::checkDevelopmentSecurity());
+        $_SERVER['REMOTE_ADDR'] = B::getStatic('$_developerIP');
+        $_SERVER['HTTPS'] = 'on';
+        parent::assertTrue(BA::checkDevelopmentSecurity());
+
+        BU::$exeMode = B::RELEASE; // Change to local release mode.
+        parent::assertTrue(BA::checkDevelopmentSecurity());
+        parent::assertTrue(BA::checkDevelopmentSecurity(B::RELEASE));
+        parent::assertTrue(!BA::checkDevelopmentSecurity(B::UNIT_TEST));
+
+        BU::$exeMode = B::REMOTE | B::RELEASE; // Change to remote release mode.
+        BA::checkDevelopmentSecurity();
+        BA::checkDevelopmentSecurity(B::RELEASE);
+        parent::assertTrue(!BA::checkDevelopmentSecurity(B::UNIT_TEST));
+
+        BU::$exeMode = B::UNIT_TEST; // Change to local debug unit test mode.
+        parent::assertTrue(BA::checkDevelopmentSecurity());
+        parent::assertTrue(!BA::checkDevelopmentSecurity(B::RELEASE));
+        parent::assertTrue(BA::checkDevelopmentSecurity(B::UNIT_TEST));
+
+        BU::$exeMode = B::UNIT_TEST | B::RELEASE; // Change to local release unit test mode.
+        parent::assertTrue(BA::checkDevelopmentSecurity());
+        parent::assertTrue(BA::checkDevelopmentSecurity(B::RELEASE));
+        parent::assertTrue(BA::checkDevelopmentSecurity(B::UNIT_TEST));
+
+        BU::$exeMode = B::REMOTE | B::UNIT_TEST; // Change to remote debug unit test mode.
+        BA::checkDevelopmentSecurity();
+        parent::assertTrue(!BA::checkDevelopmentSecurity(B::RELEASE));
+        BA::checkDevelopmentSecurity(B::UNIT_TEST);
+
+        BU::$exeMode = B::REMOTE | B::RELEASE | B::UNIT_TEST; // Change to remote release unit test mode.
+        BA::checkDevelopmentSecurity();
+        BA::checkDevelopmentSecurity(B::RELEASE);
+        BA::checkDevelopmentSecurity(B::UNIT_TEST);
+    }
+
+    /**
+     * @covers \BreakpointDebugging_InAllCase<extended>
+     *
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_InAllCase FUNCTION=checkDevelopmentSecurity ID=101.
+     */
+    function testCheckDevelopmentSecurity_B()
+    {
+        ob_start();
+
+        BU::$exeMode = B::UNIT_TEST; // Change to local debug unit test mode.
+        $_SERVER['REMOTE_ADDR'] = 'DUMMY';
+        BA::checkDevelopmentSecurity(B::REMOTE);
+    }
+
+    /**
+     * @covers \BreakpointDebugging_InAllCase<extended>
+     */
     function test__initialize()
     {
         BA::initialize();
@@ -141,7 +213,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_PHPUnitFram
     /**
      * @covers \BreakpointDebugging_InAllCase<extended>
      */
-    public function testMkdir()
+    public function testMkdir_A()
     {
         $testDirName = BA::getStatic('$_workDir') . '/TestMkDir';
         if (is_dir($testDirName)) {
@@ -159,13 +231,49 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_PHPUnitFram
     /**
      * @covers \BreakpointDebugging_InAllCase<extended>
      */
-    public function testFopen()
+    public function testMkdir_B()
+    {
+        $testDirName = BA::getStatic('$_workDir') . '/TestMkDir';
+        if (is_dir($testDirName)) {
+            B::rmdir(array ($testDirName));
+        }
+        BA::mkdir(array ($testDirName));
+        $this->assertTrue(is_dir($testDirName));
+
+        if (BREAKPOINTDEBUGGING_IS_WINDOWS) {
+            return;
+        }
+        clearstatcache();
+        $this->assertTrue(substr(sprintf('%o', fileperms($testDirName)), -4) === '0777');
+    }
+
+    /**
+     * @covers \BreakpointDebugging_InAllCase<extended>
+     *
+     * @expectedException        \PHPUnit_Framework_Error_Warning
+     * @expectedExceptionMessage File exists
+     */
+    public function testMkdir_C()
+    {
+        $testDirName = BA::getStatic('$_workDir') . '/TestMkDir';
+        BA::mkdir(array ($testDirName), 2);
+    }
+
+    /**
+     * @covers \BreakpointDebugging_InAllCase<extended>
+     */
+    public function testFopen_A()
     {
         $testFileName = BA::getStatic('$_workDir') . '/TestFopen.txt';
         if (is_file($testFileName)) {
             BA::unlink(array ($testFileName));
         }
         $pFile = BA::fopen(array ($testFileName, 'w+b'), 0700);
+        try {
+            BA::fopen(array ($testFileName, 'x+b'), 0700, 2);
+        } catch (\PHPUnit_Framework_Error_Warning $e) {
+            parent::assertTrue(strpos($e->getMessage(), 'failed to open stream: File exists') !== false);
+        }
         fclose($pFile);
         $this->assertTrue(is_file($testFileName));
         if (BREAKPOINTDEBUGGING_IS_WINDOWS) {

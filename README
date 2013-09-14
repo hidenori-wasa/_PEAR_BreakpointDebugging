@@ -1,3 +1,5 @@
+I freeze this Git's repository because I divide this package to some packages for generality and readability.
+
 The basic concept
     This is package for breakpoint debugging.
     Also, you can use as basics of other PHP program or PEAR package if you want
@@ -48,11 +50,3 @@ Notice
             return;
         }
     However, "NetBeans IDE 7.3" supports "PHP5.4" and "HTML5".
-
-I have been hoping developers which reply about following document as "Re:" of my "pear-dev" mail.
-    I have done coding of this package's all features.
-    And, I have been coding the unit tests.
-    So, I will change a few code only about this package.
-    And, I want to repair code by other developer's advice before proposal stage.
-
-    Please, send mail for me evaluation, feature which should add, bug and so on.

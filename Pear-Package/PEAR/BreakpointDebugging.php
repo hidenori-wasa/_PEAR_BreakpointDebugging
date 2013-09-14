@@ -278,6 +278,8 @@ abstract class BreakpointDebugging_InAllCase
      * @param mixed $error Error message or error exception instance.
      *
      * @return void
+     * @codeCoverageIgnore
+     * Because this class method exits.
      */
     static function exitForError($error = '')
     {
@@ -327,7 +329,7 @@ abstract class BreakpointDebugging_InAllCase
                     $message = '..._UNIT_TEST';
                     break;
                 default :
-                    throw new \BreakpointDebugging_ErrorException('"' . __METHOD__ . '" parameter1 is mistake.');
+                    throw new \BreakpointDebugging_ErrorException('"' . __METHOD__ . '" parameter1 is mistake.', 101);
             }
             echo '<pre>You must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'' . $message . '\');" ' . PHP_EOL
             . "\t" . 'into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file.' . PHP_EOL
@@ -638,7 +640,10 @@ abstract class BreakpointDebugging_InAllCase
             }
             return B::setOwner($params[0], $permission, $timeout, $sleepMicroSeconds);
         }
+        // @codeCoverageIgnoreStart
+        // Because "PHPUnit" throws "\PHPUnit_Framework_Error_Warning".
         return false;
+        // @codeCoverageIgnoreEnd
     }
 
     /**
@@ -680,7 +685,9 @@ abstract class BreakpointDebugging_InAllCase
                 if ($isTermination) {
                     // Detects error last.
                     $result = call_user_func_array($functionName, $params);
+                    // @codeCoverageIgnoreStart
                 } else {
+                    // @codeCoverageIgnoreEnd
                     // Does not detect error except last.
                     set_error_handler('\BreakpointDebugging::handleError', 0);
                     $result = @call_user_func_array($functionName, $params);
@@ -691,7 +698,10 @@ abstract class BreakpointDebugging_InAllCase
                     return $result;
                 }
                 if ($isTermination) {
+                    // @codeCoverageIgnoreStart
+                    // Because "PHPUnit" throws "\PHPUnit_Framework_Error_Warning".
                     return false;
+                    // @codeCoverageIgnoreEnd
                 }
                 if ($isTimeout) {
                     usleep($sleepMicroSeconds);
@@ -709,8 +719,10 @@ abstract class BreakpointDebugging_InAllCase
             // Waits micro second which is specified.
             usleep($sleepMicroSeconds);
         }
+        // @codeCoverageIgnoreStart
     }
 
+    // @codeCoverageIgnoreEnd
     /**
      * "fopen" method which sets the file mode, permission and sets own user to owner.
      *
@@ -732,8 +744,11 @@ abstract class BreakpointDebugging_InAllCase
             ) {
                 return $pFile;
             }
+            // @codeCoverageIgnoreStart
+            // Because "PHPUnit" throws "\PHPUnit_Framework_Error_Warning".
         }
         return false;
+        // @codeCoverageIgnoreEnd
     }
 
     /**
@@ -1015,11 +1030,14 @@ abstract class BreakpointDebugging_InAllCase
                 BreakpointDebugging_UnitTestCaller::handleUnitTestException($pException);
             }
         } catch (\Exception $e) {
+            // @codeCoverageIgnoreStart
+            // Because unit test may not cause internal exception inside "\BreakpointDebugging_Error_InAllCase::handleException2()".
             if (self::$_nativeExeMode & self::UNIT_TEST) {
                 restore_error_handler();
                 throw $e;
             }
             \BreakpointDebugging_Error::handleInternalException($e);
+            // @codeCoverageIgnoreEnd
         }
 
         restore_error_handler();
@@ -1052,11 +1070,14 @@ abstract class BreakpointDebugging_InAllCase
             $error = new \BreakpointDebugging_Error();
             $error->handleError2($errorNumber, $errorMessage, self::$prependErrorLog, debug_backtrace());
         } catch (\Exception $e) {
+            // @codeCoverageIgnoreStart
+            // Because unit test may not cause internal exception inside "\BreakpointDebugging_Error_InAllCase::handleError2()".
             if (self::$_nativeExeMode & self::UNIT_TEST) {
                 restore_error_handler();
                 throw $e;
             }
             \BreakpointDebugging_Error::handleInternalException($e);
+            // @codeCoverageIgnoreEnd
         }
 
         restore_error_handler();

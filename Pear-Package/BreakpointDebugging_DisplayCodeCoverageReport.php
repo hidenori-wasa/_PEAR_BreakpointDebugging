@@ -112,7 +112,9 @@ class BreakpointDebugging_DisplayCodeCoverageReport
                     echo $line;
                 }
             }
-            fpassthru($pFile);
+            while (!feof($pFile)) {
+                echo fread($pFile, 4096);
+            }
             fclose($pFile);
         } else { // In case of first time when this page was called.
             $classFilePaths = B::getStatic('$_classFilePaths');

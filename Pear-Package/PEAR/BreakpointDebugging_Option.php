@@ -530,17 +530,23 @@ final class BreakpointDebugging extends \BreakpointDebugging_UnitTestCaller
         // Makes invoking location information.
         $count = count($callStack);
         if ($count === 1) {
+            // @codeCoverageIgnoreStart
+            // Because unit test file is not top page.
             // Skips top page.
             return;
+            // @codeCoverageIgnoreEnd
         }
         do {
             for ($key = 1; $key < $count; $key++) {
                 if (array_key_exists('file', $callStack[$key])) {
                     break 2;
                 }
+                // @codeCoverageIgnoreStart
+                // Because unit test cannot run "call_user_func_array()" as global code.
             }
             // Skips when "file" key does not exist.
             return;
+            // @codeCoverageIgnoreEnd
         } while (false);
         $fullFilePath = $callStack[$key]['file'];
         $os = strtoupper(substr(PHP_OS, 0, 3));
