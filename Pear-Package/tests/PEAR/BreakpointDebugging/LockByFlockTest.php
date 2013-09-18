@@ -1,9 +1,9 @@
 <?php
 
 use \BreakpointDebugging as B;
-use \BreakpointDebugging_UnitTestCaller as BU;
+use \BreakpointDebugging_PHPUnitStepExecution as BU;
 
-class BreakpointDebugging_LockByFlockTest extends \BreakpointDebugging_PHPUnitFrameworkTestCase
+class BreakpointDebugging_LockByFlockTest extends \BreakpointDebugging_PHPUnitStepExecution_PHPUnitFrameworkTestCase
 {
     protected $lockByFlock;
 
@@ -53,10 +53,10 @@ class BreakpointDebugging_LockByFlockTest extends \BreakpointDebugging_PHPUnitFr
      */
     public function test__destruct()
     {
-        $this->assertTrue(B::getPropertyForTest('\BreakpointDebugging_Lock', '$_instance') instanceof \BreakpointDebugging_LockByFlock);
+        $this->assertTrue(BU::getPropertyForTest('\BreakpointDebugging_Lock', '$_instance') instanceof \BreakpointDebugging_LockByFlock);
         // Calls "__destruct".
         $this->lockByFlock = null;
-        $this->assertTrue(B::getPropertyForTest('\BreakpointDebugging_Lock', '$_instance') === null);
+        $this->assertTrue(BU::getPropertyForTest('\BreakpointDebugging_Lock', '$_instance') === null);
     }
 
     /**
@@ -67,11 +67,11 @@ class BreakpointDebugging_LockByFlockTest extends \BreakpointDebugging_PHPUnitFr
         $this->lockByFlock->lock();
         $this->lockByFlock->lock();
 
-        $this->assertTrue(B::getPropertyForTest($this->lockByFlock, '$lockCount') === 2);
+        $this->assertTrue(BU::getPropertyForTest($this->lockByFlock, '$lockCount') === 2);
 
         \BreakpointDebugging_Lock::forceUnlocking();
 
-        $this->assertTrue(B::getPropertyForTest($this->lockByFlock, '$lockCount') === 0);
+        $this->assertTrue(BU::getPropertyForTest($this->lockByFlock, '$lockCount') === 0);
     }
 
     /**

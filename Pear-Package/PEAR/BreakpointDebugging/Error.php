@@ -1472,7 +1472,7 @@ if (B::getStatic('$exeMode') & B::RELEASE) { // In case of release.
     }
 
 } else { // In case of not release.
-    include_once __DIR__ . '/Error_Option.php';
+    include_once __DIR__ . '/Error_InDebug.php';
 }
 // @codeCoverageIgnoreEnd
 

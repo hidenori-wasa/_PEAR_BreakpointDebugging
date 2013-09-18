@@ -381,6 +381,11 @@ abstract class BreakpointDebugging_InAllCase
      */
     static function checkExeMode($isUnitTest = false)
     {
+        if (self::$exeMode & self::UNIT_TEST) {
+            \BreakpointDebugging_PHPUnitStepExecution::checkExeMode($isUnitTest);
+            return;
+        }
+
         if ($isUnitTest) {
             echo '<pre><b>You must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'..._UNIT_TEST\');"' . PHP_EOL
             . "\t" . 'into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php".' . PHP_EOL
@@ -399,7 +404,7 @@ abstract class BreakpointDebugging_InAllCase
      */
     static function getStatic($propertyName)
     {
-        B::limitAccess('BreakpointDebugging_Option.php');
+        B::limitAccess('BreakpointDebugging_InDebug.php');
 
         return self::$staticProperties[$propertyName];
     }
@@ -413,7 +418,7 @@ abstract class BreakpointDebugging_InAllCase
      */
     static function &refStatic($propertyName)
     {
-        B::limitAccess('BreakpointDebugging_Option.php');
+        B::limitAccess('BreakpointDebugging_InDebug.php');
 
         return self::$staticProperties[$propertyName];
     }
@@ -427,7 +432,7 @@ abstract class BreakpointDebugging_InAllCase
     {
         B::limitAccess(
             array ('BreakpointDebugging.php',
-                'BreakpointDebugging_Option.php'
+                'BreakpointDebugging_InDebug.php'
             )
         );
 
@@ -458,7 +463,7 @@ abstract class BreakpointDebugging_InAllCase
      */
     static function iniCheck($phpIniVariable, $cmpValue, $errorMessage)
     {
-        B::limitAccess('BreakpointDebugging_Option.php');
+        B::limitAccess('BreakpointDebugging_InDebug.php');
 
         $value = (string) ini_get($phpIniVariable);
         $cmpResult = false;
@@ -579,7 +584,7 @@ abstract class BreakpointDebugging_InAllCase
      */
     static function convertMbString($string)
     {
-        B::limitAccess('BreakpointDebugging_Option.php');
+        B::limitAccess('BreakpointDebugging_InDebug.php');
 
         // Analyzes character sets of character string.
         $charSet = mb_detect_encoding($string);
@@ -630,7 +635,7 @@ abstract class BreakpointDebugging_InAllCase
      */
     static function mkdir(array $params, $timeout = 10, $sleepMicroSeconds = 100000)
     {
-        B::limitAccess('BreakpointDebugging_Option.php');
+        B::limitAccess('BreakpointDebugging_InDebug.php');
 
         if (self::_retryForFilesystemFunction('mkdir', $params, $timeout, $sleepMicroSeconds)) {
             if (array_key_exists(1, $params)) {
@@ -735,7 +740,7 @@ abstract class BreakpointDebugging_InAllCase
      */
     static function fopen(array $params, $permission = null, $timeout = 10, $sleepMicroSeconds = 100000)
     {
-        B::limitAccess('BreakpointDebugging_Option.php');
+        B::limitAccess('BreakpointDebugging_InDebug.php');
 
         $pFile = self::_retryForFilesystemFunction('fopen', $params, $timeout, $sleepMicroSeconds);
         if ($pFile) {
@@ -775,7 +780,7 @@ abstract class BreakpointDebugging_InAllCase
      */
     static function compressIntArray($intArray)
     {
-        B::limitAccess('BreakpointDebugging_Option.php');
+        B::limitAccess('BreakpointDebugging_InDebug.php');
 
         $compressBytes = '';
         foreach ($intArray as $int) {
@@ -810,7 +815,7 @@ abstract class BreakpointDebugging_InAllCase
      */
     static function decompressIntArray($compressBytes)
     {
-        B::limitAccess('BreakpointDebugging_Option.php');
+        B::limitAccess('BreakpointDebugging_InDebug.php');
 
         $compressBytes = trim($compressBytes, PHP_EOL);
         $intArray = array ();
@@ -962,7 +967,7 @@ abstract class BreakpointDebugging_InAllCase
     {
         global $_BreakpointDebugging_EXE_MODE;
 
-        B::limitAccess(array ('BreakpointDebugging_UnitTestCaller.php', 'BreakpointDebugging_Option.php'));
+        B::limitAccess(array ('BreakpointDebugging_InDebug.php'));
 
         self::$_pwd = getcwd();
         self::$_nativeExeMode = self::$exeMode = $_BreakpointDebugging_EXE_MODE;
@@ -979,6 +984,30 @@ abstract class BreakpointDebugging_InAllCase
         self::$staticProperties['$_callingExceptionHandlerDirectly'] = &self::$_callingExceptionHandlerDirectly;
         self::$staticProperties['$_valuesToTrace'] = &self::$_valuesToTrace;
         self::$staticProperties['$_notFixedLocations'] = &self::$_notFixedLocations;
+    }
+
+    /**
+     * It references "$staticProperties" property for static backup of "PHPUnit".
+     *
+     * @return array& "$staticProperties" property.
+     */
+    static function &refStaticProperties()
+    {
+        B::limitAccess('BreakpointDebugging_PHPUnitStepExecution.php');
+
+        return self::$staticProperties;
+    }
+
+    /**
+     * It references "$staticPropertyLimitings" property for static backup of "PHPUnit".
+     *
+     * @return array& "$staticPropertyLimitings" property.
+     */
+    static function &refStaticPropertyLimitings()
+    {
+        B::limitAccess('BreakpointDebugging_PHPUnitStepExecution.php');
+
+        return self::$staticPropertyLimitings;
     }
 
     /**
@@ -1012,7 +1041,7 @@ abstract class BreakpointDebugging_InAllCase
         B::limitAccess(
             array (
                 'BreakpointDebugging.php',
-                'BreakpointDebugging_Option.php',
+                'BreakpointDebugging_InDebug.php',
             )
         );
 
@@ -1026,8 +1055,8 @@ abstract class BreakpointDebugging_InAllCase
             $error = new \BreakpointDebugging_Error();
             $error->handleException2($pException, self::$prependExceptionLog);
             if (self::$_nativeExeMode & self::UNIT_TEST) {
-                BreakpointDebugging_UnitTestCaller::displaysException($pException);
-                BreakpointDebugging_UnitTestCaller::handleUnitTestException($pException);
+                \BreakpointDebugging_PHPUnitStepExecution::displaysException($pException);
+                \BreakpointDebugging_PHPUnitStepExecution::handleUnitTestException($pException);
             }
         } catch (\Exception $e) {
             // @codeCoverageIgnoreStart
@@ -1056,7 +1085,7 @@ abstract class BreakpointDebugging_InAllCase
         B::limitAccess(
             array (
                 'BreakpointDebugging.php',
-                'BreakpointDebugging_Option.php',
+                'BreakpointDebugging_InDebug.php',
             )
         );
 
@@ -1122,7 +1151,7 @@ abstract class BreakpointDebugging_InAllCase
         B::limitAccess(
             array (
                 'BreakpointDebugging/Error.php',
-                'BreakpointDebugging/Error_Option.php',
+                'BreakpointDebugging/Error_InDebug.php',
                 'BreakpointDebugging/LockByFileExisting.php'
             )
         );
@@ -1152,41 +1181,6 @@ abstract class BreakpointDebugging_InAllCase
 
 global $_BreakpointDebugging_EXE_MODE;
 
-if ($_BreakpointDebugging_EXE_MODE & BA::UNIT_TEST) { // In case of unit test.
-    include_once __DIR__ . '/BreakpointDebugging_UnitTestCaller.php';
-} else {
-    /**
-     * Dummy class for not unit test.
-     *
-     * @category PHP
-     * @package  BreakpointDebugging
-     * @author   Hidenori Wasa <public@hidenori-wasa.com>
-     * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
-     * @version  Release: @package_version@
-     * @link     http://pear.php.net/package/BreakpointDebugging
-     */
-    class BreakpointDebugging_Exception extends \BreakpointDebugging_Exception_InAllCase
-    {
-
-    }
-
-    /**
-     * Dummy class for not unit test.
-     *
-     * @category PHP
-     * @package  BreakpointDebugging
-     * @author   Hidenori Wasa <public@hidenori-wasa.com>
-     * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
-     * @version  Release: @package_version@
-     * @link     http://pear.php.net/package/BreakpointDebugging
-     */
-    abstract class BreakpointDebugging_UnitTestCaller extends BA
-    {
-
-    }
-
-}
-
 if ($_BreakpointDebugging_EXE_MODE & BA::RELEASE) { // In case of release.
     /**
      * The class for release.
@@ -1198,7 +1192,7 @@ if ($_BreakpointDebugging_EXE_MODE & BA::RELEASE) { // In case of release.
      * @version  Release: @package_version@
      * @link     http://pear.php.net/package/BreakpointDebugging
      */
-    abstract class BreakpointDebugging_Middle extends \BreakpointDebugging_UnitTestCaller
+    abstract class BreakpointDebugging_Middle extends \BreakpointDebugging_InAllCase
     {
         /**
          * Empties in release.
@@ -1266,7 +1260,7 @@ if ($_BreakpointDebugging_EXE_MODE & BA::RELEASE) { // In case of release.
                 ) {
                     // @codeCoverageIgnoreStart
                     if (function_exists('xdebug_break')) {
-                        xdebug_break(); // You must use "\BreakpointDebugging_UnitTestCaller::markTestSkippedInRelease(); // Because this unit test is assertion." at top of unit test class method.
+                        xdebug_break(); // You must use "\BreakpointDebugging_PHPUnitStepExecution::markTestSkippedInRelease(); // Because this unit test is assertion." at top of unit test class method.
                     } else {
                         // Because unit test is exited.
                         ini_set('xdebug.var_display_max_depth', 5);
@@ -1313,7 +1307,38 @@ if ($_BreakpointDebugging_EXE_MODE & BA::RELEASE) { // In case of release.
 } else { // In case of not release.
     // This does not invoke extended class method exceptionally because its class is not defined.
     BA::setXebugExists(extension_loaded('xdebug'));
-    include_once __DIR__ . '/BreakpointDebugging_Option.php';
+    include_once __DIR__ . '/BreakpointDebugging_InDebug.php';
+}
+
+// Pushes autoload class method.
+spl_autoload_register('\BreakpointDebugging::autoload');
+// Shifts global exception handler.
+set_exception_handler('\BreakpointDebugging::handleException');
+// Shifts global error handler.( -1 sets all bits on 1. Therefore, this specifies error, warning and note of all kinds.)
+set_error_handler('\BreakpointDebugging::handleError', -1);
+// Pushes the shutdown class method.
+register_shutdown_function('\BreakpointDebugging::shutdown');
+// Initializes static class.
+\BreakpointDebugging::initialize();
+
+if ($_BreakpointDebugging_EXE_MODE & BA::UNIT_TEST) { // In case of unit test.
+    include_once 'BreakpointDebugging_PHPUnitStepExecution.php';
+} else {
+    /**
+     * Dummy class for not unit test.
+     *
+     * @category PHP
+     * @package  BreakpointDebugging
+     * @author   Hidenori Wasa <public@hidenori-wasa.com>
+     * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
+     * @version  Release: @package_version@
+     * @link     http://pear.php.net/package/BreakpointDebugging
+     */
+    class BreakpointDebugging_Exception extends \BreakpointDebugging_Exception_InAllCase
+    {
+
+    }
+
 }
 /**
  * Own package error exception.
@@ -1344,16 +1369,5 @@ class BreakpointDebugging_OutOfLogRangeException extends \BreakpointDebugging_Ex
 {
 
 }
-
-// Pushes autoload class method.
-spl_autoload_register('\BreakpointDebugging::autoload');
-// Shifts global exception handler.
-set_exception_handler('\BreakpointDebugging::handleException');
-// Shifts global error handler.( -1 sets all bits on 1. Therefore, this specifies error, warning and note of all kinds.)
-set_error_handler('\BreakpointDebugging::handleError', -1);
-// Pushes the shutdown class method.
-register_shutdown_function('\BreakpointDebugging::shutdown');
-// Initializes static class.
-\BreakpointDebugging::initialize();
 
 ?>

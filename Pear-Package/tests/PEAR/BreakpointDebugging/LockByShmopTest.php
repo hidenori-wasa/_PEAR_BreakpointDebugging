@@ -1,9 +1,9 @@
 <?php
 
 use \BreakpointDebugging as B;
-use \BreakpointDebugging_UnitTestCaller as BU;
+use \BreakpointDebugging_PHPUnitStepExecution as BU;
 
-class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_PHPUnitFrameworkTestCase
+class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_PHPUnitStepExecution_PHPUnitFrameworkTestCase
 {
     protected $LockByShmop;
 
@@ -61,7 +61,7 @@ class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_PHPUnitFr
         $pFile = B::fopen(array (B::getStatic('$_workDir') . '/LockByShmop.txt', 'wb'));
         fwrite($pFile, 'dummydummy');
         fclose($pFile);
-        B::setPropertyForTest('\BreakpointDebugging_Lock', '$_instance', null);
+        BU::setPropertyForTest('\BreakpointDebugging_Lock', '$_instance', null);
         \BreakpointDebugging_LockByShmop::singleton(5, 10);
     }
 
@@ -70,10 +70,10 @@ class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_PHPUnitFr
      */
     public function test__destruct()
     {
-        $this->assertTrue(B::getPropertyForTest('\BreakpointDebugging_Lock', '$_instance') instanceof \BreakpointDebugging_LockByShmop);
+        $this->assertTrue(BU::getPropertyForTest('\BreakpointDebugging_Lock', '$_instance') instanceof \BreakpointDebugging_LockByShmop);
         // Calls "__destruct".
         $this->LockByShmop = null;
-        $this->assertTrue(B::getPropertyForTest('\BreakpointDebugging_Lock', '$_instance') === null);
+        $this->assertTrue(BU::getPropertyForTest('\BreakpointDebugging_Lock', '$_instance') === null);
     }
 
     /**
@@ -84,11 +84,11 @@ class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_PHPUnitFr
         $this->LockByShmop->lock();
         $this->LockByShmop->lock();
 
-        $this->assertTrue(B::getPropertyForTest($this->LockByShmop, '$lockCount') === 2);
+        $this->assertTrue(BU::getPropertyForTest($this->LockByShmop, '$lockCount') === 2);
 
         \BreakpointDebugging_Lock::forceUnlocking();
 
-        $this->assertTrue(B::getPropertyForTest($this->LockByShmop, '$lockCount') === 0);
+        $this->assertTrue(BU::getPropertyForTest($this->LockByShmop, '$lockCount') === 0);
     }
 
     /**

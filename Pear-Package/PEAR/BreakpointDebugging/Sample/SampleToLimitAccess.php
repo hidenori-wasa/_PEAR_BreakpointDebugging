@@ -81,7 +81,7 @@ abstract class TestClass_InAllCase
         B::limitAccess(
             array (
                 'BreakpointDebugging/Sample/SampleToLimitAccess.php',
-                'BreakpointDebugging/Sample/SampleToLimitAccess_Option.php'
+                'BreakpointDebugging/Sample/SampleToLimitAccess_InDebug.php'
             )
         );
 
@@ -114,7 +114,7 @@ abstract class TestClass_InAllCase
         B::limitAccess(
             array (
                 'BreakpointDebugging/Sample/SampleToLimitAccess.php',
-                'BreakpointDebugging/Sample/SampleToLimitAccess_Option.php'
+                'BreakpointDebugging/Sample/SampleToLimitAccess_InDebug.php'
             )
         );
 
@@ -145,7 +145,7 @@ abstract class TestClass_InAllCase
         B::limitAccess(
             array (
                 'BreakpointDebugging/Sample/SampleToLimitAccess.php',
-                'BreakpointDebugging/Sample/SampleToLimitAccess_Option.php'
+                'BreakpointDebugging/Sample/SampleToLimitAccess_InDebug.php'
             )
         );
 
@@ -206,7 +206,7 @@ if (B::getStatic('$exeMode') & B::RELEASE) { // In case of release.
     }
 
 } else { // In case of not release.
-    include_once __DIR__ . '/SampleToLimitAccess_Option.php';
+    include_once __DIR__ . '/SampleToLimitAccess_InDebug.php';
 }
 
 $pTestClass = new T();

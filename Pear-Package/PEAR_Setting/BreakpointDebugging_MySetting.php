@@ -3,7 +3,7 @@
 /**
  * This is file for various setting.
  *
- * As for procedure, please, refer to the file level document block of BreakpointDebugging_Option.php.
+ * As for procedure, please, refer to the file level document block of BreakpointDebugging_InDebug.php.
  *
  * PHP version 5.3
  *
@@ -58,7 +58,7 @@ function BreakpointDebugging_setExecutionMode()
     global $_BreakpointDebugging_EXE_MODE;
 
     $REMOTE = 1;
-
+    $UNIT_TEST = 4; // For debug.
     // ### Execution mode setting. ===>
     // Please, choose a mode.
     // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('DEBUG');
@@ -71,7 +71,7 @@ function BreakpointDebugging_setExecutionMode()
     //
     // Reference path setting.
     if ($_BreakpointDebugging_EXE_MODE & $REMOTE) { // In case of remote.
-        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') { // In case of Windows.
+        if (BREAKPOINTDEBUGGING_IS_WINDOWS) { // In case of Windows.
             // ini_set('include_path', '.;C:\xampp\php\PEAR');
             // ini_set('include_path', '.;./PEAR;C:\xampp\php\PEAR');
             ini_set('include_path', '.;./PEAR');
@@ -81,10 +81,15 @@ function BreakpointDebugging_setExecutionMode()
             ini_set('include_path', '.:./PEAR');
         }
     } else { // In case of local.
-        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') { // In case of Windows.
-            // ini_set('include_path', '.;C:\xampp\php\PEAR');
-            ini_set('include_path', '.;./PEAR;C:\xampp\php\PEAR');
-            // ini_set('include_path', '.;./PEAR');
+        if (BREAKPOINTDEBUGGING_IS_WINDOWS) { // In case of Windows.
+            if ($_BreakpointDebugging_EXE_MODE & $UNIT_TEST) { // For debug.
+                ini_set('include_path', '.;./PEAR;./PEAROtherPackage'); // For debug.
+            } else { // For debug.
+                // ini_set('include_path', '.;C:\xampp\php\PEAR');
+                // ini_set('include_path', '.;./PEAR;C:/xampp/php/PEAR');
+                ini_set('include_path', '.;./PEAR');
+                // ini_set('include_path', '.;./PEAR;./PEAROtherPackage'); // For debug.
+            } // For debug.
         } else { // In case of Unix.
             // ini_set('include_path', '.:/opt/lampp/lib/php:/opt/lampp/lib/php/PEAR');
             // ini_set('include_path', '.:./PEAR:/opt/lampp/lib/php:/opt/lampp/lib/php/PEAR');
@@ -274,7 +279,7 @@ function BreakpointDebugging_mySetting()
       B::iniSet('ignore_user_abort', '');
       ### <=== "Windows" Example. */
     if (!(B::getStatic('$exeMode') & B::RELEASE)) { // In case of debug.
-        include_once './' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . '/BreakpointDebugging_MySetting_Option.php';
+        include_once './' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . '/BreakpointDebugging_MySetting_InDebug.php';
     } else { // In case of release.
         ////////////////////////////////////////////////////////////////////////////////
         // ### This setting has been Fixed. ###

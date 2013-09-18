@@ -1,6 +1,5 @@
 <?php
 
-require_once './BreakpointDebugging_Inclusion.php';
 // Native emulating class who is out of namespace.
 class BaseNativeClass
 {

@@ -4,6 +4,7 @@ chdir(str_repeat('../', preg_match_all('`/`xX', $_SERVER['PHP_SELF'], $matches) 
 require_once './BreakpointDebugging_Inclusion.php';
 
 use \BreakpointDebugging as B;
+use \BreakpointDebugging_PHPUnitStepExecution as BU;
 
 B::checkExeMode(true);
 // Please, choose unit tests files by customizing.
@@ -12,7 +13,7 @@ $unitTestCommands = array (
     'BreakpointDebugging-ExceptionTest.php',
     'BreakpointDebugging-InAllCaseTest.php',
     'BreakpointDebuggingTest.php',
-    'BreakpointDebugging-UnitTestCallerTest.php',
+    'BreakpointDebugging-PHPUnitStepExecutionTest.php',
     'BreakpointDebugging/Error-InAllCaseTest.php',
     'BreakpointDebugging/ErrorTest.php',
     'BreakpointDebugging/LockByFileExistingTest.php',
@@ -22,25 +23,25 @@ $unitTestCommands = array (
 );
 
 // Executes unit tests.
-B::executeUnitTest($unitTestCommands); exit;
+// BU::executeUnitTest($unitTestCommands); exit;
 
 // Makes up code coverage report, then displays in browser.
 if (B::getStatic('$exeMode') & B::RELEASE) { // In case of release.
-    // B::displayCodeCoverageReport('BreakpointDebuggingTest.php', 'PEAR/BreakpointDebugging.php'); // "BreakpointDebugging", "BreakpointDebugging_Middle" class is OK (Windows).
-    // B::displayCodeCoverageReport('BreakpointDebugging/Error-InAllCaseTest.php', 'PEAR/BreakpointDebugging/Error.php'); //
+    // BU::displayCodeCoverageReport('BreakpointDebuggingTest.php', 'PEAR/BreakpointDebugging.php'); // "BreakpointDebugging", "BreakpointDebugging_Middle" class is OK (Windows).
+    // BU::displayCodeCoverageReport('BreakpointDebugging/Error-InAllCaseTest.php', 'PEAR/BreakpointDebugging/Error.php'); //
 } else { // In case of debug.
-    // B::displayCodeCoverageReport('BreakpointDebuggingTest.php', 'PEAR/BreakpointDebugging_Option.php'); // Windows is OK.
-    // B::displayCodeCoverageReport('BreakpointDebugging/ErrorTest.php', 'PEAR/BreakpointDebugging/Error_Option.php'); //
+    // BU::displayCodeCoverageReport('BreakpointDebuggingTest.php', 'PEAR/BreakpointDebugging_InDebug.php'); // Windows is OK.
+    // BU::displayCodeCoverageReport('BreakpointDebugging/ErrorTest.php', 'PEAR/BreakpointDebugging/Error_InDebug.php'); //
 }
 // In case of debug or release.
-// B::displayCodeCoverageReport('BreakpointDebugging-ExceptionTest.php', 'PEAR/BreakpointDebugging_UnitTestCaller.php'); //
-B::displayCodeCoverageReport('BreakpointDebugging-InAllCaseTest.php', 'PEAR/BreakpointDebugging.php'); //
-// B::displayCodeCoverageReport('BreakpointDebugging-UnitTestCallerTest.php', 'PEAR/BreakpointDebugging_UnitTestCaller.php'); //
-// B::displayCodeCoverageReport('BreakpointDebugging/LockByFileExistingTest.php', array ('PEAR/BreakpointDebugging/Lock.php', 'PEAR/BreakpointDebugging/LockByFileExisting.php')); //
-// B::displayCodeCoverageReport('BreakpointDebugging/LockByFlockTest.php', array ('PEAR/BreakpointDebugging/Lock.php', 'PEAR/BreakpointDebugging/LockByFlock.php')); //
-// B::displayCodeCoverageReport('BreakpointDebugging/LockByShmopTest.php', array ('PEAR/BreakpointDebugging/Lock.php', 'PEAR/BreakpointDebugging/LockByShmop.php')); //
-// B::displayCodeCoverageReport('BreakpointDebugging/OverrideClassTest.php', 'PEAR/BreakpointDebugging/OverrideClass.php'); //
+// BU::displayCodeCoverageReport('BreakpointDebugging-ExceptionTest.php', 'PEAR/BreakpointDebugging_PHPUnitStepExecution.php'); //
+// BU::displayCodeCoverageReport('BreakpointDebugging-InAllCaseTest.php', 'PEAR/BreakpointDebugging.php'); //
+// BU::displayCodeCoverageReport('BreakpointDebugging-PHPUnitStepExecutionTest.php', 'PEAR/BreakpointDebugging_PHPUnitStepExecution.php'); //
+BU::displayCodeCoverageReport('BreakpointDebugging/LockByFileExistingTest.php', array ('PEAR/BreakpointDebugging/Lock.php', 'PEAR/BreakpointDebugging/LockByFileExisting.php')); //
+// BU::displayCodeCoverageReport('BreakpointDebugging/LockByFlockTest.php', array ('PEAR/BreakpointDebugging/Lock.php', 'PEAR/BreakpointDebugging/LockByFlock.php')); //
+// BU::displayCodeCoverageReport('BreakpointDebugging/LockByShmopTest.php', array ('PEAR/BreakpointDebugging/Lock.php', 'PEAR/BreakpointDebugging/LockByShmop.php')); //
+// BU::displayCodeCoverageReport('BreakpointDebugging/OverrideClassTest.php', 'PEAR/BreakpointDebugging/OverrideClass.php'); //
 
-echo '<pre>"B::displayCodeCoverageReport()" ended.</pre>';
+echo '<pre>"\BreakpointDebugging_PHPUnitStepExecution::displayCodeCoverageReport()" ended.</pre>';
 
 ?>

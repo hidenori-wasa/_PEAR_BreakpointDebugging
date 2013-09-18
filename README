@@ -1,14 +1,14 @@
-I freeze this Git's repository because I divide this package to some packages for generality and readability.
-
 The basic concept
     This is package for breakpoint debugging.
     Also, you can use as basics of other PHP program or PEAR package if you want
     because this package has necessary minimum features.
 
 The features list
-    "php.ini"-file setting fixation feature, PHP code synchronization feature,
-    error log feature by global handler, PHPUnit PEAR package extension feature,
-    the override class feature and execution mode.
+    "php.ini"-file setting fixation feature,
+    PHP code synchronization feature,
+    error log feature by global handler,
+    the override class feature
+    and execution mode.
     Please, read the file level document block of "PEAR/BreakpointDebugging_Option.php".
 
 The dependences
@@ -50,3 +50,8 @@ Notice
             return;
         }
     However, "NetBeans IDE 7.3" supports "PHP5.4" and "HTML5".
+
+I divided "PHPUnit" extention feature to new "BreakpointDebugging_PHPUnitStepExecution" package
+for generality and readability because I coded all feature of this package.
+
+Then, I have been coding the unit tests.

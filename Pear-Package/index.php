@@ -3,7 +3,7 @@
 require_once './BreakpointDebugging_Inclusion.php';
 
 use \BreakpointDebugging as B;
-use \BreakpointDebugging_PHPUnitUtilFilesystem as BF;
+use \BreakpointDebugging_PHPUnitStepExecution_PHPUnitUtilFilesystem as BF;
 
 B::checkExeMode(); // Checks the execution mode.
 
@@ -25,6 +25,8 @@ echo "<pre>$result</pre>";
 
 return;
 ////////////////////////////////////////////////////////////////////////////////
+use \BreakpointDebugging_PHPUnitStepExecution_PHPUnitUtilGlobalState as BGS;
+
 B::checkExeMode(); // Checks the execution mode.
 class TestClassA
 {
@@ -68,7 +70,7 @@ function test()
     $testPropertyA2 = $testArray[0]->testObjectProperty->testPropertyA;
 
     // Stores a variable.
-    \BreakpointDebugging_PHPUnitUtilGlobalState::backupGlobals(array ());
+    BGS::backupGlobals(array ());
     B::assert($referenceA === 'referenced');
     B::assert($referenceB === array ('referenced'));
     B::assert($referenceC === array (array ('referenced')));
@@ -101,7 +103,7 @@ function test()
     B::assert(array_key_exists('ADDITION', $GLOBALS));
 
     // Restores variable.
-    \BreakpointDebugging_PHPUnitUtilGlobalState::restoreGlobals();
+    BGS::restoreGlobals();
     B::assert($referenceA === 'referenceDummy'); // Copy.
     B::assert($referenceB === array ('referenceDummy')); // Copy.
     B::assert($referenceC === array (array ('referenceDummy'))); // Copy.
@@ -124,7 +126,7 @@ function test()
     //////////////////////////////////////////////////////////////////////////////////////////////////
     \TestClassB::$GLOBALS = $testArray;
     // Stores static attributes.
-    \BreakpointDebugging_PHPUnitUtilGlobalState::backupStaticAttributes(array ());
+    BGS::backupStaticAttributes(array ());
     B::assert(\TestClassB::$GLOBALS[0]->testObjectProperty->testPropertyA === 'testPropertyA');
     ob_start();
     var_dump(\TestClassB::$testRecursiveArrayProperty);
@@ -135,7 +137,7 @@ function test()
     B::assert(\TestClassB::$GLOBALS[0]->testObjectProperty->testPropertyA === 'testPropertyZ');
 
     // Restores static attributes.
-    \BreakpointDebugging_PHPUnitUtilGlobalState::restoreStaticAttributes();
+    BGS::restoreStaticAttributes();
     B::assert(\TestClassB::$GLOBALS[0]->testObjectProperty->testPropertyA === 'testPropertyA');
     ob_start();
     var_dump(\TestClassB::$testRecursiveArrayProperty);

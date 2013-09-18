@@ -1,7 +1,7 @@
 <?php
 
 use \BreakpointDebugging as B;
-use \BreakpointDebugging_UnitTestCaller as BU;
+use \BreakpointDebugging_PHPUnitStepExecution as BU;
 
 class UnstoringTest
 {
@@ -15,7 +15,7 @@ class UnstoringTest
 // unset($_FILES); // We must not delete global variable here. (Autodetects)
 //
 // include_once __DIR__ . '/AFileWhichHasGlobalVariable.php'; // We must not include a file which has global variable here. (Autodetects)
-class ExampleTest extends \BreakpointDebugging_PHPUnitFrameworkTestCase
+class ExampleTest extends \BreakpointDebugging_PHPUnitStepExecution_PHPUnitFrameworkTestCase
 {
     private $_pSomething;
     private static $_pStaticSomething;

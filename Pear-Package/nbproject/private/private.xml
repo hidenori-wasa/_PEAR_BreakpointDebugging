@@ -22,12 +22,12 @@
             <line>195</line>
         </file>
         <file>
-            <url>PEAR/BreakpointDebugging/LockByMkdir.php</url>
-            <line>207</line>
-        </file>
-        <file>
             <url>DownloadErrorLogFiles.php</url>
             <line>54</line>
+        </file>
+        <file>
+            <url>PEAR/BreakpointDebugging/LockByMkdir.php</url>
+            <line>207</line>
         </file>
         <file>
             <url>PEAR/PHPUnit/Util/GlobalState.php</url>

@@ -274,7 +274,7 @@ abstract class BreakpointDebugging_Lock
         B::limitAccess(
             array (
                 'BreakpointDebugging/Error.php',
-                'BreakpointDebugging/Error_Option.php'
+                'BreakpointDebugging/Error_InDebug.php'
             )
         );
 
