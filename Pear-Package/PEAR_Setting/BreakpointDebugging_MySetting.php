@@ -40,7 +40,6 @@
  * @package  BreakpointDebugging
  * @author   Hidenori Wasa <public@hidenori-wasa.com>
  * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
- * @version  SVN: $Id$
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
 use \BreakpointDebugging as B;
@@ -63,39 +62,29 @@ function BreakpointDebugging_setExecutionMode()
     // Please, choose a mode.
     // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('DEBUG');
     // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('RELEASE');
-    $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('DEBUG_UNIT_TEST');
-    // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('RELEASE_UNIT_TEST');
+    $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('DEBUG_UNIT_TEST'); // Requires "BreakpointDebugging_PHPUnitStepExecution" package.
+    // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('RELEASE_UNIT_TEST'); // Requires "BreakpointDebugging_PHPUnitStepExecution" package.
     // ### <=== Execution mode setting.
     //
     // $_BreakpointDebugging_EXE_MODE |= $REMOTE; // Emulates remote by local host.
     //
     // Reference path setting.
-    if ($_BreakpointDebugging_EXE_MODE & $REMOTE) { // In case of remote.
-        if (BREAKPOINTDEBUGGING_IS_WINDOWS) { // In case of Windows.
-            // ini_set('include_path', '.;C:\xampp\php\PEAR');
-            // ini_set('include_path', '.;./PEAR;C:\xampp\php\PEAR');
-            ini_set('include_path', '.;./PEAR');
-        } else { // In case of Unix.
-            // ini_set('include_path', '.:/opt/lampp/lib/php:/opt/lampp/lib/php/PEAR');
-            // ini_set('include_path', '.:./PEAR:/opt/lampp/lib/php:/opt/lampp/lib/php/PEAR');
-            ini_set('include_path', '.:./PEAR');
-        }
-    } else { // In case of local.
-        if (BREAKPOINTDEBUGGING_IS_WINDOWS) { // In case of Windows.
-            if ($_BreakpointDebugging_EXE_MODE & $UNIT_TEST) { // For debug.
-                ini_set('include_path', '.;./PEAR;./PEAROtherPackage'); // For debug.
-            } else { // For debug.
-                // ini_set('include_path', '.;C:\xampp\php\PEAR');
-                // ini_set('include_path', '.;./PEAR;C:/xampp/php/PEAR');
-                ini_set('include_path', '.;./PEAR');
-                // ini_set('include_path', '.;./PEAR;./PEAROtherPackage'); // For debug.
-            } // For debug.
-        } else { // In case of Unix.
-            // ini_set('include_path', '.:/opt/lampp/lib/php:/opt/lampp/lib/php/PEAR');
-            // ini_set('include_path', '.:./PEAR:/opt/lampp/lib/php:/opt/lampp/lib/php/PEAR');
-            ini_set('include_path', '.:./PEAR:/opt/lampp/lib/php');
-        }
+    $includePaths = explode(PATH_SEPARATOR, ini_get('include_path'));
+    if ($includePaths[0] !== '.') {
+        exit('<pre>"include_path" of "php.ini" must be "." first.</pre>');
     }
+    array_unshift($includePaths, $includePaths[0]);
+    $includePaths[1] = './PEAR';
+
+    // For debug. ===>
+    if ($_BreakpointDebugging_EXE_MODE & $UNIT_TEST) {
+        $includePaths = array ('.', './PEAR', './PEAROtherPackage'); // For independence execution check.
+    } else {
+        $includePaths = array ('.', './PEAR'); // For independence execution check.
+    }
+    // <=== For debug.
+
+    ini_set('include_path', implode(PATH_SEPARATOR, $includePaths));
 }
 
 /**
@@ -164,7 +153,7 @@ function BreakpointDebugging_mySetting()
     $developerIP = &B::refStatic('$_developerIP');
     // Please, enter developer IP address.
     // However, comment out this when running code is local or running code does not use.
-    // $developerIP = '218.217.194.48';
+    $developerIP = '219.116.0.54';
     $language = 'Japanese';
     $timezone = 'Asia/Tokyo';
     $SMTP = '<Your SMTP server>';
@@ -206,7 +195,9 @@ function BreakpointDebugging_mySetting()
     // Warning: When you use existing log, it is destroyed if it is not "UTF-8". It is necessary to be a single character sets.
     $workDir = &B::refStatic('$_workDir');
     $workDir = './Work';
-    if (!is_dir($workDir)) {
+    if (is_dir($workDir)) {
+        B::setOwner($workDir, 0700);
+    } else {
         B::mkdir(array ($workDir, 0700));
     }
     $workDir = realpath($workDir);

@@ -179,7 +179,6 @@
  * @package  BreakpointDebugging
  * @author   Hidenori Wasa <public@hidenori-wasa.com>
  * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
- * @version  SVN: $Id$
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
 // File to have "use" keyword does not inherit scope into a file including itself,
@@ -367,7 +366,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      *
      * @return Same as parent.
      */
-    protected static function setOwner($name, $permission, $timeout = 10, $sleepMicroSeconds = 100000)
+    static function setOwner($name, $permission, $timeout = 10, $sleepMicroSeconds = 100000)
     {
         self::assert(func_num_args() <= 4, 1);
         self::assert(is_string($name), 2);
@@ -812,6 +811,26 @@ if (!B::getXebugExists()) {
             . '"Xdebug" extension has been not loaded though this is a local host.' . PHP_EOL
             . '"Xdebug" extension is required because (uses breakpoint, displays for fatal error and avoids infinity recursive function call).' . PHP_EOL
         );
+    }
+}
+
+// Checks path environment variable for "php" command.
+if (BREAKPOINTDEBUGGING_IS_WINDOWS) {
+    $paths = getenv('path');
+    $paths = explode(';', $paths);
+    while (true) {
+        foreach ($paths as $path) {
+            $path = rtrim($path, '\/');
+            if (is_file($path . '/php.exe')) {
+                break 2;
+            }
+        }
+        exit('<pre>Path environment variable has not been set for "php.exe" command.' . PHP_EOL . `path` . '</pre>');
+    }
+} else {
+    $result = `which php`;
+    if (empty($result)) {
+        exit('<pre>Path environment variable has not been set for "php" command.' . PHP_EOL . '$PATH=' . `echo \$PATH` . '</pre>');
     }
 }
 

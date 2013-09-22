@@ -6,7 +6,9 @@ class tests_PEAR_BreakpointDebugging_MultiprocessTest_Main
 {
     private function _initializeCounter($shmopKey)
     {
-        B::assert(extension_loaded('shmop'), 101);
+        if (!extension_loaded('shmop')) {
+            \PHPUnit_Framework_Assert::markTestSkipped();
+        }
         // Allocate shared memory area.
         $shmopId = shmop_open($shmopKey, 'c', 0600, 10);
 
@@ -35,12 +37,8 @@ class tests_PEAR_BreakpointDebugging_MultiprocessTest_Main
                     throw new \BreakpointDebugging_ErrorException('Failed to "popen()".');
                 }
             } else { // For Unix.
-                // Searches "php" command path because "apache" may be super user.
-                $whereIsPhp = `whereis php`;
-                $whichPhp = array ();
-                preg_match('`/.*$`xX', $whereIsPhp, $whichPhp);
                 // "&" is the background execution of command.
-                $pPipe = popen($whichPhp[0] . ' -f ' . $fullFilePath . ' -- ' . $shmopKey . ' ' . $className . ' &', 'r');
+                $pPipe = popen('php -f ' . $fullFilePath . ' -- ' . $shmopKey . ' ' . $className . ' &', 'r');
                 if ($pPipe === false) {
                     throw new \BreakpointDebugging_ErrorException('Failed to "popen()".');
                 }

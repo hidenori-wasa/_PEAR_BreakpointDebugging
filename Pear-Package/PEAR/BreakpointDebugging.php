@@ -38,7 +38,6 @@
  * @package  BreakpointDebugging
  * @author   Hidenori Wasa <public@hidenori-wasa.com>
  * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
- * @version  SVN: $Id$
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
 use \BreakpointDebugging as B;
@@ -608,7 +607,7 @@ abstract class BreakpointDebugging_InAllCase
      *
      * @return bool Success or failure.
      */
-    protected static function setOwner($name, $permission, $timeout, $sleepMicroSeconds)
+    static function setOwner($name, $permission, $timeout = 10, $sleepMicroSeconds = 100000)
     {
         if (BREAKPOINTDEBUGGING_IS_WINDOWS) {
             return true;

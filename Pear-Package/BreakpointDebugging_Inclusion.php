@@ -38,7 +38,6 @@
  * @package  BreakpointDebugging
  * @author   Hidenori Wasa <public@hidenori-wasa.com>
  * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
- * @version  SVN: $Id$
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
 define('BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME', './PEAR_Setting/');
