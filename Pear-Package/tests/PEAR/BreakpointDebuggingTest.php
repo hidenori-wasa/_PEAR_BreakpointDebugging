@@ -219,13 +219,13 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_PHPUnitStepExecution_
      * @covers \BreakpointDebugging<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebuggingTest FUNCTION=testAssert_A.
+     * @expectedExceptionMessage CLASS=BreakpointDebuggingTest FUNCTION=testAssert_A ID=1.
      */
     function testAssert_A()
     {
         BU::markTestSkippedInRelease(); // Because this unit test class method is difference.
 
-        B::assert(false);
+        B::assert(false, 1);
     }
 
     /**

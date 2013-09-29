@@ -130,7 +130,8 @@ abstract class BreakpointDebugging_InAllCase
     /**
      * @var array Static properties reference.
      */
-    protected static $staticProperties;
+    // protected static $staticProperties;
+    static $staticProperties; // For debug.
 
     /**
      * @var array Static property limitings reference.
@@ -190,7 +191,8 @@ abstract class BreakpointDebugging_InAllCase
     /**
      * @var array Locations to be not Fixed.
      */
-    private static $_notFixedLocations = array ();
+    // private static $_notFixedLocations = array ();
+    static $_notFixedLocations = array (); // For debug.
 
     /**
      * @var array Values to trace.
@@ -403,8 +405,6 @@ abstract class BreakpointDebugging_InAllCase
      */
     static function getStatic($propertyName)
     {
-        B::limitAccess('BreakpointDebugging_InDebug.php');
-
         return self::$staticProperties[$propertyName];
     }
 
@@ -970,7 +970,7 @@ abstract class BreakpointDebugging_InAllCase
 
         self::$_pwd = getcwd();
         self::$_nativeExeMode = self::$exeMode = $_BreakpointDebugging_EXE_MODE;
-        unset($_BreakpointDebugging_EXE_MODE);
+        unset($GLOBALS['_BreakpointDebugging_EXE_MODE']);
         self::$staticProperties['$exeMode'] = &self::$exeMode;
         self::$staticProperties['$_userName'] = &self::$_userName;
         self::$staticProperties['$_developerIP'] = &self::$_developerIP;
@@ -1303,7 +1303,7 @@ if ($_BreakpointDebugging_EXE_MODE & BA::RELEASE) { // In case of release.
     } else {
         BA::setXebugExists(extension_loaded('xdebug'));
     }
-} else { // In case of not release.
+} else { // In case of debug.
     // This does not invoke extended class method exceptionally because its class is not defined.
     BA::setXebugExists(extension_loaded('xdebug'));
     include_once __DIR__ . '/BreakpointDebugging_InDebug.php';
@@ -1318,9 +1318,9 @@ set_error_handler('\BreakpointDebugging::handleError', -1);
 // Pushes the shutdown class method.
 register_shutdown_function('\BreakpointDebugging::shutdown');
 // Initializes static class.
-\BreakpointDebugging::initialize();
+B::initialize();
 
-if ($_BreakpointDebugging_EXE_MODE & BA::UNIT_TEST) { // In case of unit test.
+if (B::getStatic('$exeMode') & BA::UNIT_TEST) { // In case of unit test.
     include_once 'BreakpointDebugging_PHPUnitStepExecution.php';
 } else {
     /**

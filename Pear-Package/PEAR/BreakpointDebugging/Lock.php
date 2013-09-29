@@ -69,7 +69,8 @@ abstract class BreakpointDebugging_Lock
     /**
      * @var object Maintains a instance.
      */
-    private static $_instance = null;
+    // private static $_instance = null;
+    static $_instance = null;
 
     /**
      * @var int The lock count.

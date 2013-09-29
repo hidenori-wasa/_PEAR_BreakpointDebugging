@@ -70,7 +70,7 @@ class ExampleTest extends \BreakpointDebugging_PHPUnitStepExecution_PHPUnitFrame
         //
         // include_once __DIR__ . '/AFileWhichHasGlobalVariable.php'; // We must not include a file which has global variable here. (Autodetects)
         //
-        // Destructs the instance.
+        // We must destruct a test instance per test because it cuts down on actual server memory use.
         $this->_pSomething = null;
         // This is required.
         parent::tearDown();

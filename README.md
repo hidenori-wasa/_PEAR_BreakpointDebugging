@@ -35,7 +35,9 @@ How to sniff my code.
 I customized code sniff because "which" statement indent is "PEAR" special.
 Therefore, default doesn't fit "IDE".
 Please, change following file.
+
 `C:\xampp\php\PEAR\PHP\CodeSniffer\Standards\PEAR\Sniffs\WhiteSpace\ScopeIndentSniff.php`
+
 before:
 
     protected $nonIndentingScopes = array(T_SWITCH);

@@ -482,6 +482,33 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
         return parent::handleError($errorNumber, $errorMessage);
     }
 
+    /**
+     * Checks path environment variable for "php" command.
+     *
+     * @return void
+     */
+    static function checkPathEnvironmentVariable()
+    {
+        if (BREAKPOINTDEBUGGING_IS_WINDOWS) {
+            $paths = getenv('path');
+            $paths = explode(';', $paths);
+            while (true) {
+                foreach ($paths as $path) {
+                    $path = rtrim($path, '\/');
+                    if (is_file($path . '/php.exe')) {
+                        break 2;
+                    }
+                }
+                exit('<pre>Path environment variable has not been set for "php.exe" command.' . PHP_EOL . `path` . '</pre>');
+            }
+        } else {
+            $result = `which php`;
+            if (empty($result)) {
+                exit('<pre>Path environment variable has not been set for "php" command.' . PHP_EOL . '$PATH=' . `echo \$PATH` . '</pre>');
+            }
+        }
+    }
+
     ///////////////////////////// For package user from here in case of debug mode. /////////////////////////////
     /**
      * Checks a invoker file path.
@@ -622,7 +649,8 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      */
     static function assert($assertion, $id = null)
     {
-        if (func_num_args() > 2) {
+        $paramNumber = func_num_args();
+        if ($paramNumber > 2) {
             self::callExceptionHandlerDirectly('Parameter number mistake.', 1);
             // @codeCoverageIgnoreStart
         }
@@ -641,6 +669,11 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
         // @codeCoverageIgnoreEnd
 
         if (!$assertion) {
+            if ($paramNumber === 1) {
+                // For breakpoint debugging.
+                parent::breakpoint('Assertion failed.', debug_backtrace());
+            }
+            // For "@expectedExceptionMessage" annotation of "DEBUG_UNIT_TEST" mode.
             self::callExceptionHandlerDirectly('Assertion failed.', $id);
             // @codeCoverageIgnoreStart
         }
@@ -814,26 +847,7 @@ if (!B::getXebugExists()) {
     }
 }
 
-// Checks path environment variable for "php" command.
-if (BREAKPOINTDEBUGGING_IS_WINDOWS) {
-    $paths = getenv('path');
-    $paths = explode(';', $paths);
-    while (true) {
-        foreach ($paths as $path) {
-            $path = rtrim($path, '\/');
-            if (is_file($path . '/php.exe')) {
-                break 2;
-            }
-        }
-        exit('<pre>Path environment variable has not been set for "php.exe" command.' . PHP_EOL . `path` . '</pre>');
-    }
-} else {
-    $result = `which php`;
-    if (empty($result)) {
-        exit('<pre>Path environment variable has not been set for "php" command.' . PHP_EOL . '$PATH=' . `echo \$PATH` . '</pre>');
-    }
-}
-
+B::checkPathEnvironmentVariable();
 register_shutdown_function('\BreakpointDebugging::checkSuperUserExecution');
 
 ?>

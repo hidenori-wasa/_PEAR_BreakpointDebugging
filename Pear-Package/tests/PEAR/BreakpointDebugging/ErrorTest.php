@@ -16,6 +16,13 @@ class BreakpointDebugging_ErrorTest extends \BreakpointDebugging_PHPUnitStepExec
         self::$_error = new \BreakpointDebugging_Error();
     }
 
+    static function tearDownAfterClass()
+    {
+        self::$_error = null;
+
+        parent::tearDownAfterClass();
+    }
+
     /**
      * @covers \BreakpointDebugging_Error<extended>
      */

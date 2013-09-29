@@ -3,28 +3,6 @@
 require_once './BreakpointDebugging_Inclusion.php';
 
 use \BreakpointDebugging as B;
-use \BreakpointDebugging_PHPUnitStepExecution_PHPUnitUtilFilesystem as BF;
-
-B::checkExeMode(); // Checks the execution mode.
-
-phpinfo();
-return;
-
-
-$exePath = BF::streamResolveIncludePath('BreakpointDebugging/MultiprocessUnitTestForWindows.exe');
-$testPathA = BF::streamResolveIncludePath('tests/PEAR/BreakpointDebugging-ExceptionTest.php');
-// Runs multiprocess unit test for Windows.
-// $result = `MultiprocessUnitTestForWindows.exe`;
-// $result = `$exePath -h`;
-// $result = `$exePath -help`;
-$result = `$exePath $testPathA 2`;
-// $result = `$exePath "TestA.php" 3`;
-// $result = `$exePath TestA.php 2 "TestB.php" 3`;
-
-echo "<pre>$result</pre>";
-
-return;
-////////////////////////////////////////////////////////////////////////////////
 use \BreakpointDebugging_PHPUnitStepExecution_PHPUnitUtilGlobalState as BGS;
 
 B::checkExeMode(); // Checks the execution mode.
@@ -53,6 +31,18 @@ class TestClassB
 
 $testClassB = new \TestClassB();
 $testArray = array ($testClassB);
+$testClassA = new \TestClassA();
+
+ini_set('xdebug.var_display_max_depth', 0);
+ob_start();
+xdebug_debug_zval('testArray');
+$testObjectProperty = &$testClassB->testObjectProperty;
+xdebug_debug_zval('testObjectProperty');
+xdebug_debug_zval('testClassA');
+$output = strip_tags(ob_get_clean());
+echo '<pre>' . $output . '</pre>';
+
+return;
 function test()
 {
     global $_BreakpointDebugging_EXE_MODE, $testClassB, $testArray, $referenceA, $referenceB, $referenceC, $referenceD, $recursiveReferenceA;

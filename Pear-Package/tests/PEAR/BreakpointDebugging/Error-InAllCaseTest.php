@@ -60,6 +60,13 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_PHPUn
         self::$error = new \BreakpointDebugging_Error();
     }
 
+    static function tearDownAfterClass()
+    {
+        self::$error = null;
+
+        parent::tearDownAfterClass();
+    }
+
     /**
      * @covers \BreakpointDebugging_Error<extended>
      */
