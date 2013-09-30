@@ -6,6 +6,30 @@ use \BreakpointDebugging as B;
 use \BreakpointDebugging_PHPUnitStepExecution_PHPUnitUtilGlobalState as BGS;
 
 B::checkExeMode(); // Checks the execution mode.
+function testLocalStatic()
+{
+    static $localStaticA = 'testA';
+    static $localStaticB = 'testB';
+}
+
+$definedFunctionsName = get_defined_functions();
+foreach ($definedFunctionsName['user'] as $definedFunctionName) {
+    $functionReflection = new ReflectionFunction($definedFunctionName);
+    $staticVariables = $functionReflection->getStaticVariables();
+    // If static variable has been existing.
+    if (!empty($staticVariables)) {
+        B::exitForError(
+            PHP_EOL
+            . 'We must use private static property of class method instead of use local static variable of function' . PHP_EOL
+            . 'because "php" version 5.3.0 cannot restore its value.' . PHP_EOL
+            . "\t" . 'FILE: ' . $functionReflection->getFileName() . PHP_EOL
+            . "\t" . 'LINE: ' . $functionReflection->getStartLine() . PHP_EOL
+            . "\t" . 'FUNCTION: ' . $functionReflection->name . PHP_EOL
+        );
+    }
+}
+return;
+//
 class TestClassA
 {
     public $testPropertyA = 'testPropertyA';

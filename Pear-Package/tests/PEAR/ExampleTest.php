@@ -8,6 +8,11 @@ class UnstoringTest
     // We can define static property in "*Test.php" because static property is not stored in "*Test.php".
     static $staticProperty = null;
 
+    static function localStaticVariable()
+    {
+        // static $localStatic = 'Local static value.'; // We must not define local static variable of static class method. (Autodetects)
+    }
+
 }
 
 // $somethingGlobal = ''; // We must not add global variable here. (Autodetects)
@@ -37,42 +42,32 @@ class ExampleTest extends \BreakpointDebugging_PHPUnitStepExecution_PHPUnitFrame
         \UnstoringTest::$staticProperty = 'DUMMY_prependErrorLog'; // We can change static property here.
     }
 
+    // A function after "setUp()" does not detect global variable definition violation because here is after global-variable-backup.
     static function tearDownAfterClass()
     {
         parent::assertTrue($_POST === 'DUMMY_POST');
         parent::assertTrue(\UnstoringTest::$staticProperty === 'DUMMY_prependErrorLog');
+        // This is required at bottom.
+        parent::tearDownAfterClass();
     }
 
+    // "setUp()" does not detect global variable definition violation because "*.php" file which is tested may define global variable definition by autoload.
     protected function setUp()
     {
-        // This is required at top of "setUp()".
+        // This is required at top.
         parent::setUp();
-
         // Constructs an instance per test.
         // We must construct test instance here
         // because we want to initialize class auto attribute (auto class method's local static and auto property).
         $this->_pSomething = &BreakpointDebugging_LockByFlock::singleton();
-        //
-        // global $somethingGlobal;
-        // $somethingGlobal = ''; // We must not add global variable here. (Autodetects)
-        //
-        // unset($_FILES); // We must not delete global variable here. (Autodetects)
-        //
-        // include_once __DIR__ . '/AFileWhichHasGlobalVariable.php'; // We must not include a file which has global variable here. (Autodetects)
     }
 
+    // A function after "setUp()" does not detect global variable definition violation because here is after global-variable-backup.
     protected function tearDown()
     {
-        // global $somethingGlobal;
-        // $somethingGlobal = ''; // We must not add global variable here. (Autodetects)
-        //
-        // unset($_FILES); // We must not delete global variable here. (Autodetects)
-        //
-        // include_once __DIR__ . '/AFileWhichHasGlobalVariable.php'; // We must not include a file which has global variable here. (Autodetects)
-        //
         // We must destruct a test instance per test because it cuts down on actual server memory use.
         $this->_pSomething = null;
-        // This is required.
+        // This is required at bottom.
         parent::tearDown();
     }
 
@@ -82,6 +77,8 @@ class ExampleTest extends \BreakpointDebugging_PHPUnitStepExecution_PHPUnitFrame
     }
 
     /**
+     * A function after "setUp()" does not detect global variable definition violation because here is after global-variable-backup.
+     *
      * @covers \Example<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
@@ -91,13 +88,6 @@ class ExampleTest extends \BreakpointDebugging_PHPUnitStepExecution_PHPUnitFrame
     {
         BU::markTestSkippedInDebug();
 
-        // global $somethingGlobal;
-        // $somethingGlobal = ''; // We must not add global variable here. (Autodetects)
-        //
-        // unset($_FILES); // We must not delete global variable here. (Autodetects)
-        //
-        // include_once __DIR__ . '/AFileWhichHasGlobalVariable.php'; // We must not include a file which has global variable here. (Autodetects)
-        //
         // Destructs the instance.
         $this->_pSomething = null;
 
@@ -106,19 +96,14 @@ class ExampleTest extends \BreakpointDebugging_PHPUnitStepExecution_PHPUnitFrame
     }
 
     /**
+     * A function after "setUp()" does not detect global variable definition violation because here is after global-variable-backup.
+     *
      * @covers \Example<extended>
      */
     public function testSomething_B()
     {
         BU::markTestSkippedInRelease();
 
-        // global $somethingGlobal;
-        // $somethingGlobal = ''; // We must not add global variable here. (Autodetects)
-        //
-        // unset($_FILES); // We must not delete global variable here. (Autodetects)
-        //
-        // include_once __DIR__ . '/AFileWhichHasGlobalVariable.php'; // We must not include a file which has global variable here. (Autodetects)
-        //
         // How to use "try-catch" syntax instead of "@expectedException" and "@expectedExceptionMessage".
         // This way can test an error after static status was changed.
         try {

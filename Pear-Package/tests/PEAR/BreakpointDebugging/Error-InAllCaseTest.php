@@ -4,6 +4,12 @@ use \BreakpointDebugging as B;
 use \BreakpointDebugging_PHPUnitStepExecution as BU;
 use \BreakpointDebugging_Error_InAllCaseTest as T;
 
+class TestErrorHandler2Parent
+{
+    static $isRegister = false;
+
+}
+
 class example
 {
     const CONST_TEST = 1; // Tests constant property when unit test reflects object.

@@ -130,8 +130,7 @@ abstract class BreakpointDebugging_InAllCase
     /**
      * @var array Static properties reference.
      */
-    // protected static $staticProperties;
-    static $staticProperties; // For debug.
+    protected static $staticProperties;
 
     /**
      * @var array Static property limitings reference.
@@ -191,8 +190,7 @@ abstract class BreakpointDebugging_InAllCase
     /**
      * @var array Locations to be not Fixed.
      */
-    // private static $_notFixedLocations = array ();
-    static $_notFixedLocations = array (); // For debug.
+    private static $_notFixedLocations = array ();
 
     /**
      * @var array Values to trace.
