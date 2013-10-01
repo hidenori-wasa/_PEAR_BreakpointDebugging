@@ -20,7 +20,7 @@ class BreakpointDebugging_ErrorTest extends \BreakpointDebugging_PHPUnitStepExec
     {
         self::$_error = null;
 
-        parent::tearDownAfterClass();
+        //parent::tearDownAfterClass();
     }
 
     /**

@@ -3,6 +3,11 @@
 use \BreakpointDebugging as B;
 use \BreakpointDebugging_PHPUnitStepExecution as BU;
 
+function localStaticVariable()
+{
+    // static $localStatic = 'Local static value.'; // We must not define local static variable of function. (Autodetects)
+}
+
 class UnstoringTest
 {
     // We can define static property in "*Test.php" because static property is not stored in "*Test.php".
@@ -15,11 +20,9 @@ class UnstoringTest
 
 }
 
-// $somethingGlobal = ''; // We must not add global variable here. (Autodetects)
-//
 // unset($_FILES); // We must not delete global variable here. (Autodetects)
 //
-// include_once __DIR__ . '/AFileWhichHasGlobalVariable.php'; // We must not include a file which has global variable here. (Autodetects)
+// include_once __DIR__ . '/AFileWhichDeleteGlobalVariable.php'; // We must not include a file which deletes global variable here. (Autodetects)
 class ExampleTest extends \BreakpointDebugging_PHPUnitStepExecution_PHPUnitFrameworkTestCase
 {
     private $_pSomething;
@@ -27,39 +30,38 @@ class ExampleTest extends \BreakpointDebugging_PHPUnitStepExecution_PHPUnitFrame
 
     static function setUpBeforeClass()
     {
-        // global $somethingGlobal;
-        // $somethingGlobal = ''; // We must not add global variable here. (Autodetects)
-        //
         // unset($_FILES); // We must not delete global variable here. (Autodetects)
         //
-        // include_once __DIR__ . '/AFileWhichHasGlobalVariable.php'; // We must not include a file which has global variable here. (Autodetects)
+        // include_once __DIR__ . '/AFileWhichDeleteGlobalVariable.php'; // We must not include a file which deletes global variable here. (Autodetects)
         //
         // We must not construct test instance here. (Cannot autodetect)
         // because we want to initialize class auto attribute (auto class method's local static and auto property).
         // self::$_pStaticSomething = &BreakpointDebugging_LockByFlock::singleton();
-
-        $_POST = 'DUMMY_POST'; // We can change global variable here.
-        \UnstoringTest::$staticProperty = 'DUMMY_prependErrorLog'; // We can change static property here.
     }
 
     // A function after "setUp()" does not detect global variable definition violation because here is after global-variable-backup.
     static function tearDownAfterClass()
     {
-        parent::assertTrue($_POST === 'DUMMY_POST');
-        parent::assertTrue(\UnstoringTest::$staticProperty === 'DUMMY_prependErrorLog');
-        // This is required at bottom.
-        parent::tearDownAfterClass();
+
     }
 
-    // "setUp()" does not detect global variable definition violation because "*.php" file which is tested may define global variable definition by autoload.
     protected function setUp()
     {
         // This is required at top.
         parent::setUp();
+        //
+        // unset($_FILES); // We must not delete global variable here. (Autodetects)
+        //
+        // include_once __DIR__ . '/AFileWhichDeleteGlobalVariable.php'; // We must not include a file which deletes global variable here. (Autodetects)
+        //
         // Constructs an instance per test.
         // We must construct test instance here
         // because we want to initialize class auto attribute (auto class method's local static and auto property).
         $this->_pSomething = &BreakpointDebugging_LockByFlock::singleton();
+        //
+        // unset($_FILES); // We must not delete global variable here. (Autodetects)
+        //
+        // include_once __DIR__ . '/AFileWhichDeleteGlobalVariable.php'; // We must not include a file which deletes global variable here. (Autodetects)
     }
 
     // A function after "setUp()" does not detect global variable definition violation because here is after global-variable-backup.

@@ -5,8 +5,6 @@ use \BreakpointDebugging_Error_InAllCaseTest as T;
 
 function test4()
 {
-    //static $isRegister = false;
-    //B::registerNotFixedLocation($isRegister);
     B::registerNotFixedLocation(\TestErrorHandler2Parent::$isRegister);
 
     trigger_error2();

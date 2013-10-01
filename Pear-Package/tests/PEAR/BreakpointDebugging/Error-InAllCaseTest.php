@@ -70,7 +70,7 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_PHPUn
     {
         self::$error = null;
 
-        parent::tearDownAfterClass();
+        //parent::tearDownAfterClass();
     }
 
     /**
