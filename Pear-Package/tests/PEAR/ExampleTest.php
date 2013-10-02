@@ -10,9 +10,6 @@ function localStaticVariable()
 
 class UnstoringTest
 {
-    // We can define static property in "*Test.php" because static property is not stored in "*Test.php".
-    static $staticProperty = null;
-
     static function localStaticVariable()
     {
         // static $localStatic = 'Local static value.'; // We must not define local static variable of static class method. (Autodetects)
@@ -39,32 +36,25 @@ class ExampleTest extends \BreakpointDebugging_PHPUnitStepExecution_PHPUnitFrame
         // self::$_pStaticSomething = &BreakpointDebugging_LockByFlock::singleton();
     }
 
-    // A function after "setUp()" does not detect global variable definition violation because here is after global-variable-backup.
+    // A function after "setUpBeforeClass()" does not detect global variable definition violation because here is after global-variable-backup.
     static function tearDownAfterClass()
     {
 
     }
 
+    // A function after "setUpBeforeClass()" does not detect global variable definition violation because here is after global-variable-backup.
     protected function setUp()
     {
         // This is required at top.
         parent::setUp();
         //
-        // unset($_FILES); // We must not delete global variable here. (Autodetects)
-        //
-        // include_once __DIR__ . '/AFileWhichDeleteGlobalVariable.php'; // We must not include a file which deletes global variable here. (Autodetects)
-        //
         // Constructs an instance per test.
         // We must construct test instance here
         // because we want to initialize class auto attribute (auto class method's local static and auto property).
         $this->_pSomething = &BreakpointDebugging_LockByFlock::singleton();
-        //
-        // unset($_FILES); // We must not delete global variable here. (Autodetects)
-        //
-        // include_once __DIR__ . '/AFileWhichDeleteGlobalVariable.php'; // We must not include a file which deletes global variable here. (Autodetects)
     }
 
-    // A function after "setUp()" does not detect global variable definition violation because here is after global-variable-backup.
+    // A function after "setUpBeforeClass()" does not detect global variable definition violation because here is after global-variable-backup.
     protected function tearDown()
     {
         // We must destruct a test instance per test because it cuts down on actual server memory use.
@@ -79,7 +69,7 @@ class ExampleTest extends \BreakpointDebugging_PHPUnitStepExecution_PHPUnitFrame
     }
 
     /**
-     * A function after "setUp()" does not detect global variable definition violation because here is after global-variable-backup.
+     * A function after "setUpBeforeClass()" does not detect global variable definition violation because here is after global-variable-backup.
      *
      * @covers \Example<extended>
      *
@@ -98,7 +88,7 @@ class ExampleTest extends \BreakpointDebugging_PHPUnitStepExecution_PHPUnitFrame
     }
 
     /**
-     * A function after "setUp()" does not detect global variable definition violation because here is after global-variable-backup.
+     * A function after "setUpBeforeClass()" does not detect global variable definition violation because here is after global-variable-backup.
      *
      * @covers \Example<extended>
      */

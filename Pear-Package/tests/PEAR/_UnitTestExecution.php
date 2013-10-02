@@ -10,7 +10,7 @@ B::checkExeMode(true);
 // Please, choose unit tests files by customizing.
 $unitTestCommands = array (
     'ExampleTest.php',
-    'BreakpointDebugging-ExceptionTest.php',
+    // 'BreakpointDebugging-ExceptionTest.php',
     // 'BreakpointDebugging-InAllCaseTest.php',
     // 'BreakpointDebuggingTest.php',
     // 'BreakpointDebugging-PHPUnitStepExecutionTest.php',

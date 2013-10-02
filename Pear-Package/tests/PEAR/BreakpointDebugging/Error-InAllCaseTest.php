@@ -34,7 +34,8 @@ function testParentException($nestingArray, $nestingObject, $e, $tmpfile = null,
  */
 class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_PHPUnitStepExecution_PHPUnitFrameworkTestCase
 {
-    static $error;
+    //static $error;
+    private $_error;
     private static $_errorLogDir;
     static $line1_, $line2_, $lineA_, $lineB_;
     static $line1, $line2, $lineA, $lineB;
@@ -63,14 +64,19 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_PHPUn
             }
             B::rmdir(array ($errorLogDirectory));
         }
-        self::$error = new \BreakpointDebugging_Error();
+        //self::$error = new \BreakpointDebugging_Error();
+        $this->_error = new \BreakpointDebugging_Error();
     }
 
-    static function tearDownAfterClass()
+//    static function tearDownAfterClass()
+//    {
+//        self::$error = null;
+//    }
+    function tearDown()
     {
-        self::$error = null;
+        $this->_error = null;
 
-        //parent::tearDownAfterClass();
+        parent::tearDown();
     }
 
     /**
@@ -113,6 +119,8 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_PHPUn
      */
     function testHandleException2()
     {
+        $error = &$this->_error;
+
         BU::markTestSkippedInDebug(); // Because this unit test is the logging check.
 
         $testString = 'Test string.';
@@ -129,28 +137,34 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_PHPUn
 
         $parentFileNumber = $this->_getFileNumber($parentFilePath);
         $thisFileNumber = $this->_getFileNumber(__FILE__);
-        function test2_()
+        //function test2_()
+        function test2_($error)
         {
             BU::$exeMode |= B::IGNORING_BREAK_POINT;
             for ($count = 0; $count < 2; $count++) {
-                \BreakpointDebugging_Error_InAllCaseTest::$error->handleException2(new \Exception(), B::$prependExceptionLog);
+                //\BreakpointDebugging_Error_InAllCaseTest::$error->handleException2(new \Exception(), B::$prependExceptionLog);
+                $error->handleException2(new \Exception(), B::$prependExceptionLog);
                 T::$line1_ = __LINE__ - 1;
             }
             BU::$exeMode &= ~B::IGNORING_BREAK_POINT;
         }
 
-        function test1_()
+        //function test1_()
+        function test1_($error)
         {
-            test2_();
+            //test2_();
+            test2_($error);
             T::$line2_ = __LINE__ - 1;
         }
 
         BU::$exeMode |= B::IGNORING_BREAK_POINT;
-        BreakpointDebugging_Error_InAllCaseTest::$error->handleException2(new \Exception(), B::$prependExceptionLog);
+        //BreakpointDebugging_Error_InAllCaseTest::$error->handleException2(new \Exception(), B::$prependExceptionLog);
+        $error->handleException2(new \Exception(), B::$prependExceptionLog);
         $line = __LINE__ - 1;
         BU::$exeMode &= ~B::IGNORING_BREAK_POINT;
 
-        test1_();
+        //test1_();
+        test1_($error);
         $line3 = __LINE__ - 1;
 
         $binData1 = file_get_contents(B::getStatic('$_workDir') . self::$_errorLogDir . $parentFileNumber . '.bin');
@@ -187,27 +201,30 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_PHPUn
                 call_user_func_array('testParentException', array ($nestingArray, $nestingObject, $e, tmpfile(), $GLOBALS, '123456789', 'Out of parameter number.'));
             } catch (\Exception $e) {
                 BU::$exeMode |= B::IGNORING_BREAK_POINT;
-                self::$error->handleException2($e, 'Test.');
+                //self::$error->handleException2($e, 'Test.');
+                $error->handleException2($e, 'Test.');
                 BU::$exeMode &= ~B::IGNORING_BREAK_POINT;
             }
         }
         // "SJIS" message.
         BU::$exeMode |= B::IGNORING_BREAK_POINT;
-        self::$error->handleException2(new \Exception(), "\x95\xB6\x8E\x9A");
+        //self::$error->handleException2(new \Exception(), "\x95\xB6\x8E\x9A");
+        $error->handleException2(new \Exception(), "\x95\xB6\x8E\x9A");
         BU::$exeMode &= ~B::IGNORING_BREAK_POINT;
         // Error log file rotation.
         BU::$exeMode |= B::IGNORING_BREAK_POINT;
         $maxLogFileByteSize = &B::refStatic('$_maxLogFileByteSize');
         $storeMaxLogFileByteSize = $maxLogFileByteSize;
         $maxLogFileByteSize = 1;
-        self::$error->handleException2(new \Exception(), '');
-        self::$error->handleException2(new \Exception(), '');
-        self::$error->handleException2(new \Exception(), '');
-        self::$error->handleException2(new \Exception(), '');
-        self::$error->handleException2(new \Exception(), '');
-        self::$error->handleException2(new \Exception(), '');
-        self::$error->handleException2(new \Exception(), '');
-        self::$error->handleException2(new \Exception(), '');
+        //self::$error->handleException2(new \Exception(), '');
+        $error->handleException2(new \Exception(), '');
+        $error->handleException2(new \Exception(), '');
+        $error->handleException2(new \Exception(), '');
+        $error->handleException2(new \Exception(), '');
+        $error->handleException2(new \Exception(), '');
+        $error->handleException2(new \Exception(), '');
+        $error->handleException2(new \Exception(), '');
+        $error->handleException2(new \Exception(), '');
         $maxLogFileByteSize = $storeMaxLogFileByteSize;
         BU::$exeMode &= ~B::IGNORING_BREAK_POINT;
         // Called from "BreakpointDebugging_InAllCase::callExceptionHandlerDirectly()" method.
@@ -282,17 +299,23 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_PHPUn
      */
     function testHandleError2()
     {
+        $error = &$this->_error;
+
         BU::markTestSkippedInDebug(); // Because this unit test is the logging check.
-        function handleError()
+        //function handleError()
+        function handleError($error)
         {
             BU::$exeMode |= B::IGNORING_BREAK_POINT;
-            \BreakpointDebugging_Error_InAllCaseTest::$error->handleError2(E_USER_WARNING, '', B::$prependErrorLog, debug_backtrace());
+            //\BreakpointDebugging_Error_InAllCaseTest::$error->handleError2(E_USER_WARNING, '', B::$prependErrorLog, debug_backtrace());
+            $error->handleError2(E_USER_WARNING, '', B::$prependErrorLog, debug_backtrace());
             BU::$exeMode &= ~B::IGNORING_BREAK_POINT;
         }
 
-        function trigger_error2()
+        //function trigger_error2()
+        function trigger_error2($error)
         {
-            handleError();
+            //handleError();
+            handleError($error);
         }
 
         $parentFilePath = __DIR__ . '/testErrorHandler2_Parent.php';
@@ -301,21 +324,27 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_PHPUn
 
         $parentFileNumber = $this->_getFileNumber($parentFilePath);
         $thisFileNumber = $this->_getFileNumber(__FILE__);
-        function test2()
+        //function test2()
+        function test2($error)
         {
-            trigger_error2();
+            //trigger_error2();
+            trigger_error2($error);
             T::$line1 = __LINE__ - 1;
         }
 
-        function test1()
+        //function test1()
+        function test1($error)
         {
-            test2();
+            //test2();
+            test2($error);
             T::$line2 = __LINE__ - 1;
         }
 
-        trigger_error2();
+        //trigger_error2();
+        trigger_error2($error);
         $line = __LINE__ - 1;
-        test1();
+        //test1();
+        test1($error);
         $line3 = __LINE__ - 1;
 
         $binData1 = file_get_contents(B::getStatic('$_workDir') . self::$_errorLogDir . $parentFileNumber . '.bin');
@@ -337,35 +366,50 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_PHPUn
         ob_start();
         BU::$exeMode |= B::IGNORING_BREAK_POINT;
 
-        self::$error->handleError2(E_USER_DEPRECATED, '', B::$prependErrorLog, debug_backtrace());
+        //self::$error->handleError2(E_USER_DEPRECATED, '', B::$prependErrorLog, debug_backtrace());
+        $error->handleError2(E_USER_DEPRECATED, '', B::$prependErrorLog, debug_backtrace());
 
-        self::$error->handleError2(E_USER_NOTICE, '', B::$prependErrorLog, debug_backtrace());
+        //self::$error->handleError2(E_USER_NOTICE, '', B::$prependErrorLog, debug_backtrace());
+        $error->handleError2(E_USER_NOTICE, '', B::$prependErrorLog, debug_backtrace());
 
-        self::$error->handleError2(E_USER_WARNING, '', B::$prependErrorLog, debug_backtrace());
+        //self::$error->handleError2(E_USER_WARNING, '', B::$prependErrorLog, debug_backtrace());
+        $error->handleError2(E_USER_WARNING, '', B::$prependErrorLog, debug_backtrace());
 
-        self::$error->handleError2(E_USER_ERROR, '', B::$prependErrorLog, debug_backtrace());
+        //self::$error->handleError2(E_USER_ERROR, '', B::$prependErrorLog, debug_backtrace());
+        $error->handleError2(E_USER_ERROR, '', B::$prependErrorLog, debug_backtrace());
 
-        self::$error->handleError2(E_ERROR, '', B::$prependErrorLog, debug_backtrace());
+        //self::$error->handleError2(E_ERROR, '', B::$prependErrorLog, debug_backtrace());
+        $error->handleError2(E_ERROR, '', B::$prependErrorLog, debug_backtrace());
 
-        self::$error->handleError2(E_WARNING, '', B::$prependErrorLog, debug_backtrace());
+        //self::$error->handleError2(E_WARNING, '', B::$prependErrorLog, debug_backtrace());
+        $error->handleError2(E_WARNING, '', B::$prependErrorLog, debug_backtrace());
 
-        self::$error->handleError2(E_PARSE, '', B::$prependErrorLog, debug_backtrace());
+        //self::$error->handleError2(E_PARSE, '', B::$prependErrorLog, debug_backtrace());
+        $error->handleError2(E_PARSE, '', B::$prependErrorLog, debug_backtrace());
 
-        self::$error->handleError2(E_NOTICE, '', B::$prependErrorLog, debug_backtrace());
+        //self::$error->handleError2(E_NOTICE, '', B::$prependErrorLog, debug_backtrace());
+        $error->handleError2(E_NOTICE, '', B::$prependErrorLog, debug_backtrace());
 
-        self::$error->handleError2(E_CORE_ERROR, '', B::$prependErrorLog, debug_backtrace());
+        //self::$error->handleError2(E_CORE_ERROR, '', B::$prependErrorLog, debug_backtrace());
+        $error->handleError2(E_CORE_ERROR, '', B::$prependErrorLog, debug_backtrace());
 
-        self::$error->handleError2(E_CORE_WARNING, '', B::$prependErrorLog, debug_backtrace());
+        //self::$error->handleError2(E_CORE_WARNING, '', B::$prependErrorLog, debug_backtrace());
+        $error->handleError2(E_CORE_WARNING, '', B::$prependErrorLog, debug_backtrace());
 
-        self::$error->handleError2(E_COMPILE_ERROR, '', B::$prependErrorLog, debug_backtrace());
+        //self::$error->handleError2(E_COMPILE_ERROR, '', B::$prependErrorLog, debug_backtrace());
+        $error->handleError2(E_COMPILE_ERROR, '', B::$prependErrorLog, debug_backtrace());
 
-        self::$error->handleError2(E_COMPILE_WARNING, '', B::$prependErrorLog, debug_backtrace());
+        //self::$error->handleError2(E_COMPILE_WARNING, '', B::$prependErrorLog, debug_backtrace());
+        $error->handleError2(E_COMPILE_WARNING, '', B::$prependErrorLog, debug_backtrace());
 
-        self::$error->handleError2(E_STRICT, '', B::$prependErrorLog, debug_backtrace());
+        //self::$error->handleError2(E_STRICT, '', B::$prependErrorLog, debug_backtrace());
+        $error->handleError2(E_STRICT, '', B::$prependErrorLog, debug_backtrace());
 
-        self::$error->handleError2(E_RECOVERABLE_ERROR, '', B::$prependErrorLog, debug_backtrace());
+        //self::$error->handleError2(E_RECOVERABLE_ERROR, '', B::$prependErrorLog, debug_backtrace());
+        $error->handleError2(E_RECOVERABLE_ERROR, '', B::$prependErrorLog, debug_backtrace());
 
-        self::$error->handleError2(E_DEPRECATED, '', B::$prependErrorLog, debug_backtrace());
+        //self::$error->handleError2(E_DEPRECATED, '', B::$prependErrorLog, debug_backtrace());
+        $error->handleError2(E_DEPRECATED, '', B::$prependErrorLog, debug_backtrace());
     }
 
     /**
@@ -379,7 +423,8 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_PHPUn
         BU::markTestSkippedInDebug(); // Because this unit test is the logging check.
 
         BU::$exeMode |= B::IGNORING_BREAK_POINT;
-        self::$error->handleError2(255, '', B::$prependErrorLog, debug_backtrace());
+        //self::$error->handleError2(255, '', B::$prependErrorLog, debug_backtrace());
+        $this->_error->handleError2(255, '', B::$prependErrorLog, debug_backtrace());
     }
 
     /**
