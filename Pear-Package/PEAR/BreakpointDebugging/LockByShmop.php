@@ -145,9 +145,9 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
     {
         parent::__construct($lockFilePath, $timeout, $sleepMicroSeconds);
 
-        self::$_lockingObject = &\BreakpointDebugging_LockByFileExisting::internalSingleton();
+        self::$_lockingObject[0] = &\BreakpointDebugging_LockByFileExisting::internalSingleton();
         // Lock php code.
-        self::$_lockingObject->lock();
+        self::$_lockingObject[0]->lock();
         try {
             while (true) {
                 // In case of existing file.
@@ -228,11 +228,11 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
                 // Unlock for current process.
                 $this->_unlockOn2Processes(self::HEXADECIMAL_SIZE * 4);
                 // Unlock php code.
-                self::$_lockingObject->unlock();
+                self::$_lockingObject[0]->unlock();
                 // Sleep 1 second.
                 usleep(1000000);
                 // Lock php code.
-                self::$_lockingObject->lock();
+                self::$_lockingObject[0]->lock();
                 // Lock for current process.
                 $this->_lockOn2Processes(self::HEXADECIMAL_SIZE * 4, self::HEXADECIMAL_SIZE * 4 + 1);
             }
@@ -245,11 +245,11 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
             $this->_unlockOn2Processes(self::HEXADECIMAL_SIZE * 4);
         } catch (\Exception $e) {
             // Unlock php code.
-            self::$_lockingObject->unlock();
+            self::$_lockingObject[0]->unlock();
             throw $e;
         }
         // Unlock php code.
-        self::$_lockingObject->unlock();
+        self::$_lockingObject[0]->unlock();
     }
 
     /**
@@ -265,7 +265,7 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
         }
 
         // Lock php code.
-        self::$_lockingObject->lock();
+        self::$_lockingObject[0]->lock();
 
         // Lock for current process of between "$this->loopLocking()" and "$this->loopUnlocking()".
         $this->_lockOn2Processes(self::HEXADECIMAL_SIZE * 4, self::HEXADECIMAL_SIZE * 4 + 1);
@@ -307,7 +307,7 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
         $this->_unlockOn2Processes(self::HEXADECIMAL_SIZE * 4);
 
         // Unlock php code.
-        self::$_lockingObject->unlock();
+        self::$_lockingObject[0]->unlock();
 
         parent::__destruct();
     }

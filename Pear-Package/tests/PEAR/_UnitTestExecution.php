@@ -1,6 +1,7 @@
 <?php
 
 chdir(str_repeat('../', preg_match_all('`/`xX', $_SERVER['PHP_SELF'], $matches) - 2));
+unset($matches);
 require_once './BreakpointDebugging_Inclusion.php';
 
 use \BreakpointDebugging as B;
@@ -8,22 +9,24 @@ use \BreakpointDebugging_PHPUnitStepExecution as BU;
 
 B::checkExeMode(true);
 // Please, choose unit tests files by customizing.
-$unitTestCommands = array (
+$breakpointDebugging_UnitTestFiles = array (
     'ExampleTest.php',
-    // 'BreakpointDebugging-ExceptionTest.php',
-    // 'BreakpointDebugging-InAllCaseTest.php',
-    // 'BreakpointDebuggingTest.php',
-    // 'BreakpointDebugging-PHPUnitStepExecutionTest.php',
-    // 'BreakpointDebugging/Error-InAllCaseTest.php',
-    // 'BreakpointDebugging/ErrorTest.php',
-    // 'BreakpointDebugging/LockByFileExistingTest.php',
-    // 'BreakpointDebugging/LockByFlockTest.php',
-    // 'BreakpointDebugging/LockByShmopTest.php',
-    // 'BreakpointDebugging/OverrideClassTest.php',
+    'PHPUnit1Test.php',
+    'PHPUnit2Test.php',
+    'BreakpointDebugging-ExceptionTest.php',
+    'BreakpointDebugging-InAllCaseTest.php',
+    'BreakpointDebuggingTest.php',
+    'BreakpointDebugging-PHPUnitStepExecutionTest.php',
+    'BreakpointDebugging/Error-InAllCaseTest.php',
+    'BreakpointDebugging/ErrorTest.php',
+    'BreakpointDebugging/LockByFileExistingTest.php',
+    'BreakpointDebugging/LockByFlockTest.php',
+    'BreakpointDebugging/LockByShmopTest.php',
+    'BreakpointDebugging/OverrideClassTest.php',
 );
 
 // Executes unit tests.
-BU::executeUnitTest($unitTestCommands); exit;
+BU::executeUnitTest($breakpointDebugging_UnitTestFiles); exit;
 
 // Makes up code coverage report, then displays in browser.
 if (B::getStatic('$exeMode') & B::RELEASE) { // In case of release.

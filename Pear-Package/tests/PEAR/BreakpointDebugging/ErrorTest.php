@@ -9,13 +9,8 @@ use \BreakpointDebugging_PHPUnitStepExecution as BU;
  */
 class BreakpointDebugging_ErrorTest extends \BreakpointDebugging_PHPUnitStepExecution_PHPUnitFrameworkTestCase
 {
-    //private static $_error;
     private $_error;
 
-//    static function setUpBeforeClass()
-//    {
-//        self::$_error = new \BreakpointDebugging_Error();
-//    }
     function setUp()
     {
         parent::setUp();
@@ -23,10 +18,6 @@ class BreakpointDebugging_ErrorTest extends \BreakpointDebugging_PHPUnitStepExec
         $this->_error = new \BreakpointDebugging_Error();
     }
 
-//    static function tearDownAfterClass()
-//    {
-//        self::$_error = null;
-//    }
     function tearDown()
     {
         $this->_error = null;
@@ -101,14 +92,12 @@ class BreakpointDebugging_ErrorTest extends \BreakpointDebugging_PHPUnitStepExec
         BU::$exeMode |= B::IGNORING_BREAK_POINT;
         try {
             // SJIS + UTF-8
-            //self::$_error->handleException2(new \Exception(), "\x95\xB6\x8E\x9A \xE6\x96\x87\xE5\xAD\x97 ");
             $this->_error->handleException2(new \Exception(), "\x95\xB6\x8E\x9A \xE6\x96\x87\xE5\xAD\x97 ");
         } catch (\BreakpointDebugging_ErrorException $e) {
             parent::assertTrue(strpos($e->getMessage(), 'CLASS=BreakpointDebugging_Error_InAllCase FUNCTION=convertMbString ID=3.') !== false);
         }
 
         // Skips "\BreakpointDebugging_Error::convertMbString()" "SJIS + UTF-8" error exception.
-        //self::$_error->handleException2(new \Exception(), "\x95\xB6\x8E\x9A \xE6\x96\x87\xE5\xAD\x97 ");
         $this->_error->handleException2(new \Exception(), "\x95\xB6\x8E\x9A \xE6\x96\x87\xE5\xAD\x97 ");
     }
 
@@ -128,7 +117,6 @@ class BreakpointDebugging_ErrorTest extends \BreakpointDebugging_PHPUnitStepExec
         } catch (\Exception $e) {
             BU::$exeMode |= B::IGNORING_BREAK_POINT;
             // Skips the global variable array.
-            //self::$_error->handleException2($e, '');
             $this->_error->handleException2($e, '');
         }
     }
@@ -153,7 +141,6 @@ class BreakpointDebugging_ErrorTest extends \BreakpointDebugging_PHPUnitStepExec
     {
         ob_start();
         BU::$exeMode |= B::IGNORING_BREAK_POINT;
-        //self::$_error->handleError2(-1, '', B::$prependErrorLog, debug_backtrace());
         $this->_error->handleError2(-1, '', B::$prependErrorLog, debug_backtrace());
     }
 

@@ -1,5 +1,7 @@
 <?php
 
+// Please, see "\BreakpointDebugging_PHPUnitStepExecution::executeUnitTest()" class method document for detail.
+
 use \BreakpointDebugging as B;
 use \BreakpointDebugging_PHPUnitStepExecution as BU;
 
@@ -8,57 +10,94 @@ function localStaticVariable()
     // static $localStatic = 'Local static value.'; // We must not define local static variable of function. (Autodetects)
 }
 
-class UnstoringTest
+class LocalStaticVariableOfStaticMethod
 {
+    static $staticProperty = 'Initial value.'; // We can define static property here.
+
     static function localStaticVariable()
     {
         // static $localStatic = 'Local static value.'; // We must not define local static variable of static class method. (Autodetects)
     }
 
+    function localStaticVariableOfInstance()
+    {
+        static $localStatic = 'Local static value.'; // We can define local static variable of auto class method.
+    }
+
 }
 
+// global $something;
+// $something = 'Defines global variable.'; // We must not define global variable here. (Autodetects)
+//
+// $_FILES = 'Changes the value.'; // We must not change global variable and property here. (Autodetects)
+//
+// $_FILES = &$bugReference; // We must not overwrite global variable and property with reference here. (Autodetects)
+// unset($bugReference);
+//
 // unset($_FILES); // We must not delete global variable here. (Autodetects)
 //
-// include_once __DIR__ . '/AFileWhichDeleteGlobalVariable.php'; // We must not include a file which deletes global variable here. (Autodetects)
+// spl_autoload_register('\ExampleTest::autoload', true, true); // We must not register autoload function at top of stack by "spl_autoload_register()". (Autodetects)
+//
+// include_once __DIR__ . '/AFile.php'; // We must not include a file because autoload is only once per file. (Autodetects)
 class ExampleTest extends \BreakpointDebugging_PHPUnitStepExecution_PHPUnitFrameworkTestCase
 {
-    private $_pSomething;
-    private static $_pStaticSomething;
+    private $_pTestObject;
+
+    static function autoload($className)
+    {
+
+    }
 
     static function setUpBeforeClass()
     {
+        // global $something;
+        // $something = 'Defines global variable.'; // We must not define global variable here. (Autodetects)
+        //
+        // $_FILES = 'Changes the value.'; // We must not change global variable and property here. (Autodetects)
+        //
+        // $_FILES = &$bugReference; // We must not overwrite global variable and property with reference here. (Autodetects)
+        //
         // unset($_FILES); // We must not delete global variable here. (Autodetects)
         //
-        // include_once __DIR__ . '/AFileWhichDeleteGlobalVariable.php'; // We must not include a file which deletes global variable here. (Autodetects)
+        // spl_autoload_register('\ExampleTest::autoload', true, true); // We must not register autoload function at top of stack by "spl_autoload_register()". (Autodetects)
         //
-        // We must not construct test instance here. (Cannot autodetect)
-        // because we want to initialize class auto attribute (auto class method's local static and auto property).
-        // self::$_pStaticSomething = &BreakpointDebugging_LockByFlock::singleton();
+        // include_once __DIR__ . '/AFile.php'; // We must not include a file because autoload is only once per file. (Autodetects)
     }
 
-    // A function after "setUpBeforeClass()" does not detect global variable definition violation because here is after global-variable-backup.
     static function tearDownAfterClass()
     {
 
     }
 
-    // A function after "setUpBeforeClass()" does not detect global variable definition violation because here is after global-variable-backup.
     protected function setUp()
     {
         // This is required at top.
         parent::setUp();
+
+        // We must construct the test instance here.
+        $this->_pTestObject = &BreakpointDebugging_LockByFlock::singleton();
+
+        global $something;
+        $something = 'Defines global variable 2.'; // We can define global variable here.
+
+        $_FILES = 'Changes the value 2.'; // We can change global variable and property here.
+
+        $_FILES = &$aReference2; // We can overwrite global variable except property with reference here.
+
+        unset($_FILES); // We can delete global variable here.
         //
-        // Constructs an instance per test.
-        // We must construct test instance here
-        // because we want to initialize class auto attribute (auto class method's local static and auto property).
-        $this->_pSomething = &BreakpointDebugging_LockByFlock::singleton();
+        // spl_autoload_register('\ExampleTest::autoload', true, true); // We must not register autoload function at top of stack by "spl_autoload_register()". (Autodetects)
+        //
+        // include_once __DIR__ . '/AFile.php'; // We must not include a file because autoload is only once per file. (Cannot detect!)
     }
 
-    // A function after "setUpBeforeClass()" does not detect global variable definition violation because here is after global-variable-backup.
     protected function tearDown()
     {
-        // We must destruct a test instance per test because it cuts down on actual server memory use.
-        $this->_pSomething = null;
+        // spl_autoload_register('\ExampleTest::autoload', true, true); // We must not register autoload function at top of stack by "spl_autoload_register()". (Autodetects)
+        //
+        // Destructs the test instance to reduce memory use.
+        $this->_pTestObject = null;
+
         // This is required at bottom.
         parent::tearDown();
     }
@@ -69,8 +108,6 @@ class ExampleTest extends \BreakpointDebugging_PHPUnitStepExecution_PHPUnitFrame
     }
 
     /**
-     * A function after "setUpBeforeClass()" does not detect global variable definition violation because here is after global-variable-backup.
-     *
      * @covers \Example<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
@@ -78,18 +115,29 @@ class ExampleTest extends \BreakpointDebugging_PHPUnitStepExecution_PHPUnitFrame
      */
     public function testSomething_A()
     {
+        global $something;
+        $something = 'Defines global variable 3.'; // We can define global variable here.
+
+        $_FILES = 'Changes the value 3.'; // We can change global variable and property here.
+
+        $_FILES = &$aReference3; // We can overwrite global variable except property with reference here.
+
+        unset($_FILES); // We can delete global variable here.
+        //
+        // spl_autoload_register('\ExampleTest::autoload', true, true); // We must not register autoload function at top of stack by "spl_autoload_register()". (Autodetects)
+        //
+        // include_once __DIR__ . '/AFile.php'; // We must not include a file because autoload is only once per file. (Cannot detect!)
+
         BU::markTestSkippedInDebug();
 
         // Destructs the instance.
-        $this->_pSomething = null;
+        $this->_pTestObject = null;
 
-        BU::$exeMode |= B::IGNORING_BREAK_POINT; // Reference variable must specify class name because it cannot extend.
+        BU::$exeMode |= B::IGNORING_BREAK_POINT;
         $this->isCalled();
     }
 
     /**
-     * A function after "setUpBeforeClass()" does not detect global variable definition violation because here is after global-variable-backup.
-     *
      * @covers \Example<extended>
      */
     public function testSomething_B()

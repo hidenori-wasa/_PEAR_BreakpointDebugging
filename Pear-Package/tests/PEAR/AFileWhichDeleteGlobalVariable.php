@@ -1,5 +1,0 @@
-<?php
-
-unset($_FILES);
-
-?>

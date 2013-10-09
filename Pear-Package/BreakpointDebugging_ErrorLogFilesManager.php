@@ -101,7 +101,7 @@ final class BreakpointDebugging_ErrorLogFilesManager
         fclose($pFile);
 
         // Unlocks error log files.
-        self::$_lockByFileExisting->unlock();
+        self::$_lockByFileExisting[0]->unlock();
 
         // Downloads by sector unit to avoid memory lack.
         rewind($pTmp);
@@ -128,8 +128,8 @@ final class BreakpointDebugging_ErrorLogFilesManager
         set_time_limit(0);
 
         // Locks error log files.
-        self::$_lockByFileExisting = &\BreakpointDebugging_LockByFileExisting::internalSingleton();
-        self::$_lockByFileExisting->lock();
+        self::$_lockByFileExisting[0] = &\BreakpointDebugging_LockByFileExisting::internalSingleton();
+        self::$_lockByFileExisting[0]->lock();
 
         try {
             $errorLogDirectory = B::getStatic('$_workDir') . \BreakpointDebugging_Error::getErrorLogDir();
@@ -204,13 +204,13 @@ EOD;
             }
         } catch (\Exception $e) {
             // Unlocks error log files.
-            self::$_lockByFileExisting->unlock();
+            self::$_lockByFileExisting[0]->unlock();
             throw $e;
         }
 
         END_LABEL:
         // Unlocks error log files.
-        self::$_lockByFileExisting->unlock();
+        self::$_lockByFileExisting[0]->unlock();
     }
 
 }

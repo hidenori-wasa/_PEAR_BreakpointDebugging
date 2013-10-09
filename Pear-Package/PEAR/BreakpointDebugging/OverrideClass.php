@@ -66,7 +66,7 @@
   // This is the code to override a class without inheritance.
   parent::__construct($pNativeClass);
   // This refers to a static property.
-  self::$object = &\NativeClass::$object;
+  self::$object = &\NativeClass::$object; // This is rule violation but this cannot change.
   }
   }
 
