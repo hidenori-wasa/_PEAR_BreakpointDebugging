@@ -151,7 +151,7 @@ function BreakpointDebugging_mySetting()
     $developerIP = &B::refStatic('$_developerIP');
     // Please, enter developer IP address.
     // However, comment out this when running code is local or running code does not use.
-    $developerIP = '219.116.0.54';
+    // $developerIP = '219.116.0.54';
     $language = 'Japanese';
     $timezone = 'Asia/Tokyo';
     $SMTP = '<Your SMTP server>';
@@ -194,7 +194,7 @@ function BreakpointDebugging_mySetting()
     $workDir = &B::refStatic('$_workDir');
     $workDir = './Work';
     if (is_dir($workDir)) {
-        B::setOwner($workDir, 0700);
+        B::chmod($workDir, 0700);
     } else {
         B::mkdir(array ($workDir, 0700));
     }

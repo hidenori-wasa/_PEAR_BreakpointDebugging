@@ -71,7 +71,4 @@ Example:
 
 However, "NetBeans IDE 7.3" supports "PHP5.4" and "HTML5".
 
-I divided "PHPUnit" extention feature to new "BreakpointDebugging_PHPUnitStepExecution" package
-for generality and readability because I coded all feature of this package.
-
-Then, I have been coding the unit tests.
+I have been coding the unit tests.

@@ -9,18 +9,19 @@ use \BreakpointDebugging_PHPUnitStepExecution_PHPUnitFrameworkTestCase as BSF;
 B::checkExeMode(); // Checks the execution mode.
 class TestInstanceClass
 {
-    public $testProperty = array ('Test property.');
+    static $recursiveStaticProperty = array ();
 
 }
 
-$testArray = array ();
-$testArray['TestInstanceClass'] = new \TestInstanceClass();
-$testArray2 = $testArray;
-B::assert($testArray2 === $testArray);
-$testArray2['TestInstanceClass'] = new \TestInstanceClass();
-B::assert($testArray2 !== $testArray);
-$testArray2['TestInstanceClass'] = &$testArray['TestInstanceClass'];
-B::assert($testArray2 === $testArray);
+\TestInstanceClass::$recursiveStaticProperty = array (&\TestInstanceClass::$recursiveStaticProperty, 'Recursive static property element.');
+
+$testArray2 = \TestInstanceClass::$recursiveStaticProperty;
+B::assert(count(array_diff($testArray2, \TestInstanceClass::$recursiveStaticProperty)) === 0);
+B::assert(count(array_diff(\TestInstanceClass::$recursiveStaticProperty, $testArray2)) === 0);
+\TestInstanceClass::$recursiveStaticProperty[0] = &$dummy;
+B::assert($testArray2 !== \TestInstanceClass::$recursiveStaticProperty);
+$testArray2[0] = &\TestInstanceClass::$recursiveStaticProperty[0];
+B::assert($testArray2 === \TestInstanceClass::$recursiveStaticProperty);
 echo '<pre>Success!</pre>';
 return;
 class TestClass
@@ -164,7 +165,7 @@ function test()
     B::assert($recursiveReferenceA[1] === 'referenced'); // Serialization. Reference has been broken.
     //////////////////////////////////////////////////////////////////////////////////////////////////
     \TestClassB::$GLOBALS = $testArray;
-    // Stores static attributes.
+    // Stores static properties.
     $staticProperties = array ();
     BGS::storeProperties($staticProperties, array ());
     B::assert(\TestClassB::$GLOBALS[0]->testObjectProperty->testPropertyA === 'testPropertyA');
@@ -176,9 +177,9 @@ function test()
     \TestClassB::$GLOBALS[0]->testObjectProperty->testPropertyA = 'testPropertyZ';
     B::assert(\TestClassB::$GLOBALS[0]->testObjectProperty->testPropertyA === 'testPropertyZ');
 
-    // Restores static attributes.
-    $staticAttributes = BSF::refStaticProperties2();
-    BGS::restoreProperties($staticAttributes);
+    // Restores static properties.
+    $staticProperties = BSF::refStaticProperties2();
+    BGS::restoreProperties($staticProperties);
     B::assert(\TestClassB::$GLOBALS[0]->testObjectProperty->testPropertyA === 'testPropertyA');
     ob_start();
     var_dump(\TestClassB::$testRecursiveArrayProperty);

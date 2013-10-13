@@ -29,9 +29,9 @@ class LocalStaticVariableOfStaticMethod
 // global $something;
 // $something = 'Defines global variable.'; // We must not define global variable here. (Autodetects)
 //
-// $_FILES = 'Changes the value.'; // We must not change global variable and property here. (Autodetects)
+// $_FILES = 'Changes the value.'; // We must not change global variable and static property here. (Autodetects)
 //
-// $_FILES = &$bugReference; // We must not overwrite global variable and property with reference here. (Autodetects)
+// $_FILES = &$bugReference; // We must not overwrite global variable and static property with reference here. (Autodetects)
 // unset($bugReference);
 //
 // unset($_FILES); // We must not delete global variable here. (Autodetects)
@@ -53,9 +53,9 @@ class ExampleTest extends \BreakpointDebugging_PHPUnitStepExecution_PHPUnitFrame
         // global $something;
         // $something = 'Defines global variable.'; // We must not define global variable here. (Autodetects)
         //
-        // $_FILES = 'Changes the value.'; // We must not change global variable and property here. (Autodetects)
+        // $_FILES = 'Changes the value.'; // We must not change global variable and static property here. (Autodetects)
         //
-        // $_FILES = &$bugReference; // We must not overwrite global variable and property with reference here. (Autodetects)
+        // $_FILES = &$bugReference; // We must not overwrite global variable and static property with reference here. (Autodetects)
         //
         // unset($_FILES); // We must not delete global variable here. (Autodetects)
         //
@@ -80,9 +80,9 @@ class ExampleTest extends \BreakpointDebugging_PHPUnitStepExecution_PHPUnitFrame
         global $something;
         $something = 'Defines global variable 2.'; // We can define global variable here.
 
-        $_FILES = 'Changes the value 2.'; // We can change global variable and property here.
+        $_FILES = 'Changes the value 2.'; // We can change global variable and static property here.
 
-        $_FILES = &$aReference2; // We can overwrite global variable except property with reference here.
+        $_FILES = &$aReference2; // We can overwrite global variable except static property with reference here.
 
         unset($_FILES); // We can delete global variable here.
         //
@@ -118,9 +118,9 @@ class ExampleTest extends \BreakpointDebugging_PHPUnitStepExecution_PHPUnitFrame
         global $something;
         $something = 'Defines global variable 3.'; // We can define global variable here.
 
-        $_FILES = 'Changes the value 3.'; // We can change global variable and property here.
+        $_FILES = 'Changes the value 3.'; // We can change global variable and static property here.
 
-        $_FILES = &$aReference3; // We can overwrite global variable except property with reference here.
+        $_FILES = &$aReference3; // We can overwrite global variable except static property with reference here.
 
         unset($_FILES); // We can delete global variable here.
         //

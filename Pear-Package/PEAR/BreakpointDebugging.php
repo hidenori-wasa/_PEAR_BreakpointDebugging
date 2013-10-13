@@ -605,18 +605,14 @@ abstract class BreakpointDebugging_InAllCase
      *
      * @return bool Success or failure.
      */
-    static function setOwner($name, $permission, $timeout = 10, $sleepMicroSeconds = 100000)
+    static function chmod($name, $permission, $timeout = 10, $sleepMicroSeconds = 100000)
     {
         if (BREAKPOINTDEBUGGING_IS_WINDOWS) {
             return true;
         }
         // In case of Unix.
-        if (!self::_retryForFilesystemFunction('chmod', array ($name, $permission), $timeout, $sleepMicroSeconds)) {
-            return false;
-        }
-        if (trim(`echo \$USER`) === 'root') {
-            $user = self::$_userName;
-            `chown \$user.\$user \$name`;
+        if ((fileperms($name) & 0777) !== $permission) {
+            return self::_retryForFilesystemFunction('chmod', array ($name, $permission), $timeout, $sleepMicroSeconds);
         }
         return true;
     }
@@ -640,7 +636,7 @@ abstract class BreakpointDebugging_InAllCase
             } else {
                 $permission = 0777;
             }
-            return B::setOwner($params[0], $permission, $timeout, $sleepMicroSeconds);
+            return B::chmod($params[0], $permission, $timeout, $sleepMicroSeconds);
         }
         // @codeCoverageIgnoreStart
         // Because "PHPUnit" throws "\PHPUnit_Framework_Error_Warning".
@@ -742,7 +738,7 @@ abstract class BreakpointDebugging_InAllCase
         $pFile = self::_retryForFilesystemFunction('fopen', $params, $timeout, $sleepMicroSeconds);
         if ($pFile) {
             if (is_null($permission)
-                || B::setOwner($params[0], $permission, $timeout, $sleepMicroSeconds)
+                || B::chmod($params[0], $permission, $timeout, $sleepMicroSeconds)
             ) {
                 return $pFile;
             }
@@ -908,12 +904,16 @@ abstract class BreakpointDebugging_InAllCase
     /**
      * Clears recursive array element.
      *
-     * @param array &$recursiveArray Recursive array. Keeps reference to this-variable by reference copy.
+     * @param mixed &$recursiveArray Recursive array. Keeps reference to this-variable by reference copy.
      *
-     * @return array Array which changed.
+     * @return mixed Array which changed.
      */
     static function clearRecursiveArrayElement(&$recursiveArray)
     {
+        if (!is_array($recursiveArray)) {
+            return $recursiveArray;
+        }
+
         $parentsArray = array (array (&$recursiveArray));
         return self::_clearRecursiveArrayElement($recursiveArray, $parentsArray);
     }

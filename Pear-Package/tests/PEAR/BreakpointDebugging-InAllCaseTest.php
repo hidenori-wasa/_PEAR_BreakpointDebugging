@@ -251,7 +251,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_PHPUnitStep
      * @covers \BreakpointDebugging_InAllCase<extended>
      *
      * @expectedException        \PHPUnit_Framework_Error_Warning
-     * @expectedExceptionMessage File exists
+     * @expectedExceptionMessage mkdir()
      */
     public function testMkdir_C()
     {
@@ -272,7 +272,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_PHPUnitStep
         try {
             BA::fopen(array ($testFileName, 'x+b'), 0700, 2);
         } catch (\PHPUnit_Framework_Error_Warning $e) {
-            parent::assertTrue(strpos($e->getMessage(), 'failed to open stream: File exists') !== false);
+            parent::assertTrue(strpos($e->getMessage(), 'failed to open stream:') !== false);
         }
         fclose($pFile);
         $this->assertTrue(is_file($testFileName));

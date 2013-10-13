@@ -366,7 +366,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      *
      * @return Same as parent.
      */
-    static function setOwner($name, $permission, $timeout = 10, $sleepMicroSeconds = 100000)
+    static function chmod($name, $permission, $timeout = 10, $sleepMicroSeconds = 100000)
     {
         self::assert(func_num_args() <= 4, 1);
         self::assert(is_string($name), 2);
@@ -374,7 +374,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
         self::assert(is_int($timeout), 4);
         self::assert(is_int($sleepMicroSeconds), 5);
 
-        return parent::setOwner($name, $permission, $timeout, $sleepMicroSeconds);
+        return parent::chmod($name, $permission, $timeout, $sleepMicroSeconds);
     }
 
     /**
@@ -504,7 +504,12 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
         } else {
             $result = `which php`;
             if (empty($result)) {
-                exit('<pre>Path environment variable has not been set for "php" command.' . PHP_EOL . '$PATH=' . `echo \$PATH` . '</pre>');
+                $message = 'Path environment variable has not been set for "php" command.' . PHP_EOL
+                    . '$PATH=' . `echo \$PATH` . PHP_EOL
+                    . 'Please, search by (sudo find "<apache install directory>" -mount -name "envvars") command.' . PHP_EOL
+                    . 'Then, add "export PATH=$PATH:<php command directory>" line to its file.' . PHP_EOL
+                    . 'Example: "export PATH=$PATH:/opt/lampp/bin"';
+                exit('<pre>' . htmlspecialchars($message, ENT_COMPAT) . '</pre>');
             }
         }
     }
