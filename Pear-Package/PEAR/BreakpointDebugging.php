@@ -330,9 +330,10 @@ abstract class BreakpointDebugging_InAllCase
                 default :
                     throw new \BreakpointDebugging_ErrorException('"' . __METHOD__ . '" parameter1 is mistake.', 101);
             }
-            echo '<pre>You must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'' . $message . '\');" ' . PHP_EOL
+            echo file_get_contents('BreakpointDebugging/css/FontStyle.html', true);
+            echo '<pre><b>You must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'' . $message . '\');" ' . PHP_EOL
             . "\t" . 'into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file.' . PHP_EOL
-            . ' </pre>';
+            . 'Or, you mistook start "php" page.</b></pre>';
             return false;
         }
         if (!(self::$exeMode & self::REMOTE)) { // In case of local.
@@ -340,9 +341,10 @@ abstract class BreakpointDebugging_InAllCase
         }
         // Checks client IP address.
         if ($_SERVER['REMOTE_ADDR'] !== self::$_developerIP) {
-            echo '<pre>You must set "$developerIP = \'' . $_SERVER['REMOTE_ADDR'] . '\';" ' . PHP_EOL
+            echo file_get_contents('BreakpointDebugging/css/FontStyle.html', true);
+            echo '<pre><b>You must set "$developerIP = \'' . $_SERVER['REMOTE_ADDR'] . '\';" ' . PHP_EOL
             . "\t" . 'into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file.' . PHP_EOL
-            . ' </pre>';
+            . 'Or, you mistook start "php" page.</b></pre>';
             return false;
         }
         // Checks the request protocol.
@@ -350,8 +352,9 @@ abstract class BreakpointDebugging_InAllCase
             || empty($_SERVER['HTTPS'])
             || $_SERVER['HTTPS'] === 'off'
         ) {
-            echo '<pre>You must use "https" protocol.' . PHP_EOL
-            . ' </pre>';
+            echo file_get_contents('BreakpointDebugging/css/FontStyle.html', true);
+            echo '<pre><b>You must use "https" protocol.' . PHP_EOL
+            . 'Or, you mistook start "php" page.</b></pre>';
             return false;
         }
         return true;
@@ -386,11 +389,11 @@ abstract class BreakpointDebugging_InAllCase
         }
 
         if ($isUnitTest) {
+            echo file_get_contents('BreakpointDebugging/css/FontStyle.html', true);
             echo '<pre><b>You must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'..._UNIT_TEST\');"' . PHP_EOL
             . "\t" . 'into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php".' . PHP_EOL
             . 'Or, you mistook start "php" page.</b></pre>';
-            self::$exeMode |= self::IGNORING_BREAK_POINT;
-            throw new \BreakpointDebugging_ErrorException('', 101);
+            exit;
         }
     }
 
@@ -493,15 +496,14 @@ abstract class BreakpointDebugging_InAllCase
      *
      * @return void
      *
-     * @example static $isRegister = false; \BreakpointDebugging::registerNotFixedLocation($isRegister);
+     * @example \BreakpointDebugging::registerNotFixedLocation(self::$_isRegister[__METHOD__]);
      */
     final static function registerNotFixedLocation(&$isRegister)
     {
         B::assert(func_num_args() === 1, 1);
-        B::assert(is_bool($isRegister), 2);
 
         // When it has been registered.
-        if ($isRegister) {
+        if (!empty($isRegister)) {
             return;
         }
         $isRegister = true;
@@ -839,7 +841,7 @@ abstract class BreakpointDebugging_InAllCase
     /**
      * Clears recursive array element.
      *
-     * @param array $parentArray  Parent array to search element.
+     * @param array $parentArray   Parent array to search element.
      * @param array $parentsArray Array of parents to compare ID.
      *
      * @return array Array which changed.
@@ -850,42 +852,36 @@ abstract class BreakpointDebugging_InAllCase
             $parentArray = array_slice($parentArray, 0, B::getStatic('$_maxLogElementNumber'), true);
             $parentArray[] = ''; // Array element out of area.
         }
-        // If this may be "$GLOBALS".
-        if (array_key_exists('GLOBALS', $parentArray) && is_array($parentArray['GLOBALS'])
-        ) {
-            // Makes array by copying element because "$GLOBALS" copy is reference copy and it is special in array.
-            foreach ($parentArray as $childKey => $childArray) {
-                // Changes the 'GLOBALS' nest element to string.
-                if ($childKey === 'GLOBALS') {
-                    $changingArray['GLOBALS'] = self::GLOBALS_USING;
-                    continue;
-                }
-                // Does reference copy because may be reference variable.
-                $changingArray[$childKey] = &$parentArray[$childKey];
-            }
-            $parentArray = $changingArray;
-        }
         // Creates array to change from recursive array to string.
-        $changingArray = $parentArray;
+        $changeArray = $parentArray;
         // Searches recursive array.
         foreach ($parentArray as $childKey => $childArray) {
             // If not recursive array.
             if (!is_array($childArray)) {
                 continue;
             }
+            // Changes the 'GLOBALS' nest element to string.
+            if (array_diff_key($GLOBALS, $childArray) === array ()) {
+                // Deletes recursive child array reference.
+                unset($changeArray[$childKey]);
+                // Marks recursive child array.
+                $changeArray[$childKey] = self::GLOBALS_USING;
+                continue;
+            }
             // Stores the child array.
             $elementStorage = $parentArray[$childKey];
-            // Checks reference of parents array by changing from child array to string.
+            // Checks reference of parents array by change from child array to string.
             $parentArray[$childKey] = self::RECURSIVE_ARRAY;
-            foreach ($parentsArray as $cmpParentArrays) {
+            foreach ($parentsArray as &$cmpParentArray) {
+                $parentRecursiveArray = &$cmpParentArray[key($cmpParentArray)];
                 // If a recursive array.
-                if (!is_array(current($cmpParentArrays))) {
-                    // Deletes recursive array reference.
-                    unset($changingArray[$childKey]);
-                    // Marks recursive array.
-                    $changingArray[$childKey] = self::RECURSIVE_ARRAY;
-                    // Restores child array.
-                    $parentArray[$childKey] = $elementStorage;
+                if (!is_array($parentRecursiveArray)) {
+                    // Restores recursive parent array.
+                    $parentRecursiveArray = $elementStorage;
+                    // Deletes recursive child array reference.
+                    unset($changeArray[$childKey]);
+                    // Marks recursive child array.
+                    $changeArray[$childKey] = self::RECURSIVE_ARRAY;
                     continue 2;
                 }
             }
@@ -893,12 +889,14 @@ abstract class BreakpointDebugging_InAllCase
             $parentArray[$childKey] = $elementStorage;
             // Adds current child element to parents array. Also, does reference copy because checks recursive-reference by using this.
             $parentsArray[][$childKey] = &$parentArray[$childKey];
+            // Deletes recursive child array reference.
+            unset($changeArray[$childKey]);
             // Clears recursive array element in under hierarchy.
-            $changingArray[$childKey] = self::_clearRecursiveArrayElement($parentArray[$childKey], $parentsArray);
+            $changeArray[$childKey] = self::_clearRecursiveArrayElement($parentArray[$childKey], $parentsArray);
             // Takes out parent array.
             array_pop($parentsArray);
         }
-        return $changingArray;
+        return $changeArray;
     }
 
     /**
@@ -913,7 +911,6 @@ abstract class BreakpointDebugging_InAllCase
         if (!is_array($recursiveArray)) {
             return $recursiveArray;
         }
-
         $parentsArray = array (array (&$recursiveArray));
         return self::_clearRecursiveArrayElement($recursiveArray, $parentsArray);
     }

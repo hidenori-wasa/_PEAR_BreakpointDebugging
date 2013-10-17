@@ -1007,6 +1007,7 @@ abstract class BreakpointDebugging_Error_InAllCase
             // @codeCoverageIgnoreStart
             $errorMessage = htmlspecialchars($errorMessage, ENT_QUOTES, 'UTF-8');
             $prependLog = htmlspecialchars($prependLog, ENT_QUOTES, 'UTF-8');
+            echo file_get_contents('BreakpointDebugging/css/FontStyle.html', true);
         }
         // @codeCoverageIgnoreEnd
         if ($errorKind === 'E_NOTICE') {

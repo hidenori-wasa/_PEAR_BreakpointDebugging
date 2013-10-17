@@ -8,7 +8,6 @@ class tests_PEAR_AClass
 
 }
 
-// Detects "Fatal error: Nesting level too deep" by XDebug.
 \tests_PEAR_AClass::$recursiveStaticProperty = array (&\tests_PEAR_AClass::$recursiveStaticProperty, 'Recursive static property element.');
 
 ?>

@@ -257,6 +257,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
             && !BREAKPOINTDEBUGGING_IS_WINDOWS
             && trim(`echo \$USER`) === 'root'
         ) {
+            echo file_get_contents('BreakpointDebugging/css/FontStyle.html', true);
             echo '<pre>Security warning: Recommends to change to "Apache HTTP Server" which Supported "suEXEC" because this "Apache HTTP Server" is executed by "root" user.</pre>';
         }
     }
@@ -499,11 +500,13 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
                         break 2;
                     }
                 }
+                echo file_get_contents('BreakpointDebugging/css/FontStyle.html', true);
                 exit('<pre>Path environment variable has not been set for "php.exe" command.' . PHP_EOL . `path` . '</pre>');
             }
         } else {
             $result = `which php`;
             if (empty($result)) {
+                echo file_get_contents('BreakpointDebugging/css/FontStyle.html', true);
                 $message = 'Path environment variable has not been set for "php" command.' . PHP_EOL
                     . '$PATH=' . `echo \$PATH` . PHP_EOL
                     . 'Please, search by (sudo find "<apache install directory>" -mount -name "envvars") command.' . PHP_EOL
@@ -766,6 +769,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
                 $cmpNameLength = strlen($cmpName);
                 if (!substr_compare($baseName, $cmpName, 0 - $cmpNameLength, $cmpNameLength, true)) {
                     // @codeCoverageIgnoreStart
+                    echo file_get_contents('BreakpointDebugging/css/FontStyle.html', true);
                     $notExistFlag = true;
                     foreach (self::$_onceFlag as $cmpName) {
                         if (!strcmp($baseName, $cmpName)) {
@@ -816,6 +820,7 @@ EOD;
         self::assert(is_string($functionName), 2);
         self::assert(is_array($params), 3);
 
+        echo file_get_contents('BreakpointDebugging/css/FontStyle.html', true);
         self::$tmp = $params;
         $paramNumber = count($params);
         $propertyNameToSend = '\BreakpointDebugging::$tmp';

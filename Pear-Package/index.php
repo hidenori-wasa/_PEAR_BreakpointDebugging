@@ -7,23 +7,18 @@ use \BreakpointDebugging_PHPUnitStepExecution_PHPUnitUtilGlobalState as BGS;
 use \BreakpointDebugging_PHPUnitStepExecution_PHPUnitFrameworkTestCase as BSF;
 
 B::checkExeMode(); // Checks the execution mode.
-class TestInstanceClass
-{
-    static $recursiveStaticProperty = array ();
+echo file_get_contents('BreakpointDebugging/css/FontStyle.html', true);
 
-}
-
-\TestInstanceClass::$recursiveStaticProperty = array (&\TestInstanceClass::$recursiveStaticProperty, 'Recursive static property element.');
-
-$testArray2 = \TestInstanceClass::$recursiveStaticProperty;
-B::assert(count(array_diff($testArray2, \TestInstanceClass::$recursiveStaticProperty)) === 0);
-B::assert(count(array_diff(\TestInstanceClass::$recursiveStaticProperty, $testArray2)) === 0);
-\TestInstanceClass::$recursiveStaticProperty[0] = &$dummy;
-B::assert($testArray2 !== \TestInstanceClass::$recursiveStaticProperty);
-$testArray2[0] = &\TestInstanceClass::$recursiveStaticProperty[0];
-B::assert($testArray2 === \TestInstanceClass::$recursiveStaticProperty);
-echo '<pre>Success!</pre>';
+$array1 = array ('Initial value.');
+$array1ElementReference = &$array1[0];
+$array2 = $array1;
+$array1[0] = &$otherReference;
+var_dump($array1, $array2, $array1ElementReference);
+$array1ElementReference = 'DUMMY';
+$array1 = $array2;
+var_dump($array1, $array2, $array1ElementReference);
 return;
+//
 class TestClass
 {
     static $testProperty = array ('Test property.');

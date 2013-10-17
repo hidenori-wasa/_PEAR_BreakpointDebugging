@@ -185,6 +185,7 @@ final class BreakpointDebugging_ErrorLogFilesManager
                         continue;
                     }
                     echo <<<EOD
+<br/>
 <form method="post" action="{$thisFileName}?download={$errorLogDirElement}">
     <input type="submit" value="Download error log file ({$errorLogDirElement})"/>
 
@@ -192,11 +193,13 @@ final class BreakpointDebugging_ErrorLogFilesManager
 EOD;
                 }
                 echo <<<EOD
+<br/><br/>
 <form method="post" action="{$thisFileName}?deleteErrorLogs">
     <input type="submit" value="Delete all error log files (You must download all error log files before you push this button.)"></input>
 </form>
 EOD;
                 echo <<<EOD
+<br/><br/>
 <form method="post" action="{$thisFileName}?reset">
     <input type="submit" value="Reset error log files (You must debug and upload all error code before you push this button.)"></input>
 </form>

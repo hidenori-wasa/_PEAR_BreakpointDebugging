@@ -235,6 +235,7 @@ foreach ($testValues as $testValue) {
     $pTestClass->somthing($testValue);
 }
 
+echo file_get_contents('BreakpointDebugging/css/FontStyle.html', true);
 echo '<pre>END.</pre>';
 
 ?>
