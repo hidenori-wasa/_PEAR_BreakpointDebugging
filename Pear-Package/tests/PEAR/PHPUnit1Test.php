@@ -36,8 +36,7 @@ class PHPUnit1Test extends \BreakpointDebugging_PHPUnitStepExecution_PHPUnitFram
         self::$initialValueOfAutoProperty = $this->_testObject->autoProperty;
         self::$initialValueOfStaticProperty = \tests_PEAR_AClass::$staticProperty;
         self::$initialValueOfRecursiveStaticProperty = \tests_PEAR_AClass::$recursiveStaticProperty;
-        self::$initialValueOfRecursiveStaticProperty[0] = &self::$initialValueOfRecursiveStaticProperty;
-
+        //self::$initialValueOfRecursiveStaticProperty[0] = &self::$initialValueOfRecursiveStaticProperty;
         // Changes the value and the reference.
         $_FILES = &$referenceChange;
         $_FILES = 'The change value of global variable.';
@@ -56,8 +55,11 @@ class PHPUnit1Test extends \BreakpointDebugging_PHPUnitStepExecution_PHPUnitFram
         parent::assertTrue(self::$initialValueOfGlobal === $_FILES);
         parent::assertTrue(self::$initialValueOfAutoProperty === $this->_testObject->autoProperty);
         parent::assertTrue(self::$initialValueOfStaticProperty === \tests_PEAR_AClass::$staticProperty);
-        parent::assertTrue(count(array_diff(self::$initialValueOfRecursiveStaticProperty, \tests_PEAR_AClass::$recursiveStaticProperty)) === 0);
-        parent::assertTrue(count(array_diff(\tests_PEAR_AClass::$recursiveStaticProperty, self::$initialValueOfRecursiveStaticProperty)) === 0);
+        //parent::assertTrue(count(array_diff(self::$initialValueOfRecursiveStaticProperty, \tests_PEAR_AClass::$recursiveStaticProperty)) === 0);
+        //parent::assertTrue(count(array_diff(\tests_PEAR_AClass::$recursiveStaticProperty, self::$initialValueOfRecursiveStaticProperty)) === 0);
+        //var_dump(B::clearRecursiveArrayElement(\tests_PEAR_AClass::$recursiveStaticProperty), B::clearRecursiveArrayElement(self::$initialValueOfRecursiveStaticProperty)); // For debug.
+        //exit;
+        parent::assertTrue(B::clearRecursiveArrayElement(\tests_PEAR_AClass::$recursiveStaticProperty) === B::clearRecursiveArrayElement(self::$initialValueOfRecursiveStaticProperty));
 
         // Changes the value and the reference.
         $_FILES = &$referenceChange2;

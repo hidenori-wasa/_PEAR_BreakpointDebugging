@@ -8,23 +8,58 @@ use \BreakpointDebugging_PHPUnitStepExecution_PHPUnitFrameworkTestCase as BSF;
 
 B::checkExeMode(); // Checks the execution mode.
 echo file_get_contents('BreakpointDebugging/css/FontStyle.html', true);
+function __autoload($class)
+{
+    include __DIR__ . '/../src/' . $class . '.php';
+}
 
-$array1 = array ('Initial value.');
-$array1ElementReference = &$array1[0];
-$array2 = $array1;
-$array1[0] = &$otherReference;
-var_dump($array1, $array2, $array1ElementReference);
-$array1ElementReference = 'DUMMY';
-$array1 = $array2;
-var_dump($array1, $array2, $array1ElementReference);
+$testArray = array( 'aba', 'acca', 'adddd');
+//$testArray = array ('aba', 'acca', 'adddda');
+foreach ($testArray as $test) {
+    if (preg_match('`^a.+a$`xX', $test) === 0) {
+        echo "Test failed by '$test'.\n";
+    }
+}
 return;
-//
+
 class TestClass
 {
     static $testProperty = array ('Test property.');
+    public $autoProperty = 'Initial value.';
 
 }
 
+function testArrayReference()
+{
+    $array = array (new \TestClass());
+    $array2 = $array;
+    $array[0]->autoProperty = 'Change value.';
+    // Asserts array copy is until reference ID.
+    if ($array === $array2) {
+        echo 'Success!';
+        return;
+    }
+    echo 'Error!';
+}
+
+testArrayReference();
+return;
+function testRecursiveObject()
+{
+    $object = new \TestClass();
+    $object->autoProperty = &$object;
+    $object2 = $object;
+    // Asserts object comparison uses object reference ID.
+    if ($object2 === $object) {
+        var_dump(spl_object_hash($object2), spl_object_hash($object));
+        echo 'Success!';
+        return;
+    }
+    echo 'Error!';
+}
+
+testRecursiveObject();
+return;
 function testReference()
 {
     var_dump(\TestClass::$testProperty); // 'Test property.'

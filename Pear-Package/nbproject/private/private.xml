@@ -2,28 +2,12 @@
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/1">
         <file>
-            <url>PEAR/Validate/MySQLi.php</url>
-            <line>389</line>
-        </file>
-        <file>
-            <url>tests/PEAR/BreakpointDebugging/MultiprocessTest/Main.php</url>
-            <line>40</line>
-        </file>
-        <file>
-            <url>PEAR/BreakpointDebugging/Mutex.php</url>
-            <line>90</line>
-        </file>
-        <file>
-            <url>PEAR/BreakpointDebugging/PHPUnitFrameworkTestCase.php</url>
-            <line>354</line>
-        </file>
-        <file>
-            <url>PEAR/BreakpointDebugging/LockByShmop.php</url>
-            <line>479</line>
-        </file>
-        <file>
             <url>PEAR/Validate/MySQLi/Result.php</url>
             <line>195</line>
+        </file>
+        <file>
+            <url>PEAR/Validate/MySQLi.php</url>
+            <line>389</line>
         </file>
         <file>
             <url>PEAROtherPackage/BreakpointDebugging/Component/PHPUnit/Framework/TestSuite.php</url>
@@ -42,12 +26,28 @@
             <line>267</line>
         </file>
         <file>
+            <url>tests/PEAR/BreakpointDebugging/MultiprocessTest/Main.php</url>
+            <line>40</line>
+        </file>
+        <file>
             <url>PEAR/BreakpointDebugging/LockByShmop_Bug.php</url>
             <line>62</line>
         </file>
         <file>
             <url>PEAR/BreakpointDebugging.php</url>
             <line>92</line>
+        </file>
+        <file>
+            <url>PEAR/BreakpointDebugging/Mutex.php</url>
+            <line>90</line>
+        </file>
+        <file>
+            <url>PEAR/BreakpointDebugging/PHPUnitFrameworkTestCase.php</url>
+            <line>354</line>
+        </file>
+        <file>
+            <url>PEAR/BreakpointDebugging/LockByShmop.php</url>
+            <line>479</line>
         </file>
         <file>
             <url>BreakpointDebugging_MySetting.php</url>

@@ -57,13 +57,13 @@ function BreakpointDebugging_setExecutionMode()
     global $_BreakpointDebugging_EXE_MODE;
 
     $REMOTE = 1;
-    $UNIT_TEST = 4; // For debug.
+    // $UNIT_TEST = 4; // For debug.
     // ### Execution mode setting. ===>
     // Please, choose a mode.
     // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('DEBUG');
     // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('RELEASE');
-    // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('DEBUG_UNIT_TEST'); // Requires "BreakpointDebugging_PHPUnitStepExecution" package.
-    $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('RELEASE_UNIT_TEST'); // Requires "BreakpointDebugging_PHPUnitStepExecution" package.
+    $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('DEBUG_UNIT_TEST'); // Requires "BreakpointDebugging_PHPUnitStepExecution" package.
+    // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('RELEASE_UNIT_TEST'); // Requires "BreakpointDebugging_PHPUnitStepExecution" package.
     // ### <=== Execution mode setting.
     //
     // $_BreakpointDebugging_EXE_MODE |= $REMOTE; // Emulates remote by local host.
@@ -78,11 +78,13 @@ function BreakpointDebugging_setExecutionMode()
     $includePaths[1] = './PEAR';
 
     // For debug. ===>
-    if ($_BreakpointDebugging_EXE_MODE & $UNIT_TEST) {
-        $includePaths = array ('.', './PEAR', './PEAROtherPackage'); // For independence execution check.
-    } else {
-        $includePaths = array ('.', './PEAR'); // For independence execution check.
-    }
+    // if ($_BreakpointDebugging_EXE_MODE & $UNIT_TEST) {
+    //     $includePaths = array ('.', './PEAR', './PEAROtherPackage'); // For independence execution check.
+    // } else {
+    //     $includePaths = array ('.', './PEAR'); // For independence execution check.
+    // }
+    array_unshift($includePaths, $includePaths[0]);
+    $includePaths[1] = './PEAROtherPackage';
     // <=== For debug.
 
     ini_set('include_path', implode(PATH_SEPARATOR, $includePaths));

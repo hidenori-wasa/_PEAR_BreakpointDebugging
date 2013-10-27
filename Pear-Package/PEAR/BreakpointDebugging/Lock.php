@@ -121,12 +121,12 @@ abstract class BreakpointDebugging_Lock
      */
     protected static function &singletonBase($className, $lockFilePath, $timeout, $expire, $sleepMicroSeconds, $isInternal = false)
     {
-        B::assert(is_string($className), 1);
-        B::assert(is_string($lockFilePath), 2);
-        B::assert(is_int($timeout) && 0 <= $timeout, 3);
-        B::assert(is_int($expire) && 0 <= $expire, 4);
-        B::assert(is_int($sleepMicroSeconds) && 0 <= $sleepMicroSeconds, 5);
-        B::assert(is_bool($isInternal), 6);
+        B::assert(is_string($className));
+        B::assert(is_string($lockFilePath));
+        B::assert(is_int($timeout) && 0 <= $timeout);
+        B::assert(is_int($expire) && 0 <= $expire);
+        B::assert(is_int($sleepMicroSeconds) && 0 <= $sleepMicroSeconds);
+        B::assert(is_bool($isInternal));
 
         if ($isInternal) {
             // This code is executed in case of "\BreakpointDebugging_LockByFileExisting" unit test.
@@ -168,10 +168,10 @@ abstract class BreakpointDebugging_Lock
      */
     protected function __construct($lockFilePath, $timeout, $sleepMicroSeconds)
     {
-        B::assert(func_num_args() === 3, 1);
-        B::assert(is_string($lockFilePath), 2);
-        B::assert(is_int($timeout), 3);
-        B::assert(is_int($sleepMicroSeconds), 4);
+        B::assert(func_num_args() === 3);
+        B::assert(is_string($lockFilePath));
+        B::assert(is_int($timeout));
+        B::assert(is_int($sleepMicroSeconds));
 
         // Extend maximum execution time.
         set_time_limit($timeout + 10);
@@ -216,7 +216,7 @@ abstract class BreakpointDebugging_Lock
      */
     function lock()
     {
-        B::assert(func_num_args() === 0, 1);
+        B::assert(func_num_args() === 0);
 
         if ($this->lockCount > 0) {
             $this->lockCount++;
@@ -247,7 +247,7 @@ abstract class BreakpointDebugging_Lock
      */
     function unlock()
     {
-        B::assert(func_num_args() === 0, 1);
+        B::assert(func_num_args() === 0);
 
         if ($this->lockCount > 1) {
             $this->lockCount--;
@@ -268,7 +268,7 @@ abstract class BreakpointDebugging_Lock
      */
     static function forceUnlocking()
     {
-        B::assert(func_num_args() === 0, 1);
+        B::assert(func_num_args() === 0);
 
         B::limitAccess(
             array (

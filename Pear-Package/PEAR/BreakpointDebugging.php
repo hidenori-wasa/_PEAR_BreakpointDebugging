@@ -237,9 +237,9 @@ abstract class BreakpointDebugging_InAllCase
      */
     static function breakpoint($message, $callStackInfo)
     {
-        B::assert(func_num_args() === 2, 1);
-        B::assert(is_string($message), 2);
-        B::assert(is_array($callStackInfo), 3);
+        B::assert(func_num_args() === 2);
+        B::assert(is_string($message));
+        B::assert(is_array($callStackInfo));
 
         if (self::$exeMode === (B::REMOTE | B::RELEASE)
             || (self::$exeMode & B::IGNORING_BREAK_POINT)
@@ -313,8 +313,8 @@ abstract class BreakpointDebugging_InAllCase
      */
     static function checkDevelopmentSecurity($necessaryExeMode = false)
     {
-        B::assert(func_num_args() <= 1, 1);
-        B::assert($necessaryExeMode === false || is_int($necessaryExeMode), 2);
+        B::assert(func_num_args() <= 1);
+        B::assert($necessaryExeMode === false || is_int($necessaryExeMode));
 
         // Checks the execution mode.
         if ($necessaryExeMode !== false
@@ -500,7 +500,7 @@ abstract class BreakpointDebugging_InAllCase
      */
     final static function registerNotFixedLocation(&$isRegister)
     {
-        B::assert(func_num_args() === 1, 1);
+        B::assert(func_num_args() === 1);
 
         // When it has been registered.
         if (!empty($isRegister)) {
@@ -531,8 +531,8 @@ abstract class BreakpointDebugging_InAllCase
      */
     final static function addValuesToTrace($values)
     {
-        B::assert(func_num_args() === 1, 1);
-        B::assert(is_array($values), 2);
+        B::assert(func_num_args() === 1);
+        B::assert(is_array($values));
 
         $backTrace = debug_backtrace();
         $callInfo = &$backTrace[0];
@@ -779,7 +779,7 @@ abstract class BreakpointDebugging_InAllCase
 
         $compressBytes = '';
         foreach ($intArray as $int) {
-            B::assert(preg_match('`^[0-9]$ | ^[1-9][0-9]+$`xX', $int) === 1, 1);
+            B::assert(preg_match('`^[0-9]$ | ^[1-9][0-9]+$`xX', $int) === 1);
             for ($diff = 1, $delimiter = 0x80, $tmpBytes = ''; $diff; $int = $diff / 0x7D) {
                 // This changes from decimal number to 126 number.
                 $diff = 0x7D * (int) ($int / 0x7D);
@@ -1150,9 +1150,9 @@ abstract class BreakpointDebugging_InAllCase
             )
         );
 
-        B::assert(func_num_args() === 2, 1);
-        B::assert(is_string($message), 2);
-        B::assert(is_int($id), 3);
+        B::assert(func_num_args() === 2);
+        B::assert(is_string($message));
+        B::assert(is_int($id));
 
         B::callExceptionHandlerDirectly($message, $id);
         // @codeCoverageIgnoreStart

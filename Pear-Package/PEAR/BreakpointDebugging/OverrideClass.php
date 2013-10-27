@@ -92,8 +92,8 @@
   function override_function_name()
   {
   $refParams = func_get_arg(0);
-  B::assert(func_num_args() === 1, 1);
-  B::assert(is_array($refParams), 2);
+  B::assert(func_num_args() === 1);
+  B::assert(is_array($refParams));
 
   // How to call a function by parameter array.
   $return = call_user_func_array('override_function_name', $refParams);
@@ -219,7 +219,7 @@ class BreakpointDebugging_OverrideClass
      */
     final protected static function newArray($className, $params)
     {
-        B::assert(is_string($className), 1);
+        B::assert(is_string($className));
 
         B::$tmp = $params;
         $paramNumber = count($params);

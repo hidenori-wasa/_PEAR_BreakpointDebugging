@@ -61,7 +61,7 @@
  *      file_put_contents('Somethig.log', $logData);
  *      $lockByFlock->unlock(); // Unlocks php-code.
  * } else { // If debug execution mode.
- *      B::assert(is_string($logData), 1);
+ *      B::assert(is_string($logData));
  *      echo $logData;
  * }
  *
@@ -224,7 +224,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
     {
         B::limitAccess('BreakpointDebugging.php');
 
-        B::assert(func_num_args() === 0, 1);
+        B::assert(func_num_args() === 0);
 
         parent::initialize();
 
@@ -271,8 +271,8 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      */
     static function getStatic($propertyName)
     {
-        self::assert(func_num_args() === 1, 1);
-        self::assert(is_string($propertyName), 2);
+        self::assert(func_num_args() === 1);
+        self::assert(is_string($propertyName));
 
         return parent::getStatic($propertyName);
     }
@@ -288,8 +288,8 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
     {
         self::limitAccess(parent::$staticPropertyLimitings[$propertyName]);
 
-        self::assert(func_num_args() === 1, 1);
-        self::assert(is_string($propertyName), 2);
+        self::assert(func_num_args() === 1);
+        self::assert(is_string($propertyName));
 
         return parent::refStatic($propertyName);
     }
@@ -301,7 +301,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      */
     static function getXebugExists()
     {
-        self::assert(func_num_args() === 0, 1);
+        self::assert(func_num_args() === 0);
 
         return parent::getXebugExists();
     }
@@ -317,8 +317,8 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
     {
         self::limitAccess('BreakpointDebugging.php');
 
-        self::assert(func_num_args() === 1, 1);
-        self::assert(is_bool($value), 2);
+        self::assert(func_num_args() === 1);
+        self::assert(is_bool($value));
 
         parent::setXebugExists($value);
     }
@@ -334,10 +334,10 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      */
     static function iniCheck($phpIniVariable, $cmpValue, $errorMessage)
     {
-        self::assert(func_num_args() === 3, 1);
-        self::assert(is_string($phpIniVariable), 2);
-        self::assert(is_string($cmpValue) || is_array($cmpValue), 3);
-        self::assert(is_string($errorMessage), 4);
+        self::assert(func_num_args() === 3);
+        self::assert(is_string($phpIniVariable));
+        self::assert(is_string($cmpValue) || is_array($cmpValue));
+        self::assert(is_string($errorMessage));
 
         parent::iniCheck($phpIniVariable, $cmpValue, $errorMessage);
     }
@@ -351,8 +351,8 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      */
     static function convertMbString($string)
     {
-        self::assert(func_num_args() === 1, 1);
-        self::assert(is_string($string), 2);
+        self::assert(func_num_args() === 1);
+        self::assert(is_string($string));
 
         return parent::convertMbString($string);
     }
@@ -369,11 +369,11 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      */
     static function chmod($name, $permission, $timeout = 10, $sleepMicroSeconds = 100000)
     {
-        self::assert(func_num_args() <= 4, 1);
-        self::assert(is_string($name), 2);
-        self::assert(is_int($permission), 3);
-        self::assert(is_int($timeout), 4);
-        self::assert(is_int($sleepMicroSeconds), 5);
+        self::assert(func_num_args() <= 4);
+        self::assert(is_string($name));
+        self::assert(is_int($permission));
+        self::assert(is_int($timeout));
+        self::assert(is_int($sleepMicroSeconds));
 
         return parent::chmod($name, $permission, $timeout, $sleepMicroSeconds);
     }
@@ -389,9 +389,9 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      */
     static function mkdir(array $params, $timeout = 10, $sleepMicroSeconds = 100000)
     {
-        self::assert(func_num_args() <= 3, 1);
-        self::assert(is_int($timeout), 4);
-        self::assert(is_int($sleepMicroSeconds), 5);
+        self::assert(func_num_args() <= 3);
+        self::assert(is_int($timeout));
+        self::assert(is_int($sleepMicroSeconds));
 
         return parent::mkdir($params, $timeout, $sleepMicroSeconds);
     }
@@ -410,10 +410,10 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      */
     static function fopen(array $params, $permission = null, $timeout = 10, $sleepMicroSeconds = 100000)
     {
-        self::assert(func_num_args() <= 4, 1);
-        self::assert((is_int($permission) || is_null($permission)) && 0 <= $permission && $permission <= 0777, 2);
-        self::assert(is_int($timeout), 3);
-        self::assert(is_int($sleepMicroSeconds), 4);
+        self::assert(func_num_args() <= 4);
+        self::assert((is_int($permission) || is_null($permission)) && 0 <= $permission && $permission <= 0777);
+        self::assert(is_int($timeout));
+        self::assert(is_int($sleepMicroSeconds));
 
         return parent::fopen($params, $permission, $timeout, $sleepMicroSeconds);
     }
@@ -427,8 +427,8 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      */
     static function compressIntArray($intArray)
     {
-        self::assert(func_num_args() === 1, 1);
-        self::assert(is_array($intArray), 2);
+        self::assert(func_num_args() === 1);
+        self::assert(is_array($intArray));
 
         return parent::compressIntArray($intArray);
     }
@@ -442,8 +442,8 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      */
     static function decompressIntArray($compressBytes)
     {
-        self::assert(func_num_args() === 1, 1);
-        self::assert(is_string($compressBytes) || $compressBytes === false, 2);
+        self::assert(func_num_args() === 1);
+        self::assert(is_string($compressBytes) || $compressBytes === false);
 
         return parent::decompressIntArray($compressBytes);
     }
@@ -457,8 +457,8 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      */
     static function handleException($pException)
     {
-        self::assert(func_num_args() === 1, 1);
-        self::assert($pException instanceof \Exception, 2);
+        self::assert(func_num_args() === 1);
+        self::assert($pException instanceof \Exception);
 
         if (BA::$exeMode & B::UNIT_TEST) {
             \BreakpointDebugging_PHPUnitStepExecution::handleUnitTestException($pException);
@@ -477,8 +477,8 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      */
     static function handleError($errorNumber, $errorMessage)
     {
-        self::assert(is_int($errorNumber), 2);
-        self::assert(is_string($errorMessage), 3);
+        self::assert(is_int($errorNumber));
+        self::assert(is_string($errorMessage));
 
         return parent::handleError($errorNumber, $errorMessage);
     }
@@ -529,10 +529,10 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      */
     private static function _checkInvokerFilePath($includePaths, $invokerFilePath, $fullFilePath)
     {
-        B::assert(func_num_args() === 3, 1);
-        B::assert(is_array($includePaths), 2);
-        B::assert(is_string($invokerFilePath), 3);
-        B::assert(is_string($fullFilePath), 4);
+        B::assert(func_num_args() === 3);
+        B::assert(is_array($includePaths));
+        B::assert(is_string($invokerFilePath));
+        B::assert(is_string($fullFilePath));
 
         foreach ($includePaths as $includePath) {
             $invokerFullFilePath = realpath("$includePath/$invokerFilePath");
@@ -595,9 +595,9 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
         // Stores the invoking location information.
         self::$_callLocations[$fullFilePath][$line] = true;
 
-        self::assert(func_num_args() <= 2, 1);
-        self::assert(is_array($invokerFilePaths) || is_string($invokerFilePaths), 2);
-        self::assert(is_bool($enableUnitTest), 3);
+        self::assert(func_num_args() <= 2);
+        self::assert(is_array($invokerFilePaths) || is_string($invokerFilePaths));
+        self::assert(is_bool($enableUnitTest));
 
         if (!$enableUnitTest
             && (BA::$exeMode & B::UNIT_TEST)
@@ -650,7 +650,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      *
      * @return void
      * @usage
-     *      \BreakpointDebugging::assert(<judgment expression>, <identification number inside function>);
+     *      \BreakpointDebugging::assert(<judgment expression>[, <identification number inside function>]);
      *      It is possible to assert that <judgment expression> is "This must be". Especially, this uses to verify a function's argument.
      *      For example: \BreakpointDebugging::assert(3 <= $value && $value <= 5); // $value should be 3-5.
      *      Caution: Don't change the value of variable in "\BreakpointDebugging::assert()" function because there isn't executed in case of release.
@@ -716,9 +716,9 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      */
     private static function _convertMbStringForDebugSubroop($charSet, $mbParamArray)
     {
-        self::assert(func_num_args() === 2, 1);
-        self::assert(is_string($charSet), 2);
-        self::assert(is_array($mbParamArray), 3);
+        self::assert(func_num_args() === 2);
+        self::assert(is_string($charSet));
+        self::assert(is_array($mbParamArray));
 
         $displayMbStringArray = array ();
         $count = 0;
@@ -747,11 +747,11 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      */
     static function iniSet($phpIniVariable, $setValue, $doCheck = true)
     {
-        self::assert(func_num_args() <= 3, 1);
-        self::assert($phpIniVariable !== 'error_log', 2);
-        self::assert(is_string($phpIniVariable), 3);
-        self::assert(is_string($setValue), 4);
-        self::assert(is_bool($doCheck), 5);
+        self::assert(func_num_args() <= 3);
+        self::assert($phpIniVariable !== 'error_log');
+        self::assert(is_string($phpIniVariable));
+        self::assert(is_string($setValue));
+        self::assert(is_bool($doCheck));
 
         $getValue = ini_get($phpIniVariable);
         if ($setValue !== $getValue) {
@@ -816,9 +816,9 @@ EOD;
      */
     static function displayVerification($functionName, $params)
     {
-        self::assert(func_num_args() === 2, 1);
-        self::assert(is_string($functionName), 2);
-        self::assert(is_array($params), 3);
+        self::assert(func_num_args() === 2);
+        self::assert(is_string($functionName));
+        self::assert(is_array($params));
 
         echo file_get_contents('BreakpointDebugging/css/FontStyle.html', true);
         self::$tmp = $params;

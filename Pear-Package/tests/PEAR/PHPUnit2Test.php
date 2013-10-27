@@ -30,8 +30,9 @@ class PHPUnit2Test extends \BreakpointDebugging_PHPUnitStepExecution_PHPUnitFram
         parent::assertTrue(\PHPUnit1Test::$initialValueOfGlobal === $_FILES);
         parent::assertTrue(\PHPUnit1Test::$initialValueOfAutoProperty === $this->_testObject->autoProperty);
         parent::assertTrue(\PHPUnit1Test::$initialValueOfStaticProperty === \tests_PEAR_AClass::$staticProperty);
-        parent::assertTrue(count(array_diff(\PHPUnit1Test::$initialValueOfRecursiveStaticProperty, \tests_PEAR_AClass::$recursiveStaticProperty)) === 0);
-        parent::assertTrue(count(array_diff(\tests_PEAR_AClass::$recursiveStaticProperty, \PHPUnit1Test::$initialValueOfRecursiveStaticProperty)) === 0);
+        //parent::assertTrue(count(array_diff(\PHPUnit1Test::$initialValueOfRecursiveStaticProperty, \tests_PEAR_AClass::$recursiveStaticProperty)) === 0);
+        //parent::assertTrue(count(array_diff(\tests_PEAR_AClass::$recursiveStaticProperty, \PHPUnit1Test::$initialValueOfRecursiveStaticProperty)) === 0);
+        parent::assertTrue(B::clearRecursiveArrayElement(\tests_PEAR_AClass::$recursiveStaticProperty) === B::clearRecursiveArrayElement(\PHPUnit1Test::$initialValueOfRecursiveStaticProperty));
 
         // Changes the value and the reference.
         $_FILES = &$referenceChange3;
@@ -51,8 +52,9 @@ class PHPUnit2Test extends \BreakpointDebugging_PHPUnitStepExecution_PHPUnitFram
         parent::assertTrue(\PHPUnit1Test::$initialValueOfGlobal === $_FILES);
         parent::assertTrue(\PHPUnit1Test::$initialValueOfAutoProperty === $this->_testObject->autoProperty);
         parent::assertTrue(\PHPUnit1Test::$initialValueOfStaticProperty === \tests_PEAR_AClass::$staticProperty);
-        parent::assertTrue(count(array_diff(\PHPUnit1Test::$initialValueOfRecursiveStaticProperty, \tests_PEAR_AClass::$recursiveStaticProperty)) === 0);
-        parent::assertTrue(count(array_diff(\tests_PEAR_AClass::$recursiveStaticProperty, \PHPUnit1Test::$initialValueOfRecursiveStaticProperty)) === 0);
+        //parent::assertTrue(count(array_diff(\PHPUnit1Test::$initialValueOfRecursiveStaticProperty, \tests_PEAR_AClass::$recursiveStaticProperty)) === 0);
+        //parent::assertTrue(count(array_diff(\tests_PEAR_AClass::$recursiveStaticProperty, \PHPUnit1Test::$initialValueOfRecursiveStaticProperty)) === 0);
+        parent::assertTrue(B::clearRecursiveArrayElement(\tests_PEAR_AClass::$recursiveStaticProperty) === B::clearRecursiveArrayElement(\PHPUnit1Test::$initialValueOfRecursiveStaticProperty));
     }
 
 }
