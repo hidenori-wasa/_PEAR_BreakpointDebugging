@@ -272,6 +272,20 @@ abstract class BreakpointDebugging_InAllCase
     }
 
     /**
+     * Displays character string with style.
+     *
+     * @param string $text            Text to display.
+     * @param string $backgroundColor Background color.
+     * @param string $color           Text color.
+     *
+     * @return void
+     */
+    static function displayText($text, $backgroundColor = 'black', $color = 'white')
+    {
+        echo '<body style="background-color:' . $backgroundColor . ';color:' . $color . '"><pre>' . $text . '</pre></body>';
+    }
+
+    /**
      * Error exit. You can detect error exit location by call stack after break if you use this.
      *
      * @param mixed $error Error message or error exception instance.
@@ -330,10 +344,10 @@ abstract class BreakpointDebugging_InAllCase
                 default :
                     throw new \BreakpointDebugging_ErrorException('"' . __METHOD__ . '" parameter1 is mistake.', 101);
             }
-            echo file_get_contents('BreakpointDebugging/css/FontStyle.html', true);
-            echo '<pre><b>You must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'' . $message . '\');" ' . PHP_EOL
-            . "\t" . 'into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file.' . PHP_EOL
-            . 'Or, you mistook start "php" page.</b></pre>';
+            self::displayText('<b>You must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'' . $message . '\');" ' . PHP_EOL
+                . "\t" . 'into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file.' . PHP_EOL
+                . 'Or, you mistook start "php" page.</b>'
+            );
             return false;
         }
         if (!(self::$exeMode & self::REMOTE)) { // In case of local.
@@ -341,10 +355,10 @@ abstract class BreakpointDebugging_InAllCase
         }
         // Checks client IP address.
         if ($_SERVER['REMOTE_ADDR'] !== self::$_developerIP) {
-            echo file_get_contents('BreakpointDebugging/css/FontStyle.html', true);
-            echo '<pre><b>You must set "$developerIP = \'' . $_SERVER['REMOTE_ADDR'] . '\';" ' . PHP_EOL
-            . "\t" . 'into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file.' . PHP_EOL
-            . 'Or, you mistook start "php" page.</b></pre>';
+            self::displayText('<b>You must set "$developerIP = \'' . $_SERVER['REMOTE_ADDR'] . '\';" ' . PHP_EOL
+                . "\t" . 'into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file.' . PHP_EOL
+                . 'Or, you mistook start "php" page.</b>'
+            );
             return false;
         }
         // Checks the request protocol.
@@ -352,9 +366,9 @@ abstract class BreakpointDebugging_InAllCase
             || empty($_SERVER['HTTPS'])
             || $_SERVER['HTTPS'] === 'off'
         ) {
-            echo file_get_contents('BreakpointDebugging/css/FontStyle.html', true);
-            echo '<pre><b>You must use "https" protocol.' . PHP_EOL
-            . 'Or, you mistook start "php" page.</b></pre>';
+            self::displayText('<b>You must use "https" protocol.' . PHP_EOL
+                . 'Or, you mistook start "php" page.</b>'
+            );
             return false;
         }
         return true;
@@ -389,10 +403,10 @@ abstract class BreakpointDebugging_InAllCase
         }
 
         if ($isUnitTest) {
-            echo file_get_contents('BreakpointDebugging/css/FontStyle.html', true);
-            echo '<pre><b>You must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'..._UNIT_TEST\');"' . PHP_EOL
-            . "\t" . 'into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php".' . PHP_EOL
-            . 'Or, you mistook start "php" page.</b></pre>';
+            self::displayText('<b>You must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'..._UNIT_TEST\');"' . PHP_EOL
+                . "\t" . 'into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php".' . PHP_EOL
+                . 'Or, you mistook start "php" page.</b>'
+            );
             exit;
         }
     }
@@ -483,9 +497,11 @@ abstract class BreakpointDebugging_InAllCase
             }
         }
         if ($cmpResult) {
+            ob_start();
             echo "<pre>$errorMessage</pre>" .
             "<pre>Current value =</pre>";
             var_dump($value);
+            self::displayText(ob_get_clean());
         }
     }
 
@@ -852,20 +868,27 @@ abstract class BreakpointDebugging_InAllCase
             $parentArray = array_slice($parentArray, 0, B::getStatic('$_maxLogElementNumber'), true);
             $parentArray[] = ''; // Array element out of area.
         }
+
+        // Changes the 'GLOBALS' nest element to string.
+        if (array_diff_key($GLOBALS, $parentArray) === array ()) {
+            $parentArray = array ();
+            // Copies global variables except "$GLOBALS['GLOBALS']" element because "$GLOBALS" copy does not increment reference count, so it is special in array.
+            foreach ($GLOBALS as $key => $value) {
+                if ($key === 'GLOBALS') {
+                    // Marks recursive child array.
+                    $parentArray[$key] = self::GLOBALS_USING;
+                    continue;
+                }
+                $parentArray[$key] = $value;
+            }
+        }
+
         // Creates array to change from recursive array to string.
         $changeArray = $parentArray;
         // Searches recursive array.
         foreach ($parentArray as $childKey => $childArray) {
             // If not recursive array.
             if (!is_array($childArray)) {
-                continue;
-            }
-            // Changes the 'GLOBALS' nest element to string.
-            if (array_diff_key($GLOBALS, $childArray) === array ()) {
-                // Deletes recursive child array reference.
-                unset($changeArray[$childKey]);
-                // Marks recursive child array.
-                $changeArray[$childKey] = self::GLOBALS_USING;
                 continue;
             }
             // Stores the child array.
@@ -878,7 +901,8 @@ abstract class BreakpointDebugging_InAllCase
                 if (!is_array($parentRecursiveArray)) {
                     // Restores recursive parent array.
                     $parentRecursiveArray = $elementStorage;
-                    // Deletes recursive child array reference.
+                    // Deletes recursive child array reference because avoids input parameter change.
+                    // Because array copy copies reference ID of its array element.
                     unset($changeArray[$childKey]);
                     // Marks recursive child array.
                     $changeArray[$childKey] = self::RECURSIVE_ARRAY;
@@ -889,7 +913,8 @@ abstract class BreakpointDebugging_InAllCase
             $parentArray[$childKey] = $elementStorage;
             // Adds current child element to parents array. Also, does reference copy because checks recursive-reference by using this.
             $parentsArray[][$childKey] = &$parentArray[$childKey];
-            // Deletes recursive child array reference.
+            // Deletes recursive child array reference because avoids input parameter change.
+            // Because array copy copies reference ID of its array element.
             unset($changeArray[$childKey]);
             // Clears recursive array element in under hierarchy.
             $changeArray[$childKey] = self::_clearRecursiveArrayElement($parentArray[$childKey], $parentsArray);
@@ -1258,7 +1283,9 @@ if ($_BreakpointDebugging_EXE_MODE & BA::RELEASE) { // In case of release.
                     } else {
                         // Because unit test is exited.
                         ini_set('xdebug.var_display_max_depth', 5);
+                        ob_start();
                         var_dump(debug_backtrace());
+                        self::displayText(ob_get_clean());
                         // Ends the output buffering.
                         while (ob_get_level() > 0) {
                             ob_end_flush();

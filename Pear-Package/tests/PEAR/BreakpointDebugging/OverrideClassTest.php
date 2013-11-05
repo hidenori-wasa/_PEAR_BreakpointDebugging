@@ -48,7 +48,7 @@ class BreakpointDebugging_OverrideClassTest extends \BreakpointDebugging_PHPUnit
     public function test__get()
     {
         // Gets auto property which have been not defined.
-        $this->assertTrue($this->NativeClassOverriding->float === 3.3);
+        parent::assertTrue($this->NativeClassOverriding->float === 3.3);
     }
 
     /**
@@ -58,7 +58,7 @@ class BreakpointDebugging_OverrideClassTest extends \BreakpointDebugging_PHPUnit
     {
         // Sets auto property which have been not defined.
         $this->NativeClassOverriding->float = 'New string.';
-        $this->assertTrue($this->NativeClassOverriding->float === 'New string.');
+        parent::assertTrue($this->NativeClassOverriding->float === 'New string.');
     }
 
     /**
@@ -105,10 +105,10 @@ class BreakpointDebugging_OverrideClassTest extends \BreakpointDebugging_PHPUnit
         global $object;
 
         // Gets static property.
-        $this->assertTrue(NativeClassOverriding::$object === $object);
+        parent::assertTrue(NativeClassOverriding::$object === $object);
         // Sets static property.
         NativeClassOverriding::$object = 'dummy';
-        $this->assertTrue(NativeClassOverriding::$object !== $object);
+        parent::assertTrue(NativeClassOverriding::$object !== $object);
     }
 
 }

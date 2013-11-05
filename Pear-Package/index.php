@@ -7,13 +7,36 @@ use \BreakpointDebugging_PHPUnitStepExecution_PHPUnitUtilGlobalState as BGS;
 use \BreakpointDebugging_PHPUnitStepExecution_PHPUnitFrameworkTestCase as BSF;
 
 B::checkExeMode(); // Checks the execution mode.
-echo file_get_contents('BreakpointDebugging/css/FontStyle.html', true);
+
+$docblock0 = ' * @codeCoverageIgnore ' . PHP_EOL;
+$docblock1 = '/**' . PHP_EOL
+    . ' * @codeCoverageIgnore ' . PHP_EOL
+    . '**/' . PHP_EOL;
+$docblock2 = '/**' . PHP_EOL
+    . ' * @codeCoverageIgnore A' . PHP_EOL
+    . '**/' . PHP_EOL;
+if (BREAKPOINTDEBUGGING_IS_WINDOWS) {
+    $phpEol = '\\r\\n';
+} else {
+    $phpEol = '\\n';
+}
+
+$pattern = "`@codeCoverageIgnore [[:blank:]]* $phpEol`xX";
+
+ob_start();
+echo 'Expected: 1 1 0';
+var_dump(preg_match($pattern, $docblock0), preg_match($pattern, $docblock1), preg_match($pattern, $docblock2));
+B::displayText(ob_get_clean());
+return;
+//
+//
+//
 function __autoload($class)
 {
     include __DIR__ . '/../src/' . $class . '.php';
 }
 
-$testArray = array( 'aba', 'acca', 'adddd');
+$testArray = array ('aba', 'acca', 'adddd');
 //$testArray = array ('aba', 'acca', 'adddda');
 foreach ($testArray as $test) {
     if (preg_match('`^a.+a$`xX', $test) === 0) {
@@ -21,7 +44,6 @@ foreach ($testArray as $test) {
     }
 }
 return;
-
 class TestClass
 {
     static $testProperty = array ('Test property.');

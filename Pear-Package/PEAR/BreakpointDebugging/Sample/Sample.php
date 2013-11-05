@@ -80,7 +80,7 @@ if ($testNumber === 1) {
         B::addValuesToTrace(array ('$globalCount' => $globalCount));
     }
     fnTestA();
-    echo 'END.';
+    echo 'Is not displayed.';
 }
 
 ?>

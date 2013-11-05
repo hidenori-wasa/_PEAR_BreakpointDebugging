@@ -62,8 +62,8 @@ function BreakpointDebugging_setExecutionMode()
     // Please, choose a mode.
     // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('DEBUG');
     // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('RELEASE');
-    $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('DEBUG_UNIT_TEST'); // Requires "BreakpointDebugging_PHPUnitStepExecution" package.
-    // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('RELEASE_UNIT_TEST'); // Requires "BreakpointDebugging_PHPUnitStepExecution" package.
+    // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('DEBUG_UNIT_TEST'); // Requires "BreakpointDebugging_PHPUnitStepExecution" package.
+    $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('RELEASE_UNIT_TEST'); // Requires "BreakpointDebugging_PHPUnitStepExecution" package.
     // ### <=== Execution mode setting.
     //
     // $_BreakpointDebugging_EXE_MODE |= $REMOTE; // Emulates remote by local host.
@@ -71,8 +71,7 @@ function BreakpointDebugging_setExecutionMode()
     // Reference path setting.
     $includePaths = explode(PATH_SEPARATOR, ini_get('include_path'));
     if ($includePaths[0] !== '.') {
-        echo file_get_contents('BreakpointDebugging/css/FontStyle.html', true);
-        exit('<pre>"include_path" of "php.ini" must be "." first.</pre>');
+        B::displayText('"include_path" of "php.ini" must be "." first.');
     }
     array_unshift($includePaths, $includePaths[0]);
     $includePaths[1] = './PEAR';
@@ -131,11 +130,11 @@ function BreakpointDebugging_setExecutionModeFlags($executionMode)
                 return $REMOTE | $UNIT_TEST; // Unit test of debug code on remote server.
         }
     }
-    echo file_get_contents('BreakpointDebugging/css/FontStyle.html', true);
-    exit(
-        '<pre>You must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'...\');"' . PHP_EOL
+
+    B::displayText(
+        'You must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'...\');"' . PHP_EOL
         . "\t" . 'into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" because you mistook.' . PHP_EOL
-        . ' </pre>'
+        . ' '
     );
 }
 

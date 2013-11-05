@@ -55,10 +55,10 @@ class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_PH
      */
     public function test__destruct()
     {
-        $this->assertTrue(BU::getPropertyForTest('\BreakpointDebugging_Lock', '$_instance') instanceof \BreakpointDebugging_LockByFileExisting);
+        parent::assertTrue(BU::getPropertyForTest('\BreakpointDebugging_Lock', '$_instance') instanceof \BreakpointDebugging_LockByFileExisting);
         // Calls "__destruct".
         $this->lockByFileExisting = null;
-        $this->assertTrue(BU::getPropertyForTest('\BreakpointDebugging_Lock', '$_instance') === null);
+        parent::assertTrue(BU::getPropertyForTest('\BreakpointDebugging_Lock', '$_instance') === null);
     }
 
     /**
@@ -71,13 +71,13 @@ class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_PH
         $this->lockByFileExisting->lock();
         $this->lockByFileExisting->lock();
 
-        $this->assertTrue(BU::getPropertyForTest($this->lockByFileExistingInternal, '$lockCount') === 2);
-        $this->assertTrue(BU::getPropertyForTest($this->lockByFileExisting, '$lockCount') === 2);
+        parent::assertTrue(BU::getPropertyForTest($this->lockByFileExistingInternal, '$lockCount') === 2);
+        parent::assertTrue(BU::getPropertyForTest($this->lockByFileExisting, '$lockCount') === 2);
 
         \BreakpointDebugging_Lock::forceUnlocking();
 
-        $this->assertTrue(BU::getPropertyForTest($this->lockByFileExistingInternal, '$lockCount') === 0);
-        $this->assertTrue(BU::getPropertyForTest($this->lockByFileExisting, '$lockCount') === 0);
+        parent::assertTrue(BU::getPropertyForTest($this->lockByFileExistingInternal, '$lockCount') === 0);
+        parent::assertTrue(BU::getPropertyForTest($this->lockByFileExisting, '$lockCount') === 0);
     }
 
     /**
@@ -87,10 +87,10 @@ class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_PH
     {
         $this->lockByFileExisting->lock();
         clearstatcache();
-        $this->assertTrue(is_file(BU::getPropertyForTest($this->lockByFileExisting, '$lockFilePath')));
+        parent::assertTrue(is_file(BU::getPropertyForTest($this->lockByFileExisting, '$lockFilePath')));
         $this->lockByFileExisting->unlock();
         clearstatcache();
-        $this->assertTrue(!is_file(BU::getPropertyForTest($this->lockByFileExisting, '$lockFilePath')));
+        parent::assertTrue(!is_file(BU::getPropertyForTest($this->lockByFileExisting, '$lockFilePath')));
     }
 
     /**
@@ -175,7 +175,7 @@ class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_PH
     {
         $lockByFileExisting1 = &\BreakpointDebugging_LockByFileExisting::singleton(5, 10);
         $lockByFileExisting2 = &\BreakpointDebugging_LockByFileExisting::singleton(5, 10); // Same object.
-        $this->assertTrue($lockByFileExisting1 === $lockByFileExisting2);
+        parent::assertTrue($lockByFileExisting1 === $lockByFileExisting2);
     }
 
     /**

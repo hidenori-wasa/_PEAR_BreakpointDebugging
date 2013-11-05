@@ -172,6 +172,11 @@ abstract class BreakpointDebugging_Error_InAllCase
     private static $_onceFlag = true;
 
     /**
+     * @var bool Error header of once.
+     */
+    private static $_onceHeader = true;
+
+    /**
      * @var string Error log directory name.
      */
     private static $_errorLogDir = '/ErrorLog/';
@@ -1003,11 +1008,50 @@ abstract class BreakpointDebugging_Error_InAllCase
      */
     protected function outputErrorCallStackLog2($errorKind, $errorMessage, $prependLog = '')
     {
-        if (!$this->isLogging) {
+        if (!$this->isLogging
+            && self::$_onceHeader
+        ) {
+            self::$_onceHeader = false;
             // @codeCoverageIgnoreStart
+            echo <<<EOD
+<head>
+    <meta http-equiv="Content-Style-Type" content="text/css">
+    <style type="text/css">
+    <!--
+    body
+    {
+        background-color: black;
+        color: white;
+    }
+
+    table
+    {
+        color: black;
+    }
+
+    a:link
+    {
+        color: aqua;
+        text-decoration: underline;
+    }
+
+    a:visited
+    {
+        color: purple;
+        text-decoration: underline;
+    }
+
+    a:active
+    {
+        color: purple;
+        text-decoration: underline;
+    }
+    -->
+    </style>
+</head>
+EOD;
             $errorMessage = htmlspecialchars($errorMessage, ENT_QUOTES, 'UTF-8');
             $prependLog = htmlspecialchars($prependLog, ENT_QUOTES, 'UTF-8');
-            echo file_get_contents('BreakpointDebugging/css/FontStyle.html', true);
         }
         // @codeCoverageIgnoreEnd
         if ($errorKind === 'E_NOTICE') {

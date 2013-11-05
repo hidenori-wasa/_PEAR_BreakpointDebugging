@@ -88,7 +88,7 @@ final class BreakpointDebugging_LockByFlock extends \BreakpointDebugging_Lock
     }
 
     /**
-     * Construct the lock system.
+     * Constructs the lock system.
      *
      * @param string $lockFilePath      Lock-flag-file path.
      * @param int    $timeout           Seconds number of timeout.
@@ -101,6 +101,18 @@ final class BreakpointDebugging_LockByFlock extends \BreakpointDebugging_Lock
 
         $this->pFile = B::fopen(array ($lockFilePath, 'ab'));
         B::assert(stream_supports_lock($this->pFile), 101);
+    }
+
+    /**
+     * Destructs the lock system.
+     */
+    function __destruct()
+    {
+        parent::__destruct();
+
+        if (is_resource($this->pFile)) {
+            fclose($this->pFile);
+        }
     }
 
     /**
@@ -120,6 +132,7 @@ final class BreakpointDebugging_LockByFlock extends \BreakpointDebugging_Lock
      */
     protected function loopUnlocking()
     {
+        B::assert(is_resource($this->pFile));
         flock($this->pFile, LOCK_UN);
     }
 

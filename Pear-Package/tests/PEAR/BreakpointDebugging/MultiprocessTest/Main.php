@@ -29,7 +29,7 @@ class tests_PEAR_BreakpointDebugging_MultiprocessTest_Main
 
         $fullFilePath = __DIR__ . '/Lock.php';
         $pPipes = array ();
-        for ($count = 0; $count < 8; $count++) {
+        for ($count = 0; $count < 2; $count++) {
             // Creates and runs a test process.
             if (BREAKPOINTDEBUGGING_IS_WINDOWS) { // For Windows.
                 $pPipe = popen('php.exe -f ' . $fullFilePath . ' -- ' . $shmopKey . ' ' . $className, 'r');
@@ -71,7 +71,7 @@ class tests_PEAR_BreakpointDebugging_MultiprocessTest_Main
             pclose($pPipe);
         }
 
-        if (max($results) !== '1000') {
+        if (max($results) !== '250') {
             // Displays error.
             foreach ($results as $result) {
                 echo $result;

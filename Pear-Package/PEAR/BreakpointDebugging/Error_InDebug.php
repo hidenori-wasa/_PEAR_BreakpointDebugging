@@ -88,14 +88,14 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
         // When "Xdebug" exists.
         if (B::getXebugExists()) {
             $this->tags['pre'] = '<pre class=\'xdebug-var-dump\' dir=\'ltr\'>';
-            $this->tags['font']['caution'] = '<font color=\'#ff0000\'>';
-            $this->tags['font']['bool'] = '<font color=\'#75507b\'>';
-            $this->tags['font']['int'] = '<font color=\'#4e9a06\'>';
-            $this->tags['font']['float'] = '<font color=\'#f57900\'>';
-            $this->tags['font']['string'] = '<font color=\'#cc0000\'>';
-            $this->tags['font']['null'] = '<font color=\'#3465a4\'>';
-            $this->tags['font']['resource'] = '<font color=\'#8080ff\'>';
-            $this->tags['font']['=>'] = '<font color=\'#888a85\'>';
+            $this->tags['font']['caution'] = '<font color=\'#ff8080\'>';
+            $this->tags['font']['bool'] = '<font color=\'#ff80ff\'>';
+            $this->tags['font']['int'] = '<font color=\'lime\'>';
+            $this->tags['font']['float'] = '<font color=\'#ffc000\'>';
+            $this->tags['font']['string'] = '<font color=\'yellow\'>';
+            $this->tags['font']['null'] = '<font color=\'#8080ff\'>';
+            $this->tags['font']['resource'] = '<font color=\'#c0c0ff\'>';
+            $this->tags['font']['=>'] = '<font color=\'silver\'>';
             $this->tags['/font'] = '</font>';
             $this->tags['small'] = '<small>';
             $this->tags['/small'] = '</small>';

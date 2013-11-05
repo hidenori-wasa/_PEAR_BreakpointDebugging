@@ -55,10 +55,10 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_PHPUnitStepExecution_
     function testRefAndGetStatic()
     {
         $userName = &B::refStatic('$_userName');
-        $this->assertTrue($userName !== 'hidenori_hidenori');
+        parent::assertTrue($userName !== 'hidenori_hidenori');
         $userName = 'hidenori_hidenori';
-        $this->assertTrue($userName === 'hidenori_hidenori');
-        $this->assertTrue(B::getStatic('$_userName') === 'hidenori_hidenori');
+        parent::assertTrue($userName === 'hidenori_hidenori');
+        parent::assertTrue(B::getStatic('$_userName') === 'hidenori_hidenori');
     }
 
     /**
@@ -295,7 +295,7 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_PHPUnitStepExecution_
         $debugValues = B::convertMbStringForDebug('SJIS', 1, $testArray, "\xE6\x96\x87\xE5\xAD\x97 ");
 
         $cmpArray = array (1, array (2, "\x95\xB6\x8E\x9A "), "\x95\xB6\x8E\x9A ");
-        $this->assertTrue($debugValues === $cmpArray);
+        parent::assertTrue($debugValues === $cmpArray);
 
         BU::$exeMode = B::REMOTE | B::UNIT_TEST;
         B::convertMbStringForDebug('SJIS', 1, $testArray, "\xE6\x96\x87\xE5\xAD\x97 ");
@@ -349,11 +349,11 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_PHPUnitStepExecution_
         $mandate = "January 01 2000";
         ob_start();
         $return = B::displayVerification('sscanf', array ($mandate, "%s %d %d", &$month, &$day, &$year));
-        $this->assertTrue($return === 3);
-        $this->assertTrue($month === 'January');
-        $this->assertTrue($day === 1);
-        $this->assertTrue($year === 2000);
-        $this->assertTrue(ob_get_clean() !== '');
+        parent::assertTrue($return === 3);
+        parent::assertTrue($month === 'January');
+        parent::assertTrue($day === 1);
+        parent::assertTrue($year === 2000);
+        parent::assertTrue(ob_get_clean() !== '');
     }
 
 }

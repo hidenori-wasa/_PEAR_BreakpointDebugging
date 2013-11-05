@@ -30,10 +30,11 @@ class Initialization
             B::unlink(array ($lockFileName));
         }
 
-        echo '<pre>Initialization is OK.' . PHP_EOL;
-        echo 'Wait about 10 second until hard disk access stops.' . PHP_EOL;
-        echo 'Then, close this window.' . PHP_EOL;
-        echo 'Then, point location which tool tip does not display with mouse until the result is displayed.</pre>';
+        B::displayText('Initialization is OK.' . PHP_EOL
+            . 'Wait about 10 second until hard disk access stops.' . PHP_EOL
+            . 'Then, close this window.' . PHP_EOL
+            . 'Then, point location which tool tip does not display with mouse until the result is displayed.'
+        );
     }
 
 }

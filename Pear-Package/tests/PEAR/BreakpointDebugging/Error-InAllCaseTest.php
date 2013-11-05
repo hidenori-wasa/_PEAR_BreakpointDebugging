@@ -158,18 +158,18 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_PHPUn
         $binData1 = file_get_contents(B::getStatic('$_workDir') . self::$_errorLogDir . $parentFileNumber . '.bin');
 
         $cmpBinData1 = rtrim(B::compressIntArray(array ($parentFileNumber, $line__, $thisFileNumber, $lineParent)), PHP_EOL);
-        $this->assertTrue(strpos($binData1, $cmpBinData1) !== false);
+        parent::assertTrue(strpos($binData1, $cmpBinData1) !== false);
 
         $cmpBinData1 = rtrim(B::compressIntArray(array ($parentFileNumber, self::$lineA_, $parentFileNumber, self::$lineB_, $parentFileNumber, $lineC_, $thisFileNumber, $lineParent)), PHP_EOL);
-        $this->assertTrue(strpos($binData1, $cmpBinData1) !== false);
+        parent::assertTrue(strpos($binData1, $cmpBinData1) !== false);
 
         $binData2 = file_get_contents(B::getStatic('$_workDir') . self::$_errorLogDir . $thisFileNumber . '.bin');
 
         $cmpBinData2 = rtrim(B::compressIntArray(array ($thisFileNumber, $line)), PHP_EOL);
-        $this->assertTrue(strpos($binData2, $cmpBinData2) !== false);
+        parent::assertTrue(strpos($binData2, $cmpBinData2) !== false);
 
         $cmpBinData2 = rtrim(B::compressIntArray(array ($thisFileNumber, self::$line1_, $thisFileNumber, self::$line2_, $thisFileNumber, $line3)), PHP_EOL);
-        $this->assertTrue(strpos($binData2, $cmpBinData2) !== false);
+        parent::assertTrue(strpos($binData2, $cmpBinData2) !== false);
 
         B::addValuesToTrace(array ('$parentFileNumber' => $parentFileNumber, '$thisFileNumber' => $thisFileNumber));
         new \BreakpointDebugging_Error();
@@ -256,15 +256,15 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_PHPUn
         // Makes "php_error_1.log".
         $logfileMaximumCapacityException($this);
         $stat = stat($workDir . self::$_errorLogDir . 'php_error_1.log');
-        $this->assertTrue($stat['size'] === 1024 * 1024 / 8);
+        parent::assertTrue($stat['size'] === 1024 * 1024 / 8);
         // Makes "php_error_2.log".
         $logStartException();
         $stat2 = stat($workDir . self::$_errorLogDir . 'php_error_2.log');
-        $this->assertTrue(0 < $stat2['size'] && $stat2['size'] < 1024 * 1024 / 8);
+        parent::assertTrue(0 < $stat2['size'] && $stat2['size'] < 1024 * 1024 / 8);
         // Makes "php_error_3.log".
         $logfileMaximumCapacityException($this);
         $stat3 = stat($workDir . self::$_errorLogDir . 'php_error_3.log');
-        $this->assertTrue($stat3['size'] === 1024 * 1024 / 8);
+        parent::assertTrue($stat3['size'] === 1024 * 1024 / 8);
         // Makes "php_error_4.log".
         $logStartException();
         // Makes "php_error_5.log".
@@ -325,18 +325,18 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_PHPUn
         $binData1 = file_get_contents(B::getStatic('$_workDir') . self::$_errorLogDir . $parentFileNumber . '.bin');
 
         $cmpBinData1 = rtrim(B::compressIntArray(array ($parentFileNumber, $line_, $thisFileNumber, $lineParent)), PHP_EOL);
-        $this->assertTrue(strpos($binData1, $cmpBinData1) !== false);
+        parent::assertTrue(strpos($binData1, $cmpBinData1) !== false);
 
         $cmpBinData1 = rtrim(B::compressIntArray(array ($parentFileNumber, self::$lineA, $parentFileNumber, self::$lineB, $parentFileNumber, $lineC, $thisFileNumber, $lineParent)), PHP_EOL);
-        $this->assertTrue(strpos($binData1, $cmpBinData1) !== false);
+        parent::assertTrue(strpos($binData1, $cmpBinData1) !== false);
 
         $binData2 = file_get_contents(B::getStatic('$_workDir') . self::$_errorLogDir . $thisFileNumber . '.bin');
 
         $cmpBinData2 = rtrim(B::compressIntArray(array ($thisFileNumber, $line)), PHP_EOL);
-        $this->assertTrue(strpos($binData2, $cmpBinData2) !== false);
+        parent::assertTrue(strpos($binData2, $cmpBinData2) !== false);
 
         $cmpBinData2 = rtrim(B::compressIntArray(array ($thisFileNumber, self::$line1, $thisFileNumber, self::$line2, $thisFileNumber, $line3)), PHP_EOL);
-        $this->assertTrue(strpos($binData2, $cmpBinData2) !== false);
+        parent::assertTrue(strpos($binData2, $cmpBinData2) !== false);
 
         ob_start();
         BU::$exeMode |= B::IGNORING_BREAK_POINT;

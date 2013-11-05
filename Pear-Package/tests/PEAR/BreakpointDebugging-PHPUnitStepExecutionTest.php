@@ -47,30 +47,30 @@ class BreakpointDebugging_PHPUnitStepExecutionTest extends \BreakpointDebugging_
         BU::checkExeMode(true);
     }
 
-    /**
-     * @covers \BreakpointDebugging<extended>
-     *
-     * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_PHPUnitStepExecution FUNCTION=checkExeMode ID=101.
-     */
-    public function testIsUnitTestExeMode_A()
-    {
-        ob_start();
-        BU::checkExeMode();
-    }
-
-    /**
-     * @covers \BreakpointDebugging<extended>
-     *
-     * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_PHPUnitStepExecution FUNCTION=checkExeMode ID=101.
-     */
-    public function testIsUnitTestExeMode_C()
-    {
-        ob_start();
-        BU::checkExeMode(false);
-    }
-
+//    /**
+//     * @covers \BreakpointDebugging<extended>
+//     *
+//     * @expectedException        \BreakpointDebugging_ErrorException
+//     * @expectedExceptionMessage CLASS=BreakpointDebugging_PHPUnitStepExecution FUNCTION=checkExeMode ID=101.
+//     */
+//    public function testIsUnitTestExeMode_A()
+//    {
+//        ob_start();
+//        BU::checkExeMode();
+//    }
+//
+//    /**
+//     * @covers \BreakpointDebugging<extended>
+//     *
+//     * @expectedException        \BreakpointDebugging_ErrorException
+//     * @expectedExceptionMessage CLASS=BreakpointDebugging_PHPUnitStepExecution FUNCTION=checkExeMode ID=101.
+//     */
+//    public function testIsUnitTestExeMode_C()
+//    {
+//        ob_start();
+//        BU::checkExeMode(false);
+//    }
+//
 //    /**
 //     * @covers \BreakpointDebugging<extended>
 //     */
@@ -134,10 +134,10 @@ class BreakpointDebugging_PHPUnitStepExecutionTest extends \BreakpointDebugging_
     {
         $pBreakpointDebuggingTestExample = new \BreakpointDebuggingTestExample();
 
-        $this->assertTrue(BU::getPropertyForTest('BreakpointDebuggingTestExample', 'CONSTANT_TEST') === 123); // Constant property.
-        $this->assertTrue(BU::getPropertyForTest('BreakpointDebuggingTestExample', '$privateStatic') === 'private static'); // Private static property.
-        $this->assertTrue(BU::getPropertyForTest($pBreakpointDebuggingTestExample, '$privateStatic') === 'private static'); // Private static property.
-        $this->assertTrue(BU::getPropertyForTest($pBreakpointDebuggingTestExample, '$privateAuto') === 'private auto'); // Private auto property.
+        parent::assertTrue(BU::getPropertyForTest('BreakpointDebuggingTestExample', 'CONSTANT_TEST') === 123); // Constant property.
+        parent::assertTrue(BU::getPropertyForTest('BreakpointDebuggingTestExample', '$privateStatic') === 'private static'); // Private static property.
+        parent::assertTrue(BU::getPropertyForTest($pBreakpointDebuggingTestExample, '$privateStatic') === 'private static'); // Private static property.
+        parent::assertTrue(BU::getPropertyForTest($pBreakpointDebuggingTestExample, '$privateAuto') === 'private auto'); // Private auto property.
     }
 
     /**
@@ -194,17 +194,17 @@ class BreakpointDebugging_PHPUnitStepExecutionTest extends \BreakpointDebugging_
         $pBreakpointDebuggingTestExample = new \BreakpointDebuggingTestExample();
 
         BU::setPropertyForTest('\BreakpointDebuggingTestExample', '$privateStatic', 'Changed private static.'); // Private static property.
-        $this->assertTrue(BU::getPropertyForTest('\BreakpointDebuggingTestExample', '$privateStatic') === 'Changed private static.');
+        parent::assertTrue(BU::getPropertyForTest('\BreakpointDebuggingTestExample', '$privateStatic') === 'Changed private static.');
         BU::setPropertyForTest($pBreakpointDebuggingTestExample, '$privateStatic', 'Changed private static 2.'); // Private static property.
-        $this->assertTrue(BU::getPropertyForTest($pBreakpointDebuggingTestExample, '$privateStatic') === 'Changed private static 2.');
+        parent::assertTrue(BU::getPropertyForTest($pBreakpointDebuggingTestExample, '$privateStatic') === 'Changed private static 2.');
         BU::setPropertyForTest($pBreakpointDebuggingTestExample, '$privateAuto', 'Changed private auto 2.'); // Private auto property.
-        $this->assertTrue(BU::getPropertyForTest($pBreakpointDebuggingTestExample, '$privateAuto') === 'Changed private auto 2.');
+        parent::assertTrue(BU::getPropertyForTest($pBreakpointDebuggingTestExample, '$privateAuto') === 'Changed private auto 2.');
         BU::setPropertyForTest('\BreakpointDebuggingTestExample', '$protectedStaticBase', 'Changed protected static base.'); // Protected static base property.
-        $this->assertTrue(BU::getPropertyForTest('\BreakpointDebuggingTestExample', '$protectedStaticBase') === 'Changed protected static base.');
+        parent::assertTrue(BU::getPropertyForTest('\BreakpointDebuggingTestExample', '$protectedStaticBase') === 'Changed protected static base.');
         BU::setPropertyForTest($pBreakpointDebuggingTestExample, '$protectedStaticBase', 'Changed protected static base 2.'); // Protected static base property.
-        $this->assertTrue(BU::getPropertyForTest($pBreakpointDebuggingTestExample, '$protectedStaticBase') === 'Changed protected static base 2.');
+        parent::assertTrue(BU::getPropertyForTest($pBreakpointDebuggingTestExample, '$protectedStaticBase') === 'Changed protected static base 2.');
         BU::setPropertyForTest($pBreakpointDebuggingTestExample, '$protectedAutoBase', 'Changed protected auto base 2.'); // Protected auto base property.
-        $this->assertTrue(BU::getPropertyForTest($pBreakpointDebuggingTestExample, '$protectedAutoBase') === 'Changed protected auto base 2.');
+        parent::assertTrue(BU::getPropertyForTest($pBreakpointDebuggingTestExample, '$protectedAutoBase') === 'Changed protected auto base 2.');
     }
 
     /**

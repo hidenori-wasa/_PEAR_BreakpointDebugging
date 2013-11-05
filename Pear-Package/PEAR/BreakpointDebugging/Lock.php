@@ -69,7 +69,8 @@ abstract class BreakpointDebugging_Lock
     /**
      * @var object Maintains a instance.
      */
-    private static $_instance = null;
+    // private static $_instance = null;
+    static $_instance = null; // For debug.
 
     /**
      * @var int The lock count.
@@ -84,7 +85,8 @@ abstract class BreakpointDebugging_Lock
     /**
      * @var resource File pointer of lock flag file.
      */
-    protected $pFile;
+    // protected $pFile;
+    public $pFile; // For debug.
 
     /**
      * @var int Seconds number of timeout.

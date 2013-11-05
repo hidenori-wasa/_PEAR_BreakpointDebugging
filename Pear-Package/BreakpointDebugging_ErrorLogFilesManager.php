@@ -134,7 +134,7 @@ final class BreakpointDebugging_ErrorLogFilesManager
         try {
             $errorLogDirectory = B::getStatic('$_workDir') . \BreakpointDebugging_Error::getErrorLogDir();
             if (!is_dir($errorLogDirectory)) {
-                echo 'Error log directory does not exist.';
+                B::displayText('Error log directory does not exist.');
                 goto END_LABEL;
             }
             $errorLogDirElements = scandir($errorLogDirectory);
@@ -165,7 +165,7 @@ final class BreakpointDebugging_ErrorLogFilesManager
                     // Deletes the error log file, variable configuring file or the error location file.
                     B::unlink(array ($errorLogDirElementPath));
                 }
-                echo '<pre>You must comment out "$developerIP = \'' . $_SERVER['REMOTE_ADDR'] . '\';" inside "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file before your IP is changed.</pre>';
+                B::displayText('You must comment out "$developerIP = \'' . $_SERVER['REMOTE_ADDR'] . '\';" inside "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file before your IP is changed.');
             } else if (isset($_GET['reset'])) { // When you pushed "Reset error log files" button.
                 // Searches the files which should delete.
                 foreach ($errorLogDirElements as $errorLogDirElement) {
@@ -176,9 +176,11 @@ final class BreakpointDebugging_ErrorLogFilesManager
                     // Deletes the error log file, variable configuring file or the error location file.
                     B::unlink(array ($errorLogDirElementPath));
                 }
-                echo '<pre>You must comment out "$developerIP = \'' . $_SERVER['REMOTE_ADDR'] . '\';" inside "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file before your IP is changed.</pre>';
+                B::displayText('You must comment out "$developerIP = \'' . $_SERVER['REMOTE_ADDR'] . '\';" inside "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file before your IP is changed.');
             } else { // In case of first time when this page was called.
+                echo '<body style="background-color:black;color:white">';
                 $thisFileName = basename(__FILE__);
+                $fontStyle = 'style="font-size: 1em; font-weight: bold;"';
                 // Makes error log download-buttons.
                 foreach ($errorLogDirElements as $errorLogDirElement) {
                     if (!preg_match('`\.log$`xX', $errorLogDirElement)) {
@@ -187,23 +189,23 @@ final class BreakpointDebugging_ErrorLogFilesManager
                     echo <<<EOD
 <br/>
 <form method="post" action="{$thisFileName}?download={$errorLogDirElement}">
-    <input type="submit" value="Download error log file ({$errorLogDirElement})"/>
-
+    <input type="submit" value="Download error log file ({$errorLogDirElement})" $fontStyle/>
 </form>
 EOD;
                 }
                 echo <<<EOD
 <br/><br/>
 <form method="post" action="{$thisFileName}?deleteErrorLogs">
-    <input type="submit" value="Delete all error log files (You must download all error log files before you push this button.)"></input>
+    <input type="submit" value="Delete all error log files (You must download all error log files before you push this button.)" $fontStyle/>
 </form>
 EOD;
                 echo <<<EOD
 <br/><br/>
 <form method="post" action="{$thisFileName}?reset">
-    <input type="submit" value="Reset error log files (You must debug and upload all error code before you push this button.)"></input>
+    <input type="submit" value="Reset error log files (You must debug and upload all error code before you push this button.)" $fontStyle/>
 </form>
 EOD;
+                echo '</body>';
             }
         } catch (\Exception $e) {
             // Unlocks error log files.

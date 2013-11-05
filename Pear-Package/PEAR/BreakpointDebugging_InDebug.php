@@ -257,8 +257,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
             && !BREAKPOINTDEBUGGING_IS_WINDOWS
             && trim(`echo \$USER`) === 'root'
         ) {
-            echo file_get_contents('BreakpointDebugging/css/FontStyle.html', true);
-            echo '<pre>Security warning: Recommends to change to "Apache HTTP Server" which Supported "suEXEC" because this "Apache HTTP Server" is executed by "root" user.</pre>';
+            BA::displayText('Security warning: Recommends to change to "Apache HTTP Server" which Supported "suEXEC" because this "Apache HTTP Server" is executed by "root" user.');
         }
     }
 
@@ -500,19 +499,19 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
                         break 2;
                     }
                 }
-                echo file_get_contents('BreakpointDebugging/css/FontStyle.html', true);
-                exit('<pre>Path environment variable has not been set for "php.exe" command.' . PHP_EOL . `path` . '</pre>');
+                B::displayText('Path environment variable has not been set for "php.exe" command.' . PHP_EOL . `path`);
+                exit;
             }
         } else {
             $result = `which php`;
             if (empty($result)) {
-                echo file_get_contents('BreakpointDebugging/css/FontStyle.html', true);
                 $message = 'Path environment variable has not been set for "php" command.' . PHP_EOL
                     . '$PATH=' . `echo \$PATH` . PHP_EOL
                     . 'Please, search by (sudo find "<apache install directory>" -mount -name "envvars") command.' . PHP_EOL
                     . 'Then, add "export PATH=$PATH:<php command directory>" line to its file.' . PHP_EOL
                     . 'Example: "export PATH=$PATH:/opt/lampp/bin"';
-                exit('<pre>' . htmlspecialchars($message, ENT_COMPAT) . '</pre>');
+                B::displayText(htmlspecialchars($message, ENT_COMPAT));
+                exit;
             }
         }
     }
@@ -769,7 +768,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
                 $cmpNameLength = strlen($cmpName);
                 if (!substr_compare($baseName, $cmpName, 0 - $cmpNameLength, $cmpNameLength, true)) {
                     // @codeCoverageIgnoreStart
-                    echo file_get_contents('BreakpointDebugging/css/FontStyle.html', true);
+                    echo '<body style="background-color:black;color:white">';
                     $notExistFlag = true;
                     foreach (self::$_onceFlag as $cmpName) {
                         if (!strcmp($baseName, $cmpName)) {
@@ -793,6 +792,7 @@ EOD;
 	line: {$backTrace[0]['line']}
 </pre>
 EOD;
+                    echo '</body>';
                 }
                 // @codeCoverageIgnoreEnd
             }
@@ -820,7 +820,7 @@ EOD;
         self::assert(is_string($functionName));
         self::assert(is_array($params));
 
-        echo file_get_contents('BreakpointDebugging/css/FontStyle.html', true);
+        ob_start();
         self::$tmp = $params;
         $paramNumber = count($params);
         $propertyNameToSend = '\BreakpointDebugging::$tmp';
@@ -838,6 +838,7 @@ EOD;
         $code = $functionName . '(' . implode(',', $paramString) . ')';
         $return = eval('$return = ' . $code . '; echo "<br/><b>RETURN</b> = "; var_dump($return); return $return;');
         echo '//////////////////////////////////////////////////////////////////////////////////////';
+        B::displayText(ob_get_clean());
         return $return;
     }
 

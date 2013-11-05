@@ -70,10 +70,10 @@ class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_PHPUnitSt
      */
     public function test__destruct()
     {
-        $this->assertTrue(BU::getPropertyForTest('\BreakpointDebugging_Lock', '$_instance') instanceof \BreakpointDebugging_LockByShmop);
+        parent::assertTrue(BU::getPropertyForTest('\BreakpointDebugging_Lock', '$_instance') instanceof \BreakpointDebugging_LockByShmop);
         // Calls "__destruct".
         $this->LockByShmop = null;
-        $this->assertTrue(BU::getPropertyForTest('\BreakpointDebugging_Lock', '$_instance') === null);
+        parent::assertTrue(BU::getPropertyForTest('\BreakpointDebugging_Lock', '$_instance') === null);
     }
 
     /**
@@ -84,11 +84,11 @@ class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_PHPUnitSt
         $this->LockByShmop->lock();
         $this->LockByShmop->lock();
 
-        $this->assertTrue(BU::getPropertyForTest($this->LockByShmop, '$lockCount') === 2);
+        parent::assertTrue(BU::getPropertyForTest($this->LockByShmop, '$lockCount') === 2);
 
         \BreakpointDebugging_Lock::forceUnlocking();
 
-        $this->assertTrue(BU::getPropertyForTest($this->LockByShmop, '$lockCount') === 0);
+        parent::assertTrue(BU::getPropertyForTest($this->LockByShmop, '$lockCount') === 0);
     }
 
     /**
@@ -182,7 +182,7 @@ class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_PHPUnitSt
     {
         $LockByShmop1 = &\BreakpointDebugging_LockByShmop::singleton(5, 10);
         $LockByShmop2 = &\BreakpointDebugging_LockByShmop::singleton(5, 10); // Same object.
-        $this->assertTrue($LockByShmop1 === $LockByShmop2);
+        parent::assertTrue($LockByShmop1 === $LockByShmop2);
     }
 
     /**
