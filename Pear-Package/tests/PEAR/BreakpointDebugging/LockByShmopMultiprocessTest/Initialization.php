@@ -30,10 +30,23 @@ class Initialization
             B::unlink(array ($lockFileName));
         }
 
-        B::displayText('Initialization is OK.' . PHP_EOL
+        $htmlFileContent = <<<EOD
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>INITIALIZATION</title>
+    </head>
+    <body style="background-color: black; color: white; font-size: 1.5em">
+        <pre></pre>
+    </body>
+</html>
+EOD;
+        B::windowOpen(__CLASS__, $htmlFileContent);
+        B::windowHtmlAddition(__CLASS__, 'pre', 0, '<b>Initialization is OK.' . PHP_EOL
             . 'Wait about 10 second until hard disk access stops.' . PHP_EOL
             . 'Then, close this window.' . PHP_EOL
-            . 'Then, point location which tool tip does not display with mouse until the result is displayed.'
+            . 'Then, point location which tool tip does not display with mouse until the result is displayed.</b>'
         );
     }
 

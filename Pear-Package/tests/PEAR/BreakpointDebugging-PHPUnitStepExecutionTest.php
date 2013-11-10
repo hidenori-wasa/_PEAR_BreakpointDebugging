@@ -49,30 +49,6 @@ class BreakpointDebugging_PHPUnitStepExecutionTest extends \BreakpointDebugging_
 
 //    /**
 //     * @covers \BreakpointDebugging<extended>
-//     *
-//     * @expectedException        \BreakpointDebugging_ErrorException
-//     * @expectedExceptionMessage CLASS=BreakpointDebugging_PHPUnitStepExecution FUNCTION=checkExeMode ID=101.
-//     */
-//    public function testIsUnitTestExeMode_A()
-//    {
-//        ob_start();
-//        BU::checkExeMode();
-//    }
-//
-//    /**
-//     * @covers \BreakpointDebugging<extended>
-//     *
-//     * @expectedException        \BreakpointDebugging_ErrorException
-//     * @expectedExceptionMessage CLASS=BreakpointDebugging_PHPUnitStepExecution FUNCTION=checkExeMode ID=101.
-//     */
-//    public function testIsUnitTestExeMode_C()
-//    {
-//        ob_start();
-//        BU::checkExeMode(false);
-//    }
-//
-//    /**
-//     * @covers \BreakpointDebugging<extended>
 //     */
 //    public function testExecuteUnitTest_InRelease()
 //    {

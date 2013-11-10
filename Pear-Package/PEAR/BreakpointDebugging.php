@@ -123,6 +123,11 @@ abstract class BreakpointDebugging_InAllCase
     const GLOBALS_USING = '### Omits own recursive array inside "$GLOBALS". ###';
 
     /**
+     * @const string Error window name.
+     */
+    const ERROR_WINDOW_NAME = 'BreakpointDebugging_Error';
+
+    /**
      * @var mixed Temporary variable.
      */
     static $tmp;
@@ -203,6 +208,11 @@ abstract class BreakpointDebugging_InAllCase
     private static $_onceErrorDispFlag = false;
 
     /**
+     * @var array Once JavaScript flag.
+     */
+    private static $_onceJavaScript = array ();
+
+    /**
      * @var bool Calling exception handler directly?
      */
     private static $_callingExceptionHandlerDirectly = false;
@@ -221,6 +231,11 @@ abstract class BreakpointDebugging_InAllCase
      * @var int Native execution mode.
      */
     private static $_nativeExeMode;
+
+    /**
+     * @var string HTML file content of error window.
+     */
+    protected static $errorHtmlFileContent;
 
     ///////////////////////////// For package user from here. /////////////////////////////
     /**
@@ -269,20 +284,6 @@ abstract class BreakpointDebugging_InAllCase
             // Remote debug must end immediately to avoid eternal execution.
             exit;
         }
-    }
-
-    /**
-     * Displays character string with style.
-     *
-     * @param string $text            Text to display.
-     * @param string $backgroundColor Background color.
-     * @param string $color           Text color.
-     *
-     * @return void
-     */
-    static function displayText($text, $backgroundColor = 'black', $color = 'white')
-    {
-        echo '<body style="background-color:' . $backgroundColor . ';color:' . $color . '"><pre>' . $text . '</pre></body>';
     }
 
     /**
@@ -336,18 +337,19 @@ abstract class BreakpointDebugging_InAllCase
         ) {
             switch ($necessaryExeMode) {
                 case self::RELEASE:
-                    $message = 'RELEASE';
+                    $message = '    "BREAKPOINTDEBUGGING_MODE=RELEASE"';
                     break;
                 case self::UNIT_TEST:
-                    $message = '..._UNIT_TEST';
+                    $message = '    "BREAKPOINTDEBUGGING_MODE=DEBUG_UNIT_TEST" or' . PHP_EOL
+                        . '    "BREAKPOINTDEBUGGING_MODE=RELEASE_UNIT_TEST"';
                     break;
                 default :
                     throw new \BreakpointDebugging_ErrorException('"' . __METHOD__ . '" parameter1 is mistake.', 101);
             }
-            self::displayText('<b>You must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'' . $message . '\');" ' . PHP_EOL
-                . "\t" . 'into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file.' . PHP_EOL
-                . 'Or, you mistook start "php" page.</b>'
-            );
+            self::windowOpen(self::ERROR_WINDOW_NAME, self::$errorHtmlFileContent);
+            self::windowHtmlAddition(self::ERROR_WINDOW_NAME, 'pre', 0, '<b>You must set' . PHP_EOL
+                . $message . PHP_EOL
+                . 'to this project execution parameter.</b>');
             return false;
         }
         if (!(self::$exeMode & self::REMOTE)) { // In case of local.
@@ -355,7 +357,8 @@ abstract class BreakpointDebugging_InAllCase
         }
         // Checks client IP address.
         if ($_SERVER['REMOTE_ADDR'] !== self::$_developerIP) {
-            self::displayText('<b>You must set "$developerIP = \'' . $_SERVER['REMOTE_ADDR'] . '\';" ' . PHP_EOL
+            self::windowOpen(self::ERROR_WINDOW_NAME, self::$errorHtmlFileContent);
+            self::windowHtmlAddition(self::ERROR_WINDOW_NAME, 'pre', 0, '<b>You must set "$developerIP = \'' . $_SERVER['REMOTE_ADDR'] . '\';" ' . PHP_EOL
                 . "\t" . 'into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file.' . PHP_EOL
                 . 'Or, you mistook start "php" page.</b>'
             );
@@ -366,7 +369,8 @@ abstract class BreakpointDebugging_InAllCase
             || empty($_SERVER['HTTPS'])
             || $_SERVER['HTTPS'] === 'off'
         ) {
-            self::displayText('<b>You must use "https" protocol.' . PHP_EOL
+            self::windowOpen(self::ERROR_WINDOW_NAME, self::$errorHtmlFileContent);
+            self::windowHtmlAddition(self::ERROR_WINDOW_NAME, 'pre', 0, '<b>You must use "https" protocol.' . PHP_EOL
                 . 'Or, you mistook start "php" page.</b>'
             );
             return false;
@@ -403,10 +407,14 @@ abstract class BreakpointDebugging_InAllCase
         }
 
         if ($isUnitTest) {
-            self::displayText('<b>You must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'..._UNIT_TEST\');"' . PHP_EOL
-                . "\t" . 'into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php".' . PHP_EOL
-                . 'Or, you mistook start "php" page.</b>'
-            );
+            self::windowOpen(self::ERROR_WINDOW_NAME, self::$errorHtmlFileContent);
+            $errorMessage = <<<EOD
+You must set
+    "BREAKPOINTDEBUGGING_MODE=DEBUG_UNIT_TEST" or
+    "BREAKPOINTDEBUGGING_MODE=RELEASE_UNIT_TEST"
+to this project execution parameter.
+EOD;
+            self::windowHtmlAddition(self::ERROR_WINDOW_NAME, 'pre', 0, '<b>' . $errorMessage . '</b>');
             exit;
         }
     }
@@ -497,11 +505,14 @@ abstract class BreakpointDebugging_InAllCase
             }
         }
         if ($cmpResult) {
+            self::windowOpen(self::ERROR_WINDOW_NAME, self::$errorHtmlFileContent);
             ob_start();
-            echo "<pre>$errorMessage</pre>" .
-            "<pre>Current value =</pre>";
+
+            echo "$errorMessage" . PHP_EOL
+            . "Current value =";
             var_dump($value);
-            self::displayText(ob_get_clean());
+
+            self::windowHtmlAddition(self::ERROR_WINDOW_NAME, 'pre', 0, ob_get_clean());
         }
     }
 
@@ -976,6 +987,88 @@ abstract class BreakpointDebugging_InAllCase
         return false;
     }
 
+    /**
+     * Opens a initialized window.
+     *
+     * @param string $windowName      Window name which opens.
+     * @param string $htmlFileContent HTML file content to initialize.
+     *
+     * @return void
+     */
+    static function windowOpen($windowName, $htmlFileContent)
+    {
+        if (!isset($_SERVER['SERVER_ADDR'])) { // In case of command line.
+            return;
+        }
+
+        echo '<script type="text/javascript">' . PHP_EOL
+        . '<!--' . PHP_EOL;
+
+        if (!array_key_exists(__FUNCTION__, self::$_onceJavaScript)) {
+            self::$_onceJavaScript[__FUNCTION__] = true;
+            readfile('BreakpointDebugging/js/windowOpen.js', true);
+        }
+
+        $htmlFileContent = str_replace(array ('\\', '\'', "\r", "\n"), array ('\\\\', '\\\'', '\r', '\n'), $htmlFileContent);
+        echo "BreakpointDebugging_windowWhichOpen('$windowName', '$htmlFileContent');" . PHP_EOL
+        . '//-->' . PHP_EOL
+        . '</script>' . PHP_EOL;
+    }
+
+    /**
+     * Closes out browser window.
+     *
+     * @param string $windowName
+     *
+     * @return void
+     */
+    static function windowWhichClose($windowName)
+    {
+        if (!isset($_SERVER['SERVER_ADDR'])) { // In case of command line.
+            return;
+        }
+
+        echo '<script type="text/javascript">' . PHP_EOL
+        . '<!--' . PHP_EOL;
+
+        if (!array_key_exists(__FUNCTION__, self::$_onceJavaScript)) {
+            self::$_onceJavaScript[__FUNCTION__] = true;
+            echo 'function BreakpointDebugging_windowWhichClose($windowName)' . PHP_EOL
+            . '{' . PHP_EOL
+            . '    openedWindow = open("", $windowName);' . PHP_EOL
+            . '    openedWindow.close();' . PHP_EOL
+            . '}' . PHP_EOL;
+        }
+
+        echo "BreakpointDebugging_windowWhichClose('$windowName');" . PHP_EOL
+        . '//-->' . PHP_EOL
+        . '</script>';
+    }
+
+    /**
+     * Writes HTML character string inside a tag of opened window.
+     *
+     * @param string $windowName Opened window name.
+     * @param string $tagName    The tag name.
+     * @param int    $tagNumber  The tag number from 0.
+     * @param string $html       HTML character string which writes inside a tag of opened window.
+     *
+     * @return void
+     */
+    static function windowHtmlAddition($windowName, $tagName, $tagNumber, $html)
+    {
+        if (!isset($_SERVER['SERVER_ADDR'])) { // In case of command line.
+            return;
+        }
+
+        $html = str_replace(array ('\\', '\'', "\r", "\n"), array ('\\\\', '\\\'', '\r', '\n'), $html);
+        echo '<script type="text/javascript">' . PHP_EOL
+        . '<!--' . PHP_EOL
+        . "open('', '$windowName').document.getElementsByTagName('$tagName')[$tagNumber].innerHTML += '$html';" . PHP_EOL
+        . '//-->' . PHP_EOL
+        . '</script>' . PHP_EOL;
+    }
+
     ///////////////////////////// For package user until here. /////////////////////////////
     /**
      * Initializes static properties.
@@ -1003,6 +1096,19 @@ abstract class BreakpointDebugging_InAllCase
         self::$staticProperties['$_callingExceptionHandlerDirectly'] = &self::$_callingExceptionHandlerDirectly;
         self::$staticProperties['$_valuesToTrace'] = &self::$_valuesToTrace;
         self::$staticProperties['$_notFixedLocations'] = &self::$_notFixedLocations;
+        self::$errorHtmlFileContent = <<<EOD
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>ERROR</title>
+    </head>
+    <body style="background-color: black; color: white; font-size: 1.5em">
+        <pre></pre>
+    </body>
+</html>
+EOD;
+        self::$staticProperties['$errorHtmlFileContent'] = &self::$errorHtmlFileContent;
     }
 
     /**
@@ -1283,9 +1389,14 @@ if ($_BreakpointDebugging_EXE_MODE & BA::RELEASE) { // In case of release.
                     } else {
                         // Because unit test is exited.
                         ini_set('xdebug.var_display_max_depth', 5);
+
+                        parent::windowOpen(parent::ERROR_WINDOW_NAME, parent::$errorHtmlFileContent);
                         ob_start();
+
                         var_dump(debug_backtrace());
-                        self::displayText(ob_get_clean());
+
+                        self::windowHtmlAddition(self::ERROR_WINDOW_NAME, 'pre', 0, ob_get_clean());
+
                         // Ends the output buffering.
                         while (ob_get_level() > 0) {
                             ob_end_flush();

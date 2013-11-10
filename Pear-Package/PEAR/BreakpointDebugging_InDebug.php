@@ -257,7 +257,8 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
             && !BREAKPOINTDEBUGGING_IS_WINDOWS
             && trim(`echo \$USER`) === 'root'
         ) {
-            BA::displayText('Security warning: Recommends to change to "Apache HTTP Server" which Supported "suEXEC" because this "Apache HTTP Server" is executed by "root" user.');
+            parent::windowOpen(parent::ERROR_WINDOW_NAME, parent::$errorHtmlFileContent);
+            B::windowHtmlAddition(B::ERROR_WINDOW_NAME, 'pre', 0, 'Security warning: Recommends to change to "Apache HTTP Server" which Supported "suEXEC" because this "Apache HTTP Server" is executed by "root" user.');
         }
     }
 
@@ -499,7 +500,8 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
                         break 2;
                     }
                 }
-                B::displayText('Path environment variable has not been set for "php.exe" command.' . PHP_EOL . `path`);
+                parent::windowOpen(parent::ERROR_WINDOW_NAME, parent::$errorHtmlFileContent);
+                B::windowHtmlAddition(B::ERROR_WINDOW_NAME, 'pre', 0, 'Path environment variable has not been set for "php.exe" command.' . PHP_EOL . `path`);
                 exit;
             }
         } else {
@@ -510,7 +512,8 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
                     . 'Please, search by (sudo find "<apache install directory>" -mount -name "envvars") command.' . PHP_EOL
                     . 'Then, add "export PATH=$PATH:<php command directory>" line to its file.' . PHP_EOL
                     . 'Example: "export PATH=$PATH:/opt/lampp/bin"';
-                B::displayText(htmlspecialchars($message, ENT_COMPAT));
+                parent::windowOpen(parent::ERROR_WINDOW_NAME, parent::$errorHtmlFileContent);
+                B::windowHtmlAddition(B::ERROR_WINDOW_NAME, 'pre', 0, htmlspecialchars($message, ENT_COMPAT));
                 exit;
             }
         }
@@ -820,12 +823,26 @@ EOD;
         self::assert(is_string($functionName));
         self::assert(is_array($params));
 
+        $functionVerificationHtmlFileContent = <<<EOD
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>functionVerification</title>
+    </head>
+    <body style="background-color: black; color: white; font-size: 1.5em">
+        <pre></pre>
+    </body>
+</html>
+EOD;
+        B::windowOpen(__CLASS__, $functionVerificationHtmlFileContent);
         ob_start();
+
         self::$tmp = $params;
         $paramNumber = count($params);
         $propertyNameToSend = '\BreakpointDebugging::$tmp';
         $callStackInfo = debug_backtrace();
-        echo '<pre><b>Executed function information.</b></br></br>';
+        echo '<b>Executed function information.</b></br></br>';
         echo "<b>FILE</b> = {$callStackInfo[0]['file']}</br>";
         echo "<b>LINE</b> = {$callStackInfo[0]['line']}</br>";
         echo '<b>NAME</b> = ' . $functionName . '(';
@@ -838,7 +855,9 @@ EOD;
         $code = $functionName . '(' . implode(',', $paramString) . ')';
         $return = eval('$return = ' . $code . '; echo "<br/><b>RETURN</b> = "; var_dump($return); return $return;');
         echo '//////////////////////////////////////////////////////////////////////////////////////';
-        B::displayText(ob_get_clean());
+
+        B::windowHtmlAddition(__CLASS__, 'pre', 0, ob_get_clean());
+
         return $return;
     }
 

@@ -59,19 +59,33 @@ function BreakpointDebugging_setExecutionMode()
     $REMOTE = 1;
     // $UNIT_TEST = 4; // For debug.
     // ### Execution mode setting. ===>
-    // Please, choose a mode.
-    // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('DEBUG');
-    // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('RELEASE');
-    // $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('DEBUG_UNIT_TEST'); // Requires "BreakpointDebugging_PHPUnitStepExecution" package.
-    $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('RELEASE_UNIT_TEST'); // Requires "BreakpointDebugging_PHPUnitStepExecution" package.
+    // Please, set
+    //      BREAKPOINTDEBUGGING_MODE=DEBUG,
+    //      BREAKPOINTDEBUGGING_MODE=RELEASE,
+    //      BREAKPOINTDEBUGGING_MODE=DEBUG_UNIT_TEST or     (Requires "BreakpointDebugging_PHPUnitStepExecution" package.)
+    //      BREAKPOINTDEBUGGING_MODE=RELEASE_UNIT_TEST      (Requires "BreakpointDebugging_PHPUnitStepExecution" package.)
+    // to this project parameter setting.
     // ### <=== Execution mode setting.
+    if (!isset($_SERVER['SERVER_ADDR'])) { // In case of command line.
+        $modes = $_SERVER['argv'];
+    } else { // In case of common gateway.
+        $modes = explode('&', $_SERVER['argv'][0]);
+    }
+    foreach ($modes as $mode) {
+        list($key, $value) = explode('=', $mode);
+        if ($key === 'BREAKPOINTDEBUGGING_MODE') {
+            $mode = $value;
+            break;
+        }
+    }
+    $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags($mode);
     //
     // $_BreakpointDebugging_EXE_MODE |= $REMOTE; // Emulates remote by local host.
     //
     // Reference path setting.
     $includePaths = explode(PATH_SEPARATOR, ini_get('include_path'));
     if ($includePaths[0] !== '.') {
-        B::displayText('"include_path" of "php.ini" must be "." first.');
+        exit('"include_path" of "php.ini" must be "." first.');
     }
     array_unshift($includePaths, $includePaths[0]);
     $includePaths[1] = './PEAR';
@@ -131,11 +145,15 @@ function BreakpointDebugging_setExecutionModeFlags($executionMode)
         }
     }
 
-    B::displayText(
-        'You must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags(\'...\');"' . PHP_EOL
-        . "\t" . 'into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" because you mistook.' . PHP_EOL
-        . ' '
-    );
+    $errorMessage = <<<EOD
+You must set
+    "BREAKPOINTDEBUGGING_MODE=DEBUG_UNIT_TEST",
+    "BREAKPOINTDEBUGGING_MODE=RELEASE_UNIT_TEST",
+    "BREAKPOINTDEBUGGING_MODE=DEBUG" or
+    "BREAKPOINTDEBUGGING_MODE=RELEASE"
+to this project execution parameter.
+EOD;
+    exit('<pre><b>' . $errorMessage . '</b></pre>');
 }
 
 BreakpointDebugging_setExecutionMode();

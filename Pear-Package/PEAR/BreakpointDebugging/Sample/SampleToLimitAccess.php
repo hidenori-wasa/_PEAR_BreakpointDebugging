@@ -235,7 +235,19 @@ foreach ($testValues as $testValue) {
     $pTestClass->somthing($testValue);
 }
 
-//echo '<pre>END.</pre>';
-B::displayText('END.');
+$htmlFileContent = <<<EOD
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>SAMPLE</title>
+    </head>
+    <body style="background-color: black; color: white; font-size: 1.5em">
+        <pre></pre>
+    </body>
+</html>
+EOD;
+B::windowOpen('BreakpointDebugging_limitAccess', $htmlFileContent);
+B::windowHtmlAddition('BreakpointDebugging_limitAccess', 'pre', 0, 'END.');
 
 ?>

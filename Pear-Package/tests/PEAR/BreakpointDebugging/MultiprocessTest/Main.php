@@ -29,10 +29,19 @@ class tests_PEAR_BreakpointDebugging_MultiprocessTest_Main
 
         $fullFilePath = __DIR__ . '/Lock.php';
         $pPipes = array ();
+
+        $modes = explode('&', $_SERVER['argv'][0]);
+        foreach ($modes as $mode) {
+            list($key, $value) = explode('=', $mode);
+            if ($key === 'BREAKPOINTDEBUGGING_MODE') {
+                break;
+            }
+        }
+
         for ($count = 0; $count < 2; $count++) {
             // Creates and runs a test process.
             if (BREAKPOINTDEBUGGING_IS_WINDOWS) { // For Windows.
-                $pPipe = popen('php.exe -f ' . $fullFilePath . ' -- ' . $shmopKey . ' ' . $className, 'r');
+                $pPipe = popen('php.exe -f ' . $fullFilePath . ' -- ' . $mode . ' SHMOP_KEY=' . $shmopKey . ' CLASS_NAME=' . $className, 'r');
                 if ($pPipe === false) {
                     throw new \BreakpointDebugging_ErrorException('Failed to "popen()".');
                 }

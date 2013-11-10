@@ -8,101 +8,43 @@ use \BreakpointDebugging_PHPUnitStepExecution_PHPUnitFrameworkTestCase as BSF;
 
 B::checkExeMode(); // Checks the execution mode.
 
-$docblock0 = ' * @codeCoverageIgnore ' . PHP_EOL;
-$docblock1 = '/**' . PHP_EOL
-    . ' * @codeCoverageIgnore ' . PHP_EOL
-    . '**/' . PHP_EOL;
-$docblock2 = '/**' . PHP_EOL
-    . ' * @codeCoverageIgnore A' . PHP_EOL
-    . '**/' . PHP_EOL;
-if (BREAKPOINTDEBUGGING_IS_WINDOWS) {
-    $phpEol = '\\r\\n';
-} else {
-    $phpEol = '\\n';
-}
+$htmlFileContent1 = <<<EOD
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>TEST1</title>
+    </head>
+    <body style="background-color: black; color: white; font-size: 1.5em">
+        <pre></pre>
+    </body>
+</html>
+EOD;
 
-$pattern = "`@codeCoverageIgnore [[:blank:]]* $phpEol`xX";
+$htmlFileContent2 = <<<EOD
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>TEST2</title>
+    </head>
+    <body style="background-color: aqua; color: black; font-size: 1.5em">
+        <pre></pre>
+    </body>
+</html>
+EOD;
 
-ob_start();
-echo 'Expected: 1 1 0';
-var_dump(preg_match($pattern, $docblock0), preg_match($pattern, $docblock1), preg_match($pattern, $docblock2));
-B::displayText(ob_get_clean());
+B::windowOpen('WindowID1', $htmlFileContent1);
+B::windowOpen('WindowID2', $htmlFileContent2);
+B::windowHtmlAddition('WindowID1', 'pre', 0, 'Error message 1-1.' . PHP_EOL);
+B::windowHtmlAddition('WindowID1', 'pre', 0, 'Error message 1-2.' . PHP_EOL);
+B::windowHtmlAddition('WindowID2', 'pre', 0, 'Error message 2-1.' . PHP_EOL);
+B::windowHtmlAddition('WindowID2', 'pre', 0, 'Error message 2-2.' . PHP_EOL);
+// B::windowWhichClose('WindowID2');
+// B::windowWhichClose('WindowID1');
 return;
 //
 //
-//
-function __autoload($class)
-{
-    include __DIR__ . '/../src/' . $class . '.php';
-}
-
-$testArray = array ('aba', 'acca', 'adddd');
-//$testArray = array ('aba', 'acca', 'adddda');
-foreach ($testArray as $test) {
-    if (preg_match('`^a.+a$`xX', $test) === 0) {
-        echo "Test failed by '$test'.\n";
-    }
-}
-return;
-class TestClass
-{
-    static $testProperty = array ('Test property.');
-    public $autoProperty = 'Initial value.';
-
-}
-
-function testArrayReference()
-{
-    $array = array (new \TestClass());
-    $array2 = $array;
-    $array[0]->autoProperty = 'Change value.';
-    // Asserts array copy is until reference ID.
-    if ($array === $array2) {
-        echo 'Success!';
-        return;
-    }
-    echo 'Error!';
-}
-
-testArrayReference();
-return;
-function testRecursiveObject()
-{
-    $object = new \TestClass();
-    $object->autoProperty = &$object;
-    $object2 = $object;
-    // Asserts object comparison uses object reference ID.
-    if ($object2 === $object) {
-        var_dump(spl_object_hash($object2), spl_object_hash($object));
-        echo 'Success!';
-        return;
-    }
-    echo 'Error!';
-}
-
-testRecursiveObject();
-return;
-function testReference()
-{
-    var_dump(\TestClass::$testProperty); // 'Test property.'
-    $c = array ('C');
-    \TestClass::$testProperty = &$c;
-    // Stores.
-    $aStoring = \TestClass::$testProperty;
-    $aReferenceStoring = &\TestClass::$testProperty;
-    // Breaks reference.
-    $b = array ('B');
-    \TestClass::$testProperty = &$b;
-    // Restores.
-    \TestClass::$testProperty = &$aReferenceStoring;
-    \TestClass::$testProperty = $aStoring;
-    $c = array ('ChangeC');
-    var_dump(\TestClass::$testProperty); // 'ChangeC'
-}
-
-testReference();
-
-return;
 //
 class TestClassA
 {
@@ -130,17 +72,6 @@ class TestClassB
 $testClassB = new \TestClassB();
 $testArray = array ($testClassB);
 $testClassA = new \TestClassA();
-
-ini_set('xdebug.var_display_max_depth', 0);
-ob_start();
-xdebug_debug_zval('testArray');
-$testObjectProperty = &$testClassB->testObjectProperty;
-xdebug_debug_zval('testObjectProperty');
-xdebug_debug_zval('testClassA');
-$output = strip_tags(ob_get_clean());
-echo '<pre>' . $output . '</pre>';
-
-return;
 function test()
 {
     global $_BreakpointDebugging_EXE_MODE, $testClassB, $testArray, $referenceA, $referenceB, $referenceC, $referenceD, $recursiveReferenceA;

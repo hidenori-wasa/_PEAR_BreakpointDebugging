@@ -424,21 +424,22 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
         B::assert(is_array($pTmpLog) || is_resource($pTmpLog));
         B::assert(is_resource($pLog) || $pLog === false);
 
+        $tmpLog = '';
         if (B::getStatic('$exeMode') & B::REMOTE) { // In case of remote.
             rewind($pTmpLog);
             while (!feof($pTmpLog)) {
-                $tmpLog = fread($pTmpLog, 4096);
-                echo $tmpLog;
+                $tmpLog .= fread($pTmpLog, 4096);
                 $this->logByteSize += strlen($tmpLog);
             }
             // Deletes temporary file.
             fclose($pTmpLog);
         } else { // In case of local.
             foreach ($pTmpLog as $log) {
-                echo $log;
+                $tmpLog .= $log;
                 $this->logByteSize += strlen($log);
             }
         }
+        echo $tmpLog;
         $pTmpLog = null;
     }
 

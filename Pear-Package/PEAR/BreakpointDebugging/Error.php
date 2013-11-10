@@ -172,14 +172,16 @@ abstract class BreakpointDebugging_Error_InAllCase
     private static $_onceFlag = true;
 
     /**
-     * @var bool Error header of once.
-     */
-    private static $_onceHeader = true;
-
-    /**
      * @var string Error log directory name.
      */
     private static $_errorLogDir = '/ErrorLog/';
+
+    /**
+     * @var bool The open of once.
+     */
+    private static $_onceOpen = true;
+    private static $_htmlFileContent;
+    private static $_errorBuffer = '';
 
     /**
      * Gets error log directory name.
@@ -690,7 +692,7 @@ abstract class BreakpointDebugging_Error_InAllCase
                 // Unlocks the error log files.
                 $lockByFileExisting->unlock();
             } else { // If this displays.
-                echo '<pre>' . $log . '</pre>';
+                B::windowHtmlAddition(B::ERROR_WINDOW_NAME, 'pre', 0, $log);
             }
             B::breakpoint($message, $callStack);
         } catch (\Exception $e) {
@@ -1008,48 +1010,10 @@ abstract class BreakpointDebugging_Error_InAllCase
      */
     protected function outputErrorCallStackLog2($errorKind, $errorMessage, $prependLog = '')
     {
-        if (!$this->isLogging
-            && self::$_onceHeader
-        ) {
-            self::$_onceHeader = false;
+        if (!$this->isLogging) {
             // @codeCoverageIgnoreStart
-            echo <<<EOD
-<head>
-    <meta http-equiv="Content-Style-Type" content="text/css">
-    <style type="text/css">
-    <!--
-    body
-    {
-        background-color: black;
-        color: white;
-    }
+            ob_start();
 
-    table
-    {
-        color: black;
-    }
-
-    a:link
-    {
-        color: aqua;
-        text-decoration: underline;
-    }
-
-    a:visited
-    {
-        color: purple;
-        text-decoration: underline;
-    }
-
-    a:active
-    {
-        color: purple;
-        text-decoration: underline;
-    }
-    -->
-    </style>
-</head>
-EOD;
             $errorMessage = htmlspecialchars($errorMessage, ENT_QUOTES, 'UTF-8');
             $prependLog = htmlspecialchars($prependLog, ENT_QUOTES, 'UTF-8');
         }
@@ -1281,10 +1245,37 @@ EOD;
                 // Closes variable configuring file.
                 fclose($this->_pVarConfFile);
             }
-        } catch (\Exception $e) {
-            // Unlocks the error log files.
-            $this->_lockByFileExisting->unlock();
-            throw $e;
+        } catch (\Exception $logException) {
+
+        }
+        if (!$this->isLogging) {
+            self::$_errorBuffer .= ob_get_clean();
+            $errorBuffer = self::$_errorBuffer;
+            $errorHtmlFileContent = <<<EOD
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>ERROR</title>
+    </head>
+    <body style="background-color: black; color: white; font-size: 1.5em">
+        $errorBuffer
+    </body>
+</html>
+EOD;
+            // Makes error HTML file.
+            file_put_contents(B::ERROR_WINDOW_NAME . '.html', $errorHtmlFileContent);
+            // Opens its file at error window.
+            echo '<script type="text/javascript">' . PHP_EOL
+            . '<!--' . PHP_EOL
+            . "openedWindow = open('', '" . B::ERROR_WINDOW_NAME . "', '');" . PHP_EOL
+            . "openedWindow.close();" . PHP_EOL
+            . 'open("' . 'http://' . $_SERVER['SERVER_ADDR'] . substr(str_replace('\\', '/', realpath(B::ERROR_WINDOW_NAME . '.html')), strlen($_SERVER['DOCUMENT_ROOT'])) . '", "' . B::ERROR_WINDOW_NAME . '", "");' . PHP_EOL
+            . '//-->' . PHP_EOL
+            . '</script>' . PHP_EOL;
+        }
+        if (isset($logException)) {
+            throw $logException;
         }
         // Unlocks the error log files.
         $this->_lockByFileExisting->unlock();

@@ -28,7 +28,29 @@ class Lock extends \Counter
 
 }
 
-$pLock = new \Lock($_SERVER['argv'][1]);
-$pLock->testLock($_SERVER['argv'][2]);
+// var_dump($_SERVER['argv']); exit; // For debug.
+
+foreach ($_SERVER['argv'] as $mode) {
+    $mode = explode('=', $mode);
+    // var_dump($mode); exit; // For debug.
+    if (empty($mode)) {
+        contiue;
+    }
+    list($key, $value) = $mode;
+    switch ($key) {
+        case 'SHMOP_KEY':
+            $shmopKey = $value;
+            break;
+        case 'CLASS_NAME':
+            $className = $value;
+            break;
+    }
+}
+
+// var_dump($shmopKey, $className); exit; // For debug.
+//$pLock = new \Lock($_SERVER['argv'][1]);
+$pLock = new \Lock($shmopKey);
+//$pLock->testLock($_SERVER['argv'][2]);
+$pLock->testLock($className);
 
 ?>
