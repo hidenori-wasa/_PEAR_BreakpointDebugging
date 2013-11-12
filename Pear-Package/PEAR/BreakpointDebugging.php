@@ -1010,7 +1010,7 @@ EOD;
         }
 
         $htmlFileContent = str_replace(array ('\\', '\'', "\r", "\n"), array ('\\\\', '\\\'', '\r', '\n'), $htmlFileContent);
-        echo "BreakpointDebugging_windowWhichOpen('$windowName', '$htmlFileContent');" . PHP_EOL
+        echo "BreakpointDebugging_windowOpen('$windowName', '$htmlFileContent');" . PHP_EOL
         . '//-->' . PHP_EOL
         . '</script>' . PHP_EOL;
     }
@@ -1022,25 +1022,16 @@ EOD;
      *
      * @return void
      */
-    static function windowWhichClose($windowName)
+    static function windowClose($windowName)
     {
         if (!isset($_SERVER['SERVER_ADDR'])) { // In case of command line.
             return;
         }
 
         echo '<script type="text/javascript">' . PHP_EOL
-        . '<!--' . PHP_EOL;
-
-        if (!array_key_exists(__FUNCTION__, self::$_onceJavaScript)) {
-            self::$_onceJavaScript[__FUNCTION__] = true;
-            echo 'function BreakpointDebugging_windowWhichClose($windowName)' . PHP_EOL
-            . '{' . PHP_EOL
-            . '    openedWindow = open("", $windowName);' . PHP_EOL
-            . '    openedWindow.close();' . PHP_EOL
-            . '}' . PHP_EOL;
-        }
-
-        echo "BreakpointDebugging_windowWhichClose('$windowName');" . PHP_EOL
+        . '<!--' . PHP_EOL
+        . "openedWindow = open('', '$windowName');" . PHP_EOL
+        . 'openedWindow.close();' . PHP_EOL
         . '//-->' . PHP_EOL
         . '</script>';
     }

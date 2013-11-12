@@ -40,8 +40,8 @@ B::windowHtmlAddition('WindowID1', 'pre', 0, 'Error message 1-1.' . PHP_EOL);
 B::windowHtmlAddition('WindowID1', 'pre', 0, 'Error message 1-2.' . PHP_EOL);
 B::windowHtmlAddition('WindowID2', 'pre', 0, 'Error message 2-1.' . PHP_EOL);
 B::windowHtmlAddition('WindowID2', 'pre', 0, 'Error message 2-2.' . PHP_EOL);
-// B::windowWhichClose('WindowID2');
-// B::windowWhichClose('WindowID1');
+// B::windowClose('WindowID2');
+// B::windowClose('WindowID1');
 return;
 //
 //

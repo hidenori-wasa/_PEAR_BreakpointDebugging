@@ -176,11 +176,15 @@ abstract class BreakpointDebugging_Error_InAllCase
      */
     private static $_errorLogDir = '/ErrorLog/';
 
+    ///**
+    // * @var bool The open of once.
+    // */
+    //private static $_onceOpen = true;
+    //private static $_htmlFileContent;
+
     /**
-     * @var bool The open of once.
+     * @var string Error log buffer.
      */
-    private static $_onceOpen = true;
-    private static $_htmlFileContent;
     private static $_errorBuffer = '';
 
     /**
@@ -1274,11 +1278,11 @@ EOD;
             . '//-->' . PHP_EOL
             . '</script>' . PHP_EOL;
         }
+        // Unlocks the error log files.
+        $this->_lockByFileExisting->unlock();
         if (isset($logException)) {
             throw $logException;
         }
-        // Unlocks the error log files.
-        $this->_lockByFileExisting->unlock();
     }
 
     /**

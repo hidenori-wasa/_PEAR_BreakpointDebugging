@@ -7,7 +7,7 @@
  * @author Hidenori Wasa <public@hidenori-wasa.com>
  * @return void
  */
-function BreakpointDebugging_windowWhichOpen($windowName, $htmlFileContent)
+function BreakpointDebugging_windowOpen($windowName, $htmlFileContent)
 {
     openedWindow = open("", $windowName, "");
     openedWindow.close();

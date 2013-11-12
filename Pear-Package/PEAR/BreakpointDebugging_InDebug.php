@@ -77,21 +77,33 @@
  *      "<name or ip of host which debugger exists>"' into "php.ini" file, if remote server supports.
  * Procedure 3: Set *.php file format to utf8, but we should create backup of
  *      php files because multibyte strings may be destroyed.
- * Procedure 4: Copy "BreakpointDebugging_Inclusion.php" into your project directory.
- * And, copy "BreakpointDebugging_MySetting*.php" to
- * "const BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME" directory of your project directory.
+ * Procedure 4: Copy
+ *          "BreakpointDebugging_Inclusion.php",
+ *          "BreakpointDebugging_ErrorLogFilesManager.php" and
+ *          "BreakpointDebugging_PHPUnitStepExecution_DisplayCodeCoverageReport.php" (Requires "BreakpointDebugging_PHPUnitStepExecution" package.)
+ *      into your project directory.
+ *      And, copy
+ *          "BreakpointDebugging_MySetting*.php"
+ *      to "const BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME" directory of your project directory.
  * Procedure 5: Edit BreakpointDebugging_MySetting*.php for customize.
- *      Then, it fixes part setting about all debugging modes.
+ *      Then, it fixes part setting about all execution modes.
+ *      Especially, "$_BreakpointDebugging_EXE_MODE = 2;" is important to security.
  * Procedure 6: Copy following in your project php code.
  *      require_once './BreakpointDebugging_Inclusion.php';
  * Procedure 7: Check debugging-mode using "B::checkExeMode()" in start page,
- *      and set debugging mode to
- *      "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('...');"
- *      into "BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php'".
+ *      and set
+ *          BREAKPOINTDEBUGGING_MODE=DEBUG,
+ *          BREAKPOINTDEBUGGING_MODE=RELEASE,
+ *          BREAKPOINTDEBUGGING_MODE=DEBUG_UNIT_TEST or     (Requires "BreakpointDebugging_PHPUnitStepExecution" package.)
+ *          BREAKPOINTDEBUGGING_MODE=RELEASE_UNIT_TEST      (Requires "BreakpointDebugging_PHPUnitStepExecution" package.)
+ *      to your project parameter setting.
  *      Then, use "B::getStatic('$exeMode')" to get value.
- *      Lastly, we must execute all codes using "\BreakpointDebugging::displayCodeCoverageReport()" before release.
- *      Then, we must set "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('RELEASE');".
- *      Because "XDebug" information is not displayed on remote release mode.
+ *      Lastly, we should execute all codes using
+ *          "\BreakpointDebugging_PHPUnitStepExecution::executeUnitTest()" and
+ *          "\BreakpointDebugging_PHPUnitStepExecution::displayCodeCoverageReport()"
+ *      of "BreakpointDebugging_PHPUnitStepExecution" package before release.
+ *      Then, we must enable "$_BreakpointDebugging_EXE_MODE = 2;" of "BreakpointDebugging_MySetting.php" in case of actual server use.
+ *      Because server must not display "XDebug" and error logging information.
  * Procedure 8: If you use "Unix", register your username as
  *      "User" and "Group" into "lampp/apache/conf/httpd.conf".
  *      And, register "export PATH=$PATH:/opt/lampp/bin" into "~/.profile".
@@ -107,7 +119,7 @@
  *
  * Option procedure: Register at top of the function or method or file
  *      which has been not fixed. Copy following.
- *      "static $isRegister = false; \BreakpointDebugging::registerNotFixedLocation($isRegister);"
+ *      "\BreakpointDebugging::registerNotFixedLocation(self::$_isRegister[__METHOD__]);"
  *      Then, we can discern function or method or file
  *      which has been not fixed with browser screen or log.
  * Option procedure: Register local variable or global variable
@@ -131,18 +143,27 @@
  *      class BreakpointDebugging_LockByFlock
  *
  * My viewpoint about PHP-types for reading my PHP code.
- *      Any types of PHP have only ID. ( Contents of ID are pointer to movable memory which has variable, array ID district or object instance or resource ).
+ *      ### About PHP-types structure.
+ *      Any type of PHP has ID which has pointer which specifies movable memory of "type and value".
+ *      Its movable memory has "reference count" and "flag which means a reference".
  *
- *      Variable copy is new ID creation, and points the same memory area. ( Memory area reference count and ID count is incremented ).
- *      Then, when memory area is updated, its memory area is allocated newly, then writes updated value.
- *      But, object type is reference copy. If you want to copy, use "$cloneObject = clone $object;".
+ *      ### About variable copy.
+ *      Variable copy is ID copy, and it increments reference count of movable memory.
+ *      And, object type copy is ID copy too. However, object type is not scalar type.
+ *      Therefore, we must use "$cloneObject = clone $object;" if we want object internal copy.
+ *      And, array type copy is its elements ID copy. However, element of reference specifies same ID area.
+ *      Therefore, copied element value may be changed if original copy element is changed even though we copied array type.
  *
- *      Variable reference copy is ID copy, and points the same memory area. ( ID count is incremented ).
- *      Then, when memory area is updated, writes updated value.
+ *      ### About variable reference copy.
+ *      Variable reference copy specifies same ID area, and it increments reference count of movable memory, and checks "flag which means a reference".
  *
- *      When "unset()" function deletes only ID, ID count is decremented, then if it became 0, memory area which is pointed is deleted.
+ *      ### About "unset()" function.
+ *      "unset()" function decrements reference count.
+ *      Then, memory area which is pointed is deleted if reference count became 0.
  *
- *      When variable is written null value, memory area reference count is decremented, then if it became 0, memory area which is pointed is deleted.
+ *      ### About "__destruct()" class method call.
+ *      "__destruct()" class method is called if we overwrite null value to variable because value of all reference is disabled.
+ *      However, memory area and reference count is kept.
  *
  * PHP version 5.3
  *

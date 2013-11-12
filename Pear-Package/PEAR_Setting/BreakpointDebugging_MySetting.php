@@ -44,6 +44,8 @@
  */
 use \BreakpointDebugging as B;
 
+global $_BreakpointDebugging_EXE_MODE;
+// $_BreakpointDebugging_EXE_MODE = 2; $_SERVER['QUERY_STRING'] = 'BREAKPOINTDEBUGGING_MODE=RELEASE'; // ### We must enable this line for security if you release to actual server because URL query character string may be changed.
 /**
  * Sets execution mode.
  *
@@ -57,35 +59,29 @@ function BreakpointDebugging_setExecutionMode()
     global $_BreakpointDebugging_EXE_MODE;
 
     $REMOTE = 1;
+    $RELEASE = 2;
     // $UNIT_TEST = 4; // For debug.
-    // ### Execution mode setting. ===>
-    // Please, set
-    //      BREAKPOINTDEBUGGING_MODE=DEBUG,
-    //      BREAKPOINTDEBUGGING_MODE=RELEASE,
-    //      BREAKPOINTDEBUGGING_MODE=DEBUG_UNIT_TEST or     (Requires "BreakpointDebugging_PHPUnitStepExecution" package.)
-    //      BREAKPOINTDEBUGGING_MODE=RELEASE_UNIT_TEST      (Requires "BreakpointDebugging_PHPUnitStepExecution" package.)
-    // to this project parameter setting.
-    // ### <=== Execution mode setting.
-    if (!isset($_SERVER['SERVER_ADDR'])) { // In case of command line.
-        $modes = $_SERVER['argv'];
-    } else { // In case of common gateway.
-        $modes = explode('&', $_SERVER['argv'][0]);
-    }
-    foreach ($modes as $mode) {
-        list($key, $value) = explode('=', $mode);
-        if ($key === 'BREAKPOINTDEBUGGING_MODE') {
-            $mode = $value;
-            break;
+
+    if ($_BreakpointDebugging_EXE_MODE !== $RELEASE) {
+        if (!isset($_SERVER['SERVER_ADDR'])) { // In case of command line.
+            $modes = $_SERVER['argv'];
+        } else { // In case of common gateway.
+            $modes = explode('&', $_SERVER['argv'][0]);
         }
+        foreach ($modes as $mode) {
+            list($key, $value) = explode('=', $mode);
+            if ($key === 'BREAKPOINTDEBUGGING_MODE') {
+                $mode = $value;
+                break;
+            }
+        }
+        $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags($mode);
+        // $_BreakpointDebugging_EXE_MODE |= $REMOTE; // Emulates remote by local host.
     }
-    $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags($mode);
-    //
-    // $_BreakpointDebugging_EXE_MODE |= $REMOTE; // Emulates remote by local host.
-    //
     // Reference path setting.
     $includePaths = explode(PATH_SEPARATOR, ini_get('include_path'));
     if ($includePaths[0] !== '.') {
-        exit('"include_path" of "php.ini" must be "." first.');
+        exit('<pre><b>"include_path" of "php.ini" must be "." first.</b></pre>');
     }
     array_unshift($includePaths, $includePaths[0]);
     $includePaths[1] = './PEAR';
