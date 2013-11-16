@@ -337,19 +337,22 @@ abstract class BreakpointDebugging_InAllCase
         ) {
             switch ($necessaryExeMode) {
                 case self::RELEASE:
-                    $message = '    "BREAKPOINTDEBUGGING_MODE=RELEASE"';
+                    $message = '<b>You must set' . PHP_EOL
+                        . '    "BREAKPOINTDEBUGGING_MODE=RELEASE"' . PHP_EOL
+                        . 'to this project execution parameter.</b>';
                     break;
-                case self::UNIT_TEST:
-                    $message = '    "BREAKPOINTDEBUGGING_MODE=DEBUG_UNIT_TEST" or' . PHP_EOL
-                        . '    "BREAKPOINTDEBUGGING_MODE=RELEASE_UNIT_TEST"';
-                    break;
+//                case self::UNIT_TEST:
+//                    $message = '<b>You must set' . PHP_EOL
+//                        . '    "BREAKPOINTDEBUGGING_MODE=DEBUG_UNIT_TEST" or' . PHP_EOL
+//                        . '    "BREAKPOINTDEBUGGING_MODE=RELEASE_UNIT_TEST"' . PHP_EOL
+//                        . 'to this project execution parameter.' . PHP_EOL
+//                        . 'Or, comment out "$_BreakpointDebugging_EXE_MODE = 2;" of "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php".</b>';
+//                    break;
                 default :
                     throw new \BreakpointDebugging_ErrorException('"' . __METHOD__ . '" parameter1 is mistake.', 101);
             }
             self::windowOpen(self::ERROR_WINDOW_NAME, self::$errorHtmlFileContent);
-            self::windowHtmlAddition(self::ERROR_WINDOW_NAME, 'pre', 0, '<b>You must set' . PHP_EOL
-                . $message . PHP_EOL
-                . 'to this project execution parameter.</b>');
+            self::windowHtmlAddition(self::ERROR_WINDOW_NAME, 'pre', 0, $message);
             return false;
         }
         if (!(self::$exeMode & self::REMOTE)) { // In case of local.
@@ -408,11 +411,13 @@ abstract class BreakpointDebugging_InAllCase
 
         if ($isUnitTest) {
             self::windowOpen(self::ERROR_WINDOW_NAME, self::$errorHtmlFileContent);
+            $pearSettingDirName = BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME;
             $errorMessage = <<<EOD
 You must set
     "BREAKPOINTDEBUGGING_MODE=DEBUG_UNIT_TEST" or
     "BREAKPOINTDEBUGGING_MODE=RELEASE_UNIT_TEST"
 to this project execution parameter.
+Or, comment out "\$_BreakpointDebugging_EXE_MODE = 2;" of "{$pearSettingDirName}BreakpointDebugging_MySetting.php".
 EOD;
             self::windowHtmlAddition(self::ERROR_WINDOW_NAME, 'pre', 0, '<b>' . $errorMessage . '</b>');
             exit;

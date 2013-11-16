@@ -22,6 +22,10 @@
             <line>479</line>
         </file>
         <file>
+            <url>PEAROtherPackage/BreakpointDebugging/PHPUnitStepExecution.php</url>
+            <line>252</line>
+        </file>
+        <file>
             <url>PEAR/BreakpointDebugging_InDebug.php</url>
             <line>157</line>
         </file>

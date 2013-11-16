@@ -45,7 +45,7 @@
 use \BreakpointDebugging as B;
 
 global $_BreakpointDebugging_EXE_MODE;
-// $_BreakpointDebugging_EXE_MODE = 2; $_SERVER['QUERY_STRING'] = 'BREAKPOINTDEBUGGING_MODE=RELEASE'; // ### We must enable this line for security if you release to actual server because URL query character string may be changed.
+// $_BreakpointDebugging_EXE_MODE = 2; // ### We must enable this line for security if you release to actual server because URL query character string may be changed.
 /**
  * Sets execution mode.
  *
@@ -77,6 +77,16 @@ function BreakpointDebugging_setExecutionMode()
         }
         $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags($mode);
         // $_BreakpointDebugging_EXE_MODE |= $REMOTE; // Emulates remote by local host.
+    } else {
+        $argSeparator = ini_get('arg_separator.input');
+        $queryStrings = explode($argSeparator, $_SERVER['QUERY_STRING']);
+        foreach ($queryStrings as $key => $queryString) {
+            list($queryKey, $queryValue) = explode('=', $queryString);
+            if ($queryKey === 'BREAKPOINTDEBUGGING_MODE') {
+                unset($queryStrings[$key]);
+            }
+        }
+        $_SERVER['QUERY_STRING'] = implode($argSeparator, $queryStrings);
     }
     // Reference path setting.
     $includePaths = explode(PATH_SEPARATOR, ini_get('include_path'));
