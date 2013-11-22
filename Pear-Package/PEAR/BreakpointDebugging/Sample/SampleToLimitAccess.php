@@ -247,7 +247,7 @@ $htmlFileContent = <<<EOD
     </body>
 </html>
 EOD;
-B::windowOpen('BreakpointDebugging_limitAccess', $htmlFileContent);
+B::windowVirtualOpen('BreakpointDebugging_limitAccess', $htmlFileContent);
 B::windowHtmlAddition('BreakpointDebugging_limitAccess', 'pre', 0, 'END.');
 
 ?>

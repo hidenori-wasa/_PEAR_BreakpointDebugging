@@ -46,6 +46,22 @@ use \BreakpointDebugging as B;
 
 global $_BreakpointDebugging_EXE_MODE;
 // $_BreakpointDebugging_EXE_MODE = 2; // ### We must enable this line for security if you release to actual server because URL query character string may be changed.
+function BreakpointDebugging_getQueryArray($argSeparator)
+{
+    if (!isset($_SERVER['SERVER_ADDR'])) { // In case of command line.
+        $queryStrings = $_SERVER['argv'];
+        array_shift($queryStrings);
+    } else { // In case of common gateway.
+        $queryStrings = explode($argSeparator, $_SERVER['QUERY_STRING']);
+    }
+    $queryArray = array ();
+    foreach ($queryStrings as $queryString) {
+        list($queryKey, $queryValue) = explode('=', $queryString);
+        $queryArray[$queryKey] = $queryValue;
+    }
+    return $queryArray;
+}
+
 /**
  * Sets execution mode.
  *
@@ -62,31 +78,25 @@ function BreakpointDebugging_setExecutionMode()
     $RELEASE = 2;
     // $UNIT_TEST = 4; // For debug.
 
+    $argSeparator = ini_get('arg_separator.input');
     if ($_BreakpointDebugging_EXE_MODE !== $RELEASE) {
-        if (!isset($_SERVER['SERVER_ADDR'])) { // In case of command line.
-            $modes = $_SERVER['argv'];
-        } else { // In case of common gateway.
-            $modes = explode('&', $_SERVER['argv'][0]);
-        }
-        foreach ($modes as $mode) {
-            list($key, $value) = explode('=', $mode);
-            if ($key === 'BREAKPOINTDEBUGGING_MODE') {
-                $mode = $value;
+        foreach (BreakpointDebugging_getQueryArray($argSeparator) as $queryKey => $queryValue) {
+            if ($queryKey === 'BREAKPOINTDEBUGGING_MODE') {
                 break;
             }
         }
-        $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags($mode);
+        $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags($queryValue);
         // $_BreakpointDebugging_EXE_MODE |= $REMOTE; // Emulates remote by local host.
-    } else {
-        $argSeparator = ini_get('arg_separator.input');
-        $queryStrings = explode($argSeparator, $_SERVER['QUERY_STRING']);
-        foreach ($queryStrings as $key => $queryString) {
-            list($queryKey, $queryValue) = explode('=', $queryString);
-            if ($queryKey === 'BREAKPOINTDEBUGGING_MODE') {
-                unset($queryStrings[$key]);
+    } else { // In case of actual server release.
+        $newQueryString = '';
+        foreach (BreakpointDebugging_getQueryArray($argSeparator) as $queryKey => $queryValue) {
+            if ($queryKey !== 'BREAKPOINTDEBUGGING_MODE') {
+                $newQueryString .= $queryKey . '=' . $queryValue . $argSeparator;
             }
         }
-        $_SERVER['QUERY_STRING'] = implode($argSeparator, $queryStrings);
+        if (!empty($newQueryString)) {
+            $_SERVER['QUERY_STRING'] = substr($newQueryString, 0, - strlen($argSeparator));
+        }
     }
     // Reference path setting.
     $includePaths = explode(PATH_SEPARATOR, ini_get('include_path'));

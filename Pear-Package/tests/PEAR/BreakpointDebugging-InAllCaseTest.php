@@ -94,12 +94,10 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_PHPUnitStep
         BU::$exeMode = 0; // Change to local debug mode.
         parent::assertTrue(BA::checkDevelopmentSecurity());
         parent::assertTrue(!BA::checkDevelopmentSecurity(B::RELEASE));
-        //parent::assertTrue(!BA::checkDevelopmentSecurity(B::UNIT_TEST));
 
         BU::$exeMode = B::REMOTE; // Change to remote debug mode.
         BA::checkDevelopmentSecurity();
         parent::assertTrue(!BA::checkDevelopmentSecurity(B::RELEASE));
-        //parent::assertTrue(!BA::checkDevelopmentSecurity(B::UNIT_TEST));
         $_SERVER['HTTPS'] = 'off';
         parent::assertTrue(!BA::checkDevelopmentSecurity());
         unset($_SERVER['HTTPS']);
@@ -113,32 +111,26 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_PHPUnitStep
         BU::$exeMode = B::RELEASE; // Change to local release mode.
         parent::assertTrue(BA::checkDevelopmentSecurity());
         parent::assertTrue(BA::checkDevelopmentSecurity(B::RELEASE));
-        //parent::assertTrue(!BA::checkDevelopmentSecurity(B::UNIT_TEST));
 
         BU::$exeMode = B::REMOTE | B::RELEASE; // Change to remote release mode.
         BA::checkDevelopmentSecurity();
         BA::checkDevelopmentSecurity(B::RELEASE);
-        //parent::assertTrue(!BA::checkDevelopmentSecurity(B::UNIT_TEST));
 
         BU::$exeMode = B::UNIT_TEST; // Change to local debug unit test mode.
         parent::assertTrue(BA::checkDevelopmentSecurity());
         parent::assertTrue(!BA::checkDevelopmentSecurity(B::RELEASE));
-        //parent::assertTrue(BA::checkDevelopmentSecurity(B::UNIT_TEST));
 
         BU::$exeMode = B::UNIT_TEST | B::RELEASE; // Change to local release unit test mode.
         parent::assertTrue(BA::checkDevelopmentSecurity());
         parent::assertTrue(BA::checkDevelopmentSecurity(B::RELEASE));
-        //parent::assertTrue(BA::checkDevelopmentSecurity(B::UNIT_TEST));
 
         BU::$exeMode = B::REMOTE | B::UNIT_TEST; // Change to remote debug unit test mode.
         BA::checkDevelopmentSecurity();
         parent::assertTrue(!BA::checkDevelopmentSecurity(B::RELEASE));
-        //BA::checkDevelopmentSecurity(B::UNIT_TEST);
 
         BU::$exeMode = B::REMOTE | B::RELEASE | B::UNIT_TEST; // Change to remote release unit test mode.
         BA::checkDevelopmentSecurity();
         BA::checkDevelopmentSecurity(B::RELEASE);
-        //BA::checkDevelopmentSecurity(B::UNIT_TEST);
     }
 
     /**

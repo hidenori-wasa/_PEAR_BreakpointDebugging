@@ -278,7 +278,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
             && !BREAKPOINTDEBUGGING_IS_WINDOWS
             && trim(`echo \$USER`) === 'root'
         ) {
-            parent::windowOpen(parent::ERROR_WINDOW_NAME, parent::$errorHtmlFileContent);
+            parent::windowVirtualOpen(parent::ERROR_WINDOW_NAME, parent::$errorHtmlFileContent);
             B::windowHtmlAddition(B::ERROR_WINDOW_NAME, 'pre', 0, 'Security warning: Recommends to change to "Apache HTTP Server" which Supported "suEXEC" because this "Apache HTTP Server" is executed by "root" user.');
         }
     }
@@ -521,7 +521,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
                         break 2;
                     }
                 }
-                parent::windowOpen(parent::ERROR_WINDOW_NAME, parent::$errorHtmlFileContent);
+                parent::windowVirtualOpen(parent::ERROR_WINDOW_NAME, parent::$errorHtmlFileContent);
                 B::windowHtmlAddition(B::ERROR_WINDOW_NAME, 'pre', 0, 'Path environment variable has not been set for "php.exe" command.' . PHP_EOL . `path`);
                 exit;
             }
@@ -533,7 +533,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
                     . 'Please, search by (sudo find "<apache install directory>" -mount -name "envvars") command.' . PHP_EOL
                     . 'Then, add "export PATH=$PATH:<php command directory>" line to its file.' . PHP_EOL
                     . 'Example: "export PATH=$PATH:/opt/lampp/bin"';
-                parent::windowOpen(parent::ERROR_WINDOW_NAME, parent::$errorHtmlFileContent);
+                parent::windowVirtualOpen(parent::ERROR_WINDOW_NAME, parent::$errorHtmlFileContent);
                 B::windowHtmlAddition(B::ERROR_WINDOW_NAME, 'pre', 0, htmlspecialchars($message, ENT_COMPAT));
                 exit;
             }
@@ -856,7 +856,7 @@ EOD;
     </body>
 </html>
 EOD;
-        B::windowOpen(__CLASS__, $functionVerificationHtmlFileContent);
+        B::windowVirtualOpen(__CLASS__, $functionVerificationHtmlFileContent);
         ob_start();
 
         self::$tmp = $params;

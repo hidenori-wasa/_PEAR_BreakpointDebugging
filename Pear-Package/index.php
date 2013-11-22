@@ -34,14 +34,22 @@ $htmlFileContent2 = <<<EOD
 </html>
 EOD;
 
-B::windowOpen('WindowID1', $htmlFileContent1);
-B::windowOpen('WindowID2', $htmlFileContent2);
-B::windowHtmlAddition('WindowID1', 'pre', 0, 'Error message 1-1.' . PHP_EOL);
-B::windowHtmlAddition('WindowID1', 'pre', 0, 'Error message 1-2.' . PHP_EOL);
-B::windowHtmlAddition('WindowID2', 'pre', 0, 'Error message 2-1.' . PHP_EOL);
-B::windowHtmlAddition('WindowID2', 'pre', 0, 'Error message 2-2.' . PHP_EOL);
-// B::windowClose('WindowID2');
-// B::windowClose('WindowID1');
+if (!array_key_exists('test', $_GET)) {
+    $once = false;
+    B::windowVirtualOpen('WindowID1', $htmlFileContent1);
+    B::windowVirtualOpen('WindowID2', $htmlFileContent2);
+    B::windowScriptClearance();
+    B::windowHtmlAddition('WindowID1', 'pre', 0, 'Error message 1-1.' . PHP_EOL);
+    B::windowScriptClearance();
+    B::windowHtmlAddition('WindowID1', 'pre', 0, 'Error message 1-2.' . PHP_EOL);
+    B::windowScriptClearance();
+    B::windowHtmlAddition('WindowID2', 'pre', 0, 'Error message 2-1.' . PHP_EOL);
+    B::windowScriptClearance();
+    B::windowHtmlAddition('WindowID2', 'pre', 0, 'Error message 2-2.' . PHP_EOL);
+    // B::windowClose('WindowID2');
+    // B::windowClose('WindowID1');
+    B::windowScriptClearance();
+}
 return;
 //
 //

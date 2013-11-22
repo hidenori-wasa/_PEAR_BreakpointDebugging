@@ -341,17 +341,10 @@ abstract class BreakpointDebugging_InAllCase
                         . '    "BREAKPOINTDEBUGGING_MODE=RELEASE"' . PHP_EOL
                         . 'to this project execution parameter.</b>';
                     break;
-//                case self::UNIT_TEST:
-//                    $message = '<b>You must set' . PHP_EOL
-//                        . '    "BREAKPOINTDEBUGGING_MODE=DEBUG_UNIT_TEST" or' . PHP_EOL
-//                        . '    "BREAKPOINTDEBUGGING_MODE=RELEASE_UNIT_TEST"' . PHP_EOL
-//                        . 'to this project execution parameter.' . PHP_EOL
-//                        . 'Or, comment out "$_BreakpointDebugging_EXE_MODE = 2;" of "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php".</b>';
-//                    break;
                 default :
                     throw new \BreakpointDebugging_ErrorException('"' . __METHOD__ . '" parameter1 is mistake.', 101);
             }
-            self::windowOpen(self::ERROR_WINDOW_NAME, self::$errorHtmlFileContent);
+            self::windowVirtualOpen(self::ERROR_WINDOW_NAME, self::$errorHtmlFileContent);
             self::windowHtmlAddition(self::ERROR_WINDOW_NAME, 'pre', 0, $message);
             return false;
         }
@@ -360,7 +353,7 @@ abstract class BreakpointDebugging_InAllCase
         }
         // Checks client IP address.
         if ($_SERVER['REMOTE_ADDR'] !== self::$_developerIP) {
-            self::windowOpen(self::ERROR_WINDOW_NAME, self::$errorHtmlFileContent);
+            self::windowVirtualOpen(self::ERROR_WINDOW_NAME, self::$errorHtmlFileContent);
             self::windowHtmlAddition(self::ERROR_WINDOW_NAME, 'pre', 0, '<b>You must set "$developerIP = \'' . $_SERVER['REMOTE_ADDR'] . '\';" ' . PHP_EOL
                 . "\t" . 'into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file.' . PHP_EOL
                 . 'Or, you mistook start "php" page.</b>'
@@ -372,7 +365,7 @@ abstract class BreakpointDebugging_InAllCase
             || empty($_SERVER['HTTPS'])
             || $_SERVER['HTTPS'] === 'off'
         ) {
-            self::windowOpen(self::ERROR_WINDOW_NAME, self::$errorHtmlFileContent);
+            self::windowVirtualOpen(self::ERROR_WINDOW_NAME, self::$errorHtmlFileContent);
             self::windowHtmlAddition(self::ERROR_WINDOW_NAME, 'pre', 0, '<b>You must use "https" protocol.' . PHP_EOL
                 . 'Or, you mistook start "php" page.</b>'
             );
@@ -410,7 +403,7 @@ abstract class BreakpointDebugging_InAllCase
         }
 
         if ($isUnitTest) {
-            self::windowOpen(self::ERROR_WINDOW_NAME, self::$errorHtmlFileContent);
+            self::windowVirtualOpen(self::ERROR_WINDOW_NAME, self::$errorHtmlFileContent);
             $pearSettingDirName = BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME;
             $errorMessage = <<<EOD
 You must set
@@ -510,7 +503,7 @@ EOD;
             }
         }
         if ($cmpResult) {
-            self::windowOpen(self::ERROR_WINDOW_NAME, self::$errorHtmlFileContent);
+            self::windowVirtualOpen(self::ERROR_WINDOW_NAME, self::$errorHtmlFileContent);
             ob_start();
 
             echo "$errorMessage" . PHP_EOL
@@ -993,14 +986,16 @@ EOD;
     }
 
     /**
-     * Opens a initialized window.
+     * Opens a initialized virtual Window.
+     * CAUTION: This window cannot request including link to itself.
+     *          This window permits only a display.
      *
      * @param string $windowName      Window name which opens.
      * @param string $htmlFileContent HTML file content to initialize.
      *
      * @return void
      */
-    static function windowOpen($windowName, $htmlFileContent)
+    static function windowVirtualOpen($windowName, $htmlFileContent)
     {
         if (!isset($_SERVER['SERVER_ADDR'])) { // In case of command line.
             return;
@@ -1011,11 +1006,18 @@ EOD;
 
         if (!array_key_exists(__FUNCTION__, self::$_onceJavaScript)) {
             self::$_onceJavaScript[__FUNCTION__] = true;
-            readfile('BreakpointDebugging/js/windowOpen.js', true);
+            echo 'function BreakpointDebugging_windowVertualOpen($windowName, $htmlFileContent)' . PHP_EOL
+            . '{' . PHP_EOL
+            . '    var $openedWindow = open("", $windowName, "");' . PHP_EOL
+            . '    $openedWindow.close();' . PHP_EOL
+            . '    var $newDocument = open("", $windowName, "").document;' . PHP_EOL
+            . '    $newDocument.write($htmlFileContent);' . PHP_EOL
+            . '    $newDocument.close();' . PHP_EOL
+            . '}' . PHP_EOL;
         }
 
         $htmlFileContent = str_replace(array ('\\', '\'', "\r", "\n"), array ('\\\\', '\\\'', '\r', '\n'), $htmlFileContent);
-        echo "BreakpointDebugging_windowOpen('$windowName', '$htmlFileContent');" . PHP_EOL
+        echo "BreakpointDebugging_windowVertualOpen('$windowName', '$htmlFileContent');" . PHP_EOL
         . '//-->' . PHP_EOL
         . '</script>' . PHP_EOL;
     }
@@ -1035,7 +1037,7 @@ EOD;
 
         echo '<script type="text/javascript">' . PHP_EOL
         . '<!--' . PHP_EOL
-        . "openedWindow = open('', '$windowName');" . PHP_EOL
+        . "var openedWindow = open('', '$windowName');" . PHP_EOL
         . 'openedWindow.close();' . PHP_EOL
         . '//-->' . PHP_EOL
         . '</script>';
@@ -1061,6 +1063,61 @@ EOD;
         echo '<script type="text/javascript">' . PHP_EOL
         . '<!--' . PHP_EOL
         . "open('', '$windowName').document.getElementsByTagName('$tagName')[$tagNumber].innerHTML += '$html';" . PHP_EOL
+        . '//-->' . PHP_EOL
+        . '</script>' . PHP_EOL;
+    }
+
+    /**
+     * Scrolls window by distance.
+     *
+     * @param string $windowName Opened window name.
+     * @param int    $dy         Y vector distance.
+     *
+     * @return void
+     */
+    static function windowScrollBy($windowName, $dy)
+    {
+        if (!isset($_SERVER['SERVER_ADDR'])) { // In case of command line.
+            return;
+        }
+
+        for ($count = $dy / 5; $count > 0; $count--) {
+            echo '<script type="text/javascript">' . PHP_EOL
+            . '<!--' . PHP_EOL
+            . "open('', '$windowName', '').scrollBy(0, 5);" . PHP_EOL
+            . '//-->' . PHP_EOL
+            . '</script>' . PHP_EOL;
+            flush();
+        }
+    }
+
+    /**
+     * Clears window's header script.
+     *
+     * @return void
+     */
+    static function windowScriptClearance($start = 0)
+    {
+        if (!isset($_SERVER['SERVER_ADDR'])) { // In case of command line.
+            return;
+        }
+
+        echo '<script type="text/javascript">' . PHP_EOL
+        . '<!--' . PHP_EOL;
+
+        if (!array_key_exists(__FUNCTION__, self::$_onceJavaScript)) {
+            self::$_onceJavaScript[__FUNCTION__] = true;
+            echo 'function BreakpointDebugging_windowScriptClearance()' . PHP_EOL
+            . '{' . PHP_EOL
+            . '    var $head = document.getElementsByTagName("head")[0];' . PHP_EOL
+            . '    var $scripts = document.getElementsByTagName("script");' . PHP_EOL
+            . "    for(var \$count = \$scripts.length - 1; \$count >= $start; \$count--){" . PHP_EOL
+            . '        $head.removeChild($scripts[$count]);' . PHP_EOL
+            . '    }' . PHP_EOL
+            . '}' . PHP_EOL;
+        }
+
+        echo "BreakpointDebugging_windowScriptClearance();" . PHP_EOL
         . '//-->' . PHP_EOL
         . '</script>' . PHP_EOL;
     }
@@ -1386,7 +1443,7 @@ if ($_BreakpointDebugging_EXE_MODE & BA::RELEASE) { // In case of release.
                         // Because unit test is exited.
                         ini_set('xdebug.var_display_max_depth', 5);
 
-                        parent::windowOpen(parent::ERROR_WINDOW_NAME, parent::$errorHtmlFileContent);
+                        parent::windowVirtualOpen(parent::ERROR_WINDOW_NAME, parent::$errorHtmlFileContent);
                         ob_start();
 
                         var_dump(debug_backtrace());

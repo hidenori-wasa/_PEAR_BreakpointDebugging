@@ -147,7 +147,7 @@ EOD;
         try {
             $errorLogDirectory = B::getStatic('$_workDir') . \BreakpointDebugging_Error::getErrorLogDir();
             if (!is_dir($errorLogDirectory)) {
-                B::windowOpen(__CLASS__, $errorHtmlFileContent);
+                B::windowVirtualOpen(__CLASS__, $errorHtmlFileContent);
                 B::windowHtmlAddition(__CLASS__, 'pre', 0, 'Error log directory does not exist.');
                 goto END_LABEL;
             }
@@ -179,7 +179,7 @@ EOD;
                     // Deletes the error log file, variable configuring file or the error location file.
                     B::unlink(array ($errorLogDirElementPath));
                 }
-                B::windowOpen(__CLASS__, $errorHtmlFileContent);
+                B::windowVirtualOpen(__CLASS__, $errorHtmlFileContent);
                 B::windowHtmlAddition(__CLASS__, 'pre', 0, 'You must comment out "$developerIP = \'' . $_SERVER['REMOTE_ADDR'] . '\';" inside "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file before your IP is changed.');
             } else if (isset($_GET['reset'])) { // When you pushed "Reset error log files" button.
                 // Searches the files which should delete.
@@ -191,7 +191,7 @@ EOD;
                     // Deletes the error log file, variable configuring file or the error location file.
                     B::unlink(array ($errorLogDirElementPath));
                 }
-                B::windowOpen(__CLASS__, $errorHtmlFileContent);
+                B::windowVirtualOpen(__CLASS__, $errorHtmlFileContent);
                 B::windowHtmlAddition(__CLASS__, 'pre', 0, 'You must comment out "$developerIP = \'' . $_SERVER['REMOTE_ADDR'] . '\';" inside "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file before your IP is changed.');
             } else { // In case of first time when this page was called.
                 echo '<body style="background-color:black;color:white">';

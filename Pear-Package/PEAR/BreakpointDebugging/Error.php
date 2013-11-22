@@ -176,12 +176,6 @@ abstract class BreakpointDebugging_Error_InAllCase
      */
     private static $_errorLogDir = '/ErrorLog/';
 
-    ///**
-    // * @var bool The open of once.
-    // */
-    //private static $_onceOpen = true;
-    //private static $_htmlFileContent;
-
     /**
      * @var string Error log buffer.
      */
@@ -761,7 +755,7 @@ abstract class BreakpointDebugging_Error_InAllCase
     {
         $className = B::fullFilePathToClassName($file);
         if ($className
-            && is_subclass_of($className, 'PHPUnit_Framework_Test')
+            && is_subclass_of($className, 'BreakpointDebugging_PHPUnitStepExecution_PHPUnitFrameworkTestCase')
         ) {
             $this->logBufferWriting($pTmpLog, $this->tags['uint test anchor name']);
             $this->tags['uint test anchor name'] = '';

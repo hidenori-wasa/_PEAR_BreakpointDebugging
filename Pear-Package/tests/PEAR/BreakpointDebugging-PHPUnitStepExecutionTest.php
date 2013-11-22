@@ -26,22 +26,6 @@ class BreakpointDebugging_PHPUnitStepExecutionTest extends \BreakpointDebugging_
     /**
      * @covers \BreakpointDebugging<extended>
      */
-    public function testInitialize()
-    {
-        BU::initialize();
-    }
-
-    /**
-     * @covers \BreakpointDebugging<extended>
-     */
-    public function testHandleUnitTestException()
-    {
-        BU::handleUnitTestException(new \Exception(''));
-    }
-
-    /**
-     * @covers \BreakpointDebugging<extended>
-     */
     public function testIsUnitTestExeMode()
     {
         BU::checkExeMode(true);

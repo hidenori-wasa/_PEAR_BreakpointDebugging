@@ -42,7 +42,7 @@ class Initialization
     </body>
 </html>
 EOD;
-        B::windowOpen(__CLASS__, $htmlFileContent);
+        B::windowVirtualOpen(__CLASS__, $htmlFileContent);
         B::windowHtmlAddition(__CLASS__, 'pre', 0, '<b>Initialization is OK.' . PHP_EOL
             . 'Wait about 10 second until hard disk access stops.' . PHP_EOL
             . 'Then, close this window.' . PHP_EOL
