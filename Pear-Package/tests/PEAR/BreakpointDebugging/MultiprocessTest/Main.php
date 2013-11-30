@@ -30,7 +30,13 @@ class tests_PEAR_BreakpointDebugging_MultiprocessTest_Main
         $fullFilePath = __DIR__ . '/Lock.php';
         $pPipes = array ();
 
-        $modes = explode('&', $_SERVER['argv'][0]);
+        if (array_key_exists('QUERY_STRING', $_SERVER)) {
+            $modes = explode('&', $_SERVER['QUERY_STRING']);
+        } else if (array_key_exists('argv', $_SERVER)
+            && array_key_exists(0, $_SERVER['argv'])
+        ) {
+            $modes = explode('&', $_SERVER['argv'][0]);
+        }
         foreach ($modes as $mode) {
             list($key, $value) = explode('=', $mode);
             if ($key === 'BREAKPOINTDEBUGGING_MODE') {
@@ -47,7 +53,7 @@ class tests_PEAR_BreakpointDebugging_MultiprocessTest_Main
                 }
             } else { // For Unix.
                 // "&" is the background execution of command.
-                $pPipe = popen('php -f ' . $fullFilePath . ' -- ' . $shmopKey . ' ' . $className . ' &', 'r');
+                $pPipe = popen('php -f ' . $fullFilePath . ' -- ' . $mode . ' SHMOP_KEY=' . $shmopKey . ' CLASS_NAME=' . $className . ' &', 'r');
                 if ($pPipe === false) {
                     throw new \BreakpointDebugging_ErrorException('Failed to "popen()".');
                 }

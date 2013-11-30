@@ -183,18 +183,20 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_PHPUnitStep
      */
     public function testIniCheck()
     {
-        ob_start();
         BA::iniCheck('safe_mode', '', 'Test message 1.');
-        parent::assertTrue(ob_get_contents() === '');
-        ob_clean();
+        parent::assertTrue(BA::getStatic('$_iniCheckErrorBuffer') === '');
+
         BA::iniCheck('safe_mode', 'On', 'Test message 2.');
-        parent::assertTrue(ob_get_contents() !== '');
-        ob_clean();
+        $tmpStrlen = strlen(BA::getStatic('$_iniCheckErrorBuffer'));
+        parent::assertTrue($tmpStrlen > 0);
+
         BA::iniCheck('xdebug.remote_host', array ('Other1', 'Other2'), 'Test message 3.');
-        parent::assertTrue(ob_get_contents() === '');
-        ob_clean();
+        parent::assertTrue($tmpStrlen === strlen(BA::getStatic('$_iniCheckErrorBuffer')));
+
         BA::iniCheck('safe_mode', array ('', 'On'), 'Test message 4.');
-        parent::assertTrue(ob_get_contents() !== '');
+        parent::assertTrue($tmpStrlen < strlen(BA::getStatic('$_iniCheckErrorBuffer')));
+
+        BA::windowClose(BA::ERROR_WINDOW_NAME);
     }
 
     /**

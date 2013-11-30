@@ -196,7 +196,7 @@ EOD;
             } else { // In case of first time when this page was called.
                 echo '<body style="background-color:black;color:white">';
                 $thisFileName = basename(__FILE__);
-                $fontStyle = 'style="font-size: 1em; font-weight: bold;"';
+                $fontStyle = 'style="font-size: 24px; font-weight: bold;"';
                 // Makes error log download-buttons.
                 foreach ($errorLogDirElements as $errorLogDirElement) {
                     if (!preg_match('`\.log$`xX', $errorLogDirElement)) {

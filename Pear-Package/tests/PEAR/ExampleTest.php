@@ -161,6 +161,8 @@ class ExampleTest extends \BreakpointDebugging_PHPUnitStepExecution_PHPUnitFrame
      */
     public function testIncompletedColor()
     {
+        // parent::assertTrue(false); // For debug.
+
         parent::markTestIncomplete();
     }
 

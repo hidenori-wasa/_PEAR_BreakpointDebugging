@@ -26,7 +26,7 @@ $breakpointDebugging_UnitTestFiles = array (
 );
 
 // Executes unit tests.
-BU::executeUnitTest($breakpointDebugging_UnitTestFiles);
+// BU::executeUnitTest($breakpointDebugging_UnitTestFiles);
 // Makes up code coverage report, then displays in browser.
 if (B::getStatic('$exeMode') & B::RELEASE) { // In case of release.
     // BU::displayCodeCoverageReport('BreakpointDebuggingTest.php', 'PEAR/BreakpointDebugging.php'); // "BreakpointDebugging", "BreakpointDebugging_Middle" class is ? (Windows).

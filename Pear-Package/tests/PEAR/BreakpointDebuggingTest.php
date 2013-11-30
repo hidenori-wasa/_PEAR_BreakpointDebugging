@@ -353,7 +353,7 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_PHPUnitStepExecution_
         parent::assertTrue($month === 'January');
         parent::assertTrue($day === 1);
         parent::assertTrue($year === 2000);
-        parent::assertTrue(ob_get_clean() !== '');
+        B::windowClose('BreakpointDebugging');
     }
 
 }

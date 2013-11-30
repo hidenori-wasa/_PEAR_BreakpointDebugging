@@ -236,6 +236,7 @@ abstract class BreakpointDebugging_InAllCase
      * @var string HTML file content of error window.
      */
     protected static $errorHtmlFileContent;
+    private static $_iniCheckErrorBuffer = '';
 
     ///////////////////////////// For package user from here. /////////////////////////////
     /**
@@ -503,14 +504,17 @@ EOD;
             }
         }
         if ($cmpResult) {
-            self::windowVirtualOpen(self::ERROR_WINDOW_NAME, self::$errorHtmlFileContent);
+            if (self::$_iniCheckErrorBuffer === '') {
+                self::windowVirtualOpen(self::ERROR_WINDOW_NAME, self::$errorHtmlFileContent);
+            }
             ob_start();
 
             echo "$errorMessage" . PHP_EOL
             . "Current value =";
             var_dump($value);
 
-            self::windowHtmlAddition(self::ERROR_WINDOW_NAME, 'pre', 0, ob_get_clean());
+            self::$_iniCheckErrorBuffer .= ob_get_clean();
+            self::windowHtmlAddition(self::ERROR_WINDOW_NAME, 'pre', 0, self::$_iniCheckErrorBuffer);
         }
     }
 
@@ -985,6 +989,31 @@ EOD;
         return false;
     }
 
+    static function executeJavaScript($javaScript)
+    {
+        $buffers = array ();
+        for ($bufferCount = -1; ob_get_level() > 0;) {
+            $bufferCount++;
+            $result = ob_get_clean();
+            if (is_string($result)) {
+                $buffers[$bufferCount] = $result;
+            }
+        }
+
+        echo '<script type="text/javascript">' . PHP_EOL
+        . '<!--' . PHP_EOL;
+        echo $javaScript;
+        echo '//-->' . PHP_EOL
+        . '</script>';
+
+        for (; $bufferCount >= 0; $bufferCount--) {
+            ob_start();
+            if (array_key_exists($bufferCount, $buffers)) {
+                echo $buffers[$bufferCount];
+            }
+        }
+    }
+
     /**
      * Opens a initialized virtual Window.
      * CAUTION: This window cannot request including link to itself.
@@ -1001,25 +1030,23 @@ EOD;
             return;
         }
 
-        echo '<script type="text/javascript">' . PHP_EOL
-        . '<!--' . PHP_EOL;
+        $javaScript = '';
 
         if (!array_key_exists(__FUNCTION__, self::$_onceJavaScript)) {
             self::$_onceJavaScript[__FUNCTION__] = true;
-            echo 'function BreakpointDebugging_windowVertualOpen($windowName, $htmlFileContent)' . PHP_EOL
-            . '{' . PHP_EOL
-            . '    var $openedWindow = open("", $windowName, "");' . PHP_EOL
-            . '    $openedWindow.close();' . PHP_EOL
-            . '    var $newDocument = open("", $windowName, "").document;' . PHP_EOL
-            . '    $newDocument.write($htmlFileContent);' . PHP_EOL
-            . '    $newDocument.close();' . PHP_EOL
-            . '}' . PHP_EOL;
+            $javaScript .= 'function BreakpointDebugging_windowVertualOpen($windowName, $htmlFileContent)' . PHP_EOL
+                . '{' . PHP_EOL
+                . '    open("", $windowName, "").close();' . PHP_EOL
+                . '    var $newDocument = open("", $windowName, "").document;' . PHP_EOL
+                . '    $newDocument.write($htmlFileContent);' . PHP_EOL
+                . '    $newDocument.close();' . PHP_EOL
+                . '}' . PHP_EOL;
         }
 
         $htmlFileContent = str_replace(array ('\\', '\'', "\r", "\n"), array ('\\\\', '\\\'', '\r', '\n'), $htmlFileContent);
-        echo "BreakpointDebugging_windowVertualOpen('$windowName', '$htmlFileContent');" . PHP_EOL
-        . '//-->' . PHP_EOL
-        . '</script>' . PHP_EOL;
+        $javaScript .= "BreakpointDebugging_windowVertualOpen('$windowName', '$htmlFileContent');" . PHP_EOL;
+
+        self::executeJavaScript($javaScript);
     }
 
     /**
@@ -1035,12 +1062,7 @@ EOD;
             return;
         }
 
-        echo '<script type="text/javascript">' . PHP_EOL
-        . '<!--' . PHP_EOL
-        . "var openedWindow = open('', '$windowName');" . PHP_EOL
-        . 'openedWindow.close();' . PHP_EOL
-        . '//-->' . PHP_EOL
-        . '</script>';
+        self::executeJavaScript("open('', '$windowName').close();" . PHP_EOL);
     }
 
     /**
@@ -1060,11 +1082,7 @@ EOD;
         }
 
         $html = str_replace(array ('\\', '\'', "\r", "\n"), array ('\\\\', '\\\'', '\r', '\n'), $html);
-        echo '<script type="text/javascript">' . PHP_EOL
-        . '<!--' . PHP_EOL
-        . "open('', '$windowName').document.getElementsByTagName('$tagName')[$tagNumber].innerHTML += '$html';" . PHP_EOL
-        . '//-->' . PHP_EOL
-        . '</script>' . PHP_EOL;
+        self::executeJavaScript("open('', '$windowName').document.getElementsByTagName('$tagName')[$tagNumber].innerHTML += '$html';" . PHP_EOL);
     }
 
     /**
@@ -1072,22 +1090,18 @@ EOD;
      *
      * @param string $windowName Opened window name.
      * @param int    $dy         Y vector distance.
+     * @param int    $step       Y vector distance step.
      *
      * @return void
      */
-    static function windowScrollBy($windowName, $dy)
+    static function windowScrollBy($windowName, $dy, $step = 5)
     {
         if (!isset($_SERVER['SERVER_ADDR'])) { // In case of command line.
             return;
         }
 
-        for ($count = $dy / 5; $count > 0; $count--) {
-            echo '<script type="text/javascript">' . PHP_EOL
-            . '<!--' . PHP_EOL
-            . "open('', '$windowName', '').scrollBy(0, 5);" . PHP_EOL
-            . '//-->' . PHP_EOL
-            . '</script>' . PHP_EOL;
-            flush();
+        for ($count = $dy / $step; $count > 0; $count--) {
+            self::executeJavaScript("open('', '$windowName', '').scrollBy(0, $step);" . PHP_EOL);
         }
     }
 
@@ -1098,28 +1112,33 @@ EOD;
      */
     static function windowScriptClearance($start = 0)
     {
+        // return; // For debug.
+
         if (!isset($_SERVER['SERVER_ADDR'])) { // In case of command line.
             return;
         }
 
-        echo '<script type="text/javascript">' . PHP_EOL
-        . '<!--' . PHP_EOL;
+        //echo '<script type="text/javascript">' . PHP_EOL
+        //. '<!--' . PHP_EOL;
+        $javaScript = '';
 
         if (!array_key_exists(__FUNCTION__, self::$_onceJavaScript)) {
             self::$_onceJavaScript[__FUNCTION__] = true;
-            echo 'function BreakpointDebugging_windowScriptClearance()' . PHP_EOL
-            . '{' . PHP_EOL
-            . '    var $head = document.getElementsByTagName("head")[0];' . PHP_EOL
-            . '    var $scripts = document.getElementsByTagName("script");' . PHP_EOL
-            . "    for(var \$count = \$scripts.length - 1; \$count >= $start; \$count--){" . PHP_EOL
-            . '        $head.removeChild($scripts[$count]);' . PHP_EOL
-            . '    }' . PHP_EOL
-            . '}' . PHP_EOL;
+            $javaScript .= 'function BreakpointDebugging_windowScriptClearance()' . PHP_EOL
+                . '{' . PHP_EOL
+                . '    var $head = document.getElementsByTagName("head")[0];' . PHP_EOL
+                . '    var $scripts = document.getElementsByTagName("script");' . PHP_EOL
+                . "    for(var \$count = \$scripts.length - 1; \$count >= $start; \$count--){" . PHP_EOL
+                . '        $head.removeChild($scripts[$count]);' . PHP_EOL
+                . '    }' . PHP_EOL
+                . '}' . PHP_EOL;
         }
 
-        echo "BreakpointDebugging_windowScriptClearance();" . PHP_EOL
-        . '//-->' . PHP_EOL
-        . '</script>' . PHP_EOL;
+        //echo "BreakpointDebugging_windowScriptClearance();" . PHP_EOL
+        //. '//-->' . PHP_EOL
+        //. '</script>' . PHP_EOL;
+        $javaScript .= "BreakpointDebugging_windowScriptClearance();" . PHP_EOL;
+        self::executeJavaScript($javaScript);
     }
 
     ///////////////////////////// For package user until here. /////////////////////////////
@@ -1162,6 +1181,7 @@ EOD;
 </html>
 EOD;
         self::$staticProperties['$errorHtmlFileContent'] = &self::$errorHtmlFileContent;
+        self::$staticProperties['$_iniCheckErrorBuffer'] = &self::$_iniCheckErrorBuffer;
     }
 
     /**

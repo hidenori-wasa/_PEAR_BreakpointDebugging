@@ -1255,6 +1255,27 @@ abstract class BreakpointDebugging_Error_InAllCase
     <head>
         <meta charset="UTF-8" />
         <title>ERROR</title>
+        <style type="text/css">
+        <!--
+        a:link
+        {
+            color: aqua;
+            text-decoration: underline;
+        }
+
+        a:visited
+        {
+            color: aqua;
+            text-decoration: underline;
+        }
+
+        a:active
+        {
+            color: aqua;
+            text-decoration: underline;
+        }
+        -->
+        </style>
     </head>
     <body style="background-color: black; color: white; font-size: 1.5em">
         $errorBuffer

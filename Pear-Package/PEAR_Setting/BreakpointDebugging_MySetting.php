@@ -188,7 +188,7 @@ function BreakpointDebugging_mySetting()
     $developerIP = &B::refStatic('$_developerIP');
     // Please, enter developer IP address.
     // However, comment out this when running code is local or running code does not use.
-    // $developerIP = '219.116.0.54';
+    $developerIP = '218.217.193.188';
     $language = 'Japanese';
     $timezone = 'Asia/Tokyo';
     $SMTP = '<Your SMTP server>';
