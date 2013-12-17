@@ -29,31 +29,23 @@ class tests_PEAR_BreakpointDebugging_MultiprocessTest_Main
 
         $fullFilePath = __DIR__ . '/Lock.php';
         $pPipes = array ();
-
-        if (array_key_exists('QUERY_STRING', $_SERVER)) {
-            $modes = explode('&', $_SERVER['QUERY_STRING']);
-        } else if (array_key_exists('argv', $_SERVER)
-            && array_key_exists(0, $_SERVER['argv'])
-        ) {
-            $modes = explode('&', $_SERVER['argv'][0]);
-        }
-        foreach ($modes as $mode) {
-            list($key, $value) = explode('=', $mode);
-            if ($key === 'BREAKPOINTDEBUGGING_MODE') {
-                break;
-            }
-        }
-
+        $queryString = B::getStatic('$_get');
+        $queryString['SHMOP_KEY'] = $shmopKey;
+        $queryString['CLASS_NAME'] = $className;
+        $queryString = '"' . http_build_query($queryString) . '"';
         for ($count = 0; $count < 2; $count++) {
             // Creates and runs a test process.
             if (BREAKPOINTDEBUGGING_IS_WINDOWS) { // For Windows.
-                $pPipe = popen('php.exe -f ' . $fullFilePath . ' -- ' . $mode . ' SHMOP_KEY=' . $shmopKey . ' CLASS_NAME=' . $className, 'r');
+                // include_once $fullFilePath; // For debug.
+                $pPipe = popen('php.exe -f ' . $fullFilePath . ' -- ' . $queryString, 'r');
                 if ($pPipe === false) {
                     throw new \BreakpointDebugging_ErrorException('Failed to "popen()".');
                 }
             } else { // For Unix.
                 // "&" is the background execution of command.
-                $pPipe = popen('php -f ' . $fullFilePath . ' -- ' . $mode . ' SHMOP_KEY=' . $shmopKey . ' CLASS_NAME=' . $className . ' &', 'r');
+                //$pPipe = popen('php -f ' . $fullFilePath . ' -- ' . $mode . ' SHMOP_KEY=' . $shmopKey . ' CLASS_NAME=' . $className . ' &', 'r');
+                //$pPipe = popen('php -f ' . $fullFilePath . ' -- BREAKPOINTDEBUGGING_MODE=' . $get['BREAKPOINTDEBUGGING_MODE'] . ' SHMOP_KEY=' . $shmopKey . ' CLASS_NAME=' . $className . ' &', 'r');
+                $pPipe = popen('php -f ' . $fullFilePath . ' -- ' . $queryString . ' &', 'r');
                 if ($pPipe === false) {
                     throw new \BreakpointDebugging_ErrorException('Failed to "popen()".');
                 }

@@ -236,7 +236,19 @@ abstract class BreakpointDebugging_InAllCase
      * @var string HTML file content of error window.
      */
     protected static $errorHtmlFileContent;
+
+    /**
+     * @var string Error buffer of "self::iniCheck()" class method.
+     */
     private static $_iniCheckErrorBuffer = '';
+
+    /**
+     * @var array "$_GET" in case of common gateway, or "$_GET" which is built from last of command line parameters in case of command line.
+     * @example: $queryString = '"' . http_build_query(\BreakpointDebugging::getStatic('$_get');) . '"';
+     *           $pPipe = popen('php.exe -f example.php -- ' . $queryString, 'r'); // For Windows.
+     *           $pPipe = popen('php -f example.php -- ' . $queryString . ' &', 'r'); // For Unix.
+     */
+    private static $_get;
 
     ///////////////////////////// For package user from here. /////////////////////////////
     /**
@@ -288,6 +300,20 @@ abstract class BreakpointDebugging_InAllCase
     }
 
     /**
+     * Generates URL-encoded query character string by adding specification to native.
+     *
+     * @param array $additionalElements Array of specification query-character-strings.
+     *
+     * @return string A URL-encoded query character string.
+     */
+    static function httpBuildQuery($additionalElements)
+    {
+        B::assert(count(array_diff_key($additionalElements, self::$_get)) === count($additionalElements));
+
+        return http_build_query(array_merge($additionalElements, self::$_get));
+    }
+
+    /**
      * Error exit. You can detect error exit location by call stack after break if you use this.
      *
      * @param mixed $error Error message or error exception instance.
@@ -299,7 +325,7 @@ abstract class BreakpointDebugging_InAllCase
     static function exitForError($error = '')
     {
         self::$exeMode &= ~B::IGNORING_BREAK_POINT;
-        // If this is not actual environment release.
+        // If this is not production release.
         if (self::$_nativeExeMode !== (self::REMOTE | self::RELEASE)) {
             // Displays error call stack instead of log.
             self::$exeMode &= ~self::RELEASE;
@@ -1118,8 +1144,6 @@ EOD;
             return;
         }
 
-        //echo '<script type="text/javascript">' . PHP_EOL
-        //. '<!--' . PHP_EOL;
         $javaScript = '';
 
         if (!array_key_exists(__FUNCTION__, self::$_onceJavaScript)) {
@@ -1134,10 +1158,7 @@ EOD;
                 . '}' . PHP_EOL;
         }
 
-        //echo "BreakpointDebugging_windowScriptClearance();" . PHP_EOL
-        //. '//-->' . PHP_EOL
-        //. '</script>' . PHP_EOL;
-        $javaScript .= "BreakpointDebugging_windowScriptClearance();" . PHP_EOL;
+        $javaScript .= 'BreakpointDebugging_windowScriptClearance();' . PHP_EOL;
         self::executeJavaScript($javaScript);
     }
 
@@ -1149,11 +1170,14 @@ EOD;
      */
     static function initialize()
     {
-        global $_BreakpointDebugging_EXE_MODE;
+        global $_BreakpointDebugging_EXE_MODE, $_BreakpointDebugging_get;
 
         B::limitAccess(array ('BreakpointDebugging_InDebug.php'));
 
         self::$_pwd = getcwd();
+        self::$_get = $_BreakpointDebugging_get;
+        unset($_BreakpointDebugging_get);
+        self::$staticProperties['$_get'] = &self::$_get;
         self::$_nativeExeMode = self::$exeMode = $_BreakpointDebugging_EXE_MODE;
         unset($GLOBALS['_BreakpointDebugging_EXE_MODE']);
         self::$staticProperties['$exeMode'] = &self::$exeMode;
@@ -1175,7 +1199,7 @@ EOD;
         <meta charset="UTF-8" />
         <title>ERROR</title>
     </head>
-    <body style="background-color: black; color: white; font-size: 1.5em">
+    <body style="background-color: black; color: white; font-size: 25px">
         <pre></pre>
     </body>
 </html>

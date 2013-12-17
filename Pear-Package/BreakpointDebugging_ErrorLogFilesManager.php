@@ -134,7 +134,7 @@ final class BreakpointDebugging_ErrorLogFilesManager
         <meta charset="UTF-8" />
         <title>ErrorLogFilesManager</title>
     </head>
-    <body style="background-color: black; color: white; font-size: 1.5em">
+    <body style="background-color: black; color: white; font-size: 25px">
         <pre></pre>
     </body>
 </html>
@@ -196,28 +196,35 @@ EOD;
             } else { // In case of first time when this page was called.
                 echo '<body style="background-color:black;color:white">';
                 $thisFileName = basename(__FILE__);
-                $fontStyle = 'style="font-size: 24px; font-weight: bold;"';
+                $fontStyle = 'style="font-size: 25px; font-weight: bold;"';
+                $argSeparator = ini_get('arg_separator.output');
                 // Makes error log download-buttons.
                 foreach ($errorLogDirElements as $errorLogDirElement) {
                     if (!preg_match('`\.log$`xX', $errorLogDirElement)) {
                         continue;
                     }
+
+                    $queryString = B::httpBuildQuery(array ('download' => $errorLogDirElement));
                     echo <<<EOD
 <br/>
-<form method="post" action="$thisFileName?download=$errorLogDirElement&{$_SERVER['QUERY_STRING']}">
+<form method="post" action="$thisFileName?$queryString">
     <input type="submit" value="Download error log file ({$errorLogDirElement})" $fontStyle/>
 </form>
 EOD;
                 }
+
+                $queryString = B::httpBuildQuery(array ('deleteErrorLogs' => true));
                 echo <<<EOD
 <br/><br/>
-<form method="post" action="$thisFileName?deleteErrorLogs&{$_SERVER['QUERY_STRING']}">
+<form method="post" action="$thisFileName?$queryString">
     <input type="submit" value="Delete all error log files (You must download all error log files before you push this button.)" $fontStyle/>
 </form>
 EOD;
+
+                $queryString = B::httpBuildQuery(array ('reset' => true));
                 echo <<<EOD
 <br/><br/>
-<form method="post" action="$thisFileName?reset&{$_SERVER['QUERY_STRING']}">
+<form method="post" action="$thisFileName?$queryString">
     <input type="submit" value="Reset error log files (You must debug and upload all error code before you push this button.)" $fontStyle/>
 </form>
 EOD;

@@ -14,7 +14,7 @@ body
 /* The table data's default style. Hidenori Wasa added. */
 td
 {
-    font-size: 12px;
+    font-size: 18px;
 }
 
 /* All views: standard link format*/
@@ -29,7 +29,6 @@ a:link
 a:visited
 {
     /* color: #2e3436; Hidenori Wasa added. */
-    /* color: purple; */
     color: aqua;
     text-decoration: underline;
 }
@@ -38,7 +37,6 @@ a:visited
 a:active
 {
     /* color: #2e3436; Hidenori Wasa added. */
-    /* color: purple; */
     color: aqua;
     text-decoration: underline;
 }
@@ -52,7 +50,7 @@ td.title
     font-style: italic;
     font-weight: bold;
     /* font-size: 1.6em; Hidenori Wasa added. */
-    font-size: 18px;
+    font-size: 36px;
 }
 
 /* All views: header item format */

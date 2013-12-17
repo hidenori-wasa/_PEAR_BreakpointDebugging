@@ -1277,7 +1277,7 @@ abstract class BreakpointDebugging_Error_InAllCase
         -->
         </style>
     </head>
-    <body style="background-color: black; color: white; font-size: 1.5em">
+    <body style="background-color: black; color: white; font-size: 25px">
         $errorBuffer
     </body>
 </html>

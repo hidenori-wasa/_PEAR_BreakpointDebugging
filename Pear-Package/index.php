@@ -8,6 +8,35 @@ use \BreakpointDebugging_PHPUnitStepExecution_PHPUnitFrameworkTestCase as BSF;
 
 B::checkExeMode(); // Checks the execution mode.
 
+phpinfo();
+return;
+
+$dumpFileKey = __FILE__; // str_replace(array ('\\', ':', '/', '.', '_', '-'), 'A', __FILE__);
+
+if (!is_file('BreakpointDebugging_APC.bin')) {
+    var_dump(apc_bin_dumpfile(array ('index.php'), array (), __DIR__ . '/BreakpointDebugging_APC.bin'));
+    if (apc_exists($dumpFileKey)) {
+        var_dump(apc_cas($dumpFileKey, 1, 0));
+    } else {
+        var_dump(apc_store($dumpFileKey, 0));
+    }
+}
+
+if (!apc_fetch($dumpFileKey)) {
+    if (apc_exists($dumpFileKey)) {
+        var_dump(apc_cas($dumpFileKey, 0, 1));
+    } else {
+        var_dump(apc_store($dumpFileKey, 1));
+    }
+    var_dump(apc_bin_loadfile(__DIR__ . '/BreakpointDebugging_APC.bin'));
+}
+return;
+
+// var_dump(array_diff(array ('apc_bin_dumpfile', 'apc_bin_loadfile', 'apc_exists'), get_extension_funcs('apc')));
+var_dump(get_extension_funcs('apc'));
+return;
+
+
 $htmlFileContent1 = <<<EOD
 <!DOCTYPE html>
 <html>
@@ -15,7 +44,7 @@ $htmlFileContent1 = <<<EOD
         <meta charset="UTF-8" />
         <title>TEST1</title>
     </head>
-    <body style="background-color: black; color: white; font-size: 1.5em">
+    <body style="background-color: black; color: white; font-size: 25px">
         <pre></pre>
     </body>
 </html>
@@ -28,7 +57,7 @@ $htmlFileContent2 = <<<EOD
         <meta charset="UTF-8" />
         <title>TEST2</title>
     </head>
-    <body style="background-color: aqua; color: black; font-size: 1.5em">
+    <body style="background-color: aqua; color: black; font-size: 25px">
         <pre></pre>
     </body>
 </html>

@@ -17,15 +17,33 @@
  * ### Environment which can do breakpoint debugging. ###
  * Debugger which can use breakpoint.
  * At April, 2013 recommendation debugging environment is
- * "WindowsXP Professional" + "NetBeans IDE 7.1.2" + "XAMPP 1.7.3" or
- * "Ubuntu desktop" + "NetBeans IDE 7.1.2" + "XAMPP for Linux 1.7.3".
- * Do not use version greater than "XAMPP 1.7.3" for "NetBeans IDE 7.1.2"
- * because MySQL version causes discordance.
+ * "WindowsXP Professional" + "NetBeans IDE 7.1.2" + "XAMPP 1.7.7" or
+ * "Ubuntu desktop" + "NetBeans IDE 7.1.2" + "XAMPP for Linux 1.7.7".
  * Notice: Use "phpMyAdmin" to see database and to execute "MySQL" command.
  *         Also, "NetBeans IDE 7.3" cannot keep switchback at April, 2013.
  *         However, "NetBeans IDE 7.3" supports "PHP5.4" and "HTML5".
  * Caution: The code format setting of "NetBeans" disperses to two menu because setting per IDE and setting per project exists.
  *          Those must have both directions link button because setting may not be executed, however, those is not.
+ *
+ * ### Recommendation file cache extention of production server. ###
+ * I recommend "Zend OPcache" extention because my unit tests succeeded with it.
+ * Also, How to make this Zend extention is same as pecl extention in case of Windows.
+ * The following is "php.ini" setting.
+ * [Zend OPcache]
+ * opcache.memory_consumption=128
+ * opcache.interned_strings_buffer=8
+ * opcache.max_accelerated_files=4000
+ * opcache.fast_shutdown=1
+ * ; Constant Value: 0         Because we cannot call CLI from CGI with "popen()".
+ * opcache.enable_cli=0
+ * ; Constant Value: 0         Because modified file may be ignored eternally.
+ * opcache.file_update_protection=0
+ * ; Development Value: 1      Because we must cache modified "*.php" files.
+ * ; Production Value: 0       Because production server does not want to access a file as much as possible.
+ * opcache.validate_timestamps=1
+ * ; Development Value: 0      Because we must cache modified "*.php" files.
+ * ; Production Value: 60      Because production server does not want to access a file as much as possible.
+ * opcache.revalidate_freq=0
  *
  * ### The advantage of breakpoint debugging. ###
  * Can find a position of a bug immediately.
@@ -102,7 +120,7 @@
  *          "\BreakpointDebugging_PHPUnitStepExecution::executeUnitTest()" and
  *          "\BreakpointDebugging_PHPUnitStepExecution::displayCodeCoverageReport()"
  *      of "BreakpointDebugging_PHPUnitStepExecution" package before release.
- *      Then, we must enable "$_BreakpointDebugging_EXE_MODE = 2;" of "BreakpointDebugging_MySetting.php" in case of actual server use.
+ *      Then, we must enable "$_BreakpointDebugging_EXE_MODE = 2;" of "BreakpointDebugging_MySetting.php" in case of production server use.
  *      Because server must not display "XDebug" and error logging information.
  * Procedure 8: If you use "Unix", register your username as
  *      "User" and "Group" into "lampp/apache/conf/httpd.conf".
@@ -851,7 +869,7 @@ EOD;
         <meta charset="UTF-8" />
         <title>functionVerification</title>
     </head>
-    <body style="background-color: black; color: white; font-size: 1.5em">
+    <body style="background-color: black; color: white; font-size: 25px">
         <pre></pre>
     </body>
 </html>

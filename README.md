@@ -58,6 +58,11 @@ Notice
 ------
 
 "Pear-Package/nbproject/" directory is project directory of "NetBeans IDE 7.1.2 for Windows".
+You must change "test.src.dir" of "Pear-Package/nbproject/project.properties" file if you use on Linux.
+Example:
+
+    test.src.dir=/home/hidenori/htdocs/Pear-Package/tests
+
 Also, "NetBeans IDE 7.3" cannot keep switchback in format at April, 2013.
 Example:
 

@@ -242,7 +242,7 @@ $htmlFileContent = <<<EOD
         <meta charset="UTF-8" />
         <title>SAMPLE</title>
     </head>
-    <body style="background-color: black; color: white; font-size: 1.5em">
+    <body style="background-color: black; color: white; font-size: 25px">
         <pre></pre>
     </body>
 </html>

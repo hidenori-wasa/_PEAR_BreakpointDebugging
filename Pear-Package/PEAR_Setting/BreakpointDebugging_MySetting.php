@@ -45,23 +45,7 @@
 use \BreakpointDebugging as B;
 
 global $_BreakpointDebugging_EXE_MODE;
-// $_BreakpointDebugging_EXE_MODE = 2; // ### We must enable this line for security if you release to actual server because URL query character string may be changed.
-function BreakpointDebugging_getQueryArray($argSeparator)
-{
-    if (!isset($_SERVER['SERVER_ADDR'])) { // In case of command line.
-        $queryStrings = $_SERVER['argv'];
-        array_shift($queryStrings);
-    } else { // In case of common gateway.
-        $queryStrings = explode($argSeparator, $_SERVER['QUERY_STRING']);
-    }
-    $queryArray = array ();
-    foreach ($queryStrings as $queryString) {
-        list($queryKey, $queryValue) = explode('=', $queryString);
-        $queryArray[$queryKey] = $queryValue;
-    }
-    return $queryArray;
-}
-
+// $_BreakpointDebugging_EXE_MODE = 2; // ### We must enable this line for security if you release to production server because URL query character string may be changed.
 /**
  * Sets execution mode.
  *
@@ -72,37 +56,42 @@ function BreakpointDebugging_setExecutionMode()
     /**
      * @var int Specifies debug mode.
      */
-    global $_BreakpointDebugging_EXE_MODE;
+    global $_BreakpointDebugging_EXE_MODE, $_BreakpointDebugging_get, $_BreakpointDebugging_argSeparatorOutput;
 
+    $_BreakpointDebugging_argSeparatorOutput = '&amp;';
     $REMOTE = 1;
     $RELEASE = 2;
     // $UNIT_TEST = 4; // For debug.
 
-    $argSeparator = ini_get('arg_separator.input');
+    if (isset($_SERVER['SERVER_ADDR'])) { // In case of common gateway.
+        $_BreakpointDebugging_get = $_GET;
+    } else { // In case of command line.
+        $queryStrings = explode($_BreakpointDebugging_argSeparatorOutput, $_SERVER['argv'][$_SERVER['argc'] - 1]);
+        $_BreakpointDebugging_get = array ();
+        foreach ($queryStrings as $queryString) {
+            list($queryKey, $queryValue) = explode('=', $queryString);
+            $_BreakpointDebugging_get[$queryKey] = urldecode($queryValue);
+        }
+        // For debug. ===>
+        /*
+          ob_start();
+          var_dump($_BreakpointDebugging_get);
+          file_put_contents('debug.txt', ob_get_clean());
+         */
+        // <=== For debug.
+    }
+
     if ($_BreakpointDebugging_EXE_MODE !== $RELEASE) {
-        foreach (BreakpointDebugging_getQueryArray($argSeparator) as $queryKey => $queryValue) {
-            if ($queryKey === 'BREAKPOINTDEBUGGING_MODE') {
-                break;
-            }
-        }
-        $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags($queryValue);
+        $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags($_BreakpointDebugging_get['BREAKPOINTDEBUGGING_MODE']);
         // $_BreakpointDebugging_EXE_MODE |= $REMOTE; // Emulates remote by local host.
-    } else { // In case of actual server release.
-        $newQueryString = '';
-        foreach (BreakpointDebugging_getQueryArray($argSeparator) as $queryKey => $queryValue) {
-            if ($queryKey !== 'BREAKPOINTDEBUGGING_MODE') {
-                $newQueryString .= $queryKey . '=' . $queryValue . $argSeparator;
-            }
-        }
-        if (!empty($newQueryString)) {
-            $_SERVER['QUERY_STRING'] = substr($newQueryString, 0, - strlen($argSeparator));
+    } else { // In case of production server release.
+        if (array_key_exists('BREAKPOINTDEBUGGING_MODE', $_BreakpointDebugging_get)) {
+            // Deletes "BREAKPOINTDEBUGGING_MODE" query variable.
+            unset($_BreakpointDebugging_get['BREAKPOINTDEBUGGING_MODE']);
         }
     }
     // Reference path setting.
     $includePaths = explode(PATH_SEPARATOR, ini_get('include_path'));
-    if ($includePaths[0] !== '.') {
-        exit('<pre><b>"include_path" of "php.ini" must be "." first.</b></pre>');
-    }
     array_unshift($includePaths, $includePaths[0]);
     $includePaths[1] = './PEAR';
 
@@ -188,7 +177,7 @@ function BreakpointDebugging_mySetting()
     $developerIP = &B::refStatic('$_developerIP');
     // Please, enter developer IP address.
     // However, comment out this when running code is local or running code does not use.
-    $developerIP = '218.217.193.188';
+    // $developerIP = '218.217.193.188';
     $language = 'Japanese';
     $timezone = 'Asia/Tokyo';
     $SMTP = '<Your SMTP server>';
@@ -270,7 +259,9 @@ function BreakpointDebugging_mySetting()
     // This judges an end of a sentence character by the data which was read in "fgets()" and "file()", and we can use "PHP_EOL" constant.
     B::iniSet('auto_detect_line_endings', '1');
     // This changes "php.ini" file setting into "arg_separator.output = "&amp;" to be based on XHTML fully.
-    B::iniSet('arg_separator.output', '&amp;');
+    global $_BreakpointDebugging_argSeparatorOutput;
+    B::iniSet('arg_separator.output', $_BreakpointDebugging_argSeparatorOutput);
+    unset($_BreakpointDebugging_argSeparatorOutput);
     // This changes "php.ini" file setting into "ignore_user_abort = Off" because it is purpose to end execution of script when client is disconnected.
     B::iniSet('ignore_user_abort', '');
     // ### <=== "Unix" Example. */
