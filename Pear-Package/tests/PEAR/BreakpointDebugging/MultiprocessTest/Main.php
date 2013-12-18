@@ -29,10 +29,7 @@ class tests_PEAR_BreakpointDebugging_MultiprocessTest_Main
 
         $fullFilePath = __DIR__ . '/Lock.php';
         $pPipes = array ();
-        $queryString = B::getStatic('$_get');
-        $queryString['SHMOP_KEY'] = $shmopKey;
-        $queryString['CLASS_NAME'] = $className;
-        $queryString = '"' . http_build_query($queryString) . '"';
+        $queryString = '"' . B::httpBuildQuery(array ('SHMOP_KEY' => $shmopKey, 'CLASS_NAME' => $className)) . '"';
         for ($count = 0; $count < 2; $count++) {
             // Creates and runs a test process.
             if (BREAKPOINTDEBUGGING_IS_WINDOWS) { // For Windows.

@@ -27,7 +27,7 @@
         </file>
         <file>
             <url>PEAR/BreakpointDebugging_InDebug.php</url>
-            <line>175</line>
+            <line>176</line>
         </file>
         <file>
             <url>PEAROtherPackage/BreakpointDebugging_PHPUnitStepExecution.php</url>
@@ -56,10 +56,6 @@
         <file>
             <url>PEAR/BreakpointDebugging/LockByShmop_Bug.php</url>
             <line>62</line>
-        </file>
-        <file>
-            <url>PEAR/BreakpointDebugging.php</url>
-            <line>1180</line>
         </file>
         <file>
             <url>BreakpointDebugging_MySetting.php</url>

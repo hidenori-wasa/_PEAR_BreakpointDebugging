@@ -197,7 +197,6 @@ EOD;
                 echo '<body style="background-color:black;color:white">';
                 $thisFileName = basename(__FILE__);
                 $fontStyle = 'style="font-size: 25px; font-weight: bold;"';
-                $argSeparator = ini_get('arg_separator.output');
                 // Makes error log download-buttons.
                 foreach ($errorLogDirElements as $errorLogDirElement) {
                     if (!preg_match('`\.log$`xX', $errorLogDirElement)) {

@@ -184,17 +184,16 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_PHPUnitStep
     public function testIniCheck()
     {
         BA::iniCheck('safe_mode', '', 'Test message 1.');
-        parent::assertTrue(BA::getStatic('$_iniCheckErrorBuffer') === '');
+        parent::assertTrue(BU::getPropertyForTest('\BreakpointDebugging_InAllCase', '$_iniCheckErrorInitializationFlag') === true);
 
         BA::iniCheck('safe_mode', 'On', 'Test message 2.');
-        $tmpStrlen = strlen(BA::getStatic('$_iniCheckErrorBuffer'));
-        parent::assertTrue($tmpStrlen > 0);
+        parent::assertTrue(BU::getPropertyForTest('\BreakpointDebugging_InAllCase', '$_iniCheckErrorInitializationFlag') === false);
 
         BA::iniCheck('xdebug.remote_host', array ('Other1', 'Other2'), 'Test message 3.');
-        parent::assertTrue($tmpStrlen === strlen(BA::getStatic('$_iniCheckErrorBuffer')));
+        parent::assertTrue(BU::getPropertyForTest('\BreakpointDebugging_InAllCase', '$_iniCheckErrorInitializationFlag') === false);
 
         BA::iniCheck('safe_mode', array ('', 'On'), 'Test message 4.');
-        parent::assertTrue($tmpStrlen < strlen(BA::getStatic('$_iniCheckErrorBuffer')));
+        parent::assertTrue(BU::getPropertyForTest('\BreakpointDebugging_InAllCase', '$_iniCheckErrorInitializationFlag') === false);
 
         BA::windowClose(BA::ERROR_WINDOW_NAME);
     }

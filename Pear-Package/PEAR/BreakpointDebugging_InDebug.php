@@ -29,21 +29,22 @@
  * I recommend "Zend OPcache" extention because my unit tests succeeded with it.
  * Also, How to make this Zend extention is same as pecl extention in case of Windows.
  * The following is "php.ini" setting.
+ *
  * [Zend OPcache]
- * opcache.memory_consumption=128
- * opcache.interned_strings_buffer=8
- * opcache.max_accelerated_files=4000
- * opcache.fast_shutdown=1
+ * opcache.memory_consumption = 128
+ * opcache.interned_strings_buffer = 8
+ * opcache.max_accelerated_files = 4000
+ * opcache.fast_shutdown = 1
  * ; Constant Value: 0         Because we cannot call CLI from CGI with "popen()".
- * opcache.enable_cli=0
- * ; Constant Value: 0         Because modified file may be ignored eternally.
- * opcache.file_update_protection=0
- * ; Development Value: 1      Because we must cache modified "*.php" files.
- * ; Production Value: 0       Because production server does not want to access a file as much as possible.
- * opcache.validate_timestamps=1
+ * opcache.enable_cli = 0
+ * ; Constant Value: 1         Because we must cache modified "*.php" files.
+ * opcache.validate_timestamps = 1
+ * ; Development Value: 0      Because we must cache modified "*.php" files.
+ * ; Production Value: 2       Because production server want to modify a file during execution.
+ * opcache.file_update_protection = 0
  * ; Development Value: 0      Because we must cache modified "*.php" files.
  * ; Production Value: 60      Because production server does not want to access a file as much as possible.
- * opcache.revalidate_freq=0
+ * opcache.revalidate_freq = 0
  *
  * ### The advantage of breakpoint debugging. ###
  * Can find a position of a bug immediately.

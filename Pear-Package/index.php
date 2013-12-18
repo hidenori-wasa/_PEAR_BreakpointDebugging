@@ -8,6 +8,7 @@ use \BreakpointDebugging_PHPUnitStepExecution_PHPUnitFrameworkTestCase as BSF;
 
 B::checkExeMode(); // Checks the execution mode.
 
+// exit('Changed.');
 phpinfo();
 return;
 

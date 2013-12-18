@@ -238,13 +238,13 @@ abstract class BreakpointDebugging_InAllCase
     protected static $errorHtmlFileContent;
 
     /**
-     * @var string Error buffer of "self::iniCheck()" class method.
+     * @var string Error initialization flag of "self::iniCheck()" class method.
      */
-    private static $_iniCheckErrorBuffer = '';
+    private static $_iniCheckErrorInitializationFlag = true;
 
     /**
      * @var array "$_GET" in case of common gateway, or "$_GET" which is built from last of command line parameters in case of command line.
-     * @example: $queryString = '"' . http_build_query(\BreakpointDebugging::getStatic('$_get');) . '"';
+     * @example: $queryString = '"' . B::httpBuildQuery(array ('ADDITIONAL_KEY' => 1234)) . '"';
      *           $pPipe = popen('php.exe -f example.php -- ' . $queryString, 'r'); // For Windows.
      *           $pPipe = popen('php -f example.php -- ' . $queryString . ' &', 'r'); // For Unix.
      */
@@ -530,7 +530,8 @@ EOD;
             }
         }
         if ($cmpResult) {
-            if (self::$_iniCheckErrorBuffer === '') {
+            if (self::$_iniCheckErrorInitializationFlag) {
+                self::$_iniCheckErrorInitializationFlag = false;
                 self::windowVirtualOpen(self::ERROR_WINDOW_NAME, self::$errorHtmlFileContent);
             }
             ob_start();
@@ -539,8 +540,8 @@ EOD;
             . "Current value =";
             var_dump($value);
 
-            self::$_iniCheckErrorBuffer .= ob_get_clean();
-            self::windowHtmlAddition(self::ERROR_WINDOW_NAME, 'pre', 0, self::$_iniCheckErrorBuffer);
+            self::windowHtmlAddition(self::ERROR_WINDOW_NAME, 'pre', 0, ob_get_clean());
+            self::windowScriptClearance();
         }
     }
 
@@ -1205,7 +1206,6 @@ EOD;
 </html>
 EOD;
         self::$staticProperties['$errorHtmlFileContent'] = &self::$errorHtmlFileContent;
-        self::$staticProperties['$_iniCheckErrorBuffer'] = &self::$_iniCheckErrorBuffer;
     }
 
     /**
