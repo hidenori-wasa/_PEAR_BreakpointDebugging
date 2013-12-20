@@ -23,7 +23,7 @@ The dependences
 ---------------
 
 * OS requires `Linux` or `Windows`, but may be able to require `Unix`.
-* PHP version >= `5.3.0`
+* PHP version = `5.3.1`
 * Requires `Xdebug extension` in case of local host. "Xdebug" extension is required because (uses breakpoint, displays for fatal error and detects infinity recursive function call).
 * Requires `Xdebug extension` if you want features of above in case of "$_BreakpointDebugging_EXE_MODE = B::REMOTE" mode. (optional).
 * Requires `shmop extension` if you use "\BreakpointDebugging_LockByShmop" class. (optional).
@@ -63,17 +63,17 @@ Example:
 
     test.src.dir=/home/hidenori/htdocs/Pear-Package/tests
 
-Also, "NetBeans IDE 7.3" cannot keep switchback in format at April, 2013.
+Also, "NetBeans IDE 7.4" cannot keep switchback in format of "if" statement at December, 2013.
 Example:
 
     if ($a
-        && $b
-        && ($c || $d)
-        || ($e && $f)
+        && $b           // Cannot keep switchback of this line.
+        && ($c || $d)   // Cannot keep switchback of this line.
+        || ($e && $f)   // Cannot keep switchback of this line.
     ) {
         return;
     }
 
-However, "NetBeans IDE 7.3" supports "PHP5.4" and "HTML5".
+However, "NetBeans IDE 7.4" supports "PHP5.4" and "HTML5".
 
 I have been coding the unit tests.

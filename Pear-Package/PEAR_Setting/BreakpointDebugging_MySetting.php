@@ -67,11 +67,13 @@ function BreakpointDebugging_setExecutionMode()
         $_BreakpointDebugging_get = $_GET;
     } else { // In case of command line.
         $argc = $_SERVER['argc'];
-        if ($argc === 0) {
-            $_BreakpointDebugging_get = array ();
-        } else {
+        //if ($argc === 0) {
+        //    $_BreakpointDebugging_get = array ();
+        //} else {
+        $_BreakpointDebugging_get = array ();
+        if ($argc > 0) {
             $queryStrings = explode($_BreakpointDebugging_argSeparatorOutput, $_SERVER['argv'][$argc - 1]);
-            $_BreakpointDebugging_get = array ();
+            //$_BreakpointDebugging_get = array ();
             foreach ($queryStrings as $queryString) {
                 list($queryKey, $queryValue) = explode('=', $queryString);
                 $_BreakpointDebugging_get[$queryKey] = urldecode($queryValue);

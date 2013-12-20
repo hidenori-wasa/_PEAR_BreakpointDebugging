@@ -17,34 +17,65 @@
  * ### Environment which can do breakpoint debugging. ###
  * Debugger which can use breakpoint.
  * At April, 2013 recommendation debugging environment is
- * "WindowsXP Professional" + "NetBeans IDE 7.1.2" + "XAMPP 1.7.7" or
- * "Ubuntu desktop" + "NetBeans IDE 7.1.2" + "XAMPP for Linux 1.7.7".
+ * "WindowsXP Professional" + "NetBeans IDE 7.1.2" + "XAMPP 1.7.3" or
+ * "Ubuntu desktop" + "NetBeans IDE 7.1.2" + "XAMPP for Linux 1.7.3".
  * Notice: Use "phpMyAdmin" to see database and to execute "MySQL" command.
- *         Also, "NetBeans IDE 7.3" cannot keep switchback at April, 2013.
- *         However, "NetBeans IDE 7.3" supports "PHP5.4" and "HTML5".
- * Caution: The code format setting of "NetBeans" disperses to two menu because setting per IDE and setting per project exists.
+ *         Also, "NetBeans IDE 7.4" cannot keep switchback in format of "if" statement at December, 2013.
+ *         However, "NetBeans IDE 7.4" supports "PHP5.4" and "HTML5".
+ * @example
+ *      if ($a
+ *          && $b           // Cannot keep switchback of this line.
+ *          && ($c || $d)   // Cannot keep switchback of this line.
+ *          || ($e && $f)   // Cannot keep switchback of this line.
+ *      ) {
+ *          return;
+ *      }
+ *
+ * Caution 1: The code format setting of "NetBeans" disperses to two menu because setting per IDE and setting per project exists.
  *          Those must have both directions link button because setting may not be executed, however, those is not.
+ * Caution 2: Do not use "XAMPP 1.7.7 (php 5.3.8)" because execution speed does slowdown in step execution when we run unit test.
  *
  * ### Recommendation file cache extention of production server. ###
- * I recommend "Zend OPcache" extention because my unit tests succeeded with it.
- * Also, How to make this Zend extention is same as pecl extention in case of Windows.
- * The following is "php.ini" setting.
+ * I recommend "Zend OPcache" extention.
+ * Because this extension is stable.
+ *      1. My unit tests succeeded with it. Such as calling CLI from CGI with "popen()" function.
+ *      2. It is core extension of "PHP5.5".
+ *      3. Its development team have several "PHP" coder.
+ * Also, this extension is fast.
+ *      1. The speed decelerates hardly even if the number of users increases.
+ *      2. This extention caches op code after optimization.
+ *              As the example, we can code to except debugging code from cache at release.
+ *              @example
+ *                  if (BREAKPOINTDEBUGGING_MODE === 'DEBUG') { // Excepts from this line.
+ *                      // Debug codes.
+ *                          .
+ *                          .
+ *                          .
+ *                  } // Excepts until this line.
+ * How to make this Zend extention is same as pecl extention in case of Windows "VC9".
+ * However, I cannot make for "PHP 5.3.1" of "XAMPP 1.7.3" is compiled with "VC6".
+ * Usage of "php_opcache.dll" file:
+ *      1. Move to "C:\xampp\php\ext\php_opcache.dll".
+ *      2. Add following lines into "php.ini" file, then save the file.
+ *          zend_extension = "C:\xampp\php\ext\php_opcache.dll" ; This line must be before next line.
+ *          zend_extension = "...\php_xdebug-....dll"
  *
- * [Zend OPcache]
- * opcache.memory_consumption = 128
- * opcache.interned_strings_buffer = 8
- * opcache.max_accelerated_files = 4000
- * opcache.fast_shutdown = 1
- * ; Constant Value: 0         Because we cannot call CLI from CGI with "popen()".
- * opcache.enable_cli = 0
- * ; Constant Value: 1         Because we must cache modified "*.php" files.
- * opcache.validate_timestamps = 1
- * ; Development Value: 0      Because we must cache modified "*.php" files.
- * ; Production Value: 2       Because production server want to modify a file during execution.
- * opcache.file_update_protection = 0
- * ; Development Value: 0      Because we must cache modified "*.php" files.
- * ; Production Value: 60      Because production server does not want to access a file as much as possible.
- * opcache.revalidate_freq = 0
+ *          [Zend OPcache]
+ *          opcache.memory_consumption = 128
+ *          opcache.interned_strings_buffer = 8
+ *          opcache.max_accelerated_files = 4000
+ *          opcache.fast_shutdown = 1
+ *          ; Constant Value: 0         Because we cannot call CLI from CGI with "popen()".
+ *          opcache.enable_cli = 0
+ *          ; Constant Value: 1         Because we must cache modified "*.php" files.
+ *          opcache.validate_timestamps = 1
+ *          ; Development Value: 0      Because we must cache modified "*.php" files.
+ *          ; Production Value: 2       Because production server want to modify a file during execution.
+ *          opcache.file_update_protection = 0
+ *          ; Development Value: 0      Because we must cache modified "*.php" files.
+ *          ; Production Value: 60      Because production server does not want to access a file as much as possible.
+ *          opcache.revalidate_freq = 0
+ *      3. Restart apache.
  *
  * ### The advantage of breakpoint debugging. ###
  * Can find a position of a bug immediately.
@@ -63,7 +94,7 @@
  * We do not need error and exception handler coding because an error and an exception
  * which wasn't caught are processed by global handler in "BreakpointDebugging" class.
  *
- * Example:
+ * @example
  * <?php
  *
  * require_once './BreakpointDebugging_Inclusion.php';
@@ -694,7 +725,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      * @usage
      *      \BreakpointDebugging::assert(<judgment expression>[, <identification number inside function>]);
      *      It is possible to assert that <judgment expression> is "This must be". Especially, this uses to verify a function's argument.
-     *      For example: \BreakpointDebugging::assert(3 <= $value && $value <= 5); // $value should be 3-5.
+     *      @example: \BreakpointDebugging::assert(3 <= $value && $value <= 5); // $value should be 3-5.
      *      Caution: Don't change the value of variable in "\BreakpointDebugging::assert()" function because there isn't executed in case of release.
      */
     static function assert($assertion, $id = null)

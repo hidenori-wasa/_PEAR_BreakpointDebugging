@@ -86,8 +86,9 @@ if (B::getXebugExists()) {
     //    B::iniCheck('xdebug.remote_host', array ('127.0.0.1', 'localhost'), 'Sets the \'xdebug.remote_host = "&lt;Remote IDE host of server&gt;"\' of "php.ini file", in other words remote IDE host of server is "&lt;Your host name or IP&gt;".');
     // }
     // ### [XDebug] setting in "php.ini" file. ###
-    // First is DBGP_IDEKEY, and next is USER, and last is USERNAME.
-    // B::iniSet('xdebug.idekey', ?????);
+    //$_get = B::getStatic('$_get');
+    //$xdebugSessionName = $_get['XDEBUG_SESSION_START'];
+    //B::iniCheck('xdebug.idekey', $xdebugSessionName, 'Set \'xdebug.idekey = "$xdebugSessionName"\' of "php.ini" file because this value must be the debug session name.');
     // // Manual base url for links from function traces or error messages.
     // B::iniSet('xdebug.manual_url', $xdebugManualUrl, false);
     // Limits the number of object properties or array elements for display of var_dump(), local variables or Function Traces.
@@ -199,6 +200,7 @@ if (BREAKPOINTDEBUGGING_IS_WINDOWS) { // In case of Windows.
 // The SMTP port setting of Windows.
 B::iniSet('smtp_port', '25');
 // B::iniCheck('mail.add_x_header', '', 'We recommend to set "mail.add_x_header = Off" of "php.ini" file because does not write that header continue "UID" behind the file name.');
+B::iniCheck('output_buffering', '', 'Sets \'output_buffering = Off\' of "php.ini" file for output window.');
 ////////////////////////////////////////////////////////////////////////////////
 // ### This uses "false" because this setting doesn't have relation with release. ###
 // This makes all errors, warnings and note a stop at breakpoint or a display.
