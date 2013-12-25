@@ -541,7 +541,6 @@ EOD;
             var_dump($value);
 
             self::windowHtmlAddition(self::ERROR_WINDOW_NAME, 'pre', 0, ob_get_clean());
-            //self::windowScriptClearance();
         }
     }
 

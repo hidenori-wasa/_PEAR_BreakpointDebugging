@@ -17,7 +17,7 @@
  * ### Environment which can do breakpoint debugging. ###
  * Debugger which can use breakpoint.
  * At April, 2013 recommendation debugging environment is
- * "WindowsXP Professional" + "NetBeans IDE 7.1.2" + "XAMPP 1.7.3" or
+ * "WindowsXP Professional" + "NetBeans IDE 7.1.2" + "XAMPP 1.7.3 (VC++6.0)" or
  * "Ubuntu desktop" + "NetBeans IDE 7.1.2" + "XAMPP for Linux 1.7.3".
  * Notice: Use "phpMyAdmin" to see database and to execute "MySQL" command.
  *         Also, "NetBeans IDE 7.4" cannot keep switchback in format of "if" statement at December, 2013.
@@ -33,7 +33,9 @@
  *
  * Caution 1: The code format setting of "NetBeans" disperses to two menu because setting per IDE and setting per project exists.
  *          Those must have both directions link button because setting may not be executed, however, those is not.
- * Caution 2: Do not use "XAMPP 1.7.7 (php 5.3.8)" because execution speed does slowdown in step execution when we run unit test.
+ * Caution 2: Do not use "XAMPP 1.7.7 (PHP 5.3.8, VC++9.0)" because execution speed does slowdown in step execution when we run unit test.
+ *          Because execution speed did slowdown even though I changed "XAMPP 1.7.7 (PHP 5.3.8, VC++9.0)" to "PHP 5.3.1 (VC++9.0)".
+ *          Therefore, "NetBeans" symbolic debugger must use "PHP5.3" which was compiled with "VC++6.0".
  *
  * ### Recommendation file cache extention of production server. ###
  * I recommend "Zend OPcache" extention.
@@ -46,7 +48,7 @@
  *      2. This extention caches op code after optimization.
  *              As the example, we can code to except debugging code from cache at release.
  *              @example
- *                  if (BREAKPOINTDEBUGGING_MODE === 'DEBUG') { // Excepts from this line.
+ *                  if (false) { // Excepts from this line.
  *                      // Debug codes.
  *                          .
  *                          .

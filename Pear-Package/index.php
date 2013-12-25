@@ -7,35 +7,104 @@ use \BreakpointDebugging_PHPUnitStepExecution_PHPUnitUtilGlobalState as BGS;
 use \BreakpointDebugging_PHPUnitStepExecution_PHPUnitFrameworkTestCase as BSF;
 
 B::checkExeMode(); // Checks the execution mode.
+/**
+ *
+ *
+ * @param string $filePath
+ */
+function cacheAfterChangeReteralOfPHPFile($filePath)
+{
+    $codeLockObj = &\BreakpointDebugging_LockByFileExisting::internalSingleton();
+    $codeLockObj->lock();
+    // 以前のファイルeパース時刻と比較する
+    //
+    //
+    // ファイルパース時刻を記録する
 
-// exit('Changed.');
-phpinfo();
-return;
 
-$dumpFileKey = __FILE__; // str_replace(array ('\\', ':', '/', '.', '_', '-'), 'A', __FILE__);
-
-if (!is_file('BreakpointDebugging_APC.bin')) {
-    var_dump(apc_bin_dumpfile(array ('index.php'), array (), __DIR__ . '/BreakpointDebugging_APC.bin'));
-    if (apc_exists($dumpFileKey)) {
-        var_dump(apc_cas($dumpFileKey, 1, 0));
-    } else {
-        var_dump(apc_store($dumpFileKey, 0));
+    $tokens = token_get_all(file_get_contents($filePath));
+    $isProduct = !array_key_exists('BREAKPOINTDEBUGGING_MODE', B::getStatic('$_get'));
+    $buffer = '';
+    $postBuffer = '';
+    $wasChanged = false;
+    $parseCount = 0;
+    foreach ($tokens as $key => $token) {
+        if (is_array($token)) {
+            $tokenKind = $token[0];
+            $cmpToken = $token[1];
+            switch ($parseCount) {
+                case 0:
+                    switch ($tokenKind) {
+                        case T_IF:
+                            $parseCount = 1;
+                    }
+                    break;
+                case 2:
+                    switch ($tokenKind) {
+                        case T_CONSTANT_ENCAPSED_STRING:
+                            if (($isProduct && $cmpToken === '!\'BreakpointDebugging::DEBUG\'')
+                                || (!$isProduct && $cmpToken === '\'BreakpointDebugging::DEBUG\'')
+                            ) {
+                                $parseCount = 3;
+                                //$targetToken = &$tokens[$key][1];
+                                continue;
+                            }
+                    }
+                case 1:
+                    switch ($tokenKind) {
+                        case T_WHITESPACE:
+                        case T_COMMENT:
+                            break;
+                        default:
+                            $parseCount = 0;
+                    }
+                    break;
+                case 3:
+                    switch ($tokenKind) {
+                        case T_WHITESPACE:
+                        case T_COMMENT:
+                            break;
+                        default:
+                            $parseCount = 0;
+                    }
+                    $postBuffer .= $cmpToken;
+                    continue;
+            }
+            //$tokens[$key][0] = token_name($tokenKind);
+            $buffer .= $cmpToken;
+            continue;
+        }
+        switch ($parseCount) {
+            case 1:
+                if ($token === '(') {
+                    $parseCount = 2;
+                }
+                break;
+            case 3:
+                if ($token === ')') {
+                    $parseCount = 0;
+                    $wasChanged = true;
+                    if ($isProduct) {
+                        $buffer .= '!\'BreakpointDebugging::DEBUG\'' . $postBuffer . $token;
+                    } else {
+                        $buffer .= '\'BreakpointDebugging::DEBUG\'' . $postBuffer . $token;
+                    }
+                }
+        }
+        $buffer .= $token;
     }
+    if ($wasChanged) {
+        opcache_compile_file($filePath);
+    }
+    $codeLockObj->unlock();
 }
 
-if (!apc_fetch($dumpFileKey)) {
-    if (apc_exists($dumpFileKey)) {
-        var_dump(apc_cas($dumpFileKey, 0, 1));
-    } else {
-        var_dump(apc_store($dumpFileKey, 1));
-    }
-    var_dump(apc_bin_loadfile(__DIR__ . '/BreakpointDebugging_APC.bin'));
-}
+cacheAfterChangeReteralOfPHPFile('./OPcacheTestA.php');
 return;
 
-// var_dump(array_diff(array ('apc_bin_dumpfile', 'apc_bin_loadfile', 'apc_exists'), get_extension_funcs('apc')));
-var_dump(get_extension_funcs('apc'));
-return;
+
+
+
 
 
 $htmlFileContent1 = <<<EOD
