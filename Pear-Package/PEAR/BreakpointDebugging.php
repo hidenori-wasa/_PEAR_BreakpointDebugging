@@ -67,9 +67,6 @@ abstract class BreakpointDebugging_Exception_InAllCase extends \PEAR_Exception
      */
     function __construct($message, $id = null, $previous = null)
     {
-        // trigger_error('Error test.'); // For debug.
-        // throw new \Exception('Exception test.'); // For debug.
-
         if ($previous === null) {
             parent::__construct($message, $id);
         } else {
@@ -170,12 +167,12 @@ abstract class BreakpointDebugging_InAllCase
     /**
      * @var int Maximum log file byte size.
      */
-    private static $_maxLogFileByteSize;
+    private static $_maxLogFileByteSize = 131072; // 1 << 17
 
     /**
      * @var int Max log parameter nesting level.
      */
-    private static $_maxLogParamNestingLevel;
+    private static $_maxLogParamNestingLevel = 20;
 
     /**
      * @var int Maximum count of elements in log. ( Total of parameters or array elements )
@@ -185,7 +182,7 @@ abstract class BreakpointDebugging_InAllCase
     /**
      * @var int Maximum string type byte-count of log.
      */
-    private static $_maxLogStringSize;
+    private static $_maxLogStringSize = 3000;
 
     /**
      * @var string Work directory of this package.
@@ -232,10 +229,10 @@ abstract class BreakpointDebugging_InAllCase
      */
     private static $_nativeExeMode;
 
-    /**
-     * @var string HTML file content of error window.
-     */
-    protected static $errorHtmlFileContent;
+//    /**
+//     * @var string HTML file content of error window.
+//     */
+//    protected static $errorHtmlFileContent;
 
     /**
      * @var string Error initialization flag of "self::iniCheck()" class method.
@@ -371,7 +368,7 @@ abstract class BreakpointDebugging_InAllCase
                 default :
                     throw new \BreakpointDebugging_ErrorException('"' . __METHOD__ . '" parameter1 is mistake.', 101);
             }
-            self::windowVirtualOpen(self::ERROR_WINDOW_NAME, self::$errorHtmlFileContent);
+            self::windowVirtualOpen(self::ERROR_WINDOW_NAME, self::getErrorHtmlFileContent());
             self::windowHtmlAddition(self::ERROR_WINDOW_NAME, 'pre', 0, $message);
             return false;
         }
@@ -380,7 +377,7 @@ abstract class BreakpointDebugging_InAllCase
         }
         // Checks client IP address.
         if ($_SERVER['REMOTE_ADDR'] !== self::$_developerIP) {
-            self::windowVirtualOpen(self::ERROR_WINDOW_NAME, self::$errorHtmlFileContent);
+            self::windowVirtualOpen(self::ERROR_WINDOW_NAME, self::getErrorHtmlFileContent());
             self::windowHtmlAddition(self::ERROR_WINDOW_NAME, 'pre', 0, '<b>You must set "$developerIP = \'' . $_SERVER['REMOTE_ADDR'] . '\';" ' . PHP_EOL
                 . "\t" . 'into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file.' . PHP_EOL
                 . 'Or, you mistook start "php" page.</b>'
@@ -392,7 +389,7 @@ abstract class BreakpointDebugging_InAllCase
             || empty($_SERVER['HTTPS'])
             || $_SERVER['HTTPS'] === 'off'
         ) {
-            self::windowVirtualOpen(self::ERROR_WINDOW_NAME, self::$errorHtmlFileContent);
+            self::windowVirtualOpen(self::ERROR_WINDOW_NAME, self::getErrorHtmlFileContent());
             self::windowHtmlAddition(self::ERROR_WINDOW_NAME, 'pre', 0, '<b>You must use "https" protocol.' . PHP_EOL
                 . 'Or, you mistook start "php" page.</b>'
             );
@@ -430,7 +427,7 @@ abstract class BreakpointDebugging_InAllCase
         }
 
         if ($isUnitTest) {
-            self::windowVirtualOpen(self::ERROR_WINDOW_NAME, self::$errorHtmlFileContent);
+            self::windowVirtualOpen(self::ERROR_WINDOW_NAME, self::getErrorHtmlFileContent());
             $pearSettingDirName = BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME;
             $errorMessage = <<<EOD
 You must set
@@ -532,7 +529,7 @@ EOD;
         if ($cmpResult) {
             if (self::$_iniCheckErrorInitializationFlag) {
                 self::$_iniCheckErrorInitializationFlag = false;
-                self::windowVirtualOpen(self::ERROR_WINDOW_NAME, self::$errorHtmlFileContent);
+                self::windowVirtualOpen(self::ERROR_WINDOW_NAME, self::getErrorHtmlFileContent());
             }
             ob_start();
 
@@ -662,7 +659,7 @@ EOD;
      *
      * @return bool Success or failure.
      */
-    static function chmod($name, $permission, $timeout = 10, $sleepMicroSeconds = 100000)
+    static function chmod($name, $permission, $timeout = 10, $sleepMicroSeconds = 1000000)
     {
         if (BREAKPOINTDEBUGGING_IS_WINDOWS) {
             return true;
@@ -683,7 +680,7 @@ EOD;
      *
      * @return bool Success or failure.
      */
-    static function mkdir(array $params, $timeout = 10, $sleepMicroSeconds = 100000)
+    static function mkdir(array $params, $timeout = 10, $sleepMicroSeconds = 1000000)
     {
         B::limitAccess('BreakpointDebugging_InDebug.php');
 
@@ -710,7 +707,7 @@ EOD;
      *
      * @return bool Success or failure.
      */
-    static function rmdir(array $params, $timeout = 10, $sleepMicroSeconds = 100000)
+    static function rmdir(array $params, $timeout = 10, $sleepMicroSeconds = 1000000)
     {
         return self::_retryForFilesystemFunction('rmdir', $params, $timeout, $sleepMicroSeconds);
     }
@@ -788,7 +785,7 @@ EOD;
      *
      * @return resource The file pointer resource or false.
      */
-    static function fopen(array $params, $permission = null, $timeout = 10, $sleepMicroSeconds = 100000)
+    static function fopen(array $params, $permission = null, $timeout = 10, $sleepMicroSeconds = 1000000)
     {
         B::limitAccess('BreakpointDebugging_InDebug.php');
 
@@ -815,7 +812,7 @@ EOD;
      *
      * @return bool Success or failure.
      */
-    static function unlink(array $params, $timeout = 10, $sleepMicroSeconds = 100000)
+    static function unlink(array $params, $timeout = 10, $sleepMicroSeconds = 1000000)
     {
         return self::_retryForFilesystemFunction('unlink', $params, $timeout, $sleepMicroSeconds);
     }
@@ -1163,6 +1160,22 @@ EOD;
     }
 
     ///////////////////////////// For package user until here. /////////////////////////////
+    static protected function getErrorHtmlFileContent()
+    {
+        return <<<EOD
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8" />
+		<title>ERROR</title>
+	</head>
+	<body style="background-color: black; color: white; font-size: 25px">
+		<pre></pre>
+	</body>
+</html>
+EOD;
+    }
+
     /**
      * Initializes static properties.
      *
@@ -1185,6 +1198,7 @@ EOD;
         self::$staticProperties['$_developerIP'] = &self::$_developerIP;
         self::$staticProperties['$_maxLogFileByteSize'] = &self::$_maxLogFileByteSize;
         self::$staticProperties['$_maxLogParamNestingLevel'] = &self::$_maxLogParamNestingLevel;
+        self::$_maxLogElementNumber = count($_SERVER); // Default value.
         self::$staticProperties['$_maxLogElementNumber'] = &self::$_maxLogElementNumber;
         self::$staticProperties['$_maxLogStringSize'] = &self::$_maxLogStringSize;
         self::$staticProperties['$_workDir'] = &self::$_workDir;
@@ -1192,19 +1206,6 @@ EOD;
         self::$staticProperties['$_callingExceptionHandlerDirectly'] = &self::$_callingExceptionHandlerDirectly;
         self::$staticProperties['$_valuesToTrace'] = &self::$_valuesToTrace;
         self::$staticProperties['$_notFixedLocations'] = &self::$_notFixedLocations;
-        self::$errorHtmlFileContent = <<<EOD
-<!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="UTF-8" />
-        <title>ERROR</title>
-    </head>
-    <body style="background-color: black; color: white; font-size: 25px">
-        <pre></pre>
-    </body>
-</html>
-EOD;
-        self::$staticProperties['$errorHtmlFileContent'] = &self::$errorHtmlFileContent;
     }
 
     /**
@@ -1270,9 +1271,6 @@ EOD;
         set_error_handler('\BreakpointDebugging_Error::handleInternalError', -1);
 
         try {
-            // trigger_error('Internal error test.'); // For debug.
-            // throw new \Exception('Internal exception test.'); // For debug.
-
             $error = new \BreakpointDebugging_Error();
             $error->handleException2($pException, self::$prependExceptionLog);
             if (self::$_nativeExeMode & self::UNIT_TEST) {
@@ -1314,9 +1312,6 @@ EOD;
         set_error_handler('\BreakpointDebugging_Error::handleInternalError', -1);
 
         try {
-            // trigger_error('Internal error test.'); // For debug.
-            // throw new \Exception('Internal exception test.'); // For debug.
-
             $error = new \BreakpointDebugging_Error();
             $error->handleError2($errorNumber, $errorMessage, self::$prependErrorLog, debug_backtrace());
         } catch (\Exception $e) {
@@ -1486,7 +1481,7 @@ if ($_BreakpointDebugging_EXE_MODE & BA::RELEASE) { // In case of release.
                         // Because unit test is exited.
                         ini_set('xdebug.var_display_max_depth', 5);
 
-                        parent::windowVirtualOpen(parent::ERROR_WINDOW_NAME, parent::$errorHtmlFileContent);
+                        parent::windowVirtualOpen(parent::ERROR_WINDOW_NAME, parent::getErrorHtmlFileContent());
                         ob_start();
 
                         var_dump(debug_backtrace());

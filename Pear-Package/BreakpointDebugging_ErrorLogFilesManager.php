@@ -121,7 +121,7 @@ final class BreakpointDebugging_ErrorLogFilesManager
     static function manageErrorLogFiles()
     {
         if (!B::checkDevelopmentSecurity(B::RELEASE)) {
-            return;
+            exit;
         }
 
         // Cancels the script running time limitation.

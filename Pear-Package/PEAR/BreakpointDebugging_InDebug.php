@@ -67,7 +67,7 @@
  *          opcache.interned_strings_buffer = 8
  *          opcache.max_accelerated_files = 4000
  *          opcache.fast_shutdown = 1
- *          ; Constant Value: 0         Because we cannot call CLI from CGI with "popen()".
+ *          ; Constant Value: 0         We cannot call command to get result from CGI because a deprecated prefix is added in case of first time.
  *          opcache.enable_cli = 0
  *          ; Constant Value: 1         Because we must cache modified "*.php" files.
  *          opcache.validate_timestamps = 1
@@ -156,9 +156,59 @@
  *      of "BreakpointDebugging_PHPUnitStepExecution" package before release.
  *      Then, we must enable "$_BreakpointDebugging_EXE_MODE = 2;" of "BreakpointDebugging_MySetting.php" in case of production server use.
  *      Because server must not display "XDebug" and error logging information.
- * Procedure 8: If you use "Unix", register your username as
- *      "User" and "Group" into "lampp/apache/conf/httpd.conf".
- *      And, register "export PATH=$PATH:/opt/lampp/bin" into "~/.profile".
+ * Procedure 8: If you use "XAMPP for Linux",
+ *      Make the "SetPermission.sh" file to change "owner and access permission" of all directories and files below "htdocs".
+ *      Then, change its property as executable program.
+ *      Attention: Write your user name into <user name>.
+ *          #!/bin/bash
+ *
+ *          # This file is purpose which sets permission before upload.
+ *          # Each server permission is different, therefore you must customize this file to adjust.
+ *
+ *          # Changes owner of all directories and files.
+ *          sudo chown <user name> /opt/lampp/htdocs/ -R
+ *          # Changes permission of all directories inside "htdocs".
+ *          sudo find /opt/lampp/htdocs/ -type d -exec sudo chmod 0705 {} \;
+ *          # Changes permission of all files inside "htdocs".
+ *          sudo find /opt/lampp/htdocs/ -type f -regex ".*" -exec sudo chmod 0604 {} \;
+ *          # Notifies end.
+ *          echo "Permission was set."
+ *          # Waits until input.
+ *          read Wait
+ *
+ *      Do double click "SetPermission.sh" file to change "owner and access permission" with of all directories and files below "htdocs".
+ *
+ *      Add execution directory path of "XAMPP" to environment pass by adding to end line of "envvars" file.
+ *          sudo gedit /opt/lampp/bin/envvars
+ *              export PATH=$PATH:/opt/lampp/bin
+ *
+ *      Change user name and access permission.
+ *      Attention: Write your user name into <user name>.
+ *          sudo gedit /opt/lampp/etc/httpd.conf
+ *              #User nobody
+ *              User <user name>
+ *              #Group nogroup
+ *              Group <user name>
+ *
+ *              <Directory "/opt/lampp/htdocs">
+ *                      .
+ *                      .
+ *                      .
+ *                  #Order allow,deny
+ *                  Order deny,allow
+ *                  #Allow from all
+ *                  deny from all
+ *                  Allow from 127.0.0.1 localhost
+ *
+ *              <Directory "/opt/lampp/cgi-bin">
+ *                      .
+ *                      .
+ *                      .
+ *                  #Order allow,deny
+ *                  Order deny,allow
+ *                  #Allow from all
+ *                  deny from all
+ *                  Allow from 127.0.0.1 localhost
  * Procedure 9: If you can change "php.ini" file,
  *      use "B::iniCheck()" instead of "B::iniSet()" in "*_MySetting.php" file,
  *      and move it to "*_MySetting_InDebug.php" file
@@ -330,7 +380,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
             && !BREAKPOINTDEBUGGING_IS_WINDOWS
             && trim(`echo \$USER`) === 'root'
         ) {
-            parent::windowVirtualOpen(parent::ERROR_WINDOW_NAME, parent::$errorHtmlFileContent);
+            parent::windowVirtualOpen(parent::ERROR_WINDOW_NAME, parent::getErrorHtmlFileContent());
             B::windowHtmlAddition(B::ERROR_WINDOW_NAME, 'pre', 0, 'Security warning: Recommends to change to "Apache HTTP Server" which Supported "suEXEC" because this "Apache HTTP Server" is executed by "root" user.');
         }
     }
@@ -440,7 +490,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      *
      * @return Same as parent.
      */
-    static function chmod($name, $permission, $timeout = 10, $sleepMicroSeconds = 100000)
+    static function chmod($name, $permission, $timeout = 10, $sleepMicroSeconds = 1000000)
     {
         self::assert(func_num_args() <= 4);
         self::assert(is_string($name));
@@ -460,7 +510,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      *
      * @return Same as parent.
      */
-    static function mkdir(array $params, $timeout = 10, $sleepMicroSeconds = 100000)
+    static function mkdir(array $params, $timeout = 10, $sleepMicroSeconds = 1000000)
     {
         self::assert(func_num_args() <= 3);
         self::assert(is_int($timeout));
@@ -481,7 +531,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      *
      * @return Same as parent.
      */
-    static function fopen(array $params, $permission = null, $timeout = 10, $sleepMicroSeconds = 100000)
+    static function fopen(array $params, $permission = null, $timeout = 10, $sleepMicroSeconds = 1000000)
     {
         self::assert(func_num_args() <= 4);
         self::assert((is_int($permission) || is_null($permission)) && 0 <= $permission && $permission <= 0777);
@@ -573,7 +623,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
                         break 2;
                     }
                 }
-                parent::windowVirtualOpen(parent::ERROR_WINDOW_NAME, parent::$errorHtmlFileContent);
+                parent::windowVirtualOpen(parent::ERROR_WINDOW_NAME, parent::getErrorHtmlFileContent());
                 B::windowHtmlAddition(B::ERROR_WINDOW_NAME, 'pre', 0, 'Path environment variable has not been set for "php.exe" command.' . PHP_EOL . `path`);
                 exit;
             }
@@ -583,9 +633,11 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
                 $message = 'Path environment variable has not been set for "php" command.' . PHP_EOL
                     . '$PATH=' . `echo \$PATH` . PHP_EOL
                     . 'Please, search by (sudo find "<apache install directory>" -mount -name "envvars") command.' . PHP_EOL
+                    . '    Example: sudo find "/opt/lampp/" -mount -name "envvars"' . PHP_EOL
                     . 'Then, add "export PATH=$PATH:<php command directory>" line to its file.' . PHP_EOL
-                    . 'Example: "export PATH=$PATH:/opt/lampp/bin"';
-                parent::windowVirtualOpen(parent::ERROR_WINDOW_NAME, parent::$errorHtmlFileContent);
+                    . '    Example: export PATH=$PATH:/opt/lampp/bin' . PHP_EOL
+                    . 'Then, restart apache.';
+                parent::windowVirtualOpen(parent::ERROR_WINDOW_NAME, parent::getErrorHtmlFileContent());
                 B::windowHtmlAddition(B::ERROR_WINDOW_NAME, 'pre', 0, htmlspecialchars($message, ENT_COMPAT));
                 exit;
             }
@@ -833,6 +885,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
             // In case of remote debug.
             if ($doCheck === true
                 && (BA::$exeMode & B::REMOTE)
+                && isset($_SERVER['SERVER_ADDR']) // In case of common gateway.
             ) {
                 $backTrace = debug_backtrace();
                 $baseName = basename($backTrace[0]['file']);
@@ -939,7 +992,8 @@ EOD;
 
 // When "Xdebug" does not exist.
 if (!B::getXebugExists()) {
-    if (!(B::getStatic('$exeMode') & B::REMOTE)) { // In case of local.
+    global $_BreakpointDebugging_EXE_MODE;
+    if (!($_BreakpointDebugging_EXE_MODE & B::REMOTE)) { // In case of local.
         B::exitForError(
             PHP_EOL
             . '### ERROR ###' . PHP_EOL

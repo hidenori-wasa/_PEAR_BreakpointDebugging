@@ -635,7 +635,6 @@ abstract class BreakpointDebugging_Error_InAllCase
         restore_error_handler(); // Restores from "B::handleError()".
 
         try {
-            // trigger_error('Internal error test.', E_USER_WARNING); // For debug.
             // Controls how many nested levels of array elements and object properties.
             // Display by var_dump(), local variables or Function Traces.
             ini_set('xdebug.var_display_max_depth', '6');
@@ -1282,8 +1281,15 @@ abstract class BreakpointDebugging_Error_InAllCase
     </body>
 </html>
 EOD;
+            set_error_handler('\BreakpointDebugging::handleError', 0);
             // Makes error HTML file.
-            file_put_contents(B::ERROR_WINDOW_NAME . '.html', $errorHtmlFileContent);
+            $result = @file_put_contents(B::ERROR_WINDOW_NAME . '.html', $errorHtmlFileContent);
+            restore_error_handler();
+            // Checks failure because this file permission may be denied.
+            if (!$result) {
+                exit($errorHtmlFileContent);
+            }
+
             // Opens its file at error window.
             echo '<script type="text/javascript">' . PHP_EOL
             . '<!--' . PHP_EOL

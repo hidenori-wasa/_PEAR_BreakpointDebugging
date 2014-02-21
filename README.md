@@ -61,11 +61,11 @@ Or, execute command like following with short cut file.
 Notice
 ------
 
-"Pear-Package/nbproject/" directory is project directory of "NetBeans IDE 7.1.2 for Windows".
-You must change "test.src.dir" of "Pear-Package/nbproject/project.properties" file if you use on Linux.
+"Pear-Package/nbproject/" directory is project directory of "NetBeans IDE 7.1.2 for Linux".
+You must change "test.src.dir" of "Pear-Package/nbproject/project.properties" file if you use on Windows.
 Example:
 
-    test.src.dir=/home/hidenori/htdocs/Pear-Package/tests
+    test.src.dir=C:\\xampp\\htdocs\\Pear-Package\\tests
 
 Also, "NetBeans IDE 7.4" cannot keep switchback in format of "if" statement at December, 2013.
 Example:
@@ -80,4 +80,5 @@ Example:
 
 However, "NetBeans IDE 7.4" supports "PHP5.4" and "HTML5".
 
-I have been coding the unit tests.
+I have been developing yet.
+Also, I have been coding the unit tests.

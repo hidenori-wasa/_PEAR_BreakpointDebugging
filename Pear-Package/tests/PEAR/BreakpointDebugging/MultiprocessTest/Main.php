@@ -33,15 +33,12 @@ class tests_PEAR_BreakpointDebugging_MultiprocessTest_Main
         for ($count = 0; $count < 2; $count++) {
             // Creates and runs a test process.
             if (BREAKPOINTDEBUGGING_IS_WINDOWS) { // For Windows.
-                // include_once $fullFilePath; // For debug.
                 $pPipe = popen('php.exe -f ' . $fullFilePath . ' -- ' . $queryString, 'r');
                 if ($pPipe === false) {
                     throw new \BreakpointDebugging_ErrorException('Failed to "popen()".');
                 }
             } else { // For Unix.
                 // "&" is the background execution of command.
-                //$pPipe = popen('php -f ' . $fullFilePath . ' -- ' . $mode . ' SHMOP_KEY=' . $shmopKey . ' CLASS_NAME=' . $className . ' &', 'r');
-                //$pPipe = popen('php -f ' . $fullFilePath . ' -- BREAKPOINTDEBUGGING_MODE=' . $get['BREAKPOINTDEBUGGING_MODE'] . ' SHMOP_KEY=' . $shmopKey . ' CLASS_NAME=' . $className . ' &', 'r');
                 $pPipe = popen('php -f ' . $fullFilePath . ' -- ' . $queryString . ' &', 'r');
                 if ($pPipe === false) {
                     throw new \BreakpointDebugging_ErrorException('Failed to "popen()".');
@@ -68,6 +65,9 @@ class tests_PEAR_BreakpointDebugging_MultiprocessTest_Main
                 // Gets command's stdout.
                 $results[] = stream_get_contents($pPipe);
             }
+        }
+        foreach ($results as $result) {
+            B::assert(is_numeric($result));
         }
 
         foreach ($pPipes as $pPipe) {

@@ -1,5 +1,7 @@
 <?php
 
+// new
+
 require_once './BreakpointDebugging_Inclusion.php';
 
 use \BreakpointDebugging as B;
@@ -7,6 +9,9 @@ use \BreakpointDebugging_PHPUnitStepExecution_PHPUnitUtilGlobalState as BGS;
 use \BreakpointDebugging_PHPUnitStepExecution_PHPUnitFrameworkTestCase as BSF;
 
 B::checkExeMode(); // Checks the execution mode.
+
+phpinfo();
+exit;
 /**
  *
  *
@@ -46,7 +51,6 @@ function cacheAfterChangeReteralOfPHPFile($filePath)
                                 || (!$isProduct && $cmpToken === '\'BreakpointDebugging::DEBUG\'')
                             ) {
                                 $parseCount = 3;
-                                //$targetToken = &$tokens[$key][1];
                                 continue;
                             }
                     }
@@ -70,7 +74,6 @@ function cacheAfterChangeReteralOfPHPFile($filePath)
                     $postBuffer .= $cmpToken;
                     continue;
             }
-            //$tokens[$key][0] = token_name($tokenKind);
             $buffer .= $cmpToken;
             continue;
         }
