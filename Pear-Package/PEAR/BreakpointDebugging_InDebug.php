@@ -14,28 +14,50 @@
  *      error log feature by global handler,
  *      the override class feature and execution mode.
  *
- * ### Environment which can do breakpoint debugging. ###
- * Debugger which can use breakpoint.
- * At April, 2013 recommendation debugging environment is
- * "WindowsXP Professional" + "NetBeans IDE 7.1.2" + "XAMPP 1.7.3 (VC++6.0)" or
- * "Ubuntu desktop" + "NetBeans IDE 7.1.2" + "XAMPP for Linux 1.7.3".
- * Notice: Use "phpMyAdmin" to see database and to execute "MySQL" command.
- *         Also, "NetBeans IDE 7.4" cannot keep switchback in format of "if" statement at December, 2013.
- *         However, "NetBeans IDE 7.4" supports "PHP5.4" and "HTML5".
- * @example
- *      if ($a
- *          && $b           // Cannot keep switchback of this line.
- *          && ($c || $d)   // Cannot keep switchback of this line.
- *          || ($e && $f)   // Cannot keep switchback of this line.
- *      ) {
- *          return;
- *      }
+ * ### Environment which can do step execution. ###
+ * Recommendation IDE.
+ *      "NetBeans IDE 8.0".
+ *      Because HTML3, CSS3, JavaScript(JQuery) and PHP is useful for input helper and step execution.
+ *      NOTICE: We must code "if" statement of plural line as below because its line feed cannot delete by format.
+ *          if ($a              // Description 1.
+ *              || $b           // Description 2.
+ *              || ($c || $d)   // Description 3.
+ *              || ($e && $f)   // Description 4.
+ *              && $g           // Description 5.
+ *              && ($h || $i)   // Description 6.
+ *              && ($j && $k)   // Description 7.
+ *          ) {
  *
- * Caution 1: The code format setting of "NetBeans" disperses to two menu because setting per IDE and setting per project exists.
- *          Those must have both directions link button because setting may not be executed, however, those is not.
- * Caution 2: Do not use "XAMPP 1.7.7 (PHP 5.3.8, VC++9.0)" because execution speed does slowdown in step execution when we run unit test.
- *          Because execution speed did slowdown even though I changed "XAMPP 1.7.7 (PHP 5.3.8, VC++9.0)" to "PHP 5.3.1 (VC++9.0)".
- *          Therefore, "NetBeans" symbolic debugger must use "PHP5.3" which was compiled with "VC++6.0".
+ * Recommendation environment for "PHP5.3" Windows.
+ *      "WindowsXP Professional (VC6)" + "XAMPP 1.7.4 (Last of 'VC6'.)" + "php_xdebug-2.1.2-5.3-vc6.dll (Last of 'VC6'.)".
+ *      However, other OS is possible by using "XAMPP" and "XDebug" of "VC9" or "VC11".
+ *      CAUTION: Do not connect to internet when "Apache" is running because sample of "XAMPP" can connect from internet.
+ * Recommendation environment for "PHP5.4" Windows.
+ *      I am unknown.
+ *      However, "WindowsXP Professional (VC6)" is impossible for step execution.
+ * Recommendation environment for "PHP5.5" Windows.
+ *      I am unknown.
+ *      However, "WindowsXP Professional (VC6)" is impossible for step execution.
+ *
+ * Recommendation environment and install command for "PHP5.3" Linux.
+ *      "Ubuntu12.04LTS desktop" + "This Ubuntu's LAMP" + "This Ubuntu's XDebug".
+ *      Because following command controls version of "LAMP" and "XDebug" for OS.
+ *      sudo apt-get install tasksel
+ *      sudo tasksel install lamp-server
+ *      sudo apt-get install php-pear
+ *      sudo apt-get install php5-xdebug
+ *      // Disconnects an access from remote.
+ *      gksudu gedit /etc/apache2/ports.conf
+ *          // before:
+ *              Listen 80
+ *          // after:
+ *              Listen 127.0.0.1:80
+ * Recommendation environment for "PHP5.4" Linux.
+ *      "Ubuntu14.04LTS desktop" + "This Ubuntu's LAMP" + "This Ubuntu's XDebug".
+ * Recommendation environment for "PHP5.5" Linux.
+ *      "From 'Ubuntu14.10 desktop' until 'Ubuntu16.04LTS desktop'" + "This Ubuntu's LAMP" + "This Ubuntu's XDebug".
+ *
+ * Notice: Use "phpMyAdmin" to see database and to execute "MySQL" command.
  *
  * ### Recommendation file cache extention of production server. ###
  * I recommend "Zend OPcache" extention.
@@ -55,7 +77,6 @@
  *                          .
  *                  } // Excepts until this line.
  * How to make this Zend extention is same as pecl extention in case of Windows "VC9".
- * However, I cannot make for "PHP 5.3.1" of "XAMPP 1.7.3" is compiled with "VC6".
  * Usage of "php_opcache.dll" file:
  *      1. Move to "C:\xampp\php\ext\php_opcache.dll".
  *      2. Add following lines into "php.ini" file, then save the file.
@@ -84,7 +105,7 @@
  * In addition to it, we can examine its result by selecting and pointing
  * (variable, function or conditional expression) of code using mouse pointer
  * except variable of "use as" statement,
- * if we check "the watch and the balloon evaluation" of "[tool] - [option] - [PHP] - [debug]" in case of "NetBeans IDE 7.1.2".
+ * if we check "the watch and the balloon evaluation" of "[tool] - [option] - [PHP] - [debug]" in case of "NetBeans IDE".
  * Also, we have to empty watch variables when its variable does not exist.
  * Therefore, can debug quickly.
  *
@@ -126,90 +147,37 @@
  *      "Xdebug" extension is required because "uses breakpoint,
  *      displays for fatal error and detects infinity recursive function call".
  * Procedure 2: If you want remote debug, set 'xdebug.remote_host =
- *      "<name or ip of host which debugger exists>"' into "php.ini" file, if remote server supports.
+ *      "<name or ip of your host which debugger exists>"' into "php.ini" file, if remote server supports.
  * Procedure 3: Set *.php file format to utf8, but we should create backup of
  *      php files because multibyte strings may be destroyed.
  * Procedure 4: Copy
  *          "BreakpointDebugging_Inclusion.php",
  *          "BreakpointDebugging_ErrorLogFilesManager.php" and
- *          "BreakpointDebugging_PHPUnitStepExecution_DisplayCodeCoverageReport.php" (Requires "BreakpointDebugging_PHPUnitStepExecution" package.)
+ *          "BreakpointDebugging_PHPUnit_DisplayCodeCoverageReport.php" (Requires "BreakpointDebugging_PHPUnit" package.)
  *      into your project directory.
  *      And, copy
  *          "BreakpointDebugging_MySetting*.php"
  *      to "const BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME" directory of your project directory.
  * Procedure 5: Edit BreakpointDebugging_MySetting*.php for customize.
  *      Then, it fixes part setting about all execution modes.
- *      Especially, "$_BreakpointDebugging_EXE_MODE = 2;" is important to security.
+ *      Especially, "$_BreakpointDebugging_EXE_MODE = 2;" is important to security in case of production server.
  * Procedure 6: Copy following in your project php code.
  *      require_once './BreakpointDebugging_Inclusion.php';
  * Procedure 7: Check debugging-mode using "B::checkExeMode()" in start page,
  *      and set
  *          BREAKPOINTDEBUGGING_MODE=DEBUG,
  *          BREAKPOINTDEBUGGING_MODE=RELEASE,
- *          BREAKPOINTDEBUGGING_MODE=DEBUG_UNIT_TEST or     (Requires "BreakpointDebugging_PHPUnitStepExecution" package.)
- *          BREAKPOINTDEBUGGING_MODE=RELEASE_UNIT_TEST      (Requires "BreakpointDebugging_PHPUnitStepExecution" package.)
+ *          BREAKPOINTDEBUGGING_MODE=DEBUG_UNIT_TEST or     (Requires "BreakpointDebugging_PHPUnit" package.)
+ *          BREAKPOINTDEBUGGING_MODE=RELEASE_UNIT_TEST      (Requires "BreakpointDebugging_PHPUnit" package.)
  *      to your project parameter setting.
  *      Then, use "B::getStatic('$exeMode')" to get value.
  *      Lastly, we should execute all codes using
- *          "\BreakpointDebugging_PHPUnitStepExecution::executeUnitTest()" and
- *          "\BreakpointDebugging_PHPUnitStepExecution::displayCodeCoverageReport()"
- *      of "BreakpointDebugging_PHPUnitStepExecution" package before release.
+ *          "\BreakpointDebugging_PHPUnit::executeUnitTest()" and
+ *          "\BreakpointDebugging_PHPUnit::displayCodeCoverageReport()"
+ *      of "BreakpointDebugging_PHPUnit" package before release.
  *      Then, we must enable "$_BreakpointDebugging_EXE_MODE = 2;" of "BreakpointDebugging_MySetting.php" in case of production server use.
  *      Because server must not display "XDebug" and error logging information.
- * Procedure 8: If you use "XAMPP for Linux",
- *      Make the "SetPermission.sh" file to change "owner and access permission" of all directories and files below "htdocs".
- *      Then, change its property as executable program.
- *      Attention: Write your user name into <user name>.
- *          #!/bin/bash
- *
- *          # This file is purpose which sets permission before upload.
- *          # Each server permission is different, therefore you must customize this file to adjust.
- *
- *          # Changes owner of all directories and files.
- *          sudo chown <user name> /opt/lampp/htdocs/ -R
- *          # Changes permission of all directories inside "htdocs".
- *          sudo find /opt/lampp/htdocs/ -type d -exec sudo chmod 0705 {} \;
- *          # Changes permission of all files inside "htdocs".
- *          sudo find /opt/lampp/htdocs/ -type f -regex ".*" -exec sudo chmod 0604 {} \;
- *          # Notifies end.
- *          echo "Permission was set."
- *          # Waits until input.
- *          read Wait
- *
- *      Do double click "SetPermission.sh" file to change "owner and access permission" with of all directories and files below "htdocs".
- *
- *      Add execution directory path of "XAMPP" to environment pass by adding to end line of "envvars" file.
- *          sudo gedit /opt/lampp/bin/envvars
- *              export PATH=$PATH:/opt/lampp/bin
- *
- *      Change user name and access permission.
- *      Attention: Write your user name into <user name>.
- *          sudo gedit /opt/lampp/etc/httpd.conf
- *              #User nobody
- *              User <user name>
- *              #Group nogroup
- *              Group <user name>
- *
- *              <Directory "/opt/lampp/htdocs">
- *                      .
- *                      .
- *                      .
- *                  #Order allow,deny
- *                  Order deny,allow
- *                  #Allow from all
- *                  deny from all
- *                  Allow from 127.0.0.1 localhost
- *
- *              <Directory "/opt/lampp/cgi-bin">
- *                      .
- *                      .
- *                      .
- *                  #Order allow,deny
- *                  Order deny,allow
- *                  #Allow from all
- *                  deny from all
- *                  Allow from 127.0.0.1 localhost
- * Procedure 9: If you can change "php.ini" file,
+ * Procedure 8: If you can change "php.ini" file,
  *      use "B::iniCheck()" instead of "B::iniSet()" in "*_MySetting.php" file,
  *      and move it to "*_MySetting_InDebug.php" file
  *      because decreases the read and the parse bytes.
@@ -267,7 +235,7 @@
  *      "__destruct()" class method is called if we overwrite null value to variable because value of all reference is disabled.
  *      However, memory area and reference count is kept.
  *
- * PHP version 5.3
+ * PHP version 5.3.x, 5.4.x
  *
  * LICENSE OVERVIEW:
  * 1. Do not change license text.
@@ -352,7 +320,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
         parent::initialize();
 
         parent::$staticProperties['$_includePaths'] = &self::$_includePaths;
-        parent::$staticPropertyLimitings['$exeMode'] = 'BreakpointDebugging_PHPUnitStepExecution.php';
+        parent::$staticPropertyLimitings['$exeMode'] = 'BreakpointDebugging_PHPUnit.php';
         $tmp = BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php';
         parent::$staticPropertyLimitings['$_userName'] = $tmp;
         parent::$staticPropertyLimitings['$_maxLogFileByteSize'] = $tmp;
@@ -361,10 +329,10 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
         parent::$staticPropertyLimitings['$_maxLogStringSize'] = $tmp;
         parent::$staticPropertyLimitings['$_workDir'] = $tmp;
         parent::$staticPropertyLimitings['$_developerIP'] = $tmp;
-        parent::$staticPropertyLimitings['$_onceErrorDispFlag'] = 'BreakpointDebugging/PHPUnitStepExecution/PHPUnitFrameworkTestCase.php';
+        parent::$staticPropertyLimitings['$_onceErrorDispFlag'] = 'BreakpointDebugging/PHPUnit/FrameworkTestCase.php';
         parent::$staticPropertyLimitings['$_callingExceptionHandlerDirectly'] = array (
             'BreakpointDebugging/Error.php',
-            'BreakpointDebugging/PHPUnitStepExecution/PHPUnitFrameworkTestCase.php'
+            'BreakpointDebugging/PHPUnit/FrameworkTestCase.php'
         );
     }
 
@@ -376,11 +344,11 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
     static function checkSuperUserExecution()
     {
         // If this is remote debug, unix and root user.
-        if (BA::$exeMode === B::REMOTE
-            && !BREAKPOINTDEBUGGING_IS_WINDOWS
-            && trim(`echo \$USER`) === 'root'
+        if (BA::$exeMode === B::REMOTE //
+            && !BREAKPOINTDEBUGGING_IS_WINDOWS //
+            && trim(`echo \$USER`) === 'root' //
         ) {
-            parent::windowVirtualOpen(parent::ERROR_WINDOW_NAME, parent::getErrorHtmlFileContent());
+            parent::windowVirtualOpen(parent::ERROR_WINDOW_NAME, parent::$errorHtmlFileContent);
             B::windowHtmlAddition(B::ERROR_WINDOW_NAME, 'pre', 0, 'Security warning: Recommends to change to "Apache HTTP Server" which Supported "suEXEC" because this "Apache HTTP Server" is executed by "root" user.');
         }
     }
@@ -490,7 +458,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      *
      * @return Same as parent.
      */
-    static function chmod($name, $permission, $timeout = 10, $sleepMicroSeconds = 1000000)
+    static function chmod($name, $permission, $timeout = 10, $sleepMicroSeconds = 100000)
     {
         self::assert(func_num_args() <= 4);
         self::assert(is_string($name));
@@ -510,7 +478,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      *
      * @return Same as parent.
      */
-    static function mkdir(array $params, $timeout = 10, $sleepMicroSeconds = 1000000)
+    static function mkdir(array $params, $timeout = 10, $sleepMicroSeconds = 100000)
     {
         self::assert(func_num_args() <= 3);
         self::assert(is_int($timeout));
@@ -531,7 +499,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      *
      * @return Same as parent.
      */
-    static function fopen(array $params, $permission = null, $timeout = 10, $sleepMicroSeconds = 1000000)
+    static function fopen(array $params, $permission = null, $timeout = 10, $sleepMicroSeconds = 100000)
     {
         self::assert(func_num_args() <= 4);
         self::assert((is_int($permission) || is_null($permission)) && 0 <= $permission && $permission <= 0777);
@@ -584,7 +552,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
         self::assert($pException instanceof \Exception);
 
         if (BA::$exeMode & B::UNIT_TEST) {
-            \BreakpointDebugging_PHPUnitStepExecution::handleUnitTestException($pException);
+            \BreakpointDebugging_PHPUnit::handleUnitTestException($pException);
         }
 
         parent::handleException($pException);
@@ -614,8 +582,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
     static function checkPathEnvironmentVariable()
     {
         if (BREAKPOINTDEBUGGING_IS_WINDOWS) {
-            $paths = getenv('path');
-            $paths = explode(';', $paths);
+            $paths = explode(';', getenv('path'));
             while (true) {
                 foreach ($paths as $path) {
                     $path = rtrim($path, '\/');
@@ -623,22 +590,8 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
                         break 2;
                     }
                 }
-                parent::windowVirtualOpen(parent::ERROR_WINDOW_NAME, parent::getErrorHtmlFileContent());
+                parent::windowVirtualOpen(parent::ERROR_WINDOW_NAME, parent::$errorHtmlFileContent);
                 B::windowHtmlAddition(B::ERROR_WINDOW_NAME, 'pre', 0, 'Path environment variable has not been set for "php.exe" command.' . PHP_EOL . `path`);
-                exit;
-            }
-        } else {
-            $result = `which php`;
-            if (empty($result)) {
-                $message = 'Path environment variable has not been set for "php" command.' . PHP_EOL
-                    . '$PATH=' . `echo \$PATH` . PHP_EOL
-                    . 'Please, search by (sudo find "<apache install directory>" -mount -name "envvars") command.' . PHP_EOL
-                    . '    Example: sudo find "/opt/lampp/" -mount -name "envvars"' . PHP_EOL
-                    . 'Then, add "export PATH=$PATH:<php command directory>" line to its file.' . PHP_EOL
-                    . '    Example: export PATH=$PATH:/opt/lampp/bin' . PHP_EOL
-                    . 'Then, restart apache.';
-                parent::windowVirtualOpen(parent::ERROR_WINDOW_NAME, parent::getErrorHtmlFileContent());
-                B::windowHtmlAddition(B::ERROR_WINDOW_NAME, 'pre', 0, htmlspecialchars($message, ENT_COMPAT));
                 exit;
             }
         }
@@ -713,8 +666,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
             $fullFilePath = strtolower($fullFilePath);
         }
         $line = $callStack[$key]['line'];
-        if (array_key_exists($fullFilePath, self::$_callLocations)
-            && array_key_exists($line, self::$_callLocations[$fullFilePath])
+        if (array_key_exists($fullFilePath, self::$_callLocations) && array_key_exists($line, self::$_callLocations[$fullFilePath])
         ) {
             // Skips same.
             return;
@@ -726,9 +678,9 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
         self::assert(is_array($invokerFilePaths) || is_string($invokerFilePaths));
         self::assert(is_bool($enableUnitTest));
 
-        if (!$enableUnitTest
-            && (BA::$exeMode & B::UNIT_TEST)
-            && (!isset(\BreakpointDebugging_PHPUnitStepExecution::$unitTestDir) || strpos($fullFilePath, \BreakpointDebugging_PHPUnitStepExecution::$unitTestDir) === 0)
+        if (!$enableUnitTest //
+            && (BA::$exeMode & B::UNIT_TEST) //
+            && (!isset(\BreakpointDebugging_PHPUnit::$unitTestDir) || strpos($fullFilePath, \BreakpointDebugging_PHPUnit::$unitTestDir) === 0) //
         ) {
             return;
         }
@@ -795,8 +747,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
             // @codeCoverageIgnoreStart
         }
         // @codeCoverageIgnoreEnd
-        if (!is_int($id)
-            && !is_null($id)
+        if (!is_int($id) && !is_null($id)
         ) {
             self::callExceptionHandlerDirectly('Exception identification number must be integer.', 3);
             // @codeCoverageIgnoreStart
@@ -883,9 +834,8 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
         $getValue = ini_get($phpIniVariable);
         if ($setValue !== $getValue) {
             // In case of remote debug.
-            if ($doCheck === true
-                && (BA::$exeMode & B::REMOTE)
-                && isset($_SERVER['SERVER_ADDR']) // In case of common gateway.
+            if ($doCheck === true //
+                && (BA::$exeMode & B::REMOTE) //
             ) {
                 $backTrace = debug_backtrace();
                 $baseName = basename($backTrace[0]['file']);
@@ -993,18 +943,18 @@ EOD;
 // When "Xdebug" does not exist.
 if (!B::getXebugExists()) {
     global $_BreakpointDebugging_EXE_MODE;
+
     if (!($_BreakpointDebugging_EXE_MODE & B::REMOTE)) { // In case of local.
-        B::exitForError(
-            PHP_EOL
+        exit(
+            '<pre>'
             . '### ERROR ###' . PHP_EOL
             . 'FILE: ' . __FILE__ . ' LINE: ' . __LINE__ . PHP_EOL
             . '"Xdebug" extension has been not loaded though this is a local host.' . PHP_EOL
             . '"Xdebug" extension is required because (uses breakpoint, displays for fatal error and avoids infinity recursive function call).' . PHP_EOL
+            . '</pre>'
         );
     }
 }
 
 B::checkPathEnvironmentVariable();
 register_shutdown_function('\BreakpointDebugging::checkSuperUserExecution');
-
-?>

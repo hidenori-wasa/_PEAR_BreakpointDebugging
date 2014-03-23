@@ -1,9 +1,9 @@
 <?php
 
-// Please, see "\BreakpointDebugging_PHPUnitStepExecution::executeUnitTest()" class method document for detail.
+// Please, see "\BreakpointDebugging_PHPUnit::executeUnitTest()" class method document for detail.
 
 use \BreakpointDebugging as B;
-use \BreakpointDebugging_PHPUnitStepExecution as BU;
+use \BreakpointDebugging_PHPUnit as BU;
 
 function localStaticVariable()
 {
@@ -39,7 +39,7 @@ class LocalStaticVariableOfStaticMethod
 // spl_autoload_register('\ExampleTest::autoload', true, true); // We must not register autoload function at top of stack by "spl_autoload_register()". (Autodetects)
 //
 // include_once __DIR__ . '/AFile.php'; // We must not include a file because autoload is only once per file. (Autodetects)
-class ExampleTest extends \BreakpointDebugging_PHPUnitStepExecution_PHPUnitFrameworkTestCase
+class ExampleTest extends \BreakpointDebugging_PHPUnit_FrameworkTestCase
 {
     private $_pTestObject;
 

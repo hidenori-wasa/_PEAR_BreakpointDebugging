@@ -6,7 +6,7 @@
  * There is this file to increase speed when does not do error or exception handling.
  * In other words, this file does not cause "__autoload()" because does not read except for error or exception handling.
  *
- * PHP version 5.3
+ * PHP version 5.3.x, 5.4.x
  *
  * LICENSE OVERVIEW:
  * 1. Do not change license text.
@@ -252,8 +252,8 @@ abstract class BreakpointDebugging_Error_InAllCase
     protected function convertMbString($string)
     {
         $charSet = mb_detect_encoding($string);
-        if ($charSet === 'UTF-8'
-            || $charSet === 'ASCII'
+        if ($charSet === 'UTF-8' //
+            || $charSet === 'ASCII' //
         ) {
             return $string;
         } else if ($charSet === false) {
@@ -293,16 +293,16 @@ abstract class BreakpointDebugging_Error_InAllCase
             foreach ($valuesToTraceLines as $trace) {
                 array_key_exists('function', $trace) ? $callFunc = $trace['function'] : $callFunc = '';
                 array_key_exists('class', $trace) ? $callClass = $trace['class'] : $callClass = '';
-                if ($callFunc === ''
-                    && $callClass === ''
-                    && $tabs !== ''
+                if ($callFunc === '' //
+                    && $callClass === '' //
+                    && $tabs !== '' //
                 ) {
                     // @codeCoverageIgnoreStart
                     continue;
                     // @codeCoverageIgnoreEnd
                 }
-                if ($func === $callFunc
-                    && $class === $callClass
+                if ($func === $callFunc //
+                    && $class === $callClass //
                 ) {
                     if ($onceFlag2) {
                         $onceFlag2 = false;
@@ -635,6 +635,7 @@ abstract class BreakpointDebugging_Error_InAllCase
         restore_error_handler(); // Restores from "B::handleError()".
 
         try {
+            // trigger_error('Internal error test.', E_USER_WARNING); // For debug.
             // Controls how many nested levels of array elements and object properties.
             // Display by var_dump(), local variables or Function Traces.
             ini_set('xdebug.var_display_max_depth', '6');
@@ -753,8 +754,8 @@ abstract class BreakpointDebugging_Error_InAllCase
     protected function addParameterHeaderToLog(&$pTmpLog, $file, $line, $func, $class)
     {
         $className = B::fullFilePathToClassName($file);
-        if ($className
-            && is_subclass_of($className, 'BreakpointDebugging_PHPUnitStepExecution_PHPUnitFrameworkTestCase')
+        if ($className //
+            && is_subclass_of($className, 'BreakpointDebugging_PHPUnit_FrameworkTestCase') //
         ) {
             $this->logBufferWriting($pTmpLog, $this->tags['uint test anchor name']);
             $this->tags['uint test anchor name'] = '';
@@ -804,17 +805,17 @@ abstract class BreakpointDebugging_Error_InAllCase
                 array_key_exists('class', $notFixedLocation) ? $noFixClass = $notFixedLocation['class'] : $noFixClass = '';
                 array_key_exists('file', $notFixedLocation) ? $noFixFile = $notFixedLocation['file'] : $noFixFile = '';
                 // $notFixedLocation of file scope is "$noFixFunc === '' && $noFixClass === '' && $tabs !== ''".
-                if ($noFixFunc === ''
-                    && $noFixClass === ''
-                    && $tabs !== ''
+                if ($noFixFunc === '' //
+                    && $noFixClass === '' //
+                    && $tabs !== '' //
                 ) {
                     // @codeCoverageIgnoreStart
                     continue;
                     // @codeCoverageIgnoreEnd
                 }
-                if ($func === $noFixFunc
-                    && $class === $noFixClass
-                    && $file === $noFixFile
+                if ($func === $noFixFunc //
+                    && $class === $noFixClass //
+                    && $file === $noFixFile //
                 ) {
                     $marks = str_repeat($this->mark, 10);
                     $this->logBufferWriting($pTmpLog, PHP_EOL . $tabs . $this->tags['font']['caution'] . $this->tags['b'] . $marks . ' This function has been not fixed. ' . $marks . $this->tags['/b'] . $this->tags['/font']);
@@ -855,8 +856,7 @@ abstract class BreakpointDebugging_Error_InAllCase
         }
         $this->_pCurrentErrorLogFileSize = 0;
         // Gets next error log file name.
-        $nextNumber = substr($this->_currentErrorLogFileName, strlen($this->_prefixOfErrorLogFileName), 1)
-            + 1;
+        $nextNumber = substr($this->_currentErrorLogFileName, strlen($this->_prefixOfErrorLogFileName), 1) + 1;
         if ($nextNumber > 8) {
             // Error log file rotation.
             $nextNumber = 1;
@@ -953,8 +953,7 @@ abstract class BreakpointDebugging_Error_InAllCase
         // Repairs the error location files.
         foreach (scandir($this->_errorLogDirectory) as $errorLocationFileName) {
             $errorLocationFileName = $this->_errorLogDirectory . $errorLocationFileName;
-            if (!is_file($errorLocationFileName)
-                || pathinfo($errorLocationFileName, PATHINFO_EXTENSION) !== 'bin'
+            if (!is_file($errorLocationFileName) || pathinfo($errorLocationFileName, PATHINFO_EXTENSION) !== 'bin'
             ) {
                 continue;
             }
@@ -1085,9 +1084,7 @@ abstract class BreakpointDebugging_Error_InAllCase
                     // The call stack loop.
                     $callStackInfoArray = array ();
                     foreach ($this->_callStack as $call) {
-                        if (empty($call)
-                            || !array_key_exists('file', $call)
-                            || !array_key_exists('line', $call)
+                        if (empty($call) || !array_key_exists('file', $call) || !array_key_exists('line', $call)
                         ) {
                             continue;
                         }
@@ -1192,8 +1189,7 @@ abstract class BreakpointDebugging_Error_InAllCase
                     $this->_loggedCallStacks[] = $call;
                     $this->logBufferWriting($dummy, PHP_EOL . $this->tags['b'] . $this->_setHypertextReference('function call #' . count($this->_loggedCallStacks)) . $this->tags['/b']);
                     $this->outputFixedFunctionToLogging($call, $dummy, $onceFlag2, $func, $class, $file, $line);
-                    if (is_array($call)
-                        && array_key_exists('args', $call)
+                    if (is_array($call) && array_key_exists('args', $call)
                     ) {
                         // Analyze parameters part of trace array, and return character string.
                         $this->searchDebugBacktraceArgsToString($pTmpLog2, $call['args']);
@@ -1281,15 +1277,8 @@ abstract class BreakpointDebugging_Error_InAllCase
     </body>
 </html>
 EOD;
-            set_error_handler('\BreakpointDebugging::handleError', 0);
             // Makes error HTML file.
-            $result = @file_put_contents(B::ERROR_WINDOW_NAME . '.html', $errorHtmlFileContent);
-            restore_error_handler();
-            // Checks failure because this file permission may be denied.
-            if (!$result) {
-                exit($errorHtmlFileContent);
-            }
-
+            file_put_contents(B::ERROR_WINDOW_NAME . '.html', $errorHtmlFileContent);
             // Opens its file at error window.
             echo '<script type="text/javascript">' . PHP_EOL
             . '<!--' . PHP_EOL

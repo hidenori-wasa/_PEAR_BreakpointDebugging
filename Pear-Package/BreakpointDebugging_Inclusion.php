@@ -3,7 +3,7 @@
 /**
  * Sets pear setting directory name, and includes this package by it.
  *
- * PHP version 5.3
+ * PHP version 5.3.x, 5.4.x
  *
  * LICENSE OVERVIEW:
  * 1. Do not change license text.

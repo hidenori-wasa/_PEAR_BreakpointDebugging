@@ -38,5 +38,3 @@ abstract class Counter
     }
 
 }
-
-?>

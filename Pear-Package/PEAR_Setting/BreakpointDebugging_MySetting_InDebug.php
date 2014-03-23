@@ -7,7 +7,7 @@
  * "*_InDebug.php" file does not use on release. Therefore, response time is zero on release.
  * These file names put "_" to become error when we do autoload.
  *
- * PHP version 5.3
+ * PHP version 5.3.x, 5.4.x
  *
  * LICENSE OVERVIEW:
  * 1. Do not change license text.
@@ -54,9 +54,9 @@ B::limitAccess(BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_
 
 // ### Item-setting for debugging. ===>
 // $xdebugManualUrl = 'http://www.php.net/manual/ja/';
-$xdebugVarDisplayMaxChildren = '100';
+$xdebugVarDisplayMaxChildren = '50';
 $xdebugVarDisplayMaxData = '3000';
-$xdebugVarDisplayMaxDepth = '10';
+$xdebugVarDisplayMaxDepth = '6';
 // B::setBrowserPass('C:\Program Files\Internet Explorer\iexplore.exe');
 // ### <=== Item-setting for debugging.
 //
@@ -73,18 +73,20 @@ if (B::getStatic('$exeMode') & B::REMOTE) { // In case of remote.
     B::iniCheck('mbstring.func_overload', '0', 'To make coding plain must be set "mbstring.func_overload = 0" of "php.ini" file.');
     B::iniSet('SMTP', $SMTP);
     B::iniSet('sendmail_from', $sendmailFrom);
-    // ### [XDebug] setting in "php.ini" file. ###
-    B::iniCheck('xdebug.remote_host', '127.0.0.1', 'Set \'xdebug.remote_host = "127.0.0.1"\' of "php.ini" file because remote IDE host of server is "127.0.0.1".');
 }
 
 if (B::getXebugExists()) {
     // xdebug.dump.*    * = COOKIE, FILES, GET, POST, REQUEST, SERVER, SESSION.
     //      Shows the specified superglobal value. Example is shown below.
     //      B::iniSet('xdebug.dump.SERVER', 'REMOTE_ADDR,REQUEST_METHOD');
-    // if (B::getStatic('$exeMode') & B::REMOTE) { // In case of remote.
-    //    // ### [XDebug] setting in "php.ini" file or ".htaccess" file. ###
-    //    B::iniCheck('xdebug.remote_host', array ('127.0.0.1', 'localhost'), 'Sets the \'xdebug.remote_host = "&lt;Remote IDE host of server&gt;"\' of "php.ini file", in other words remote IDE host of server is "&lt;Your host name or IP&gt;".');
-    // }
+    if (B::getStatic('$exeMode') & B::REMOTE) { // In case of remote.
+        // ### [XDebug] setting in "php.ini" file or ".htaccess" file. ###
+        B::iniCheck('xdebug.remote_host', array ('127.0.0.1', 'localhost'), 'Sets the \'xdebug.remote_host = "&lt;Remote IDE host of server&gt;"\' of "php.ini file", in other words remote IDE host of server is "&lt;Your host name or IP&gt;".');
+    } else { // In case of local.
+        // ### [XDebug] setting in "php.ini" file. ###
+        B::iniCheck('xdebug.remote_host', '127.0.0.1', 'Set \'xdebug.remote_host = "127.0.0.1"\' of "php.ini" file because remote IDE host of server is "127.0.0.1".');
+    }
+    //
     // ### [XDebug] setting in "php.ini" file. ###
     // $_get = B::getStatic('$_get');
     // $xdebugSessionName = $_get['XDEBUG_SESSION_START'];
@@ -126,7 +128,7 @@ if (B::getXebugExists()) {
     B::iniCheck('xdebug.remote_handler', 'dbgp', 'Set \'xdebug.remote_handler = "dbgp"\' of "php.ini" file because this is needed to do remote debugging.');
     // Connects when remote debug begins.
     B::iniSet('xdebug.remote_mode', 'req', false);
-    // B::iniCheck('xdebug.remote_port', '9000', 'Set "xdebug.remote_port = 9000" of "php.ini" file. This is "NetBeans IDE" port number of own terminal. Also, we use default value because it is the default of "NetBeans IDE".');
+    B::iniCheck('xdebug.remote_port', '9000', 'Set "xdebug.remote_port = 9000" of "php.ini" file. This is "NetBeans IDE" port number of own terminal. Also, we use default value because it is the default of "NetBeans IDE".');
     // Enables '@' operator.
     B::iniSet('xdebug.scream', '0', false);
     // Shows local variables.
@@ -149,7 +151,7 @@ B::iniCheck('mbstring.encoding_translation', array ('1'), 'Set "mbstring.encodin
 B::iniSet('mbstring.substitute_character', '');
 // Set "mbstring.strict_detection = Off" of "php.ini" file because this is purpose to not do strict encoding detection.
 B::iniSet('mbstring.strict_detection', '');
-// this is possible for any value because "mbstring.script_encoding" is unrelated.
+// This is possible for any value because "mbstring.script_encoding" is unrelated.
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // ### The "Fopen wrappers" setting of "php.ini" file ###
 B::iniCheck('allow_url_fopen', '1', 'Set "allow_url_fopen = On" of "php.ini" file because this is purpose that a file path is made to be able to specify URL by "fopen()" type function.');
@@ -164,24 +166,25 @@ B::iniSet('auto_detect_line_endings', '1');
 // ### "php.ini" the file setting ( This sets a security mainly ). ###
 // Timezone setting.
 B::iniSet('date.timezone', $timezone);
-// This sets safe mode invalidly.
-B::iniCheck('safe_mode', '', 'This feature has been deprecated in PHP5.3.0. Not to use this feature is strongly recommended generally. Therefore, set "safe_mode = Off" of "php.ini" file.');
 // This changes "php.ini" file setting into "report_memleaks = On" because this setting detects a memory leak.
 B::iniSet('report_memleaks', '1');
 // Change "php.ini" file setting into "track_errors = Off" because this is not make to insert an error message in direct near "$php_errormsg" variable for security.
 B::iniSet('track_errors', '');
-// This limits a user input that it receive by the super global variable for security.
-B::iniCheck('register_globals', '', 'Set "register_globals = Off" of "php.ini" file for security.');
-// This doesn't escape user input for execution speed. This escapes with "addslashes()" and "mysqli_real_escape_string()".
-B::iniCheck('magic_quotes_gpc', '', 'Set "magic_quotes_gpc = Off" of "php.ini" file for execution speed.');
-// This makes not escape for execution speed at time of resource reading. Therefore, this changes "php.ini" file setting into "magic_quotes_runtime = Off".
-B::iniSet('magic_quotes_runtime', '');
-
+if (version_compare(PHP_VERSION, '5.4', '<')) {
+    // This limits a user input that it receive by the super global variable for security.
+    B::iniCheck('register_globals', '', 'Set "register_globals = Off" of "php.ini" file for security.');
+    // This doesn't escape user input for execution speed. This escapes with "addslashes()" and "mysqli_real_escape_string()".
+    B::iniCheck('magic_quotes_gpc', '', 'Set "magic_quotes_gpc = Off" of "php.ini" file for execution speed.');
+    // This makes not escape for execution speed at time of resource reading. Therefore, this changes "php.ini" file setting into "magic_quotes_runtime = Off".
+    B::iniSet('magic_quotes_runtime', '');
+    // This sets safe mode invalidly.
+    B::iniCheck('safe_mode', '', 'This feature has been deprecated in PHP5.3.0. Not to use this feature is strongly recommended generally. Therefore, set "safe_mode = Off" of "php.ini" file.');
+}
 // This doesn't expose to be using php by server.
 // B::iniCheck('expose_php', '', 'This should change "php.ini" file setting into "expose_php = Off" for security.');
 // This changes "php.ini" file setting into "arg_separator.output = "&amp;" to be based on XHTML fully.
 B::iniSet('arg_separator.output', '&amp;');
-//B::iniCheck('short_open_tag', '1', 'This should change "php.ini" file setting into "short_open_tag = On" because it needs for xampp using "&lt;?" opening tag.');
+// B::iniCheck('short_open_tag', '1', 'This should change "php.ini" file setting into "short_open_tag = On" because it needs for xampp using "&lt;?" opening tag.');
 B::iniCheck('asp_tags', '', 'This should change "php.ini" file setting into "asp_tags = Off" because it can distinguish between other languages by using "&lt;php?" opening tag.');
 // This changes "php.ini" file setting into "ignore_user_abort = Off" because it is purpose to end execution of script when client is disconnected.
 B::iniSet('ignore_user_abort', '');
@@ -191,16 +194,15 @@ B::iniSet('memory_limit', '128M');
 B::iniSet('implicit_flush', '');
 B::iniCheck('scream.enabled', '', 'This should change "php.ini" file setting into "scream.enabled = false" because it does not make "@" error display control operator invalid.');
 if (BREAKPOINTDEBUGGING_IS_WINDOWS) { // In case of Windows.
-    B::iniCheck('post_max_size', '128M', 'We recommend to set "post_max_size = 128M" of "php.ini" file because maximum size which is permitted to a POST data is different from the default.');
-    B::iniCheck('upload_max_filesize', '128M', 'We recommend to set "upload_max_filesize = 128M" of "php.ini" file because it is "XAMPP" value.');
-} else { // In case of Unix.
-    B::iniCheck('post_max_size', '8M', 'We recommend to set "post_max_size = 8M" of "php.ini" file because maximum size which is permitted to a POST data is different from the default.');
-    B::iniCheck('upload_max_filesize', '2M', 'We recommend to set "upload_max_filesize = 2M" of "php.ini" file because it is "XAMPP" value.');
+    if (version_compare(PHP_VERSION, '5.4', '>=')) {
+        // Shows crt warnings in case of Windows debug mode.
+        ini_set('windows_show_crt_warning', '1');
+    }
 }
 // The SMTP port setting of Windows.
 B::iniSet('smtp_port', '25');
 // B::iniCheck('mail.add_x_header', '', 'We recommend to set "mail.add_x_header = Off" of "php.ini" file because does not write that header continue "UID" behind the file name.');
-//B::iniCheck('output_buffering', '', 'Sets \'output_buffering = Off\' of "php.ini" file for output window.');
+B::iniCheck('output_buffering', '', 'Sets \'output_buffering = Off\' of "php.ini" file for output window.');
 ////////////////////////////////////////////////////////////////////////////////
 // ### This uses "false" because this setting doesn't have relation with release. ###
 // This makes all errors, warnings and note a stop at breakpoint or a display.
@@ -222,4 +224,7 @@ B::assert(1 <= B::getStatic('$_maxLogStringSize'));
 // "include_path" of "BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php'" file must begin with "." or "./".
 B::assert(strpos(ini_get('include_path'), '.' . PATH_SEPARATOR) === 0 || strpos(ini_get('include_path'), './' . PATH_SEPARATOR) === 0);
 
-?>
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ### Super global variable filter setting. ###
+B::iniCheck('filter.default', 'unsafe_raw', 'Set \'filter.default = unsafe_raw\' of "php.ini" or ".htaccess" file because of unit test\'s static backup.');
+B::iniCheck('filter.default_flags', '', 'Set \'filter.default_flags = ""\' of "php.ini" or ".htaccess" file because of unit test\'s static backup.');

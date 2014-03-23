@@ -2,7 +2,7 @@
 
 use \BreakpointDebugging as B;
 
-class PHPUnit1Test extends \BreakpointDebugging_PHPUnitStepExecution_PHPUnitFrameworkTestCase
+class PHPUnit1Test extends \BreakpointDebugging_PHPUnit_FrameworkTestCase
 {
     static $initialValueOfGlobal;
     static $initialReferenceOfGlobal;

@@ -5,7 +5,7 @@
  *
  * As for procedure, please, refer to the file level document block of BreakpointDebugging_InDebug.php.
  *
- * PHP version 5.3
+ * PHP version 5.3.x, 5.4.x
  *
  * LICENSE OVERVIEW:
  * 1. Do not change license text.
@@ -61,6 +61,7 @@ function BreakpointDebugging_setExecutionMode()
     $_BreakpointDebugging_argSeparatorOutput = '&amp;';
     $REMOTE = 1;
     $RELEASE = 2;
+    // $UNIT_TEST = 4; // For debug.
 
     if (isset($_SERVER['SERVER_ADDR'])) { // In case of common gateway.
         $_BreakpointDebugging_get = $_GET;
@@ -74,6 +75,13 @@ function BreakpointDebugging_setExecutionMode()
                 $_BreakpointDebugging_get[$queryKey] = urldecode($queryValue);
             }
         }
+        // For debug. ===>
+        /*
+          ob_start();
+          var_dump($_BreakpointDebugging_get);
+          file_put_contents('debug.txt', ob_get_clean());
+         */
+        // <=== For debug.
     }
 
     if ($_BreakpointDebugging_EXE_MODE === $RELEASE) { // In case of production server release.
@@ -178,35 +186,35 @@ function BreakpointDebugging_mySetting()
     $timezone = 'Asia/Tokyo';
     $SMTP = '<Your SMTP server>';
     $sendmailFrom = '<Your Windows mail address>';
-
+    // Please, set your username.
     $userName = &B::refStatic('$_userName');
-    $userName = 'hidenori'; // Please, set your username.
+    $userName = 'root'; // Example: 'hidenori'
     // PHP It limits directory which opens a file.
     if (BREAKPOINTDEBUGGING_IS_WINDOWS) { // In case of Windows.
         $openBasedir = 'C:\xampp\;.\\;' . sys_get_temp_dir();
     } else { // In case of Unix.
         if ($exeMode & $REMOTE) { // In case of remote.
-            $openBasedir = '/usr/local/php5.3/php/:/home/users/2/lolipop.jp-92350a29e84a878a/web/:./:' . sys_get_temp_dir();
-            // $openBasedir = '/opt/lampp/:./:' . sys_get_temp_dir(); // Emulates remote by local host.
+            $openBasedir = '/home/users/2/lolipop.jp-92350a29e84a878a/web/:./:' . sys_get_temp_dir();
+            // $openBasedir = '/usr/local/php5.3/php/:/home/users/2/lolipop.jp-92350a29e84a878a/web/:./:' . sys_get_temp_dir();
         } else { // In case of local.
             $openBasedir = '/opt/lampp/:./:' . sys_get_temp_dir();
         }
     }
     // Maximum log file sum mega byte size. Recommendation size is 1 MB.
     // Log file rotation is from "php_error_1.log" file to "php_error_8.log" file.
-    // $maxLogMBSize = 1;
+    $maxLogMBSize = 1;
     // This code has been fixed.
-    // $maxLogFileByteSize = &B::refStatic('$_maxLogFileByteSize');
-    // $maxLogFileByteSize = $maxLogMBSize << 17;
+    $maxLogFileByteSize = &B::refStatic('$_maxLogFileByteSize');
+    $maxLogFileByteSize = $maxLogMBSize << 17;
     // Maximum log parameter nesting level. Default is 20. (1-100)
-    // $maxLogParamNestingLevel = &B::refStatic('$_maxLogParamNestingLevel');
-    // $maxLogParamNestingLevel = 20;
+    $maxLogParamNestingLevel = &B::refStatic('$_maxLogParamNestingLevel');
+    $maxLogParamNestingLevel = 20;
     // Maximum count of elements in log. (Maximum number of parameter, array elements and call-stack) Default is 50. (1-100)
-    // $maxLogElementNumber = &B::refStatic('$_maxLogElementNumber');
-    // $maxLogElementNumber = 50;
+    $maxLogElementNumber = &B::refStatic('$_maxLogElementNumber');
+    $maxLogElementNumber = 50;
     // Maximum string type byte-count of log. Default is 3000. (1-)
-    // $maxLogStringSize = &B::refStatic('$_maxLogStringSize');
-    // $maxLogStringSize = 3000;
+    $maxLogStringSize = &B::refStatic('$_maxLogStringSize');
+    $maxLogStringSize = 3000;
     // Inner form of the browser of the default: HTML text, character sets = UTF8.
     // header('Content-type: text/html; charset=utf-8');
     // Set "mbstring.detect_order = UTF-8, UTF-7, ASCII, EUC-JP,SJIS, eucJP-win, SJIS-win, JIS, ISO-2022-JP" of "php.ini" file because this is purpose to define default value of character code detection.
@@ -248,8 +256,6 @@ function BreakpointDebugging_mySetting()
     B::iniSet('mbstring.http_output', 'utf8');
     // Set "mbstring.strict_detection = Off" of "php.ini" file because this is purpose to not do strict encoding detection.
     B::iniSet('mbstring.strict_detection', '');
-    // this is possible for any value because "mbstring.script_encoding" is unrelated.
-    // This is possible for any value because we doesn't use "allow_url_include".
     // This sets "user_agent" to "PHP".
     B::iniSet('user_agent', 'PHP');
     // Set for the debugging because "from" can be set only in "php.ini".

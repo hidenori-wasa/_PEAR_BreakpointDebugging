@@ -1,7 +1,7 @@
 <?php
 
 use \BreakpointDebugging as B;
-use \BreakpointDebugging_PHPUnitStepExecution as BU;
+use \BreakpointDebugging_PHPUnit as BU;
 
 class BreakpointDebuggingTestExampleBase
 {
@@ -21,7 +21,7 @@ class BreakpointDebuggingTestExample extends \BreakpointDebuggingTestExampleBase
 
 }
 
-class BreakpointDebugging_PHPUnitStepExecutionTest extends \BreakpointDebugging_PHPUnitStepExecution_PHPUnitFrameworkTestCase
+class BreakpointDebugging_PHPUnitTest extends \BreakpointDebugging_PHPUnit_FrameworkTestCase
 {
     /**
      * @covers \BreakpointDebugging<extended>
@@ -47,7 +47,7 @@ class BreakpointDebugging_PHPUnitStepExecutionTest extends \BreakpointDebugging_
 //            '--stop-on-failure --strict ExampleTest.php',
 //            '--stop-on-failure --strict ExampleTest.php',
 //        );
-//        BU::setPropertyForTest('BreakpointDebugging_PHPUnitStepExecution', '$unitTestDir', null);
+//        BU::setPropertyForTest('BreakpointDebugging_PHPUnit', '$unitTestDir', null);
 //        BU::executeUnitTest($testFileNames);
 //
 //        $testFileNames = array (
@@ -55,7 +55,7 @@ class BreakpointDebugging_PHPUnitStepExecutionTest extends \BreakpointDebugging_
 //            '--stop-on-failure --strict Example_Test.php',
 //        );
 //        BU::$exeMode |= B::IGNORING_BREAK_POINT;
-//        BU::setPropertyForTest('BreakpointDebugging_PHPUnitStepExecution', '$unitTestDir', null);
+//        BU::setPropertyForTest('BreakpointDebugging_PHPUnit', '$unitTestDir', null);
 //        BU::executeUnitTest($testFileNames);
 //    }
 //    /**
@@ -73,7 +73,7 @@ class BreakpointDebugging_PHPUnitStepExecutionTest extends \BreakpointDebugging_
 //            '--stop-on-failure --strict NotExistTest.php',
 //        );
 //        ob_start();
-//        BU::setPropertyForTest('BreakpointDebugging_PHPUnitStepExecution', '$unitTestDir', null);
+//        BU::setPropertyForTest('BreakpointDebugging_PHPUnit', '$unitTestDir', null);
 //        BU::executeUnitTest($testFileNames);
 //    }
 //    /**
@@ -115,7 +115,7 @@ class BreakpointDebugging_PHPUnitStepExecutionTest extends \BreakpointDebugging_
      * @covers \BreakpointDebugging<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_PHPUnitStepExecution FUNCTION=getPropertyForTest ID=101.
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_PHPUnit FUNCTION=getPropertyForTest ID=101.
      */
     public function testGetPropertyForTest_F()
     {
@@ -126,7 +126,7 @@ class BreakpointDebugging_PHPUnitStepExecutionTest extends \BreakpointDebugging_
      * @covers \BreakpointDebugging<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_PHPUnitStepExecution FUNCTION=getPropertyForTest ID=101.
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_PHPUnit FUNCTION=getPropertyForTest ID=101.
      */
     public function testGetPropertyForTest_G()
     {
@@ -137,7 +137,7 @@ class BreakpointDebugging_PHPUnitStepExecutionTest extends \BreakpointDebugging_
      * @covers \BreakpointDebugging<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_PHPUnitStepExecution FUNCTION=getPropertyForTest
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_PHPUnit FUNCTION=getPropertyForTest
      */
     public function testGetPropertyForTest_H()
     {
@@ -171,7 +171,7 @@ class BreakpointDebugging_PHPUnitStepExecutionTest extends \BreakpointDebugging_
      * @covers \BreakpointDebugging<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_PHPUnitStepExecution FUNCTION=setPropertyForTest ID=101.
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_PHPUnit FUNCTION=setPropertyForTest ID=101.
      */
     function testSetPropertyForTest_E()
     {
@@ -184,7 +184,7 @@ class BreakpointDebugging_PHPUnitStepExecutionTest extends \BreakpointDebugging_
      * @covers \BreakpointDebugging<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_PHPUnitStepExecution FUNCTION=setPropertyForTest ID=101.
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_PHPUnit FUNCTION=setPropertyForTest ID=101.
      */
     function testSetPropertyForTest_F()
     {
@@ -197,7 +197,7 @@ class BreakpointDebugging_PHPUnitStepExecutionTest extends \BreakpointDebugging_
      * @covers \BreakpointDebugging<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_PHPUnitStepExecution FUNCTION=setPropertyForTest ID=101.
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_PHPUnit FUNCTION=setPropertyForTest ID=101.
      */
     function testSetPropertyForTest_G()
     {
@@ -219,7 +219,7 @@ class BreakpointDebugging_PHPUnitStepExecutionTest extends \BreakpointDebugging_
 //            '--stop-on-failure --strict ExampleTest.php',
 //            '--stop-on-failure --strict ExampleTest.php',
 //        );
-//        BU::setPropertyForTest('BreakpointDebugging_PHPUnitStepExecution', '$unitTestDir', null);
+//        BU::setPropertyForTest('BreakpointDebugging_PHPUnit', '$unitTestDir', null);
 //        ob_start();
 //        BU::executeUnitTest($testFileNames);
 //    }
@@ -235,7 +235,7 @@ class BreakpointDebugging_PHPUnitStepExecutionTest extends \BreakpointDebugging_
 //            '--stop-on-failure --strict NotExistTest.php',
 //            '--stop-on-failure --strict NotExistTest.php',
 //        );
-//        BU::setPropertyForTest('BreakpointDebugging_PHPUnitStepExecution', '$unitTestDir', null);
+//        BU::setPropertyForTest('BreakpointDebugging_PHPUnit', '$unitTestDir', null);
 //        ob_start();
 //        BU::executeUnitTest($testFileNames);
 //        $output = ob_get_contents();
@@ -254,7 +254,7 @@ class BreakpointDebugging_PHPUnitStepExecutionTest extends \BreakpointDebugging_
 //            '--stop-on-failure --strict Example_Test.php',
 //        );
 //        BU::$exeMode |= B::IGNORING_BREAK_POINT;
-//        BU::setPropertyForTest('BreakpointDebugging_PHPUnitStepExecution', '$unitTestDir', null);
+//        BU::setPropertyForTest('BreakpointDebugging_PHPUnit', '$unitTestDir', null);
 //        ob_start();
 //        BU::executeUnitTest($testFileNames);
 //        ob_get_clean();
@@ -263,7 +263,7 @@ class BreakpointDebugging_PHPUnitStepExecutionTest extends \BreakpointDebugging_
 //     * @covers \BreakpointDebugging<extended>
 //     *
 //     * @expectedException        \BreakpointDebugging_ErrorException
-//     * @expectedExceptionMessage CLASS=BreakpointDebugging_PHPUnitStepExecution FUNCTION=_getUnitTestDir ID=101.
+//     * @expectedExceptionMessage CLASS=BreakpointDebugging_PHPUnit FUNCTION=_getUnitTestDir ID=101.
 //     */
 //    function test_getUnitTestDir_A()
 //    {
@@ -276,7 +276,7 @@ class BreakpointDebugging_PHPUnitStepExecutionTest extends \BreakpointDebugging_
 //            '--stop-on-failure --strict ExampleTest.php',
 //            '--stop-on-failure --strict ExampleTest.php',
 //        );
-//        BU::setPropertyForTest('BreakpointDebugging_PHPUnitStepExecution', '$unitTestDir', null);
+//        BU::setPropertyForTest('BreakpointDebugging_PHPUnit', '$unitTestDir', null);
 //        ob_start();
 //        BU::executeUnitTest($testFileNames);
 //
@@ -299,5 +299,3 @@ class BreakpointDebugging_PHPUnitStepExecutionTest extends \BreakpointDebugging_
 //        BU::displayCodeCoverageReport('BreakpointDebugging/OverrideClassTest.php', array ('PEAR/BreakpointDebugging/OverrideClass.php'));
 //    }
 }
-
-?>

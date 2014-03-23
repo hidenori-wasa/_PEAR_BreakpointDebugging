@@ -29,7 +29,9 @@ class Lock extends \Counter
 }
 
 $get = B::getStatic('$_get');
+// $pLock = new \Lock(1234); // For debug.
 $pLock = new \Lock($get['SHMOP_KEY']);
+// $pLock->testLock('\BreakpointDebugging_LockByFileExisting'); // For debug.
 $pLock->testLock($get['CLASS_NAME']);
 
 ?>

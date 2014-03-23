@@ -18,7 +18,7 @@
  * Procedure9: Upload repaired php code.
  * Procedure10: Click "Reset error log files" button.
  *
- * PHP version 5.3
+ * PHP version 5.3.x, 5.4.x
  *
  * LICENSE OVERVIEW:
  * 1. Do not change license text.

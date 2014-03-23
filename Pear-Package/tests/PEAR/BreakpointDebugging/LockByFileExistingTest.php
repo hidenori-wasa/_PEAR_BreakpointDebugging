@@ -1,9 +1,9 @@
 <?php
 
 use \BreakpointDebugging as B;
-use \BreakpointDebugging_PHPUnitStepExecution as BU;
+use \BreakpointDebugging_PHPUnit as BU;
 
-class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_PHPUnitStepExecution_PHPUnitFrameworkTestCase
+class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_PHPUnit_FrameworkTestCase
 {
     protected $lockByFileExisting, $lockByFileExistingInternal;
 

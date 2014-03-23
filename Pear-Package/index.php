@@ -1,113 +1,53 @@
 <?php
 
-// new
+// $output = `printenv`;
+// $output = `php -v`;
+// exit('<pre>' . $output . '</pre>');
+// xdebug_break();
 
 require_once './BreakpointDebugging_Inclusion.php';
 
 use \BreakpointDebugging as B;
-use \BreakpointDebugging_PHPUnitStepExecution_PHPUnitUtilGlobalState as BGS;
-use \BreakpointDebugging_PHPUnitStepExecution_PHPUnitFrameworkTestCase as BSF;
+use \BreakpointDebugging_PHPUnit_UtilGlobalState as BGS;
+use \BreakpointDebugging_PHPUnit_FrameworkTestCase as BSF;
 
 B::checkExeMode(); // Checks the execution mode.
 
-phpinfo();
-exit;
-/**
- *
- *
- * @param string $filePath
- */
-function cacheAfterChangeReteralOfPHPFile($filePath)
-{
-    $codeLockObj = &\BreakpointDebugging_LockByFileExisting::internalSingleton();
-    $codeLockObj->lock();
-    // 以前のファイルeパース時刻と比較する
-    //
-    //
-    // ファイルパース時刻を記録する
+$filteredSuperGlobals = array (
+    $_COOKIE,
+    $_ENV,
+    $_GET,
+    $_POST,
+    $_SERVER,
+);
 
+$filteredSuperGlobalTypes = array (
+    INPUT_COOKIE,
+    INPUT_ENV,
+    INPUT_GET,
+    INPUT_POST,
+    INPUT_SERVER,
+);
 
-    $tokens = token_get_all(file_get_contents($filePath));
-    $isProduct = !array_key_exists('BREAKPOINTDEBUGGING_MODE', B::getStatic('$_get'));
-    $buffer = '';
-    $postBuffer = '';
-    $wasChanged = false;
-    $parseCount = 0;
-    foreach ($tokens as $key => $token) {
-        if (is_array($token)) {
-            $tokenKind = $token[0];
-            $cmpToken = $token[1];
-            switch ($parseCount) {
-                case 0:
-                    switch ($tokenKind) {
-                        case T_IF:
-                            $parseCount = 1;
-                    }
-                    break;
-                case 2:
-                    switch ($tokenKind) {
-                        case T_CONSTANT_ENCAPSED_STRING:
-                            if (($isProduct && $cmpToken === '!\'BreakpointDebugging::DEBUG\'')
-                                || (!$isProduct && $cmpToken === '\'BreakpointDebugging::DEBUG\'')
-                            ) {
-                                $parseCount = 3;
-                                continue;
-                            }
-                    }
-                case 1:
-                    switch ($tokenKind) {
-                        case T_WHITESPACE:
-                        case T_COMMENT:
-                            break;
-                        default:
-                            $parseCount = 0;
-                    }
-                    break;
-                case 3:
-                    switch ($tokenKind) {
-                        case T_WHITESPACE:
-                        case T_COMMENT:
-                            break;
-                        default:
-                            $parseCount = 0;
-                    }
-                    $postBuffer .= $cmpToken;
-                    continue;
-            }
-            $buffer .= $cmpToken;
-            continue;
+var_dump(ini_get('filter.default'));
+var_dump(ini_get('filter.default_flags'));
+
+for ($count = 0; $count < count($filteredSuperGlobals); $count++) {
+    $filteredSuperGlobalType = $filteredSuperGlobalTypes[$count];
+    $filteredSuperGlobal = &$filteredSuperGlobals[$count];
+    echo 'Type = ' . $filteredSuperGlobalType . '<br />';
+    foreach ($filteredSuperGlobal as $filteredSuperGlobalElementKey => &$filteredSuperGlobalElement) {
+        $filteredSuperGlobalElement = 'DUMMY';
+        if (!filter_has_var($filteredSuperGlobalType, $filteredSuperGlobalElementKey)) {
+            // continue;
+            // xdebug_break();
         }
-        switch ($parseCount) {
-            case 1:
-                if ($token === '(') {
-                    $parseCount = 2;
-                }
-                break;
-            case 3:
-                if ($token === ')') {
-                    $parseCount = 0;
-                    $wasChanged = true;
-                    if ($isProduct) {
-                        $buffer .= '!\'BreakpointDebugging::DEBUG\'' . $postBuffer . $token;
-                    } else {
-                        $buffer .= '\'BreakpointDebugging::DEBUG\'' . $postBuffer . $token;
-                    }
-                }
-        }
-        $buffer .= $token;
+        echo $filteredSuperGlobalElementKey;
+        var_dump(filter_input($filteredSuperGlobalType, $filteredSuperGlobalElementKey, FILTER_UNSAFE_RAW));
     }
-    if ($wasChanged) {
-        opcache_compile_file($filePath);
-    }
-    $codeLockObj->unlock();
+    var_dump($filteredSuperGlobal);
 }
-
-cacheAfterChangeReteralOfPHPFile('./OPcacheTestA.php');
 return;
-
-
-
-
 
 
 $htmlFileContent1 = <<<EOD
@@ -283,5 +223,3 @@ function test()
 }
 
 test();
-
-?>

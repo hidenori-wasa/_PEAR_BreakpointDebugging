@@ -2,10 +2,11 @@
 
 chdir(str_repeat('../', preg_match_all('`/`xX', $_SERVER['PHP_SELF'], $matches) - 2));
 unset($matches);
+
 require_once './BreakpointDebugging_Inclusion.php';
 
 use \BreakpointDebugging as B;
-use \BreakpointDebugging_PHPUnitStepExecution as BU;
+use \BreakpointDebugging_PHPUnit as BU;
 
 B::checkExeMode(true);
 // Please, choose unit tests files by customizing.
@@ -16,7 +17,7 @@ $breakpointDebugging_UnitTestFiles = array (
     'BreakpointDebugging-ExceptionTest.php',
     'BreakpointDebugging-InAllCaseTest.php',
     'BreakpointDebuggingTest.php',
-    'BreakpointDebugging-PHPUnitStepExecutionTest.php',
+    'BreakpointDebugging-PHPUnitTest.php',
     'BreakpointDebugging/Error-InAllCaseTest.php',
     'BreakpointDebugging/ErrorTest.php',
     'BreakpointDebugging/LockByFileExistingTest.php',
@@ -36,14 +37,10 @@ if (B::getStatic('$exeMode') & B::RELEASE) { // In case of release.
     // BU::displayCodeCoverageReport('BreakpointDebugging/ErrorTest.php', 'PEAR/BreakpointDebugging/Error_InDebug.php'); //
 }
 // In case of debug or release.
-// BU::displayCodeCoverageReport('BreakpointDebugging-ExceptionTest.php', 'PEAROtherPackage/BreakpointDebugging_PHPUnitStepExecution.php');
+// BU::displayCodeCoverageReport('BreakpointDebugging-ExceptionTest.php', 'PEAROtherPackage/BreakpointDebugging_PHPUnit.php');
 // BU::displayCodeCoverageReport('BreakpointDebugging-InAllCaseTest.php', 'PEAR/BreakpointDebugging.php'); //
-// BU::displayCodeCoverageReport('BreakpointDebugging-PHPUnitStepExecutionTest.php', 'PEAROtherPackage/BreakpointDebugging_PHPUnitStepExecution.php'); //
+// BU::displayCodeCoverageReport('BreakpointDebugging-PHPUnitTest.php', 'PEAROtherPackage/BreakpointDebugging_PHPUnit.php'); //
 // BU::displayCodeCoverageReport('BreakpointDebugging/LockByFileExistingTest.php', array ('PEAR/BreakpointDebugging/Lock.php', 'PEAR/BreakpointDebugging/LockByFileExisting.php')); // OK.
 BU::displayCodeCoverageReport('BreakpointDebugging/LockByFlockTest.php', array ('PEAR/BreakpointDebugging/Lock.php', 'PEAR/BreakpointDebugging/LockByFlock.php')); // OK.
 // BU::displayCodeCoverageReport('BreakpointDebugging/LockByShmopTest.php', array ('PEAR/BreakpointDebugging/Lock.php', 'PEAR/BreakpointDebugging/LockByShmop.php')); //
 // BU::displayCodeCoverageReport('BreakpointDebugging/OverrideClassTest.php', 'PEAR/BreakpointDebugging/OverrideClass.php'); //
-//
-//echo '<pre>"\BreakpointDebugging_PHPUnitStepExecution::displayCodeCoverageReport()" ended.</pre>';
-
-?>

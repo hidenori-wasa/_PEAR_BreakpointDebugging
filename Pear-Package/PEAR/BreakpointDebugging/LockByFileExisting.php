@@ -23,7 +23,7 @@
  *      }
  *      $lockByFileExisting->unlock(); // Unlocks php-code.
  *
- * PHP version 5.3
+ * PHP version 5.3.x, 5.4.x
  *
  * LICENSE OVERVIEW:
  * 1. Do not change license text.
@@ -83,7 +83,7 @@ final class BreakpointDebugging_LockByFileExisting extends \BreakpointDebugging_
      *
      * @return object Instance of this class.
      */
-    static function &singleton($timeout = 60, $expire = 300, $sleepMicroSeconds = 1000000)
+    static function &singleton($timeout = 60, $expire = 300, $sleepMicroSeconds = 100000)
     {
         return parent::singletonBase('\\' . __CLASS__, B::getStatic('$_workDir') . '/LockByFileExisting.txt', $timeout, $expire, $sleepMicroSeconds);
     }
@@ -95,7 +95,7 @@ final class BreakpointDebugging_LockByFileExisting extends \BreakpointDebugging_
      */
     static function &internalSingleton()
     {
-        return parent::singletonBase('\\' . __CLASS__, B::getStatic('$_workDir') . '/LockByFileExistingOfInternal.txt', 60, 300, 1000000, true);
+        return parent::singletonBase('\\' . __CLASS__, B::getStatic('$_workDir') . '/LockByFileExistingOfInternal.txt', 60, 300, 100000, true);
     }
 
     /**

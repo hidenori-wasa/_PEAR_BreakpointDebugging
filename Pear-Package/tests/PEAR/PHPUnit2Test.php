@@ -2,7 +2,7 @@
 
 use \BreakpointDebugging as B;
 
-class PHPUnit2Test extends \BreakpointDebugging_PHPUnitStepExecution_PHPUnitFrameworkTestCase
+class PHPUnit2Test extends \BreakpointDebugging_PHPUnit_FrameworkTestCase
 {
     private $_testObject;
 

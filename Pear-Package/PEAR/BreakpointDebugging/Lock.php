@@ -10,7 +10,7 @@
  *      Process A locks file A, and process B locks file B.
  *      Then, process A is waiting for file B, and process B is waiting for file A.
  *
- * PHP version 5.3
+ * PHP version 5.3.x, 5.4.x
  *
  * LICENSE OVERVIEW:
  * 1. Do not change license text.

@@ -46,7 +46,7 @@
  *      '1' means that process is not between "lock()" and "unlock()".
  *      '2' means that process is between "lock()" and "unlock()".
  *
- * PHP version 5.3
+ * PHP version 5.3.x, 5.4.x
  *
  * LICENSE OVERVIEW:
  * 1. Do not change license text.
@@ -351,8 +351,8 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
             }
             // It allocates shared memory area as current process number and minimum process number.
             self::$sharedMemoryID = @shmop_open($sharedMemoryKey, 'n', 0600, self::MEMORY_BLOCK_SIZE);
-            if (self::$sharedMemoryID === false
-                || self::$sharedMemoryID === null
+            if (self::$sharedMemoryID === false //
+                || self::$sharedMemoryID === null //
             ) {
                 // @codeCoverageIgnoreStart
                 // Because this is a few probability.

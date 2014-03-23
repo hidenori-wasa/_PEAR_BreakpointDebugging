@@ -22,16 +22,12 @@ Please, read the file level document block of `PEAR/BreakpointDebugging_Option.p
 The dependences
 ---------------
 
-* OS requires `Linux` or `Windows`, but may be able to require `Unix`.
-* Development PHP version = `XAMPP 1.7.3` ("PHP 5.3.x" Compiled with VC++6.0 in case of windows.)
-
-                            Do not use `XAMPP 1.7.7` ("PHP 5.3.x" Compiled with VC++9.0 in case of windows.)
-
-* Production PHP version = `5.3.x`
-* Requires `Xdebug extension` in case of local host. "Xdebug" extension is required because (uses breakpoint, displays for fatal error and detects infinity recursive function call).
-* Requires `Xdebug extension` if you want features of above in case of "$_BreakpointDebugging_EXE_MODE = B::REMOTE" mode. (optional).
-* Requires `shmop extension` if you use "\BreakpointDebugging_LockByShmop" class. (optional).
-* Requires environment which `flock()` enables if you use "\BreakpointDebugging_LockByFlock" class. (optional).
+* OS requires "Linux" or "Windows".
+* PHP version = 5.3.x, 5.4.x
+* Requires "Xdebug extension" in case of local host. "Xdebug" extension is required because (uses breakpoint, displays for fatal error and detects infinity recursive function call).
+* Requires "Xdebug extension" if you want features of above in case of `$_BreakpointDebugging_EXE_MODE = B::REMOTE` mode. (optional).
+* Requires "shmop extension" if you use `\BreakpointDebugging_LockByShmop` class. (optional).
+* Requires environment which `flock()` enables if you use `\BreakpointDebugging_LockByFlock` class. (optional).
 
 How to sniff my code.
 ---------------------
@@ -61,24 +57,5 @@ Or, execute command like following with short cut file.
 Notice
 ------
 
-"Pear-Package/nbproject/" directory is project directory of "NetBeans IDE 7.1.2 for Linux".
-You must change "test.src.dir" of "Pear-Package/nbproject/project.properties" file if you use on Windows.
-Example:
-
-    test.src.dir=C:\\xampp\\htdocs\\Pear-Package\\tests
-
-Also, "NetBeans IDE 7.4" cannot keep switchback in format of "if" statement at December, 2013.
-Example:
-
-    if ($a
-        && $b           // Cannot keep switchback of this line.
-        && ($c || $d)   // Cannot keep switchback of this line.
-        || ($e && $f)   // Cannot keep switchback of this line.
-    ) {
-        return;
-    }
-
-However, "NetBeans IDE 7.4" supports "PHP5.4" and "HTML5".
-
-I have been developing yet.
-Also, I have been coding the unit tests.
+* I have been developing yet.
+* Also, I have been testing with "BreakpointDebugging_PHPUnit".

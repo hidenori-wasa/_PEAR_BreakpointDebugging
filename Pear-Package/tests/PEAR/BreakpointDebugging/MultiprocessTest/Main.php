@@ -4,6 +4,7 @@ use \BreakpointDebugging as B;
 
 class tests_PEAR_BreakpointDebugging_MultiprocessTest_Main
 {
+
     private function _initializeCounter($shmopKey)
     {
         if (!extension_loaded('shmop')) {
@@ -38,6 +39,7 @@ class tests_PEAR_BreakpointDebugging_MultiprocessTest_Main
                     throw new \BreakpointDebugging_ErrorException('Failed to "popen()".');
                 }
             } else { // For Unix.
+                // include_once $fullFilePath; // For debug.
                 // "&" is the background execution of command.
                 $pPipe = popen('php -f ' . $fullFilePath . ' -- ' . $queryString . ' &', 'r');
                 if ($pPipe === false) {
@@ -65,9 +67,6 @@ class tests_PEAR_BreakpointDebugging_MultiprocessTest_Main
                 // Gets command's stdout.
                 $results[] = stream_get_contents($pPipe);
             }
-        }
-        foreach ($results as $result) {
-            B::assert(is_numeric($result));
         }
 
         foreach ($pPipes as $pPipe) {
