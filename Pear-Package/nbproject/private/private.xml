@@ -5,14 +5,14 @@
             <url>PEAR/BreakpointDebugging/Error.php</url>
             <bookmark id="1">
                 <name/>
-                <line>1287</line>
+                <line>1290</line>
                 <key/>
             </bookmark>
         </file>
     </editor-bookmarks>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/xampp/htdocs/Pear-Package/PEAR/BreakpointDebugging/Sample/</file>
+            <file>file:/C:/xampp/htdocs/Pear-Package/PEAROtherPackage/BreakpointDebugging/PHPUnit/README.md</file>
         </group>
     </open-files>
 </project-private>

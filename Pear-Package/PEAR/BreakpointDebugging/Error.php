@@ -635,7 +635,6 @@ abstract class BreakpointDebugging_Error_InAllCase
         restore_error_handler(); // Restores from "B::handleError()".
 
         try {
-            // trigger_error('Internal error test.', E_USER_WARNING); // For debug.
             // Controls how many nested levels of array elements and object properties.
             // Display by var_dump(), local variables or Function Traces.
             ini_set('xdebug.var_display_max_depth', '6');
@@ -953,7 +952,8 @@ abstract class BreakpointDebugging_Error_InAllCase
         // Repairs the error location files.
         foreach (scandir($this->_errorLogDirectory) as $errorLocationFileName) {
             $errorLocationFileName = $this->_errorLogDirectory . $errorLocationFileName;
-            if (!is_file($errorLocationFileName) || pathinfo($errorLocationFileName, PATHINFO_EXTENSION) !== 'bin'
+            if (!is_file($errorLocationFileName) //
+                || pathinfo($errorLocationFileName, PATHINFO_EXTENSION) !== 'bin' //
             ) {
                 continue;
             }
@@ -1084,7 +1084,9 @@ abstract class BreakpointDebugging_Error_InAllCase
                     // The call stack loop.
                     $callStackInfoArray = array ();
                     foreach ($this->_callStack as $call) {
-                        if (empty($call) || !array_key_exists('file', $call) || !array_key_exists('line', $call)
+                        if (empty($call) //
+                            || !array_key_exists('file', $call) //
+                            || !array_key_exists('line', $call) //
                         ) {
                             continue;
                         }
@@ -1189,7 +1191,8 @@ abstract class BreakpointDebugging_Error_InAllCase
                     $this->_loggedCallStacks[] = $call;
                     $this->logBufferWriting($dummy, PHP_EOL . $this->tags['b'] . $this->_setHypertextReference('function call #' . count($this->_loggedCallStacks)) . $this->tags['/b']);
                     $this->outputFixedFunctionToLogging($call, $dummy, $onceFlag2, $func, $class, $file, $line);
-                    if (is_array($call) && array_key_exists('args', $call)
+                    if (is_array($call) //
+                        && array_key_exists('args', $call) //
                     ) {
                         // Analyze parameters part of trace array, and return character string.
                         $this->searchDebugBacktraceArgsToString($pTmpLog2, $call['args']);

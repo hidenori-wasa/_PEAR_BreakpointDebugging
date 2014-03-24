@@ -346,9 +346,10 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
         // If this is remote debug, unix and root user.
         if (BA::$exeMode === B::REMOTE //
             && !BREAKPOINTDEBUGGING_IS_WINDOWS //
-            && trim(`echo \$USER`) === 'root' //
+            //&& trim(`echo \$USER`) === 'root' //
+            && trim(`printenv USER`) === 'root' //
         ) {
-            parent::windowVirtualOpen(parent::ERROR_WINDOW_NAME, parent::$errorHtmlFileContent);
+            parent::windowVirtualOpen(parent::ERROR_WINDOW_NAME, parent::getErrorHtmlFileTemplate());
             B::windowHtmlAddition(B::ERROR_WINDOW_NAME, 'pre', 0, 'Security warning: Recommends to change to "Apache HTTP Server" which Supported "suEXEC" because this "Apache HTTP Server" is executed by "root" user.');
         }
     }
@@ -458,7 +459,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      *
      * @return Same as parent.
      */
-    static function chmod($name, $permission, $timeout = 10, $sleepMicroSeconds = 100000)
+    static function chmod($name, $permission, $timeout = 10, $sleepMicroSeconds = 1000000)
     {
         self::assert(func_num_args() <= 4);
         self::assert(is_string($name));
@@ -478,7 +479,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      *
      * @return Same as parent.
      */
-    static function mkdir(array $params, $timeout = 10, $sleepMicroSeconds = 100000)
+    static function mkdir(array $params, $timeout = 10, $sleepMicroSeconds = 1000000)
     {
         self::assert(func_num_args() <= 3);
         self::assert(is_int($timeout));
@@ -499,7 +500,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      *
      * @return Same as parent.
      */
-    static function fopen(array $params, $permission = null, $timeout = 10, $sleepMicroSeconds = 100000)
+    static function fopen(array $params, $permission = null, $timeout = 10, $sleepMicroSeconds = 1000000)
     {
         self::assert(func_num_args() <= 4);
         self::assert((is_int($permission) || is_null($permission)) && 0 <= $permission && $permission <= 0777);
@@ -590,7 +591,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
                         break 2;
                     }
                 }
-                parent::windowVirtualOpen(parent::ERROR_WINDOW_NAME, parent::$errorHtmlFileContent);
+                parent::windowVirtualOpen(parent::ERROR_WINDOW_NAME, parent::getErrorHtmlFileTemplate());
                 B::windowHtmlAddition(B::ERROR_WINDOW_NAME, 'pre', 0, 'Path environment variable has not been set for "php.exe" command.' . PHP_EOL . `path`);
                 exit;
             }
@@ -666,7 +667,8 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
             $fullFilePath = strtolower($fullFilePath);
         }
         $line = $callStack[$key]['line'];
-        if (array_key_exists($fullFilePath, self::$_callLocations) && array_key_exists($line, self::$_callLocations[$fullFilePath])
+        if (array_key_exists($fullFilePath, self::$_callLocations) //
+            && array_key_exists($line, self::$_callLocations[$fullFilePath]) //
         ) {
             // Skips same.
             return;
@@ -747,7 +749,8 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
             // @codeCoverageIgnoreStart
         }
         // @codeCoverageIgnoreEnd
-        if (!is_int($id) && !is_null($id)
+        if (!is_int($id) //
+            && !is_null($id) //
         ) {
             self::callExceptionHandlerDirectly('Exception identification number must be integer.', 3);
             // @codeCoverageIgnoreStart
@@ -836,6 +839,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
             // In case of remote debug.
             if ($doCheck === true //
                 && (BA::$exeMode & B::REMOTE) //
+                && isset($_SERVER['SERVER_ADDR']) // In case of common gateway.
             ) {
                 $backTrace = debug_backtrace();
                 $baseName = basename($backTrace[0]['file']);

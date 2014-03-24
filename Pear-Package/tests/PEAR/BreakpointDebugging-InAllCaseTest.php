@@ -21,6 +21,11 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_PHPUnit_Fra
      */
     public function testClearRecursiveArrayElement()
     {
+        // It sets "count($_SERVER)" to "B::$_maxLogElementNumber" because it is purpose to execute without array slicing.
+        $maxLogElementNumber = &B::refStatic('$_maxLogElementNumber');
+        $tmpMaxLogElementNumber = $maxLogElementNumber;
+        $maxLogElementNumber = count($_SERVER);
+
         $testArray['element'] = 'String.';
         $testArray['recursive'] = &$testArray;
         $testArray['component']['recursive'] = &$testArray;
@@ -55,21 +60,25 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_PHPUnit_Fra
         // "\BreakpointDebugging_InAllCase::clearRecursiveArrayElement()" copies array type element if has it, then returns array which has a copied array type element part.
         // Therefore, compares per array element because array type element reference differs.
         $compareArray = function($expectedGlobals, $resultElement) {
-                foreach ($expectedGlobals as $key => $expectedGlobal) {
-                    if (is_array($expectedGlobal)) {
-                        if (empty($expectedGlobal)) {
-                            T::assertTrue(empty($resultElement[$key]));
-                            continue;
-                        }
-                        foreach ($expectedGlobal as $key2 => $expectedElement) {
-                            T::assertTrue($expectedElement === $resultElement[$key][$key2]);
-                        }
-                        continue;
-                    }
-                    T::assertTrue($expectedGlobal === $resultElement[$key]);
+            foreach ($expectedGlobals as $key => $expectedGlobal) {
+                if (is_array($expectedGlobal)) {
+                    //if (empty($expectedGlobal)) {
+                    //    T::assertTrue(empty($resultElement[$key]));
+                    //    continue;
+                    //}
+                    //foreach ($expectedGlobal as $key2 => $expectedElement) {
+                    //    T::assertTrue($expectedElement === $resultElement[$key][$key2]);
+                    //}
+                    $tmp = array_diff($expectedGlobal, $resultElement[$key]);
+                    T::assertTrue(empty($tmp));
+                    $tmp = array_diff($resultElement[$key], $expectedGlobal);
+                    T::assertTrue(empty($tmp));
+                    continue;
                 }
-                T::assertTrue(is_array($GLOBALS['GLOBALS']));
-            };
+                T::assertTrue($expectedGlobal === $resultElement[$key]);
+            }
+            T::assertTrue(is_array($GLOBALS['GLOBALS']));
+        };
 
         $resultElement = $resultArray['component']['component']['GLOBALS'];
         $compareArray($expectedGlobals, $resultElement);
@@ -82,6 +91,9 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_PHPUnit_Fra
         $resultArray = BA::clearRecursiveArrayElement($testArray);
         $resultElement = $resultArray[0];
         $compareArray($expectedGlobals, $resultElement);
+
+        // Restores "B::$_maxLogElementNumber".
+        $maxLogElementNumber = $tmpMaxLogElementNumber;
     }
 
     /**

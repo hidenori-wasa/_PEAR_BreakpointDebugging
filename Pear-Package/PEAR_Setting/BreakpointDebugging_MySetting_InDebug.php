@@ -54,7 +54,7 @@ B::limitAccess(BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_
 
 // ### Item-setting for debugging. ===>
 // $xdebugManualUrl = 'http://www.php.net/manual/ja/';
-$xdebugVarDisplayMaxChildren = '50';
+$xdebugVarDisplayMaxChildren = '100';
 $xdebugVarDisplayMaxData = '3000';
 $xdebugVarDisplayMaxDepth = '6';
 // B::setBrowserPass('C:\Program Files\Internet Explorer\iexplore.exe');
