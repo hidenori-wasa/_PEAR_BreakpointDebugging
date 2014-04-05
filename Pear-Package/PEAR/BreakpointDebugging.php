@@ -44,7 +44,6 @@ use \BreakpointDebugging as B;
 use \BreakpointDebugging_InAllCase as BA;
 
 require_once __DIR__ . '/PEAR/Exception.php';
-
 /**
  * Own package exception.
  *
@@ -57,7 +56,6 @@ require_once __DIR__ . '/PEAR/Exception.php';
  */
 abstract class BreakpointDebugging_Exception_InAllCase extends \PEAR_Exception
 {
-
     /**
      * Constructs instance.
      *
@@ -90,7 +88,6 @@ abstract class BreakpointDebugging_Exception_InAllCase extends \PEAR_Exception
  */
 abstract class BreakpointDebugging_InAllCase
 {
-
     // ### Debug mode constant number ###
     /**
      * @const int This flag means executing on practical use server. This flag means executing on local development server if it is not set.
@@ -1412,10 +1409,8 @@ if ($_BreakpointDebugging_EXE_MODE & BA::RELEASE) { // In case of release.
      * @version  Release: @package_version@
      * @link     http://pear.php.net/package/BreakpointDebugging
      */
-
     abstract class BreakpointDebugging_Middle extends \BreakpointDebugging_InAllCase
     {
-
         /**
          * Empties in release.
          *
@@ -1466,10 +1461,8 @@ if ($_BreakpointDebugging_EXE_MODE & BA::RELEASE) { // In case of release.
          * @version  Release: @package_version@
          * @link     http://pear.php.net/package/BreakpointDebugging
          */
-
         final class BreakpointDebugging extends \BreakpointDebugging_Middle
         {
-
             /**
              * Assertion error is stopped at break point in case of release unit test.
              *
@@ -1519,7 +1512,6 @@ if ($_BreakpointDebugging_EXE_MODE & BA::RELEASE) { // In case of release.
          * @version  Release: @package_version@
          * @link     http://pear.php.net/package/BreakpointDebugging
          */
-
         final class BreakpointDebugging extends \BreakpointDebugging_Middle
         {
 
@@ -1556,7 +1548,6 @@ B::initialize();
 if (B::getStatic('$exeMode') & BA::UNIT_TEST) { // In case of unit test.
     include_once 'BreakpointDebugging_PHPUnit.php';
 } else {
-
     /**
      * Dummy class for not unit test.
      *
@@ -1573,7 +1564,6 @@ if (B::getStatic('$exeMode') & BA::UNIT_TEST) { // In case of unit test.
     }
 
 }
-
 /**
  * Own package error exception.
  *

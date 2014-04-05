@@ -13,9 +13,7 @@ use \BreakpointDebugging_PHPUnit_FrameworkTestCase as BSF;
 
 B::checkExeMode(); // Checks the execution mode.
 
-var_dump(get_current_user());
-$processUser = posix_getpwuid(posix_geteuid());
-var_dump($processUser['name']);
+throw new \Exception('Test exception.');
 exit;
 
 $filteredSuperGlobals = array (

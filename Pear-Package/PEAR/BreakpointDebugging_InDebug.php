@@ -41,19 +41,19 @@
  * Recommendation setting procedure for development of "XAMPP 1.7.4".
  *      ### "XAMPP" setting procedure. ###
  *      // We must disconnect inbound connection except "BOOTPC" and "DOMAIN" of "C:\WINDOWS\system32\svchost.exe" by firewall of a software.
- *      // Disconnects outbound HTTP connection of Apache.
+ *      // Disconnect outbound HTTP connection of Apache.
  *      C:\xampp\apache\conf\httpd.conf
  *      	before:
  *  		Listen 80
  *      	after:
  *  		Listen 127.0.0.1:80
- *      // Disconnects outbound SSL connection of Apache.
+ *      // Disconnect outbound SSL connection of Apache.
  *      C:\xampp\apache\conf\extra\httpd-ssl.conf
  *      	before:
  *  		Listen 443
  *      	after:
  *  		Listen 127.0.0.1:443
- *      // Changes the configuration file of "MySQLi".
+ *      // Change the configuration file of "MySQLi".
  *      C:\xampp\mysql\bin\my.ini
  *              .
  *              .
@@ -64,10 +64,10 @@
  *          collation-server=utf8_general_ci
  *          # Ignores character sets information which was sent from client, so it uses character sets of default of server.
  *          skip-character-set-client-handshake
- *          # Database compression.
- *          innodb_file_format=Barracuda
- *          # Makes a file per table.
- *          innodb_file_per_table=1
+ *          # Database compression for performance. CAUTION: We must not use plural compression format in database.
+ *          #innodb_file_format=Barracuda
+ *          # Makes a file per table for performance. CAUTION: We must not use plural table format in database.
+ *          #innodb_file_per_table=1
  *              .
  *              .
  *              .
@@ -81,9 +81,9 @@
  *              .
  *              .
  *              .
- *      // Changes setting of "phpMyAdmin".
- *          // Executes "C:\xampp\phpMyAdmin\scripts\create_tables.sql" import by "phpMyAdmin".
- *          // Then, changes "C:\xampp\phpMyAdmin\config.inc.php" file.
+ *      // Change setting of "phpMyAdmin".
+ *          // Execute "C:\xampp\phpMyAdmin\scripts\create_tables.sql" import by "phpMyAdmin".
+ *          // Then, change "C:\xampp\phpMyAdmin\config.inc.php" file.
  *              before:
  *              $cfg['Servers'][$i]['auth_type']     = 'http';      // Authentication method (config, http or cookie based)
  *              $cfg['Servers'][$i]['password'] = '';
@@ -102,8 +102,8 @@
  *          "mcrypt"
  *
  *      ### "XDebug" setting procedure. ###
- *      // Places "php_xdebug-2.1.2-5.3-vc6.dll" file ( last versions for this OS ) to "C:\xampp\php\ext\".
- *      // Sets "C:\xampp\php\php.ini" file as follows.
+ *      // Place "php_xdebug-2.1.2-5.3-vc6.dll" file ( last versions for this OS ) to "C:\xampp\php\ext\".
+ *      // Set "C:\xampp\php\php.ini" file as follows.
  *      zend_extension = "C:\xampp\php\ext\php_xdebug-2.1.2-5.3-vc6.dll"
  *      // Then, use this package.
  *
@@ -139,7 +139,7 @@
  *      sudo apt-get autoremove
  *
  *      ### "LAMPP" setting procedure. ###
- *      // Disconnects inbound connection by using "ufw".
+ *      // Disconnect inbound connection by using "ufw".
  *          // Enables firewall.
  *          sudo ufw enable
  *          // Disconnects inbound connection.
@@ -172,7 +172,7 @@
  *              Deny from all
  *              Allow from 127.0.0.1
  *          </Directory>
- *      // Sets "MySQLi".
+ *      // Set "MySQLi".
  *      gksudo gedit /etc/mysql/my.cnf
  *              .
  *              .
@@ -183,10 +183,10 @@
  *          collation-server=utf8_general_ci
  *          # Ignores character sets information which was sent from client, so it uses character sets of default of server.
  *          skip-character-set-client-handshake
- *          # Database compression.
- *          innodb_file_format=Barracuda
- *          # Makes a file per table.
- *          innodb_file_per_table=1
+ *          # Database compression for performance. CAUTION: We must not use plural compression format in database.
+ *          #innodb_file_format=Barracuda
+ *          # Makes a file per table for performance. CAUTION: We must not use plural table format in database.
+ *          #innodb_file_per_table=1
  *              .
  *              .
  *              .
@@ -200,7 +200,7 @@
  *              .
  *              .
  *              .
- *      // Changes setting of "phpMyAdmin".
+ *      // Change setting of "phpMyAdmin".
  *          // Executes "/usr/share/doc/phpmyadmin/examples/create_tables_sql.gz" import by "phpMyAdmin".
  *          // Copies the sample configuration file to configuration file.
  *          sudo cp /usr/share/phpmyadmin/config.sample.inc.php /etc/phpmyadmin/config.inc.php
