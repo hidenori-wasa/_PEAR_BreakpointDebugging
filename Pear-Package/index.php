@@ -1,9 +1,9 @@
 <?php
 
-// $output = `printenv`;
-// $output = `php -v`;
-// exit('<pre>' . $output . '</pre>');
-// xdebug_break();
+// phpinfo();
+// exit;
+// exit('<pre>' . `sudo printenv` . '<pre>');
+// exit('<pre>' . `php -v` . '</pre>');
 
 require_once './BreakpointDebugging_Inclusion.php';
 
@@ -12,6 +12,11 @@ use \BreakpointDebugging_PHPUnit_UtilGlobalState as BGS;
 use \BreakpointDebugging_PHPUnit_FrameworkTestCase as BSF;
 
 B::checkExeMode(); // Checks the execution mode.
+
+var_dump(get_current_user());
+$processUser = posix_getpwuid(posix_geteuid());
+var_dump($processUser['name']);
+exit;
 
 $filteredSuperGlobals = array (
     $_COOKIE,
@@ -93,17 +98,20 @@ if (!array_key_exists('test', $_GET)) {
     B::windowScriptClearance();
 }
 return;
+
 //
 //
 //
 class TestClassA
 {
+
     public $testPropertyA = 'testPropertyA';
 
 }
 
 class TestClassB
 {
+
     public $testPropertyB = 'testPropertyB';
     static public $testRecursiveArrayProperty = array ();
     public $testObjectProperty;
@@ -122,6 +130,7 @@ class TestClassB
 $testClassB = new \TestClassB();
 $testArray = array ($testClassB);
 $testClassA = new \TestClassA();
+
 function test()
 {
     global $_BreakpointDebugging_EXE_MODE, $testClassB, $testArray, $referenceA, $referenceB, $referenceC, $referenceD, $recursiveReferenceA;

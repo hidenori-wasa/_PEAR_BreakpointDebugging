@@ -31,33 +31,317 @@
  * Recommendation environment for "PHP5.3" Windows.
  *      "WindowsXP Professional (VC6)" + "XAMPP 1.7.4 (Last of 'VC6'.)" + "php_xdebug-2.1.2-5.3-vc6.dll (Last of 'VC6'.)".
  *      However, other OS is possible by using "XAMPP" and "XDebug" of "VC9" or "VC11".
- *      CAUTION: Do not connect to internet when "Apache" is running because sample of "XAMPP" can connect from internet.
  * Recommendation environment for "PHP5.4" Windows.
- *      I am unknown.
+ *      I am unknown about this.
  *      However, "WindowsXP Professional (VC6)" is impossible for step execution.
  * Recommendation environment for "PHP5.5" Windows.
- *      I am unknown.
+ *      I am unknown about this.
  *      However, "WindowsXP Professional (VC6)" is impossible for step execution.
  *
- * Recommendation environment and install command for "PHP5.3" Linux.
+ * Recommendation setting procedure for development of "XAMPP 1.7.4".
+ *      ### "XAMPP" setting procedure. ###
+ *      // We must disconnect inbound connection except "BOOTPC" and "DOMAIN" of "C:\WINDOWS\system32\svchost.exe" by firewall of a software.
+ *      // Disconnects outbound HTTP connection of Apache.
+ *      C:\xampp\apache\conf\httpd.conf
+ *      	before:
+ *  		Listen 80
+ *      	after:
+ *  		Listen 127.0.0.1:80
+ *      // Disconnects outbound SSL connection of Apache.
+ *      C:\xampp\apache\conf\extra\httpd-ssl.conf
+ *      	before:
+ *  		Listen 443
+ *      	after:
+ *  		Listen 127.0.0.1:443
+ *      // Changes the configuration file of "MySQLi".
+ *      C:\xampp\mysql\bin\my.ini
+ *              .
+ *              .
+ *              .
+ *          [mysqld]
+ *          default-storage-engine=innodb
+ *          character-set-server=utf8
+ *          collation-server=utf8_general_ci
+ *          # Ignores character sets information which was sent from client, so it uses character sets of default of server.
+ *          skip-character-set-client-handshake
+ *          # Database compression.
+ *          innodb_file_format=Barracuda
+ *          # Makes a file per table.
+ *          innodb_file_per_table=1
+ *              .
+ *              .
+ *              .
+ *          [mysqldump]
+ *          default-character-set=utf8
+ *              .
+ *              .
+ *              .
+ *          [mysql]
+ *          default-character-set=utf8
+ *              .
+ *              .
+ *              .
+ *      // Changes setting of "phpMyAdmin".
+ *          // Executes "C:\xampp\phpMyAdmin\scripts\create_tables.sql" import by "phpMyAdmin".
+ *          // Then, changes "C:\xampp\phpMyAdmin\config.inc.php" file.
+ *              before:
+ *              $cfg['Servers'][$i]['auth_type']     = 'http';      // Authentication method (config, http or cookie based)
+ *              $cfg['Servers'][$i]['password'] = '';
+ *              $cfg['Servers'][$i]['AllowNoPassword'] = true;
+ *              after:
+ *              $cfg['Servers'][$i]['auth_type']     = 'config';      // Authentication method (config, http or cookie based)
+ *              $cfg['Servers'][$i]['password'] = '<your password>';
+ *              //$cfg['Servers'][$i]['AllowNoPassword'] = true;
+ *              $cfg['Servers'][$i]['tracking'] = 'pma_tracking';
+ *              $cfg['Servers'][$i]['userconfig'] = 'pma_userconfig';
+ *      // Extensions which "phpMyAdmin" needs. ( Confirms by "phpinfo()" )
+ *          "zlib" or "bz2"
+ *          "mbstring"
+ *          "ctype"
+ *          "GD2"
+ *          "mcrypt"
+ *
+ *      ### "XDebug" setting procedure. ###
+ *      // Places "php_xdebug-2.1.2-5.3-vc6.dll" file ( last versions for this OS ) to "C:\xampp\php\ext\".
+ *      // Sets "C:\xampp\php\php.ini" file as follows.
+ *      zend_extension = "C:\xampp\php\ext\php_xdebug-2.1.2-5.3-vc6.dll"
+ *      // Then, use this package.
+ *
+ * Recommendation environment for "PHP5.3" Linux.
  *      "Ubuntu12.04LTS desktop" + "This Ubuntu's LAMP" + "This Ubuntu's XDebug".
- *      Because following command controls version of "LAMP" and "XDebug" for OS.
- *      sudo apt-get install tasksel
- *      sudo tasksel install lamp-server
- *      sudo apt-get install php-pear
- *      sudo apt-get install php5-xdebug
- *      // Disconnects an access from remote.
- *      gksudu gedit /etc/apache2/ports.conf
- *          // before:
- *              Listen 80
- *          // after:
- *              Listen 127.0.0.1:80
+ *      Because "apt-get" command controls version of "LAMP", "phpMyAdmin" and "XDebug" for OS.
+ *      Therefore, we can do step execution.
  * Recommendation environment for "PHP5.4" Linux.
  *      "Ubuntu14.04LTS desktop" + "This Ubuntu's LAMP" + "This Ubuntu's XDebug".
  * Recommendation environment for "PHP5.5" Linux.
  *      "From 'Ubuntu14.10 desktop' until 'Ubuntu16.04LTS desktop'" + "This Ubuntu's LAMP" + "This Ubuntu's XDebug".
  *
- * Notice: Use "phpMyAdmin" to see database and to execute "MySQL" command.
+ * Recommendation setting procedure for development of "Ubuntu12.04LTS desktop".
+ *      ### Uninstalling procedure. ###
+ *      // Uninstalls "PEAR".
+ *      sudo apt-get purge php-pear
+ *      // Uninstalls "phpMyAdmin".
+ *      sudo apt-get purge phpmyadmin
+ *      // Uninstalls "LAMP".
+ *      sudo tasksel remove lamp-server
+ *
+ *      ### installing procedure. ###
+ *      // Installs "LAMP".
+ *      sudo apt-get update
+ *      sudo apt-get install tasksel
+ *      sudo tasksel install lamp-server
+ *      // Installs "phpMyAdmin".
+ *      sudo apt-get install phpmyadmin
+ *      sudo firefox "/usr/share/doc/phpmyadmin/Documentation.html"
+ *      // Installs "PEAR".
+ *      sudo apt-get install php-pear
+ *      // Deletes unnecessary package.
+ *      sudo apt-get autoremove
+ *
+ *      ### "LAMPP" setting procedure. ###
+ *      // Disconnects inbound connection by using "ufw".
+ *          // Enables firewall.
+ *          sudo ufw enable
+ *          // Disconnects inbound connection.
+ *          sudo ufw default DENY
+ *          // Disables logging.
+ *          sudo ufw logging off
+ *          // Confirms status of firewall.
+ *          sudo ufw status verbose
+ *      // Disconnects outbound connection of Apache and enables SSL of Apache.
+ *      gksudo gedit /etc/apache2/ports.conf
+ *          // before:
+ *          Listen 80
+ *          // after:
+ *          Listen 127.0.0.1:80
+ *          // before:
+ *          Listen 443
+ *          // after:
+ *          NameVirtualHost *:443
+ *          Listen 127.0.0.1:443
+ *      // Sets user and group of Apache, and sets symbolic link to "phpMyAdmin".
+ *      gksudo gedit /etc/apache2/httpd.conf
+ *          User <your user name>
+ *          Group <your group name>
+ *
+ *          Alias /phpmyadmin "/usr/share/phpmyadmin"
+ *          <Directory "/usr/share/phpmyadmin/">
+ *              Options MultiViews FollowSymLinks
+ *              AllowOverride None
+ *              Order deny,allow
+ *              Deny from all
+ *              Allow from 127.0.0.1
+ *          </Directory>
+ *      // Sets "MySQLi".
+ *      gksudo gedit /etc/mysql/my.cnf
+ *              .
+ *              .
+ *              .
+ *          [mysqld]
+ *          default-storage-engine=innodb
+ *          character-set-server=utf8
+ *          collation-server=utf8_general_ci
+ *          # Ignores character sets information which was sent from client, so it uses character sets of default of server.
+ *          skip-character-set-client-handshake
+ *          # Database compression.
+ *          innodb_file_format=Barracuda
+ *          # Makes a file per table.
+ *          innodb_file_per_table=1
+ *              .
+ *              .
+ *              .
+ *          [mysqldump]
+ *          default-character-set=utf8
+ *              .
+ *              .
+ *              .
+ *          [mysql]
+ *          default-character-set=utf8
+ *              .
+ *              .
+ *              .
+ *      // Changes setting of "phpMyAdmin".
+ *          // Executes "/usr/share/doc/phpmyadmin/examples/create_tables_sql.gz" import by "phpMyAdmin".
+ *          // Copies the sample configuration file to configuration file.
+ *          sudo cp /usr/share/phpmyadmin/config.sample.inc.php /etc/phpmyadmin/config.inc.php
+ *          // Edits the configuration file.
+ *          sudo gedit /etc/phpmyadmin/config.inc.php
+ *              before:
+ *              $cfg['Servers'][$i]['auth_type'] = 'cookie';
+ *              after:
+ *          	$cfg['Servers'][$i]['auth_type']     = 'config';
+ *          	$cfg['Servers'][$i]['user']          = 'root';
+ *          	$cfg['Servers'][$i]['password']      = 'wasapass'; // use here your password
+ *          	before:
+ *          	//$cfg['Servers'][$i]['pmadb'] = 'phpmyadmin';
+ *          	//$cfg['Servers'][$i]['bookmarktable'] = 'pma_bookmark';
+ *          	//$cfg['Servers'][$i]['relation'] = 'pma_relation';
+ *          	//$cfg['Servers'][$i]['table_info'] = 'pma_table_info';
+ *          	//$cfg['Servers'][$i]['table_coords'] = 'pma_table_coords';
+ *          	//$cfg['Servers'][$i]['pdf_pages'] = 'pma_pdf_pages';
+ *          	//$cfg['Servers'][$i]['column_info'] = 'pma_column_info';
+ *          	//$cfg['Servers'][$i]['history'] = 'pma_history';
+ *          	//$cfg['Servers'][$i]['tracking'] = 'pma_tracking';
+ *          	//$cfg['Servers'][$i]['designer_coords'] = 'pma_designer_coords';
+ *          	//$cfg['Servers'][$i]['userconfig'] = 'pma_userconfig';
+ *          	after:
+ *          	$cfg['Servers'][$i]['pmadb'] = 'phpmyadmin';
+ *          	$cfg['Servers'][$i]['bookmarktable'] = 'pma_bookmark';
+ *          	$cfg['Servers'][$i]['relation'] = 'pma_relation';
+ *          	$cfg['Servers'][$i]['table_info'] = 'pma_table_info';
+ *          	$cfg['Servers'][$i]['table_coords'] = 'pma_table_coords';
+ *          	$cfg['Servers'][$i]['pdf_pages'] = 'pma_pdf_pages';
+ *          	$cfg['Servers'][$i]['column_info'] = 'pma_column_info';
+ *          	$cfg['Servers'][$i]['history'] = 'pma_history';
+ *          	$cfg['Servers'][$i]['tracking'] = 'pma_tracking';
+ *          	$cfg['Servers'][$i]['designer_coords'] = 'pma_designer_coords';
+ *          	$cfg['Servers'][$i]['userconfig'] = 'pma_userconfig';
+ *      // Extensions which "phpMyAdmin" needs. ( Confirms by "phpinfo()" )
+ *          "zlib" or "bz2"
+ *          "mbstring"
+ *          "ctype"
+ *          "GD2"
+ *          "mcrypt"
+ *      // Creates a document root.
+ *      mkdir ~/private-www
+ *      // Copies the default virtual host setting file to new file "mysite".
+ *      sudo cp /etc/apache2/sites-available/default /etc/apache2/sites-available/mysite
+ *      // Copies the default SSL virtual host setting file to new file "mysite-ssl".
+ *      sudo cp /etc/apache2/sites-available/default-ssl /etc/apache2/sites-available/mysite-ssl
+ *      // Edits the "mysite" file.
+ *      gksudo gedit /etc/apache2/sites-available/mysite
+ *          // before:
+ *          DocumentRoot /var/www
+ *          // after:
+ *          DocumentRoot /home/<your user name>/private-www
+ *          // before:
+ *          <Directory /var/www/>
+ *          // after:
+ *          <Directory /home/<your user name>/private-www/>
+ *      // Edits the "mysite-ssl" file.
+ *      gksudo gedit /etc/apache2/sites-available/mysite-ssl
+ *          // before:
+ *          <VirtualHost _default_:443>
+ *          // after:
+ *          <VirtualHost *:443>
+ *          // before:
+ *          DocumentRoot /var/www
+ *          // after:
+ *          DocumentRoot /home/<your user name>/private-www
+ *          // before:
+ *          <Directory /var/www/>
+ *          // after:
+ *          <Directory /home/<your user name>/private-www/>
+ *      // Disables default virtual host and enables new virtual host.
+ *      sudo a2dissite default && sudo a2ensite mysite
+ *      // Disables default SSL virtual host and enables new SSL virtual host.
+ *      sudo a2dissite default-ssl && sudo a2ensite mysite-ssl
+ *      // // Readjusts the root user password of "MySQLi". ( If necessary )
+ *      // mysql -u root -p
+ *      // mysql>SET PASSWORD FOR 'root'@'localhost' = PASSWORD('<your password>');
+ *
+ *      ### "XDebug" setting procedure. ###
+ *      // Installs "XDebug" package.
+ *      sudo apt-get install php5-xdebug
+ *      // Displays the file path of "xdebug.so".
+ *      sudo find "/usr/lib/php5" -name "xdebug.so"
+ *      // Adds setting of "XDebug" package to "php.ini" file.
+ *      gksudo gedit /etc/php5/apache2/php.ini
+ *          [xdebug]
+ *          zend_extension = "/usr/lib/php5/<DATE+lfs>/xdebug.so"
+ *          xdebug.remote_enable = 1
+ *          xdebug.remote_handler = dbgp
+ *          xdebug.remote_mode = req
+ *          xdebug.remote_host = 127.0.0.1
+ *          xdebug.remote_port = 9000
+ *      // Confirms by CLI.
+ *      php -v
+ *      // Confirms by CGI.
+ *      gedit ~/private-www/index.php
+ *          <?php phpinfo(); ?>
+ *      firefox "localhost"
+ *      // Then, use this package.
+ *
+ *      ### Execution file creation. ###
+ *      // Creates Apache execution file.
+ *      gedit ~/<desktop>/Apache.sh
+ *          #!/bin/bash
+ *          # Restarts Apache.
+ *          sudo service apache2 restart
+ *          # Stands by at this line until input.
+ *          read Wait
+ *          # Stops Apache.
+ *          sudo service apache2 stop
+ *      // Creates "MySQLi" execution file.
+ *      gedit ~/<desktop>/MySQLi.sh
+ *          #!/bin/bash
+ *          # Restarts Apache.
+ *          sudo service apache2 restart
+ *          # Restarts "MySQLi".
+ *          sudo service mysql restart
+ *          # Stands by at this line until input.
+ *          read Wait
+ *          # Stops "MySQLi".
+ *          sudo service mysql stop
+ *          # Stops Apache.
+ *          sudo service apache2 stop
+ *      // Creates "phpMyAdmin" execution file.
+ *      gedit ~/<desktop>/phpMyAdmin.sh
+ *          #!/bin/bash
+ *          # Restarts Apache.
+ *          sudo service apache2 restart
+ *          # Restarts "MySQLi".
+ *          sudo service mysql restart
+ *          # Starts "phpMyAdmin".
+ *          sudo firefox "localhost/phpmyadmin/"
+ *          # Stands by at this line until input.
+ *          read Wait
+ *          # Stops "MySQLi".
+ *          sudo service mysql stop
+ *          # Stops Apache.
+ *          sudo service apache2 stop
+ *      // Makes created shell files executable.
+ *      find ~/<desktop>/ -type f -regex ".+\.sh" -exec sudo chmod 0700 {} \;
  *
  * ### Recommendation file cache extention of production server. ###
  * I recommend "Zend OPcache" extention.

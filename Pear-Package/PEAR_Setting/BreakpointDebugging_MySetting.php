@@ -45,6 +45,7 @@
 use \BreakpointDebugging as B;
 
 global $_BreakpointDebugging_EXE_MODE;
+
 // $_BreakpointDebugging_EXE_MODE = 2; // ### We must enable this line for security if you release to production server because URL query character string may be changed.
 /**
  * Sets execution mode.
@@ -164,6 +165,7 @@ require_once 'BreakpointDebugging.php'; // 'BreakpointDebugging.php' must requir
  *
  * @return void
  */
+
 function BreakpointDebugging_mySetting()
 {
     $exeMode = B::getStatic('$exeMode');
@@ -178,9 +180,12 @@ function BreakpointDebugging_mySetting()
     $timezone = 'Asia/Tokyo';
     $SMTP = '<Your SMTP server>';
     $sendmailFrom = '<Your Windows mail address>';
-
     $userName = &B::refStatic('$_userName');
     $userName = 'hidenori'; // Please, set your username.
+    if (get_current_user() !== $userName) {
+        exit('<pre>' . htmlspecialchars('You must set "User <your user name>" and "Group <your group name>" of "httpd.conf" file.', ENT_QUOTES)
+        . PHP_EOL . 'Or, you must set $userName of "' . __FILE__ . '" file.</pre>');
+    }
     // PHP It limits directory which opens a file.
     if (BREAKPOINTDEBUGGING_IS_WINDOWS) { // In case of Windows.
         $openBasedir = 'C:\xampp\;.\\;' . sys_get_temp_dir();
@@ -189,7 +194,8 @@ function BreakpointDebugging_mySetting()
             $openBasedir = '/usr/local/php5.3/php/:/home/users/2/lolipop.jp-92350a29e84a878a/web/:./:' . sys_get_temp_dir();
             // $openBasedir = '/opt/lampp/:./:' . sys_get_temp_dir(); // Emulates remote by local host.
         } else { // In case of local.
-            $openBasedir = '/opt/lampp/:./:' . sys_get_temp_dir();
+            //$openBasedir = '/opt/lampp/:./:' . sys_get_temp_dir();
+            $openBasedir = '/usr/share/php/:./:' . sys_get_temp_dir();
         }
     }
     // Maximum log file sum mega byte size. Recommendation size is 1 MB.
@@ -201,7 +207,7 @@ function BreakpointDebugging_mySetting()
     // Maximum log parameter nesting level. Default is 20. (1-100)
     // $maxLogParamNestingLevel = &B::refStatic('$_maxLogParamNestingLevel');
     // $maxLogParamNestingLevel = 20;
-    // Maximum count of elements in log. (Maximum number of parameter, array elements and call-stack) Default is count($_SERVER). (1-100)
+    // Maximum count     B::assert(get_current_user() === $userName);of elements in log. (Maximum number of parameter, array elements and call-stack) Default is count($_SERVER). (1-100)
     // $maxLogElementNumber = &B::refStatic('$_maxLogElementNumber');
     // $maxLogElementNumber = count($_SERVER);
     // Maximum string type byte-count of log. Default is 3000. (1-)
@@ -345,5 +351,4 @@ function BreakpointDebugging_mySetting()
 }
 
 BreakpointDebugging_mySetting();
-
 ?>
