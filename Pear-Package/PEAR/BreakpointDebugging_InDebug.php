@@ -41,6 +41,10 @@
  * Recommendation setting procedure for development of "XAMPP 1.7.4".
  *      ### "XAMPP" setting procedure. ###
  *      // We must disconnect inbound connection except "BOOTPC" and "DOMAIN" of "C:\WINDOWS\system32\svchost.exe" by firewall of a software.
+ *      // Disable "IIS" server because port 80 conflicts with "Apache".
+ *      // Create "lang.tmp" file. ( In case of Japan )
+ *      C:\xampp\htdocs\xampp\lang.tmp
+ *      	ja
  *      // Disconnect outbound HTTP connection of Apache.
  *      C:\xampp\apache\conf\httpd.conf
  *      	before:
@@ -91,7 +95,7 @@
  *              after:
  *              $cfg['Servers'][$i]['auth_type']     = 'config';      // Authentication method (config, http or cookie based)
  *              $cfg['Servers'][$i]['password'] = '<your password>';
- *              //$cfg['Servers'][$i]['AllowNoPassword'] = true;
+ *              // $cfg['Servers'][$i]['AllowNoPassword'] = true;
  *              $cfg['Servers'][$i]['tracking'] = 'pma_tracking';
  *              $cfg['Servers'][$i]['userconfig'] = 'pma_userconfig';
  *      // Extensions which "phpMyAdmin" needs. ( Confirms by "phpinfo()" )
@@ -213,17 +217,17 @@
  *          	$cfg['Servers'][$i]['user']          = 'root';
  *          	$cfg['Servers'][$i]['password']      = 'wasapass'; // use here your password
  *          	before:
- *          	//$cfg['Servers'][$i]['pmadb'] = 'phpmyadmin';
- *          	//$cfg['Servers'][$i]['bookmarktable'] = 'pma_bookmark';
- *          	//$cfg['Servers'][$i]['relation'] = 'pma_relation';
- *          	//$cfg['Servers'][$i]['table_info'] = 'pma_table_info';
- *          	//$cfg['Servers'][$i]['table_coords'] = 'pma_table_coords';
- *          	//$cfg['Servers'][$i]['pdf_pages'] = 'pma_pdf_pages';
- *          	//$cfg['Servers'][$i]['column_info'] = 'pma_column_info';
- *          	//$cfg['Servers'][$i]['history'] = 'pma_history';
- *          	//$cfg['Servers'][$i]['tracking'] = 'pma_tracking';
- *          	//$cfg['Servers'][$i]['designer_coords'] = 'pma_designer_coords';
- *          	//$cfg['Servers'][$i]['userconfig'] = 'pma_userconfig';
+ *          	// $cfg['Servers'][$i]['pmadb'] = 'phpmyadmin';
+ *          	// $cfg['Servers'][$i]['bookmarktable'] = 'pma_bookmark';
+ *          	// $cfg['Servers'][$i]['relation'] = 'pma_relation';
+ *          	// $cfg['Servers'][$i]['table_info'] = 'pma_table_info';
+ *          	// $cfg['Servers'][$i]['table_coords'] = 'pma_table_coords';
+ *          	// $cfg['Servers'][$i]['pdf_pages'] = 'pma_pdf_pages';
+ *          	// $cfg['Servers'][$i]['column_info'] = 'pma_column_info';
+ *          	// $cfg['Servers'][$i]['history'] = 'pma_history';
+ *          	// $cfg['Servers'][$i]['tracking'] = 'pma_tracking';
+ *          	// $cfg['Servers'][$i]['designer_coords'] = 'pma_designer_coords';
+ *          	// $cfg['Servers'][$i]['userconfig'] = 'pma_userconfig';
  *          	after:
  *          	$cfg['Servers'][$i]['pmadb'] = 'phpmyadmin';
  *          	$cfg['Servers'][$i]['bookmarktable'] = 'pma_bookmark';
@@ -444,7 +448,7 @@
  *      to "const BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME" directory of your project directory.
  * Procedure 5: Edit BreakpointDebugging_MySetting*.php for customize.
  *      Then, it fixes part setting about all execution modes.
- *      Especially, "$_BreakpointDebugging_EXE_MODE = 2;" is important to security in case of production server.
+ *      Especially, "define('BREAKPOINTDEBUGGING_IS_PRODUCTION', true);" is important to security in case of production server.
  * Procedure 6: Copy following in your project php code.
  *      require_once './BreakpointDebugging_Inclusion.php';
  * Procedure 7: Check debugging-mode using "B::checkExeMode()" in start page,
@@ -459,7 +463,7 @@
  *          "\BreakpointDebugging_PHPUnit::executeUnitTest()" and
  *          "\BreakpointDebugging_PHPUnit::displayCodeCoverageReport()"
  *      of "BreakpointDebugging_PHPUnit" package before release.
- *      Then, we must enable "$_BreakpointDebugging_EXE_MODE = 2;" of "BreakpointDebugging_MySetting.php" in case of production server use.
+ *      Then, we must enable "define('BREAKPOINTDEBUGGING_IS_PRODUCTION', true);" of "BreakpointDebugging_MySetting.php" in case of production server use.
  *      Because server must not display "XDebug" and error logging information.
  * Procedure 8: If you can change "php.ini" file,
  *      use "B::iniCheck()" instead of "B::iniSet()" in "*_MySetting.php" file,
@@ -583,7 +587,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
     /**
      * @var array Setting option filenames.
      */
-    private static $_onceFlag = array ();
+    private static $_onceFlagPerPackageInDebug = array ();
 
     /**
      * @var string Include-paths.
@@ -606,7 +610,6 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
         parent::$staticProperties['$_includePaths'] = &self::$_includePaths;
         parent::$staticPropertyLimitings['$exeMode'] = 'BreakpointDebugging_PHPUnit.php';
         $tmp = BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php';
-        parent::$staticPropertyLimitings['$_userName'] = $tmp;
         parent::$staticPropertyLimitings['$_maxLogFileByteSize'] = $tmp;
         parent::$staticPropertyLimitings['$_maxLogParamNestingLevel'] = $tmp;
         parent::$staticPropertyLimitings['$_maxLogElementNumber'] = $tmp;
@@ -627,11 +630,15 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      */
     static function checkSuperUserExecution()
     {
+        if (BREAKPOINTDEBUGGING_IS_WINDOWS) { // In case of Windows.
+            return;
+        }
+        $processUser = posix_getpwuid(posix_geteuid());
         // If this is remote debug, unix and root user.
         if (BA::$exeMode === B::REMOTE //
             && !BREAKPOINTDEBUGGING_IS_WINDOWS //
-            //&& trim(`echo \$USER`) === 'root' //
-            && trim(`printenv USER`) === 'root' //
+            //&& trim(`printenv USER`) === 'root' //
+            && $processUser['name'] === 'root' //
         ) {
             parent::windowVirtualOpen(parent::ERROR_WINDOW_NAME, parent::getErrorHtmlFileTemplate());
             B::windowHtmlAddition(B::ERROR_WINDOW_NAME, 'pre', 0, 'Security warning: Recommends to change to "Apache HTTP Server" which Supported "suEXEC" because this "Apache HTTP Server" is executed by "root" user.');
@@ -1121,47 +1128,13 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
         $getValue = ini_get($phpIniVariable);
         if ($setValue !== $getValue) {
             // In case of remote debug.
-            if ($doCheck === true //
-                && (BA::$exeMode & B::REMOTE) //
-                && isset($_SERVER['SERVER_ADDR']) // In case of common gateway.
-            ) {
-                $backTrace = debug_backtrace();
-                $baseName = basename($backTrace[0]['file']);
-                $cmpName = '_MySetting_InDebug.php';
-                if (BREAKPOINTDEBUGGING_IS_WINDOWS) {
-                    $baseName = strtolower($baseName);
-                    $cmpName = strtolower($cmpName);
-                }
-                $cmpNameLength = strlen($cmpName);
-                if (!substr_compare($baseName, $cmpName, 0 - $cmpNameLength, $cmpNameLength, true)) {
-                    // @codeCoverageIgnoreStart
-                    echo '<body style="background-color:black;color:white">';
-                    $notExistFlag = true;
-                    foreach (self::$_onceFlag as $cmpName) {
-                        if (!strcmp($baseName, $cmpName)) {
-                            $notExistFlag = false;
-                            break;
-                        }
-                    }
-                    if ($notExistFlag) {
-                        self::$_onceFlag[] = $baseName;
-                        $packageName = substr($baseName, 0, 0 - $cmpNameLength);
-                        echo <<<EOD
-<pre>
-### "\BreakpointDebugging::iniSet()": You must copy from "./{$packageName}_MySetting_InDebug.php" to user place folder of "./{$packageName}_MySetting.php" for release because set value and value of php.ini differ.
+            if ($doCheck === true) {
+                $dirName = BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME;
+                $displayString = <<<EOD
+### "\BreakpointDebugging::iniSet()": You must copy from "{$dirName}[package name]_MySetting_InDebug.php" to user place folder of "{$dirName}[package name]_MySetting.php" for release because set value and value of php.ini differ.
 ### Also, if remote "php.ini" was changed, you must redo remote debug mode.
-</pre>
 EOD;
-                    }
-                    echo <<<EOD
-<pre>
-	file: {$backTrace[0]['file']}
-	line: {$backTrace[0]['line']}
-</pre>
-EOD;
-                    echo '</body>';
-                }
-                // @codeCoverageIgnoreEnd
+                parent::ini('_MySetting_InDebug.php', self::$_onceFlagPerPackageInDebug, $displayString);
             }
             if (ini_set($phpIniVariable, $setValue) === false) {
                 throw new \BreakpointDebugging_ErrorException('"ini_set()" failed.', 101);

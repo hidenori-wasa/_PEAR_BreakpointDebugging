@@ -54,11 +54,11 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_PHPUnit_FrameworkTest
      */
     function testRefAndGetStatic()
     {
-        $userName = &B::refStatic('$_userName');
-        parent::assertTrue($userName !== 'hidenori_hidenori');
-        $userName = 'hidenori_hidenori';
-        parent::assertTrue($userName === 'hidenori_hidenori');
-        parent::assertTrue(B::getStatic('$_userName') === 'hidenori_hidenori');
+        $developerIP = &B::refStatic('$_developerIP');
+        parent::assertTrue($developerIP !== 'hidenori_hidenori');
+        $developerIP = 'hidenori_hidenori';
+        parent::assertTrue($developerIP === 'hidenori_hidenori');
+        parent::assertTrue(B::getStatic('$_developerIP') === 'hidenori_hidenori');
     }
 
     /**

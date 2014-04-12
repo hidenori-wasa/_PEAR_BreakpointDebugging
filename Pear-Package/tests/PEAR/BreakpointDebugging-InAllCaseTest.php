@@ -62,13 +62,6 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_PHPUnit_Fra
         $compareArray = function($expectedGlobals, $resultElement) {
             foreach ($expectedGlobals as $key => $expectedGlobal) {
                 if (is_array($expectedGlobal)) {
-                    //if (empty($expectedGlobal)) {
-                    //    T::assertTrue(empty($resultElement[$key]));
-                    //    continue;
-                    //}
-                    //foreach ($expectedGlobal as $key2 => $expectedElement) {
-                    //    T::assertTrue($expectedElement === $resultElement[$key][$key2]);
-                    //}
                     $tmp = array_diff($expectedGlobal, $resultElement[$key]);
                     T::assertTrue(empty($tmp));
                     $tmp = array_diff($resultElement[$key], $expectedGlobal);
@@ -173,11 +166,11 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_PHPUnit_Fra
      */
     function testRefAndGetStatic()
     {
-        $userName = &BA::refStatic('$_userName');
-        parent::assertTrue($userName !== 'hidenori_hidenori');
-        $userName = 'hidenori_hidenori';
-        parent::assertTrue($userName === 'hidenori_hidenori');
-        parent::assertTrue(BA::getStatic('$_userName') === 'hidenori_hidenori');
+        $developerIP = &BA::refStatic('$_developerIP');
+        parent::assertTrue($developerIP !== '111.222.333.444');
+        $developerIP = '111.222.333.444';
+        parent::assertTrue($developerIP === '111.222.333.444');
+        parent::assertTrue(BA::getStatic('$_developerIP') === '111.222.333.444');
     }
 
     /**

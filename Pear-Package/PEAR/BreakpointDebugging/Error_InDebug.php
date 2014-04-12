@@ -88,40 +88,25 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_Error_InAllCa
         // When "Xdebug" exists.
         if (B::getXebugExists()) {
             $this->tags['pre'] = '<pre class=\'xdebug-var-dump\' dir=\'ltr\'>';
-            //$this->tags['font']['caution'] = '<font color=\'#ff8080\'>';
             $this->tags['font']['caution'] = '<span style="color:#ff8080;">';
-            //$this->tags['font']['bool'] = '<font color=\'#ff80ff\'>';
             $this->tags['font']['bool'] = '<span style="color:#ff80ff;">';
-            //$this->tags['font']['int'] = '<font color=\'lime\'>';
             $this->tags['font']['int'] = '<span style="color:lime;">';
-            //$this->tags['font']['float'] = '<font color=\'#ffc000\'>';
             $this->tags['font']['float'] = '<span style="color:#ffc000;">';
-            //$this->tags['font']['string'] = '<font color=\'yellow\'>';
             $this->tags['font']['string'] = '<span style="color:yellow;">';
-            //$this->tags['font']['null'] = '<font color=\'#8080ff\'>';
             $this->tags['font']['null'] = '<span style="color:#8080ff;">';
-            //$this->tags['font']['resource'] = '<font color=\'#c0c0ff\'>';
             $this->tags['font']['resource'] = '<span style="color:#c0c0ff;">';
-            //$this->tags['font']['=>'] = '<font color=\'silver\'>';
             $this->tags['font']['=>'] = '<span style="color:silver;">';
-            //$this->tags['/font'] = '</font>';
             $this->tags['/font'] = '</span>';
-            //$this->tags['small'] = '<small>';
             $this->tags['small'] = '<span style="font-size:small;">';
-            //$this->tags['/small'] = '</small>';
             $this->tags['/small'] = '</span>';
         } else { // When "Xdebug" does not exist.
             $this->tags['pre'] = '<pre>';
             $this->setHTMLTags($this->tags);
         }
         $this->tags['/pre'] = '</pre>';
-        //$this->tags['i'] = '<i>';
         $this->tags['i'] = '<span style="font-style:italic;">';
-        //$this->tags['/i'] = '</i>';
         $this->tags['/i'] = '</span>';
-        //$this->tags['b'] = '<b>';
         $this->tags['b'] = '<span style="font-weight:bold;">';
-        //$this->tags['/b'] = '</b>';
         $this->tags['/b'] = '</span>';
         if (B::getStatic('$exeMode') & B::UNIT_TEST) {
             $this->tags['uint test anchor href'] = $this->uintTestAnchorHref;

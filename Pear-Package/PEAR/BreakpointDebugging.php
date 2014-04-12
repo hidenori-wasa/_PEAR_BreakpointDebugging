@@ -145,11 +145,6 @@ abstract class BreakpointDebugging_InAllCase
     private static $_xdebugExists;
 
     /**
-     * @var stirng Your username.
-     */
-    private static $_userName = '';
-
-    /**
      * @var string Developer IP for remote error log file manager, remote code coverage report display and remote unit test.
      */
     private static $_developerIP = '127.0.0.1';
@@ -241,6 +236,16 @@ abstract class BreakpointDebugging_InAllCase
      *           $pPipe = popen('php -f example.php -- ' . $queryString . ' &', 'r'); // For Unix.
      */
     private static $_get;
+
+    /**
+     * @var string The display character string for production server performance.
+     */
+    protected static $iniDisplayString;
+
+    /**
+     * @var array Setting option filenames.
+     */
+    protected static $onceFlagPerPackage = array ();
 
     ///////////////////////////// For package user from here. /////////////////////////////
     /**
@@ -429,7 +434,7 @@ You must set
     "BREAKPOINTDEBUGGING_MODE=DEBUG_UNIT_TEST" or
     "BREAKPOINTDEBUGGING_MODE=RELEASE_UNIT_TEST"
 to this project execution parameter.
-Or, comment out "\$_BreakpointDebugging_EXE_MODE = 2;" of "{$pearSettingDirName}BreakpointDebugging_MySetting.php".
+Or, set "define('BREAKPOINTDEBUGGING_IS_PRODUCTION', false);" of "{$pearSettingDirName}BreakpointDebugging_MySetting.php".
 EOD;
             self::windowHtmlAddition(self::ERROR_WINDOW_NAME, 'pre', 0, '<b>' . $errorMessage . '</b>');
             exit;
@@ -533,6 +538,10 @@ EOD;
             var_dump($value);
 
             self::windowHtmlAddition(self::ERROR_WINDOW_NAME, 'pre', 0, ob_get_clean());
+        } else {
+            if (self::$exeMode & self::RELEASE) { // In case of release mode.
+                self::ini('_MySetting.php', self::$onceFlagPerPackage, self::$iniDisplayString);
+            }
         }
     }
 
@@ -959,7 +968,7 @@ EOD;
     /**
      * Clears recursive array element.
      *
-     * @param mixed &$recursiveArray Recursive array. Keeps reference to this-variable by reference copy.
+     * @param mixed &$recursiveArray Recursive array. Keeps reference to this-variable by reference copy. CAUTION: This array is changed.
      *
      * @return mixed Array which changed.
      */
@@ -1157,6 +1166,55 @@ EOD;
 
     ///////////////////////////// For package user until here. /////////////////////////////
     /**
+     * For "self::iniSet()" and "self::iniCheck()".
+     *
+     * @param string $cmpNameSuffix       Comparison file name suffix.
+     * @param array  &$onceFlagPerPackage Once flag per package.
+     * @param string $displayString       A display string.
+     *
+     * @return void
+     */
+    protected static function ini($cmpNameSuffix, &$onceFlagPerPackage, $displayString)
+    {
+        if ((BA::$exeMode & B::REMOTE) // In case of remote server.
+            && isset($_SERVER['SERVER_ADDR']) // In case of common gateway.
+        ) {
+            $backTrace = debug_backtrace();
+            $baseName = basename($backTrace[1]['file']);
+            $cmpNameLength = strlen($cmpNameSuffix);
+            if (!substr_compare($baseName, $cmpNameSuffix, 0 - $cmpNameLength, $cmpNameLength, true)) {
+                // @codeCoverageIgnoreStart
+                echo '<body style="background-color:black;color:white">';
+                $notExistFlag = true;
+                foreach ($onceFlagPerPackage as $cmpNameSuffix) {
+                    if (!strcmp($baseName, $cmpNameSuffix)) {
+                        $notExistFlag = false;
+                        break;
+                    }
+                }
+                if ($notExistFlag) {
+                    $onceFlagPerPackage[] = $baseName;
+                    $packageName = substr($baseName, 0, 0 - $cmpNameLength);
+                    echo <<<EOD
+<pre>
+[package name] = $packageName
+$displayString
+</pre>
+EOD;
+                }
+                echo <<<EOD
+<pre>
+	file: {$backTrace[1]['file']}
+	line: {$backTrace[1]['line']}
+</pre>
+EOD;
+                echo '</body>';
+            }
+            // @codeCoverageIgnoreEnd
+        }
+    }
+
+    /**
      * Gets error HTML template.
      *
      * @return string Error HTML template.
@@ -1195,7 +1253,6 @@ EOD;
         self::$_nativeExeMode = self::$exeMode = $_BreakpointDebugging_EXE_MODE;
         unset($GLOBALS['_BreakpointDebugging_EXE_MODE']);
         self::$staticProperties['$exeMode'] = &self::$exeMode;
-        self::$staticProperties['$_userName'] = &self::$_userName;
         self::$staticProperties['$_developerIP'] = &self::$_developerIP;
         self::$staticProperties['$_maxLogFileByteSize'] = &self::$_maxLogFileByteSize;
         self::$staticProperties['$_maxLogParamNestingLevel'] = &self::$_maxLogParamNestingLevel;
@@ -1207,6 +1264,11 @@ EOD;
         self::$staticProperties['$_callingExceptionHandlerDirectly'] = &self::$_callingExceptionHandlerDirectly;
         self::$staticProperties['$_valuesToTrace'] = &self::$_valuesToTrace;
         self::$staticProperties['$_notFixedLocations'] = &self::$_notFixedLocations;
+        $dirName = BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME;
+        self::$iniDisplayString = <<<EOD
+### "\BreakpointDebugging::iniSet()" or "\BreakpointDebugging::iniCheck()": You must comment out following line of "{$dirName}[package name]_MySetting.php" because set value and value of php.ini is same.
+### Also, if remote "php.ini" was changed, you must redo remote release mode.
+EOD;
     }
 
     /**
@@ -1409,8 +1471,13 @@ if ($_BreakpointDebugging_EXE_MODE & BA::RELEASE) { // In case of release.
      * @version  Release: @package_version@
      * @link     http://pear.php.net/package/BreakpointDebugging
      */
+
     abstract class BreakpointDebugging_Middle extends \BreakpointDebugging_InAllCase
     {
+//        /**
+//         * @var array Setting option filenames.
+//         */
+//        private static $_onceFlagPerPackage = array ();
         /**
          * Empties in release.
          *
@@ -1436,16 +1503,29 @@ if ($_BreakpointDebugging_EXE_MODE & BA::RELEASE) { // In case of release.
         }
 
         /**
-         * "ini_set()" in release.
+         * "ini_set()" with validation except for production mode.
+         * Sets with "ini_set()" because "php.ini" file and ".htaccess" file isn't sometimes possible to be set on sharing server.
          *
-         * @param string $phpIniVariable Same as "ini_set()".
-         * @param string $setValue       Same as "ini_set()".
+         * @param string $phpIniVariable "php.ini" variable.
+         * @param string $setValue       Value of variable.
          *
          * @return void
          */
         static function iniSet($phpIniVariable, $setValue)
         {
-            ini_set($phpIniVariable, $setValue);
+            if (BREAKPOINTDEBUGGING_IS_PRODUCTION) { // In case of production server.
+                ini_set($phpIniVariable, $setValue);
+            } else {
+                $getValue = ini_get($phpIniVariable);
+                // This displays to comment out it if "ini_set()" value is same "php.ini" value in case of remote release mode for production server performance.
+                if ($setValue === $getValue) {
+                    parent::ini('_MySetting.php', parent::$onceFlagPerPackage, parent::$iniDisplayString);
+                } else {
+                    if (ini_set($phpIniVariable, $setValue) === false) {
+                        throw new \BreakpointDebugging_ErrorException('"ini_set()" failed.', 101);
+                    }
+                }
+            }
         }
 
     }
@@ -1461,6 +1541,7 @@ if ($_BreakpointDebugging_EXE_MODE & BA::RELEASE) { // In case of release.
          * @version  Release: @package_version@
          * @link     http://pear.php.net/package/BreakpointDebugging
          */
+
         final class BreakpointDebugging extends \BreakpointDebugging_Middle
         {
             /**
@@ -1512,6 +1593,7 @@ if ($_BreakpointDebugging_EXE_MODE & BA::RELEASE) { // In case of release.
          * @version  Release: @package_version@
          * @link     http://pear.php.net/package/BreakpointDebugging
          */
+
         final class BreakpointDebugging extends \BreakpointDebugging_Middle
         {
 
@@ -1548,6 +1630,7 @@ B::initialize();
 if (B::getStatic('$exeMode') & BA::UNIT_TEST) { // In case of unit test.
     include_once 'BreakpointDebugging_PHPUnit.php';
 } else {
+
     /**
      * Dummy class for not unit test.
      *

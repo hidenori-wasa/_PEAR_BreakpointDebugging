@@ -44,8 +44,17 @@
  */
 use \BreakpointDebugging as B;
 
+// Please, set true or false value.
+    const BREAKPOINTDEBUGGING_IS_PRODUCTION = false; // In case of development.
+// const BREAKPOINTDEBUGGING_IS_PRODUCTION = true; // In case of production server release.
+
+if (preg_match('`^WIN`xXi', PHP_OS)) {
+    define('BREAKPOINTDEBUGGING_IS_WINDOWS', true);
+} else {
+    define('BREAKPOINTDEBUGGING_IS_WINDOWS', false);
+}
+
 global $_BreakpointDebugging_EXE_MODE;
-// $_BreakpointDebugging_EXE_MODE = 2; // ### We must enable this line for security if you release to production server because URL query character string may be changed.
 /**
  * Sets execution mode.
  *
@@ -59,8 +68,6 @@ function BreakpointDebugging_setExecutionMode()
     global $_BreakpointDebugging_EXE_MODE, $_BreakpointDebugging_get, $_BreakpointDebugging_argSeparatorOutput;
 
     $_BreakpointDebugging_argSeparatorOutput = '&amp;';
-    $REMOTE = 1;
-    $RELEASE = 2;
 
     if (isset($_SERVER['SERVER_ADDR'])) { // In case of common gateway.
         $_BreakpointDebugging_get = $_GET;
@@ -76,14 +83,29 @@ function BreakpointDebugging_setExecutionMode()
         }
     }
 
-    if ($_BreakpointDebugging_EXE_MODE === $RELEASE) { // In case of production server release.
+    if (BREAKPOINTDEBUGGING_IS_PRODUCTION === true) { // In case of production server release.
         if (array_key_exists('BREAKPOINTDEBUGGING_MODE', $_BreakpointDebugging_get)) {
             // Deletes "BREAKPOINTDEBUGGING_MODE" query variable.
             unset($_BreakpointDebugging_get['BREAKPOINTDEBUGGING_MODE']);
         }
-    } else {
+        $_BreakpointDebugging_EXE_MODE = 2; // For HTTP request query string attack counter-plan.
+    } else if (BREAKPOINTDEBUGGING_IS_PRODUCTION === false) { // In case of development.
+        // Checks PHP version.
+        if (version_compare(PHP_VERSION, '5.3', '<') || version_compare(PHP_VERSION, '5.5', '>=')) {
+            exit('<pre>PHP version must be "5.3.x" or "5.4.x".</pre>');
+        }
+        if (!BREAKPOINTDEBUGGING_IS_WINDOWS) { // In case of Unix.
+            $serverUser = posix_getpwuid(posix_geteuid());
+            $osUserName = get_current_user();
+            if ($serverUser['name'] !== $osUserName) { // If server user name is not OS user name.
+                exit('<pre>' . htmlspecialchars("You must set 'User $osUserName' and 'Group <your group name>' of 'httpd.conf' file.", ENT_QUOTES) . '</pre>');
+            }
+        }
         $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags($_BreakpointDebugging_get['BREAKPOINTDEBUGGING_MODE']);
+        $REMOTE = 1;
         // $_BreakpointDebugging_EXE_MODE |= $REMOTE; // Emulates remote by local host.
+    } else {
+        exit('<pre>"BREAKPOINTDEBUGGING_IS_PRODUCTION" of "' . __FILE__ . '" must be bool.</pre>');
     }
     // Reference path setting.
     $includePaths = explode(PATH_SEPARATOR, ini_get('include_path'));
@@ -91,13 +113,15 @@ function BreakpointDebugging_setExecutionMode()
     $includePaths[1] = './PEAR';
 
     // For debug. ===>
-    // if ($_BreakpointDebugging_EXE_MODE & $UNIT_TEST) {
-    //     $includePaths = array ('.', './PEAR', './PEAROtherPackage'); // For independence execution check.
-    // } else {
-    //     $includePaths = array ('.', './PEAR'); // For independence execution check.
-    // }
-    array_unshift($includePaths, $includePaths[0]);
-    $includePaths[1] = './PEAROtherPackage';
+    if (!BREAKPOINTDEBUGGING_IS_PRODUCTION) { // In case of not production server release.
+        // if ($_BreakpointDebugging_EXE_MODE & $UNIT_TEST) {
+        //     $includePaths = array ('.', './PEAR', './PEAROtherPackage'); // For independence execution check.
+        // } else {
+        //     $includePaths = array ('.', './PEAR'); // For independence execution check.
+        // }
+        array_unshift($includePaths, $includePaths[0]);
+        $includePaths[1] = './PEAROtherPackage';
+    }
     // <=== For debug.
 
     ini_set('include_path', implode(PATH_SEPARATOR, $includePaths));
@@ -169,23 +193,14 @@ function BreakpointDebugging_mySetting()
     $exeMode = B::getStatic('$exeMode');
     $REMOTE = 1;
 
-    // ### Item setting. ===>
+    // ### Please, set item. ===>
     $developerIP = &B::refStatic('$_developerIP');
-    // Please, enter developer IP address.
-    // However, comment out this when running code is local or running code does not use.
+    // Enter developer IP address for security.
     $developerIP = '127.0.0.1';
     $language = 'Japanese';
     $timezone = 'Asia/Tokyo';
     $SMTP = '<Your SMTP server>';
     $sendmailFrom = '<Your Windows mail address>';
-    $userName = &B::refStatic('$_userName');
-    $userName = 'hidenori'; // Please, set your username.
-    if (!BREAKPOINTDEBUGGING_IS_WINDOWS //
-        && get_current_user() !== $userName //
-    ) {
-        exit('<pre>' . htmlspecialchars('You must set "User <your user name>" and "Group <your group name>" of "httpd.conf" file.', ENT_QUOTES)
-            . PHP_EOL . 'Or, you must set $userName of "' . __FILE__ . '" file.</pre>');
-    }
     // PHP It limits directory which opens a file.
     if (BREAKPOINTDEBUGGING_IS_WINDOWS) { // In case of Windows.
         $openBasedir = 'C:\xampp\;.\\;' . sys_get_temp_dir();
@@ -217,22 +232,22 @@ function BreakpointDebugging_mySetting()
     // header('Content-type: text/html; charset=utf-8');
     // Set "mbstring.detect_order = UTF-8, UTF-7, ASCII, EUC-JP,SJIS, eucJP-win, SJIS-win, JIS, ISO-2022-JP" of "php.ini" file because this is purpose to define default value of character code detection.
     $result = mb_detect_order('UTF-8, UTF-7, ASCII, EUC-JP,SJIS, eucJP-win, SJIS-win, JIS, ISO-2022-JP');
-    B::assert($result, 101);
-    // This is work directory. "php_error_*.log" file is created in this directory.
-    // Warning: When you use existing log, it is destroyed if it is not "UTF-8". It is necessary to be a single character sets.
+    // B::assert($result, 101);
     $workDir = &B::refStatic('$_workDir');
+    // You can change work directory name.
     $workDir = './Work';
     if (is_dir($workDir)) {
-        B::chmod($workDir, 0700);
+        B::chmod($workDir, 0770);
     } else {
-        B::mkdir(array ($workDir, 0700));
+        B::mkdir(array ($workDir, 0770));
     }
     $workDir = realpath($workDir);
-    B::assert($workDir !== false, 102);
-    // ### <=== Item setting.
+    // B::assert($workDir !== false, 102);
+    // ### <=== Please, set item.
     //
     ////////////////////////////////////////////////////////////////////////////////
     // ### User place folder (Default is empty.) ###
+
     /* ### "Unix" Example. ===>
       // PHP It limits directory which opens a file.
       B::iniSet('open_basedir', $openBasedir);
@@ -306,17 +321,17 @@ function BreakpointDebugging_mySetting()
     // This changes "php.ini" file setting into "ignore_user_abort = Off" because it is purpose to end execution of script when client is disconnected.
     B::iniSet('ignore_user_abort', '');
     // ### <=== "Windows" Example. */
+    //
     // When "Zend OPcache" exists.
     if (extension_loaded('Zend OPcache')) {
         B::iniCheck('opcache.enable_cli', '0', 'Set "opcache.enable_cli = 0" of "php.ini" file because we cannot call CLI from CGI with "popen()".');
         B::iniCheck('opcache.validate_timestamps', '1', 'Set "opcache.validate_timestamps = 1" of "php.ini" file because we must cache modified "*.php" files.');
-        // In case of development.
-        if (array_key_exists('BREAKPOINTDEBUGGING_MODE', B::getStatic('$_get'))) {
-            B::iniCheck('opcache.file_update_protection', '0', 'Set "opcache.file_update_protection = 0" of "php.ini" file because we must cache modified "*.php" files.');
-            B::iniCheck('opcache.revalidate_freq', '0', 'Set "opcache.revalidate_freq = 0" of "php.ini" file because we must cache modified "*.php" files.');
-        } else { // In case of production server release.
+        if (BREAKPOINTDEBUGGING_IS_PRODUCTION) { // In case of production server release.
             B::iniCheck('opcache.file_update_protection', array ('0'), 'Do not set "opcache.file_update_protection = 0" of "php.ini" file because production server want to modify a file during execution.' . PHP_EOL . "\t" . 'Recommendation is "opcache.file_update_protection = 2".');
             B::iniCheck('opcache.revalidate_freq', array ('0'), 'Do not set "opcache.revalidate_freq = 0" of "php.ini" file because production server does not want to access a file as much as possible.' . PHP_EOL . "\t" . 'Recommendation is "opcache.revalidate_freq = 60".');
+        } else { // In case of development.
+            B::iniCheck('opcache.file_update_protection', '0', 'Set "opcache.file_update_protection = 0" of "php.ini" file because we must cache modified "*.php" files.');
+            B::iniCheck('opcache.revalidate_freq', '0', 'Set "opcache.revalidate_freq = 0" of "php.ini" file because we must cache modified "*.php" files.');
         }
     }
 
@@ -327,9 +342,9 @@ function BreakpointDebugging_mySetting()
         // ### This setting has been Fixed. ###
         if (!($exeMode & B::UNIT_TEST)) {
             // Output it at log to except notice and deprecated.
-            ini_set('error_reporting', (string) (PHP_INT_MAX & ~(E_NOTICE | E_DEPRECATED | E_STRICT)));
+            B::iniSet('error_reporting', (string) (PHP_INT_MAX & ~(E_NOTICE | E_DEPRECATED | E_STRICT)));
             // This changes "php.ini" file setting into "log_errors = On" to record log for security.
-            ini_set('log_errors', '1');
+            B::iniSet('log_errors', '1');
             if (!($exeMode & B::REMOTE)) { // In case of local host.
                 return;
             }
@@ -337,19 +352,17 @@ function BreakpointDebugging_mySetting()
             if (extension_loaded('xdebug')) {
                 B::iniCheck('xdebug.remote_enable', '0', 'Set "xdebug.remote_enable = 0" of "php.ini" file because is for security.');
                 // Does not display XDebug information.
-                ini_set('xdebug.default_enable', '0');
+                B::iniSet('xdebug.default_enable', '0');
             }
             // For security, it doesn't display all errors, warnings and notices.
-            ini_set('display_errors', '');
+            B::iniSet('display_errors', '');
             // This changes "php.ini" file setting into "display_startup_errors = Off" Because this makes not display an error on start-up for security.
-            ini_set('display_startup_errors', '');
+            B::iniSet('display_startup_errors', '');
             // This changes "php.ini" file setting into "html_errors=Off" for security because this does not make output link to page which explains function which HTML error occurred.
-            ini_set('html_errors', '');
+            B::iniSet('html_errors', '');
             return;
         }
     }
 }
 
 BreakpointDebugging_mySetting();
-
-?>
