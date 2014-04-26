@@ -3,7 +3,7 @@
 /**
  * Sets pear setting directory name, and includes this package by it.
  *
- * PHP version 5.3.x, 5.4.x
+ * PHP version 5.3.2-5.4.x
  *
  * LICENSE OVERVIEW:
  * 1. Do not change license text.
@@ -40,6 +40,6 @@
  * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-define('BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME', './PEAR_Setting/'); // You can change "PEAR" setting dir name.
+define('BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME', './PEAR_Setting/'); // We can change "PEAR" setting dir name.
 
 require_once BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php';

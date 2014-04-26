@@ -3,7 +3,7 @@
 require_once './BreakpointDebugging_Inclusion.php';
 
 use \BreakpointDebugging as B;
-use \BreakpointDebugging_PHPUnit_UtilGlobalState as BGS;
+use \BreakpointDebugging_PHPUnit_StaticVariableStorage as BSS;
 use \BreakpointDebugging_PHPUnit_FrameworkTestCase as BSF;
 
 B::checkExeMode(); // Checks the execution mode.
@@ -139,9 +139,7 @@ function test()
     $testPropertyA2 = $testArray[0]->testObjectProperty->testPropertyA;
 
     // Stores a variable.
-    $refGlobalRefs = &BSF::refGlobalRefs();
-    $refGlobals = &BSF::refGlobals();
-    BGS::storeGlobals($refGlobalRefs, $refGlobals, array ());
+    BSS::storeGlobals(BSF::$_globalRefs, BSF::$_globals, array ());
     B::assert($referenceA === 'referenced');
     B::assert($referenceB === array ('referenced'));
     B::assert($referenceC === array (array ('referenced')));
@@ -174,9 +172,7 @@ function test()
     B::assert(array_key_exists('ADDITION', $GLOBALS));
 
     // Restores variable.
-    $globalRefs = BSF::refGlobalRefs();
-    $globals = BSF::refGlobals();
-    BGS::restoreGlobals($globalRefs, $globals);
+    BSS::restoreGlobals(BSF::$_globalRefs, BSF::$_globals);
     B::assert($referenceA === 'referenceDummy'); // Copy.
     B::assert($referenceB === array ('referenceDummy')); // Copy.
     B::assert($referenceC === array (array ('referenceDummy'))); // Copy.
@@ -200,7 +196,7 @@ function test()
     \TestClassB::$GLOBALS = $testArray;
     // Stores static properties.
     $staticProperties = array ();
-    BGS::storeProperties($staticProperties, array ());
+    BSS::storeProperties($staticProperties, array ());
     B::assert(\TestClassB::$GLOBALS[0]->testObjectProperty->testPropertyA === 'testPropertyA');
     ob_start();
     var_dump(\TestClassB::$testRecursiveArrayProperty);
@@ -211,8 +207,7 @@ function test()
     B::assert(\TestClassB::$GLOBALS[0]->testObjectProperty->testPropertyA === 'testPropertyZ');
 
     // Restores static properties.
-    $staticProperties = BSF::refStaticProperties2();
-    BGS::restoreProperties($staticProperties);
+    BSS::restoreProperties(BSF::refStaticProperties2());
     B::assert(\TestClassB::$GLOBALS[0]->testObjectProperty->testPropertyA === 'testPropertyA');
     ob_start();
     var_dump(\TestClassB::$testRecursiveArrayProperty);

@@ -5,7 +5,7 @@
  *
  * As for procedure, please, refer to the file level document block of BreakpointDebugging_InDebug.php.
  *
- * PHP version 5.3.x, 5.4.x
+ * PHP version 5.3.2-5.4.x
  *
  * LICENSE OVERVIEW:
  * 1. Do not change license text.
@@ -91,8 +91,8 @@ function BreakpointDebugging_setExecutionMode()
         $_BreakpointDebugging_EXE_MODE = 2; // For HTTP request query string attack counter-plan.
     } else if (BREAKPOINTDEBUGGING_IS_PRODUCTION === false) { // In case of development.
         // Checks PHP version.
-        if (version_compare(PHP_VERSION, '5.3', '<') || version_compare(PHP_VERSION, '5.5', '>=')) {
-            exit('<pre>PHP version must be "5.3.x" or "5.4.x".</pre>');
+        if (version_compare(PHP_VERSION, '5.3.2', '<') || version_compare(PHP_VERSION, '5.5', '>=')) {
+            exit('<pre>PHP version must be "5.3.2-" or "5.4.x".</pre>');
         }
         if (!BREAKPOINTDEBUGGING_IS_WINDOWS) { // In case of Unix.
             $serverUser = posix_getpwuid(posix_geteuid());
@@ -234,12 +234,12 @@ function BreakpointDebugging_mySetting()
     $result = mb_detect_order('UTF-8, UTF-7, ASCII, EUC-JP,SJIS, eucJP-win, SJIS-win, JIS, ISO-2022-JP');
     // B::assert($result, 101);
     $workDir = &B::refStatic('$_workDir');
-    // You can change work directory name.
+    // We can change work directory name.
     $workDir = './Work';
     if (is_dir($workDir)) {
-        B::chmod($workDir, 0770);
+        B::chmod($workDir, 0700);
     } else {
-        B::mkdir(array ($workDir, 0770));
+        B::mkdir(array ($workDir, 0700));
     }
     $workDir = realpath($workDir);
     // B::assert($workDir !== false, 102);

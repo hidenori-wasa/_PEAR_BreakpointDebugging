@@ -6,7 +6,7 @@
  * There is this file to increase speed when does not do error or exception handling.
  * In other words, this file does not cause "__autoload()" because does not read except for error or exception handling.
  *
- * PHP version 5.3.x, 5.4.x
+ * PHP version 5.3.2-5.4.x
  *
  * LICENSE OVERVIEW:
  * 1. Do not change license text.
@@ -754,7 +754,7 @@ abstract class BreakpointDebugging_Error_InAllCase
     {
         $className = B::fullFilePathToClassName($file);
         if ($className //
-            && is_subclass_of($className, 'BreakpointDebugging_PHPUnit_FrameworkTestCase') //
+            && (is_subclass_of($className, 'BreakpointDebugging_PHPUnit_FrameworkTestCase') || is_subclass_of($className, 'BreakpointDebugging_PHPUnit_FrameworkTestCaseSimple')) //
         ) {
             $this->logBufferWriting($pTmpLog, $this->tags['uint test anchor name']);
             $this->tags['uint test anchor name'] = '';
@@ -1527,5 +1527,3 @@ if (B::getStatic('$exeMode') & B::RELEASE) { // In case of release.
     include_once __DIR__ . '/Error_InDebug.php';
 }
 // @codeCoverageIgnoreEnd
-
-?>

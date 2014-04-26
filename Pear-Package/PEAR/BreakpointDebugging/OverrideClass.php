@@ -6,7 +6,7 @@
  * If you use variable reference on debugging, should not you extend native class because it is c class. Then debugger may freeze.
  * Also a class like "MySQLi_Result" should not extend because __construct() signature is fixed, and it is difficult to make derived class.
  *
- * PHP version 5.3.x, 5.4.x
+ * PHP version 5.3.2-5.4.x
  *
  * LICENSE OVERVIEW:
  * 1. Do not change license text.

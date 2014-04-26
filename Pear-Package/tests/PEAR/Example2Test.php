@@ -5,12 +5,12 @@
 use \BreakpointDebugging as B;
 use \BreakpointDebugging_PHPUnit as BU;
 
-function localStaticVariable()
+function localStaticVariable2()
 {
     // static $localStatic = 'Local static value.'; // We must not define local static variable of function. (Autodetects)
 }
 
-class LocalStaticVariableOfStaticMethod
+class LocalStaticVariableOfStaticMethod2
 {
     static $staticProperty = 'Initial value.'; // We can define static property here.
 
@@ -39,7 +39,7 @@ class LocalStaticVariableOfStaticMethod
 // spl_autoload_register('\ExampleTest::loadClass', true, true); // We must not register "loadClass" function at top of stack by "spl_autoload_register()". (Autodetects)
 //
 // include_once __DIR__ . '/AFile.php'; // We must not include a file because "loadClass" is only once per file. (Autodetects)
-class ExampleTest extends \BreakpointDebugging_PHPUnit_FrameworkTestCase
+class Example2Test extends \BreakpointDebugging_PHPUnit_FrameworkTestCaseSimple
 {
     private $_pTestObject;
 
@@ -107,12 +107,6 @@ class ExampleTest extends \BreakpointDebugging_PHPUnit_FrameworkTestCase
         throw new \BreakpointDebugging_ErrorException('Something message.', 101); // This is reflected in "@expectedException" and "@expectedExceptionMessage".
     }
 
-    /**
-     * @covers \Example<extended>
-     *
-     * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=ExampleTest FUNCTION=isCalled ID=101.
-     */
     public function testSomething_A()
     {
         global $something;
@@ -127,22 +121,28 @@ class ExampleTest extends \BreakpointDebugging_PHPUnit_FrameworkTestCase
         // spl_autoload_register('\ExampleTest::loadClass', true, true); // We must not register "loadClass" function at top of stack by "spl_autoload_register()". (Autodetects)
         //
         // include_once __DIR__ . '/AFile.php'; // We must not include a file because "loadClass" is only once per file. (Cannot detect!)
-
-        parent::markTestSkippedInDebug();
+        if (parent::markTestSkippedInDebug()) {
+            return;
+        }
 
         // Destructs the instance.
         $this->_pTestObject = null;
 
         BU::$exeMode |= B::IGNORING_BREAK_POINT;
-        $this->isCalled();
+        try {
+            $this->isCalled();
+        } catch (\BreakpointDebugging_ErrorException $e) {
+            parent::assertTrue(strpos($e->getMessage(), 'CLASS=ExampleTest FUNCTION=isCalled ID=101.') !== false);
+            return;
+        }
+        parent::fail();
     }
 
-    /**
-     * @covers \Example<extended>
-     */
     public function testSomething_B()
     {
-        parent::markTestSkippedInRelease();
+        if (parent::markTestSkippedInRelease()) {
+            return;
+        }
 
         // How to use "try-catch" syntax instead of "@expectedException" and "@expectedExceptionMessage".
         // This way can test an error after static status was changed.
@@ -150,20 +150,10 @@ class ExampleTest extends \BreakpointDebugging_PHPUnit_FrameworkTestCase
             B::assert(true, 101);
             B::assert(false, 102);
         } catch (\BreakpointDebugging_ErrorException $e) {
-            parent::assertTrue(preg_match('`CLASS=ExampleTest FUNCTION=testSomething_B ID=102\.$`X', $e->getMessage()) === 1);
+            parent::assertTrue(strpos($e->getMessage(), 'CLASS=Example2Test FUNCTION=testSomething_B ID=102.') !== false);
             return;
         }
         parent::fail();
     }
 
-    /**
-     * @covers \Example<extended>
-     */
-    public function testIncompletedColor()
-    {
-        // parent::markTestIncomplete();
-    }
-
 }
-
-?>

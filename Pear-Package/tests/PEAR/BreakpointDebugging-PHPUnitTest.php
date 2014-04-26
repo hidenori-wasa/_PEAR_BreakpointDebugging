@@ -21,75 +21,69 @@ class BreakpointDebuggingTestExample extends \BreakpointDebuggingTestExampleBase
 
 }
 
-class BreakpointDebugging_PHPUnitTest extends \BreakpointDebugging_PHPUnit_FrameworkTestCase
+class BreakpointDebugging_PHPUnitTest extends \BreakpointDebugging_PHPUnit_FrameworkTestCaseSimple
 {
-    /**
-     * @covers \BreakpointDebugging<extended>
-     */
     public function testIsUnitTestExeMode()
     {
         BU::checkExeMode(true);
     }
 
-//    /**
-//     * @covers \BreakpointDebugging<extended>
-//     */
-//    public function testExecuteUnitTest_InRelease()
-//    {
-//        if (BU::$exeMode & B::REMOTE) {
-//            parent::markTestSkipped();
-//        }
-//        BU::markTestSkippedInDebug();
-//
-//        ob_start();
-//
-//        $testFileNames = array (
-//            '--stop-on-failure --strict ExampleTest.php',
-//            '--stop-on-failure --strict ExampleTest.php',
-//        );
-//        BU::setPropertyForTest('BreakpointDebugging_PHPUnit', '$unitTestDir', null);
-//        BU::executeUnitTest($testFileNames);
-//
-//        $testFileNames = array (
-//            '--stop-on-failure --strict Example_Test.php',
-//            '--stop-on-failure --strict Example_Test.php',
-//        );
-//        BU::$exeMode |= B::IGNORING_BREAK_POINT;
-//        BU::setPropertyForTest('BreakpointDebugging_PHPUnit', '$unitTestDir', null);
-//        BU::executeUnitTest($testFileNames);
-//    }
-//    /**
-//     * @covers \BreakpointDebugging<extended>
-//     */
-//    public function testExecuteUnitTest_2_InRelease()
-//    {
-//        if (BU::$exeMode & B::REMOTE) {
-//            parent::markTestSkipped();
-//        }
-//        BU::markTestSkippedInDebug();
-//
-//        $testFileNames = array (
-//            '--stop-on-failure --strict NotExistTest.php',
-//            '--stop-on-failure --strict NotExistTest.php',
-//        );
-//        ob_start();
-//        BU::setPropertyForTest('BreakpointDebugging_PHPUnit', '$unitTestDir', null);
-//        BU::executeUnitTest($testFileNames);
-//    }
-//    /**
-//     * @covers \BreakpointDebugging<extended>
-//     */
-//    public function testDisplayCodeCoverageReport_InRelease()
-//    {
-//        BU::markTestSkippedInDebug();
-//
-//        ob_start();
-//        BU::displayCodeCoverageReport('BreakpointDebugging/OverrideClassTest.php', 'PEAR/BreakpointDebugging/OverrideClass.php');
-//        BU::displayCodeCoverageReport('BreakpointDebugging/OverrideClassTest.php', array ('PEAR/BreakpointDebugging/OverrideClass.php'));
-//    }
-    /**
-     * @covers \BreakpointDebugging<extended>
-     */
+    public function testExecuteUnitTest_InRelease()
+    {
+        if (BU::$exeMode & B::REMOTE) {
+            return;
+        }
+        if (parent::markTestSkippedInDebug()) {
+            return;
+        }
+
+        ob_start();
+
+        $testFileNames = array (
+            'ExampleTest.php',
+        );
+        BU::setPropertyForTest('BreakpointDebugging_PHPUnit', '$unitTestDir', null);
+        $breakpointDebuggingPHPUnit = new \BreakpointDebugging_PHPUnit();
+        $breakpointDebuggingPHPUnit->executeUnitTest($testFileNames);
+
+        $testFileNames = array (
+            'Example_Test.php',
+        );
+        BU::$exeMode |= B::IGNORING_BREAK_POINT;
+        BU::setPropertyForTest('BreakpointDebugging_PHPUnit', '$unitTestDir', null);
+        $breakpointDebuggingPHPUnit->executeUnitTest($testFileNames);
+    }
+
+    public function testExecuteUnitTest_2_InRelease()
+    {
+        if (BU::$exeMode & B::REMOTE) {
+            return;
+        }
+        if (parent::markTestSkippedInDebug()) {
+            return;
+        }
+
+        $testFileNames = array (
+            'NotExistTest.php',
+        );
+        ob_start();
+        BU::setPropertyForTest('BreakpointDebugging_PHPUnit', '$unitTestDir', null);
+        $breakpointDebuggingPHPUnit = new \BreakpointDebugging_PHPUnit();
+        $breakpointDebuggingPHPUnit->executeUnitTest($testFileNames);
+    }
+
+    public function testDisplayCodeCoverageReport_InRelease()
+    {
+        if (parent::markTestSkippedInDebug()) {
+            return;
+        }
+
+        ob_start();
+        $breakpointDebuggingPHPUnit = new \BreakpointDebugging_PHPUnit();
+        $breakpointDebuggingPHPUnit->displayCodeCoverageReport('BreakpointDebugging/OverrideClassTest.php', 'PEAR/BreakpointDebugging/OverrideClass.php');
+        $breakpointDebuggingPHPUnit->displayCodeCoverageReport('BreakpointDebugging/OverrideClassTest.php', array ('PEAR/BreakpointDebugging/OverrideClass.php'));
+    }
+
     public function testGetPropertyForTest()
     {
         $pBreakpointDebuggingTestExample = new \BreakpointDebuggingTestExample();
@@ -100,55 +94,44 @@ class BreakpointDebugging_PHPUnitTest extends \BreakpointDebugging_PHPUnit_Frame
         parent::assertTrue(BU::getPropertyForTest($pBreakpointDebuggingTestExample, '$privateAuto') === 'private auto'); // Private auto property.
     }
 
-    /**
-     * @covers \BreakpointDebugging<extended>
-     *
-     * @expectedException        \PHPUnit_Framework_Error_Warning
-     * @expectedExceptionMessage failed to open stream:
-     */
     public function testGetPropertyForTest_E()
     {
-        BU::getPropertyForTest('notExistClassName', 'dummy');
+        try {
+            BU::getPropertyForTest('notExistClassName', 'dummy');
+        } catch (\ReflectionException $e) {
+            parent::assertTrue(strpos($e->getMessage(), 'Class notExistClassName does not exist') !== false);
+        }
     }
 
-    /**
-     * @covers \BreakpointDebugging<extended>
-     *
-     * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_PHPUnit FUNCTION=getPropertyForTest ID=101.
-     */
     public function testGetPropertyForTest_F()
     {
-        BU::getPropertyForTest('BreakpointDebuggingTestExample', 'notExistPropertyName');
+        try {
+            BU::getPropertyForTest('BreakpointDebuggingTestExample', 'notExistPropertyName');
+        } catch (\BreakpointDebugging_ErrorException $e) {
+            parent::assertTrue(strpos($e->getMessage(), 'CLASS=BreakpointDebugging_PHPUnit FUNCTION=getPropertyForTest ID=101.') !== false);
+        }
     }
 
-    /**
-     * @covers \BreakpointDebugging<extended>
-     *
-     * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_PHPUnit FUNCTION=getPropertyForTest ID=101.
-     */
     public function testGetPropertyForTest_G()
     {
-        BU::getPropertyForTest('BreakpointDebuggingTestExample', '$privateStaticBase'); // Private static property of base class.
+        try {
+            BU::getPropertyForTest('BreakpointDebuggingTestExample', '$privateStaticBase'); // Private static property of base class.
+        } catch (\BreakpointDebugging_ErrorException $e) {
+            parent::assertTrue(strpos($e->getMessage(), 'CLASS=BreakpointDebugging_PHPUnit FUNCTION=getPropertyForTest ID=101.') !== false);
+        }
     }
 
-    /**
-     * @covers \BreakpointDebugging<extended>
-     *
-     * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_PHPUnit FUNCTION=getPropertyForTest
-     */
     public function testGetPropertyForTest_H()
     {
         $pBreakpointDebuggingTestExample = new \BreakpointDebuggingTestExample();
 
-        BU::getPropertyForTest($pBreakpointDebuggingTestExample, '$privateStaticBase'); // Private static property of base class.
+        try {
+            BU::getPropertyForTest($pBreakpointDebuggingTestExample, '$privateStaticBase'); // Private static property of base class.
+        } catch (\BreakpointDebugging_ErrorException $e) {
+            parent::assertTrue(strpos($e->getMessage(), 'CLASS=BreakpointDebugging_PHPUnit FUNCTION=getPropertyForTest') !== false);
+        }
     }
 
-    /**
-     * @covers \BreakpointDebugging<extended>
-     */
     public function testSetPropertyForTest()
     {
         $pBreakpointDebuggingTestExample = new \BreakpointDebuggingTestExample();
@@ -167,135 +150,77 @@ class BreakpointDebugging_PHPUnitTest extends \BreakpointDebugging_PHPUnit_Frame
         parent::assertTrue(BU::getPropertyForTest($pBreakpointDebuggingTestExample, '$protectedAutoBase') === 'Changed protected auto base 2.');
     }
 
-    /**
-     * @covers \BreakpointDebugging<extended>
-     *
-     * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_PHPUnit FUNCTION=setPropertyForTest ID=101.
-     */
     function testSetPropertyForTest_E()
     {
         $pBreakpointDebuggingTestExample = new \BreakpointDebuggingTestExample();
 
-        BU::setPropertyForTest($pBreakpointDebuggingTestExample, '$privateStaticBase', 'change'); // Private static property of base class.
+        try {
+            BU::setPropertyForTest($pBreakpointDebuggingTestExample, '$privateStaticBase', 'change'); // Private static property of base class.
+        } catch (\BreakpointDebugging_ErrorException $e) {
+            parent::assertTrue(strpos($e->getMessage(), 'CLASS=BreakpointDebugging_PHPUnit FUNCTION=setPropertyForTest ID=101.') !== false);
+        }
     }
 
-    /**
-     * @covers \BreakpointDebugging<extended>
-     *
-     * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_PHPUnit FUNCTION=setPropertyForTest ID=101.
-     */
     function testSetPropertyForTest_F()
     {
         $pBreakpointDebuggingTestExample = new \BreakpointDebuggingTestExample();
 
-        BU::setPropertyForTest($pBreakpointDebuggingTestExample, '$privateAutoBase', 'change'); // Private auto property of base class.
+        try {
+            BU::setPropertyForTest($pBreakpointDebuggingTestExample, '$privateAutoBase', 'change'); // Private auto property of base class.
+        } catch (\BreakpointDebugging_ErrorException $e) {
+            parent::assertTrue(strpos($e->getMessage(), 'CLASS=BreakpointDebugging_PHPUnit FUNCTION=setPropertyForTest ID=101.') !== false);
+        }
     }
 
-    /**
-     * @covers \BreakpointDebugging<extended>
-     *
-     * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_PHPUnit FUNCTION=setPropertyForTest ID=101.
-     */
     function testSetPropertyForTest_G()
     {
         $pBreakpointDebuggingTestExample = new \BreakpointDebuggingTestExample();
 
-        BU::setPropertyForTest($pBreakpointDebuggingTestExample, '$notExistPropertyName', 'change');
+        try {
+            BU::setPropertyForTest($pBreakpointDebuggingTestExample, '$notExistPropertyName', 'change');
+        } catch (\BreakpointDebugging_ErrorException $e) {
+            parent::assertTrue(strpos($e->getMessage(), 'CLASS=BreakpointDebugging_PHPUnit FUNCTION=setPropertyForTest ID=101.') !== false);
+        }
     }
 
-//    /**
-//     * @covers \BreakpointDebugging<extended>
-//     */
-//    function testExecuteUnitTest()
-//    {
-//        if (BU::$exeMode & B::REMOTE) {
-//            parent::markTestSkipped();
-//        }
-//
-//        $testFileNames = array (
-//            '--stop-on-failure --strict ExampleTest.php',
-//            '--stop-on-failure --strict ExampleTest.php',
-//        );
-//        BU::setPropertyForTest('BreakpointDebugging_PHPUnit', '$unitTestDir', null);
-//        ob_start();
-//        BU::executeUnitTest($testFileNames);
-//    }
-//    /**
-//     * @covers \BreakpointDebugging<extended>
-//     */
-//    function testExecuteUnitTest_E()
-//    {
-//        if (BU::$exeMode & B::REMOTE) {
-//            parent::markTestSkipped();
-//        }
-//        $testFileNames = array (
-//            '--stop-on-failure --strict NotExistTest.php',
-//            '--stop-on-failure --strict NotExistTest.php',
-//        );
-//        BU::setPropertyForTest('BreakpointDebugging_PHPUnit', '$unitTestDir', null);
-//        ob_start();
-//        BU::executeUnitTest($testFileNames);
-//        $output = ob_get_contents();
-//        parent::assertTrue(strpos($output, 'Cannot open file') !== false);
-//    }
-//    /**
-//     * @covers \BreakpointDebugging<extended>
-//     */
-//    function testExecuteUnitTest_F()
-//    {
-//        if (BU::$exeMode & B::REMOTE) {
-//            parent::markTestSkipped();
-//        }
-//        $testFileNames = array (
-//            '--stop-on-failure --strict Example_Test.php',
-//            '--stop-on-failure --strict Example_Test.php',
-//        );
-//        BU::$exeMode |= B::IGNORING_BREAK_POINT;
-//        BU::setPropertyForTest('BreakpointDebugging_PHPUnit', '$unitTestDir', null);
-//        ob_start();
-//        BU::executeUnitTest($testFileNames);
-//        ob_get_clean();
-//    }
-//    /**
-//     * @covers \BreakpointDebugging<extended>
-//     *
-//     * @expectedException        \BreakpointDebugging_ErrorException
-//     * @expectedExceptionMessage CLASS=BreakpointDebugging_PHPUnit FUNCTION=_getUnitTestDir ID=101.
-//     */
-//    function test_getUnitTestDir_A()
-//    {
-//        if (BU::$exeMode & B::REMOTE) {
-//            parent::markTestSkipped();
-//        }
-//        BU::markTestSkippedInRelease(); // Because this unit test is assertion.
-//
-//        $testFileNames = array (
-//            '--stop-on-failure --strict ExampleTest.php',
-//            '--stop-on-failure --strict ExampleTest.php',
-//        );
-//        BU::setPropertyForTest('BreakpointDebugging_PHPUnit', '$unitTestDir', null);
-//        ob_start();
-//        BU::executeUnitTest($testFileNames);
-//
-//        $testFileNames = array (
-//            '--stop-on-failure --strict ExampleTest.php',
-//            '--stop-on-failure --strict ExampleTest.php',
-//        );
-//        BU::$exeMode |= B::IGNORING_BREAK_POINT;
-//        BU::executeUnitTest($testFileNames);
-//    }
-//    /**
-//     * @covers \BreakpointDebugging<extended>
-//     */
-//    function testDisplayCodeCoverageReport()
-//    {
-//        ob_start();
-//        BU::setPropertyForTest('BreakpointDebugging', '$unitTestDir', null);
-//        BU::displayCodeCoverageReport('BreakpointDebugging/OverrideClassTest.php', 'PEAR/BreakpointDebugging/OverrideClass.php');
-//        BU::setPropertyForTest('BreakpointDebugging', '$unitTestDir', null);
-//        BU::displayCodeCoverageReport('BreakpointDebugging/OverrideClassTest.php', array ('PEAR/BreakpointDebugging/OverrideClass.php'));
-//    }
+    function testExecuteUnitTest()
+    {
+        if (BU::$exeMode & B::REMOTE) {
+            return;
+        }
+
+        $testFileNames = array (
+            'ExampleTest.php',
+        );
+        BU::setPropertyForTest('BreakpointDebugging_PHPUnit', '$unitTestDir', null);
+        ob_start();
+        $breakpointDebuggingPHPUnit = new \BreakpointDebugging_PHPUnit();
+        $breakpointDebuggingPHPUnit->executeUnitTest($testFileNames);
+    }
+
+    function testExecuteUnitTest_E()
+    {
+        if (BU::$exeMode & B::REMOTE) {
+            return;
+        }
+        $testFileNames = array (
+            'NotExistTest.php',
+        );
+        BU::setPropertyForTest('BreakpointDebugging_PHPUnit', '$unitTestDir', null);
+        $breakpointDebuggingPHPUnit = new \BreakpointDebugging_PHPUnit();
+        try {
+            $breakpointDebuggingPHPUnit->executeUnitTest($testFileNames);
+        } catch (\BreakpointDebugging_ErrorException $e) {
+            parent::assertTrue(strpos($e->getMessage(), 'CLASS=BreakpointDebugging_PHPUnit FUNCTION=executeUnitTest ID=102.') !== false);
+        }
+    }
+
+    function testDisplayCodeCoverageReport()
+    {
+        ob_start();
+        $breakpointDebuggingPHPUnit = new \BreakpointDebugging_PHPUnit();
+        $breakpointDebuggingPHPUnit->displayCodeCoverageReport('BreakpointDebugging/LockByFileExistingTest.php', array ('PEAR/BreakpointDebugging/Lock.php', 'PEAR/BreakpointDebugging/LockByFileExisting.php'));
+        $breakpointDebuggingPHPUnit->displayCodeCoverageReport('BreakpointDebugging/OverrideClassTest.php', 'PEAR/BreakpointDebugging/OverrideClass.php');
+    }
+
 }

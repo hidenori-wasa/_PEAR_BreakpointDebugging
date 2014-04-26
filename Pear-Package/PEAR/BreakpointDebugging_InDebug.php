@@ -465,12 +465,15 @@
  *      of "BreakpointDebugging_PHPUnit" package before release.
  *      Then, we must enable "define('BREAKPOINTDEBUGGING_IS_PRODUCTION', true);" of "BreakpointDebugging_MySetting.php" in case of production server use.
  *      Because server must not display "XDebug" and error logging information.
- * Procedure 8: If you can change "php.ini" file,
- *      use "B::iniCheck()" instead of "B::iniSet()" in "*_MySetting.php" file,
- *      and move it to "*_MySetting_InDebug.php" file
- *      because decreases the read and the parse bytes.
- *      Also, use "B::iniCheck()" instead of "B::iniSet()"
- *      in "*_MySetting_InDebug.php" file.
+ *
+ *      Please, follow execution mode procedure.
+ *          Procedure 1: Use "DEBUG" or "DEBUG_UNIT_TEST" mode at local server. This mode can do debug step execution.
+ *          Procedure 2: Use "RELEASE" or "RELEASE_UNIT_TEST" mode at local server. This mode can do release step execution.
+ *          Procedure 3: Use "DEBUG" or "DEBUG_UNIT_TEST" mode at remote server. This mode can do production server display debugging.
+ *          Procedure 4: Use "RELEASE" or "RELEASE_UNIT_TEST" mode at remote server. This mode can do production server logging debugging.
+ *          Procedure 5: Use production mode at remote server. This mode uses as production server. Also, this mode fixes mode for security.
+ *              Set "const BREAKPOINTDEBUGGING_IS_PRODUCTION = true;" inside of "BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME + 'BreakpointDebugging_MySetting.php'" file.
+ *          If you changed remote "php.ini" file, you must redo from procedure 3 because to increase the production mode execution speed.
  *
  * Caution: Do not execute "ini_set('error_log', ...)" because
  * this package uses local log rotation instead of system log.
@@ -523,7 +526,7 @@
  *      "__destruct()" class method is called if we overwrite null value to variable because value of all reference is disabled.
  *      However, memory area and reference count is kept.
  *
- * PHP version 5.3.x, 5.4.x
+ * PHP version 5.3.2-5.4.x
  *
  * LICENSE OVERVIEW:
  * 1. Do not change license text.
@@ -636,8 +639,6 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
         $processUser = posix_getpwuid(posix_geteuid());
         // If this is remote debug, unix and root user.
         if (BA::$exeMode === B::REMOTE //
-            && !BREAKPOINTDEBUGGING_IS_WINDOWS //
-            //&& trim(`printenv USER`) === 'root' //
             && $processUser['name'] === 'root' //
         ) {
             parent::windowVirtualOpen(parent::ERROR_WINDOW_NAME, parent::getErrorHtmlFileTemplate());
@@ -911,9 +912,6 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
             if ($invokerFullFilePath === false) {
                 continue;
             }
-            if (BREAKPOINTDEBUGGING_IS_WINDOWS) {
-                $invokerFullFilePath = strtolower($invokerFullFilePath);
-            }
             if ($fullFilePath === $invokerFullFilePath) {
                 return true;
             }
@@ -954,9 +952,6 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
             // @codeCoverageIgnoreEnd
         } while (false);
         $fullFilePath = $callStack[$key]['file'];
-        if (BREAKPOINTDEBUGGING_IS_WINDOWS) {
-            $fullFilePath = strtolower($fullFilePath);
-        }
         $line = $callStack[$key]['line'];
         if (array_key_exists($fullFilePath, self::$_callLocations) //
             && array_key_exists($line, self::$_callLocations[$fullFilePath]) //
@@ -980,9 +975,6 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
 
         if (!isset(self::$_includePaths)) {
             self::$_includePaths = ini_get('include_path');
-            if (BREAKPOINTDEBUGGING_IS_WINDOWS) {
-                self::$_includePaths = strtolower(self::$_includePaths);
-            }
             self::$_includePaths = explode(PATH_SEPARATOR, self::$_includePaths);
         }
         if (is_array($invokerFilePaths)) {
@@ -1006,6 +998,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
         if (array_key_exists('function', $callStack[$key])) {
             $function = $callStack[$key]['function'];
         }
+        parent::breakpoint("'$class$function()' must not invoke in '$fullFilePath' file.", debug_backtrace());
         self::callExceptionHandlerDirectly("'$class$function()' must not invoke in '$fullFilePath' file.", 4);
         // @codeCoverageIgnoreStart
     }
@@ -1132,7 +1125,6 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
                 $dirName = BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME;
                 $displayString = <<<EOD
 ### "\BreakpointDebugging::iniSet()": You must copy from "{$dirName}[package name]_MySetting_InDebug.php" to user place folder of "{$dirName}[package name]_MySetting.php" for release because set value and value of php.ini differ.
-### Also, if remote "php.ini" was changed, you must redo remote debug mode.
 EOD;
                 parent::ini('_MySetting_InDebug.php', self::$_onceFlagPerPackageInDebug, $displayString);
             }

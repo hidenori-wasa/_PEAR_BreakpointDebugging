@@ -115,7 +115,7 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_PHPUn
     {
         $error = &$this->_error;
 
-        BU::markTestSkippedInDebug(); // Because this unit test is the logging check.
+        parent::markTestSkippedInDebug(); // Because this unit test is the logging check.
 
         $testString = 'Test string.';
         B::addValuesToTrace(array ('$testString' => $testString));
@@ -231,27 +231,27 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_PHPUn
      */
     function testHandleException2_A()
     {
-        BU::markTestSkippedInDebug(); // Because this unit test is the logging check.
+        parent::markTestSkippedInDebug(); // Because this unit test is the logging check.
 
         $maxLogStringSize = &B::refStatic('$_maxLogStringSize');
         $maxLogStringSize = 140000;
         $workDir = B::getStatic('$_workDir');
 
         $logfileMaximumCapacityException = function ($self) {
-                try {
-                    BU::$exeMode |= B::IGNORING_BREAK_POINT;
-                    $self->exceptionHandler2(str_repeat('1234567890', 14000), array ('Test1.'), 1.1);
-                } catch (\Exception $e) {
-                    B::handleException($e);
-                    BU::$exeMode &= ~B::IGNORING_BREAK_POINT;
-                }
-            };
+            try {
+                BU::$exeMode |= B::IGNORING_BREAK_POINT;
+                $self->exceptionHandler2(str_repeat('1234567890', 14000), array ('Test1.'), 1.1);
+            } catch (\Exception $e) {
+                B::handleException($e);
+                BU::$exeMode &= ~B::IGNORING_BREAK_POINT;
+            }
+        };
 
         $logStartException = function () {
-                BU::$exeMode |= B::IGNORING_BREAK_POINT;
-                B::handleException(new \Exception('The log start exception.'));
-                BU::$exeMode &= ~B::IGNORING_BREAK_POINT;
-            };
+            BU::$exeMode |= B::IGNORING_BREAK_POINT;
+            B::handleException(new \Exception('The log start exception.'));
+            BU::$exeMode &= ~B::IGNORING_BREAK_POINT;
+        };
 
         // Makes "php_error_1.log".
         $logfileMaximumCapacityException($this);
@@ -286,7 +286,7 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_PHPUn
     {
         $error = &$this->_error;
 
-        BU::markTestSkippedInDebug(); // Because this unit test is the logging check.
+        parent::markTestSkippedInDebug(); // Because this unit test is the logging check.
         function handleError($error)
         {
             BU::$exeMode |= B::IGNORING_BREAK_POINT;
@@ -380,7 +380,7 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_PHPUn
      */
     function testHandleError2_A()
     {
-        BU::markTestSkippedInDebug(); // Because this unit test is the logging check.
+        parent::markTestSkippedInDebug(); // Because this unit test is the logging check.
 
         BU::$exeMode |= B::IGNORING_BREAK_POINT;
         $this->_error->handleError2(255, '', B::$prependErrorLog, debug_backtrace());
@@ -394,7 +394,7 @@ class BreakpointDebugging_Error_InAllCaseTest extends \BreakpointDebugging_PHPUn
      */
     function testConvertMbString()
     {
-        BU::markTestSkippedInDebug(); // Because this unit test is the logging check.
+        parent::markTestSkippedInDebug(); // Because this unit test is the logging check.
         // SJIS + UTF-8
         B::$prependExceptionLog = "\x95\xB6\x8E\x9A \xE6\x96\x87\xE5\xAD\x97 ";
         BU::$exeMode |= B::IGNORING_BREAK_POINT;

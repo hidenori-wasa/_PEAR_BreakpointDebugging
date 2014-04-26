@@ -3,14 +3,14 @@
 /**
  * Class for breakpoint debugging.
  *
- * PHP version 5.3.x, 5.4.x
+ * PHP version 5.3.2-5.4.x
  *
  * LICENSE OVERVIEW:
  * 1. Do not change license text.
  * 2. Copyrighters do not take responsibility for this file code.
  *
  * LICENSE:
- * Copyright (c) 2012-2013, Hidenori Wasa
+ * Copyright (c) 2012-2014, Hidenori Wasa
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -322,6 +322,10 @@ abstract class BreakpointDebugging_InAllCase
     static function exitForError($error = '')
     {
         self::$exeMode &= ~B::IGNORING_BREAK_POINT;
+        if (self::$_nativeExeMode & self::UNIT_TEST) {
+            // Uses "BreakpointDebugging" package autoloader.
+            spl_autoload_unregister('\BreakpointDebugging_PHPUnit_StaticVariableStorage::loadClass');
+        }
         // If this is not production release.
         if (self::$_nativeExeMode !== (self::REMOTE | self::RELEASE)) {
             // Displays error call stack instead of log.
@@ -507,6 +511,10 @@ EOD;
      */
     static function iniCheck($phpIniVariable, $cmpValue, $errorMessage)
     {
+        if (BREAKPOINTDEBUGGING_IS_PRODUCTION) { // In case of production server.
+            return;
+        }
+
         B::limitAccess('BreakpointDebugging_InDebug.php');
 
         $value = (string) ini_get($phpIniVariable);
@@ -698,7 +706,7 @@ EOD;
             return B::chmod($params[0], $permission, $timeout, $sleepMicroSeconds);
         }
         // @codeCoverageIgnoreStart
-        // Because "PHPUnit" throws "\PHPUnit_Framework_Error_Warning".
+        // Because "PHPUnit" throws "\BreakpointDebugging_ErrorException".
         return false;
         // @codeCoverageIgnoreEnd
     }
@@ -747,7 +755,11 @@ EOD;
                     // @codeCoverageIgnoreEnd
                     // Does not detect error except last.
                     set_error_handler('\BreakpointDebugging::handleError', 0);
-                    $result = @call_user_func_array($functionName, $params);
+                    try {
+                        $result = @call_user_func_array($functionName, $params);
+                    } catch (\Exception $e) {
+
+                    }
                     restore_error_handler();
                 }
                 if ($result !== false) {
@@ -756,7 +768,7 @@ EOD;
                 }
                 if ($isTermination) {
                     // @codeCoverageIgnoreStart
-                    // Because "PHPUnit" throws "\PHPUnit_Framework_Error_Warning".
+                    // Because "PHPUnit" throws "\BreakpointDebugging_ErrorException".
                     return false;
                     // @codeCoverageIgnoreEnd
                 }
@@ -765,9 +777,6 @@ EOD;
                     return self::_retryForFilesystemFunction($functionName, $params, $timeout, $sleepMicroSeconds, true);
                 }
             } catch (\Exception $e) {
-                if (!$isTermination) {
-                    restore_error_handler();
-                }
                 if ($isTimeout) {
                     // Detects exception last.
                     throw $e;
@@ -802,7 +811,7 @@ EOD;
                 return $pFile;
             }
             // @codeCoverageIgnoreStart
-            // Because "PHPUnit" throws "\PHPUnit_Framework_Error_Warning".
+            // Because "PHPUnit" throws "\BreakpointDebugging_ErrorException".
         }
         return false;
         // @codeCoverageIgnoreEnd
@@ -999,11 +1008,7 @@ EOD;
         }
         foreach ($includePaths as $includePath) {
             $fullIncludePath = realpath($includePath);
-            if (BREAKPOINTDEBUGGING_IS_WINDOWS) {
-                $result = stripos($fullFilePath, $fullIncludePath);
-            } else {
-                $result = strpos($fullFilePath, $fullIncludePath);
-            }
+            $result = strpos($fullFilePath, $fullIncludePath);
             if ($result === 0) {
                 $className = substr($fullFilePath, strlen($fullIncludePath) + 1, - strlen('.php'));
                 // Changes directory separator and '-' to underscore.
@@ -1028,7 +1033,7 @@ EOD;
             }
         }
 
-        echo '<script type="text/javascript">' . PHP_EOL
+        echo '<script>' . PHP_EOL
         . '<!--' . PHP_EOL;
         echo $javaScript;
         echo '//-->' . PHP_EOL
@@ -1040,6 +1045,26 @@ EOD;
                 echo $buffers[$bufferCount];
             }
         }
+    }
+
+    /**
+     * Copies resource to current work directory.
+     *
+     * @param string $resourceFileName      Resource file name.
+     * @param string $resourceDirectoryPath Absolute resource directory path.
+     *
+     * @return string Resource URI which copied to current work directory.
+     */
+    static function CopyResourceToCWD($resourceFileName, $resourceDirectoryPath)
+    {
+        $cwd = getcwd();
+        $relativeCWD = substr($cwd, strlen($_SERVER['DOCUMENT_ROOT']) - strlen($cwd) + 1);
+        $destResourceFilePath = $cwd . DIRECTORY_SEPARATOR . $resourceFileName;
+        if (!is_file($destResourceFilePath)) {
+            $resourceFilePath = $resourceDirectoryPath . $resourceFileName;
+            copy($resourceFilePath, $destResourceFilePath);
+        }
+        return "//localhost/{$relativeCWD}/{$resourceFileName}";
     }
 
     /**
@@ -1062,13 +1087,7 @@ EOD;
 
         if (!array_key_exists(__FUNCTION__, self::$_onceJavaScript)) {
             self::$_onceJavaScript[__FUNCTION__] = true;
-            $javaScript .= 'function BreakpointDebugging_windowVertualOpen($windowName, $htmlFileContent)' . PHP_EOL
-                . '{' . PHP_EOL
-                . '    open("", $windowName, "").close();' . PHP_EOL
-                . '    var $newDocument = open("", $windowName, "").document;' . PHP_EOL
-                . '    $newDocument.write($htmlFileContent);' . PHP_EOL
-                . '    $newDocument.close();' . PHP_EOL
-                . '}' . PHP_EOL;
+            $javaScript .= file_get_contents(__DIR__ . '/BreakpointDebugging/js/BreakpointDebugging_DOMWindow.js');
         }
 
         $htmlFileContent = str_replace(array ('\\', '\'', "\r", "\n"), array ('\\\\', '\\\'', '\r', '\n'), $htmlFileContent);
@@ -1091,6 +1110,22 @@ EOD;
         }
 
         self::executeJavaScript("open('', '$windowName').close();" . PHP_EOL);
+    }
+
+    /**
+     * Moves window to front.
+     *
+     * @param string $windowName Opened window name.
+     *
+     * @return void
+     */
+    static function windowFront($windowName)
+    {
+        if (!isset($_SERVER['SERVER_ADDR'])) { // In case of command line.
+            return;
+        }
+
+        self::executeJavaScript("BreakpointDebugging_windowFront('$windowName');" . PHP_EOL);
     }
 
     /**
@@ -1267,7 +1302,6 @@ EOD;
         $dirName = BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME;
         self::$iniDisplayString = <<<EOD
 ### "\BreakpointDebugging::iniSet()" or "\BreakpointDebugging::iniCheck()": You must comment out following line of "{$dirName}[package name]_MySetting.php" because set value and value of php.ini is same.
-### Also, if remote "php.ini" was changed, you must redo remote release mode.
 EOD;
     }
 
@@ -1304,13 +1338,18 @@ EOD;
      *
      * @return void
      */
-    final static function autoload($className)
+    final static function loadClass($className)
     {
         // Trims the left name space root.
         $className = ltrim($className, '\\');
         // Changes underscore and name space separator to directory separator.
         $filePath = str_replace(array ('_', '\\'), '/', $className) . '.php';
-        include_once $filePath;
+        $absoluteFilePath = stream_resolve_include_path($filePath);
+        if ($absoluteFilePath !== false) {
+            include_once $absoluteFilePath;
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -1474,10 +1513,6 @@ if ($_BreakpointDebugging_EXE_MODE & BA::RELEASE) { // In case of release.
 
     abstract class BreakpointDebugging_Middle extends \BreakpointDebugging_InAllCase
     {
-//        /**
-//         * @var array Setting option filenames.
-//         */
-//        private static $_onceFlagPerPackage = array ();
         /**
          * Empties in release.
          *
@@ -1558,7 +1593,7 @@ if ($_BreakpointDebugging_EXE_MODE & BA::RELEASE) { // In case of release.
                 ) {
                     // @codeCoverageIgnoreStart
                     if (function_exists('xdebug_break')) {
-                        xdebug_break(); // You must use "\BreakpointDebugging_PHPUnit::markTestSkippedInRelease(); // Because this unit test is assertion." at top of unit test class method.
+                        xdebug_break(); // You must use "parent::markTestSkippedInRelease(); // Because this unit test is assertion." at top of unit test class method.
                     } else {
                         // Because unit test is exited.
                         ini_set('xdebug.var_display_max_depth', 5);
@@ -1617,7 +1652,8 @@ if ($_BreakpointDebugging_EXE_MODE & BA::RELEASE) { // In case of release.
 }
 
 // Pushes autoload class method.
-spl_autoload_register('\BreakpointDebugging::autoload');
+$result = spl_autoload_register('\BreakpointDebugging::loadClass');
+B::assert($result);
 // Shifts global exception handler.
 set_exception_handler('\BreakpointDebugging::handleException');
 // Shifts global error handler.( -1 sets all bits on 1. Therefore, this specifies error, warning and note of all kinds.)
@@ -1676,5 +1712,3 @@ class BreakpointDebugging_OutOfLogRangeException extends \BreakpointDebugging_Ex
 {
 
 }
-
-?>

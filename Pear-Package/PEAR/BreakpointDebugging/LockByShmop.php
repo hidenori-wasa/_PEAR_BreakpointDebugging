@@ -46,7 +46,7 @@
  *      '1' means that process is not between "lock()" and "unlock()".
  *      '2' means that process is between "lock()" and "unlock()".
  *
- * PHP version 5.3.x, 5.4.x
+ * PHP version 5.3.2-5.4.x
  *
  * LICENSE OVERVIEW:
  * 1. Do not change license text.

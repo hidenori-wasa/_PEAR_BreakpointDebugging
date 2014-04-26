@@ -7,7 +7,7 @@
  * "*_InDebug.php" file does not use on release. Therefore, response time is zero on release.
  * These file names put "_" to become error when we do autoload.
  *
- * PHP version 5.3.x, 5.4.x
+ * PHP version 5.3.2-5.4.x
  *
  * LICENSE OVERVIEW:
  * 1. Do not change license text.
