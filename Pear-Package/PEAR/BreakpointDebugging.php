@@ -247,6 +247,11 @@ abstract class BreakpointDebugging_InAllCase
      */
     protected static $onceFlagPerPackage = array ();
 
+    /**
+     * @var bool Is it spl autoload call?
+     */
+    private static $_isSplAutoLoadCall = false;
+
     ///////////////////////////// For package user from here. /////////////////////////////
     /**
      * Debugs by using breakpoint.
@@ -706,7 +711,7 @@ EOD;
             return B::chmod($params[0], $permission, $timeout, $sleepMicroSeconds);
         }
         // @codeCoverageIgnoreStart
-        // Because "PHPUnit" throws "\BreakpointDebugging_ErrorException".
+        // Because "PHPUnit" package throws exception.
         return false;
         // @codeCoverageIgnoreEnd
     }
@@ -768,7 +773,7 @@ EOD;
                 }
                 if ($isTermination) {
                     // @codeCoverageIgnoreStart
-                    // Because "PHPUnit" throws "\BreakpointDebugging_ErrorException".
+                    // Because "PHPUnit" package throws exception.
                     return false;
                     // @codeCoverageIgnoreEnd
                 }
@@ -811,7 +816,7 @@ EOD;
                 return $pFile;
             }
             // @codeCoverageIgnoreStart
-            // Because "PHPUnit" throws "\BreakpointDebugging_ErrorException".
+            // Because "PHPUnit" package throws exception.
         }
         return false;
         // @codeCoverageIgnoreEnd
@@ -1055,7 +1060,7 @@ EOD;
      *
      * @return string Resource URI which copied to current work directory.
      */
-    static function CopyResourceToCWD($resourceFileName, $resourceDirectoryPath)
+    static function copyResourceToCWD($resourceFileName, $resourceDirectoryPath)
     {
         $cwd = getcwd();
         $relativeCWD = substr($cwd, strlen($_SERVER['DOCUMENT_ROOT']) - strlen($cwd) + 1);
@@ -1087,11 +1092,11 @@ EOD;
 
         if (!array_key_exists(__FUNCTION__, self::$_onceJavaScript)) {
             self::$_onceJavaScript[__FUNCTION__] = true;
-            $javaScript .= file_get_contents(__DIR__ . '/BreakpointDebugging/js/BreakpointDebugging_DOMWindow.js');
+            $javaScript .= file_get_contents(__DIR__ . '/BreakpointDebugging/js/DOM.js');
         }
 
         $htmlFileContent = str_replace(array ('\\', '\'', "\r", "\n"), array ('\\\\', '\\\'', '\r', '\n'), $htmlFileContent);
-        $javaScript .= "BreakpointDebugging_windowVertualOpen('$windowName', '$htmlFileContent');" . PHP_EOL;
+        $javaScript .= "BreakpointDebugging_windowVirtualOpen('$windowName', '$htmlFileContent');" . PHP_EOL;
 
         self::executeJavaScript($javaScript);
     }
@@ -1340,6 +1345,20 @@ EOD;
      */
     final static function loadClass($className)
     {
+        if (self::$_nativeExeMode & self::UNIT_TEST) {
+            if (!self::$_isSplAutoLoadCall) {
+                self::$_isSplAutoLoadCall = true;
+                $exception = false;
+                try {
+                    spl_autoload_call($className);
+                } catch (\Exception $e) {
+                    $exception = $e;
+                }
+                self::$_isSplAutoLoadCall = false;
+                return $exception;
+            }
+        }
+
         // Trims the left name space root.
         $className = ltrim($className, '\\');
         // Changes underscore and name space separator to directory separator.
@@ -1347,7 +1366,6 @@ EOD;
         $absoluteFilePath = stream_resolve_include_path($filePath);
         if ($absoluteFilePath !== false) {
             include_once $absoluteFilePath;
-            return true;
         }
         return false;
     }

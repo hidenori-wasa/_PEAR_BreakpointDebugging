@@ -1,7 +1,8 @@
 <?php
 
-// Please, see "\BreakpointDebugging_PHPUnit::executeUnitTest()" class method document for detail.
-
+/**
+ * @See "BreakpointDebugging_PHPUnit.php" file level document for detail.
+ */
 use \BreakpointDebugging as B;
 use \BreakpointDebugging_PHPUnit as BU;
 
@@ -104,7 +105,7 @@ class Example2Test extends \BreakpointDebugging_PHPUnit_FrameworkTestCaseSimple
 
     function isCalled()
     {
-        throw new \BreakpointDebugging_ErrorException('Something message.', 101); // This is reflected in "@expectedException" and "@expectedExceptionMessage".
+        throw new \BreakpointDebugging_ErrorException('Something message.', 101); // This is not reflected in "@expectedException" and "@expectedExceptionMessage".
     }
 
     public function testSomething_A()
@@ -132,7 +133,7 @@ class Example2Test extends \BreakpointDebugging_PHPUnit_FrameworkTestCaseSimple
         try {
             $this->isCalled();
         } catch (\BreakpointDebugging_ErrorException $e) {
-            parent::assertTrue(strpos($e->getMessage(), 'CLASS=ExampleTest FUNCTION=isCalled ID=101.') !== false);
+            BU::assertExceptionMessage($e, 'CLASS=Example2Test FUNCTION=isCalled ID=101.');
             return;
         }
         parent::fail();
@@ -150,7 +151,7 @@ class Example2Test extends \BreakpointDebugging_PHPUnit_FrameworkTestCaseSimple
             B::assert(true, 101);
             B::assert(false, 102);
         } catch (\BreakpointDebugging_ErrorException $e) {
-            parent::assertTrue(strpos($e->getMessage(), 'CLASS=Example2Test FUNCTION=testSomething_B ID=102.') !== false);
+            BU::assertExceptionMessage($e, 'CLASS=Example2Test FUNCTION=testSomething_B ID=102.');
             return;
         }
         parent::fail();

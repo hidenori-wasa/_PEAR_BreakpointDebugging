@@ -188,7 +188,8 @@ class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_PH
     {
         parent::markTestSkippedInRelease(); // Because this unit test is assertion.
 
-        if ((BU::$exeMode & B::REMOTE) && !extension_loaded('shmop')
+        if ((BU::$exeMode & B::REMOTE) //
+            && !extension_loaded('shmop') //
         ) {
             $this->markTestSkipped('"shmop" extention has been not loaded.');
         }

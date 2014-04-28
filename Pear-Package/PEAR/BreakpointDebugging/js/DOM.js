@@ -1,4 +1,19 @@
-function BreakpointDebugging_windowVertualOpen($windowName, $htmlFileContent)
+/**
+ * LICENSE:
+ * Copyright (c) 2014, Hidenori Wasa
+ * All rights reserved.
+ * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
+ */
+
+/**
+ * Opens virtual window or tab.
+ *
+ * @param {string} $windowName      Window name.
+ * @param {string} $htmlFileContent HTML file content.
+ *
+ * @returns void
+ */
+function BreakpointDebugging_windowVirtualOpen($windowName, $htmlFileContent)
 {
     open("", $windowName, "").close();
     var $newDocument = open("", $windowName, "").document;
@@ -6,6 +21,13 @@ function BreakpointDebugging_windowVertualOpen($windowName, $htmlFileContent)
     $newDocument.close();
 }
 
+/**
+ * Displays window to front.
+ *
+ * @param {string} $windowName Window name.
+ *
+ * @returns void
+ */
 function BreakpointDebugging_windowFront($windowName)
 {
     // Gets content of HTML tag.

@@ -11,7 +11,8 @@ class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_PHPUnit_F
     {
         parent::setUp();
         // Checks shared memory operation extension existence.
-        if ((BU::$exeMode & B::REMOTE) && !extension_loaded('shmop')
+        if ((BU::$exeMode & B::REMOTE) //
+            && !extension_loaded('shmop') //
         ) {
             $this->markTestSkipped('"shmop" extention has been not loaded.');
         }

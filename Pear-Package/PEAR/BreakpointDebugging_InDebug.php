@@ -7,6 +7,8 @@
  * These file names put "_" to cause error when we do autoload.
  *
  * ### The basic concept. ###
+ * First, I thank it that I could learn concept of debugging with "WRITING SOLID CODE" (Author: Steve Maguire : Microsoft Press, 1995).
+ *
  * This is package for breakpoint debugging.
  * Also, you can use as basics of other PHP program or PEAR package if you want
  * because this package has necessary minimum features.

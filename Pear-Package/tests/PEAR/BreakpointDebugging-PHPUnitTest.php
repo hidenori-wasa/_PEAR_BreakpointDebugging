@@ -47,41 +47,32 @@ class BreakpointDebugging_PHPUnitTest extends \BreakpointDebugging_PHPUnit_Frame
         $breakpointDebuggingPHPUnit->executeUnitTest($testFileNames);
 
         $testFileNames = array (
-            'Example_Test.php',
+            'ExampleTest.php',
         );
         BU::$exeMode |= B::IGNORING_BREAK_POINT;
         BU::setPropertyForTest('BreakpointDebugging_PHPUnit', '$unitTestDir', null);
-        $breakpointDebuggingPHPUnit->executeUnitTest($testFileNames);
+        try {
+            $breakpointDebuggingPHPUnit->executeUnitTest($testFileNames);
+        } catch (\BreakpointDebugging_ErrorException $e) {
+            BU::assertExceptionMessage($e, 'CLASS=BreakpointDebugging_PHPUnit FUNCTION=executeUnitTest ID=101.');
+        }
     }
 
-    public function testExecuteUnitTest_2_InRelease()
+    function testExecuteUnitTest_E()
     {
         if (BU::$exeMode & B::REMOTE) {
             return;
         }
-        if (parent::markTestSkippedInDebug()) {
-            return;
-        }
-
         $testFileNames = array (
             'NotExistTest.php',
         );
-        ob_start();
         BU::setPropertyForTest('BreakpointDebugging_PHPUnit', '$unitTestDir', null);
         $breakpointDebuggingPHPUnit = new \BreakpointDebugging_PHPUnit();
-        $breakpointDebuggingPHPUnit->executeUnitTest($testFileNames);
-    }
-
-    public function testDisplayCodeCoverageReport_InRelease()
-    {
-        if (parent::markTestSkippedInDebug()) {
-            return;
+        try {
+            $breakpointDebuggingPHPUnit->executeUnitTest($testFileNames);
+        } catch (\BreakpointDebugging_ErrorException $e) {
+            BU::assertExceptionMessage($e, 'CLASS=BreakpointDebugging_PHPUnit FUNCTION=executeUnitTest ID=102.');
         }
-
-        ob_start();
-        $breakpointDebuggingPHPUnit = new \BreakpointDebugging_PHPUnit();
-        $breakpointDebuggingPHPUnit->displayCodeCoverageReport('BreakpointDebugging/OverrideClassTest.php', 'PEAR/BreakpointDebugging/OverrideClass.php');
-        $breakpointDebuggingPHPUnit->displayCodeCoverageReport('BreakpointDebugging/OverrideClassTest.php', array ('PEAR/BreakpointDebugging/OverrideClass.php'));
     }
 
     public function testGetPropertyForTest()
@@ -180,38 +171,6 @@ class BreakpointDebugging_PHPUnitTest extends \BreakpointDebugging_PHPUnit_Frame
             BU::setPropertyForTest($pBreakpointDebuggingTestExample, '$notExistPropertyName', 'change');
         } catch (\BreakpointDebugging_ErrorException $e) {
             parent::assertTrue(strpos($e->getMessage(), 'CLASS=BreakpointDebugging_PHPUnit FUNCTION=setPropertyForTest ID=101.') !== false);
-        }
-    }
-
-    function testExecuteUnitTest()
-    {
-        if (BU::$exeMode & B::REMOTE) {
-            return;
-        }
-
-        $testFileNames = array (
-            'ExampleTest.php',
-        );
-        BU::setPropertyForTest('BreakpointDebugging_PHPUnit', '$unitTestDir', null);
-        ob_start();
-        $breakpointDebuggingPHPUnit = new \BreakpointDebugging_PHPUnit();
-        $breakpointDebuggingPHPUnit->executeUnitTest($testFileNames);
-    }
-
-    function testExecuteUnitTest_E()
-    {
-        if (BU::$exeMode & B::REMOTE) {
-            return;
-        }
-        $testFileNames = array (
-            'NotExistTest.php',
-        );
-        BU::setPropertyForTest('BreakpointDebugging_PHPUnit', '$unitTestDir', null);
-        $breakpointDebuggingPHPUnit = new \BreakpointDebugging_PHPUnit();
-        try {
-            $breakpointDebuggingPHPUnit->executeUnitTest($testFileNames);
-        } catch (\BreakpointDebugging_ErrorException $e) {
-            parent::assertTrue(strpos($e->getMessage(), 'CLASS=BreakpointDebugging_PHPUnit FUNCTION=executeUnitTest ID=102.') !== false);
         }
     }
 
