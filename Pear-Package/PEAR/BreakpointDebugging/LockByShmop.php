@@ -8,7 +8,7 @@
  * to "$workDir = &B::refStatic('$_workDir'); $workDir = <work directory>;"
  * of "BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php'".
  *
- * @example of usage.
+ * Example of usage.
  *      $lockByShmop = &\BreakpointDebugging_LockByShmop::singleton(); // Creates a lock instance.
  *      $lockByShmop->lock(); // Locks php-code.
  *      try {

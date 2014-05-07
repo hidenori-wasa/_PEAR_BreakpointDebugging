@@ -21,7 +21,7 @@ class BreakpointDebuggingTestExample extends \BreakpointDebuggingTestExampleBase
 
 }
 
-class BreakpointDebugging_PHPUnitTest extends \BreakpointDebugging_PHPUnit_FrameworkTestCaseSimple
+class BreakpointDebugging_PHPUnitTestSimple extends \BreakpointDebugging_PHPUnit_FrameworkTestCaseSimple
 {
     public function testIsUnitTestExeMode()
     {

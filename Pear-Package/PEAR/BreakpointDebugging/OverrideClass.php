@@ -214,8 +214,8 @@ class BreakpointDebugging_OverrideClass
      *
      * @return object Created object.
      *
-     * @example $pNativeClass = self::newArray('\class_name', func_get_args());
-     *           $pNativeClass = self::newArray('\class_name', array ($object, $resource, &$reference));
+     * Example: $pNativeClass = self::newArray('\class_name', func_get_args());
+     *          $pNativeClass = self::newArray('\class_name', array ($object, $resource, &$reference));
      */
     final protected static function newArray($className, $params)
     {

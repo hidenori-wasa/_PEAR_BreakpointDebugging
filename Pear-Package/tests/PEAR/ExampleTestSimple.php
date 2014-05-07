@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @See "BreakpointDebugging_PHPUnit.php" file level document for detail.
+ * Please, see "BreakpointDebugging_PHPUnit.php" file-level document for detail.
  */
 use \BreakpointDebugging as B;
 use \BreakpointDebugging_PHPUnit as BU;
@@ -40,7 +40,7 @@ class LocalStaticVariableOfStaticMethod2
 // spl_autoload_register('\ExampleTest::loadClass', true, true); // We must not register "loadClass" function at top of stack by "spl_autoload_register()". (Autodetects)
 //
 // include_once __DIR__ . '/AFile.php'; // We must not include a file because "loadClass" is only once per file. (Autodetects)
-class Example2Test extends \BreakpointDebugging_PHPUnit_FrameworkTestCaseSimple
+class ExampleTestSimple extends \BreakpointDebugging_PHPUnit_FrameworkTestCaseSimple
 {
     private $_pTestObject;
 
@@ -133,7 +133,7 @@ class Example2Test extends \BreakpointDebugging_PHPUnit_FrameworkTestCaseSimple
         try {
             $this->isCalled();
         } catch (\BreakpointDebugging_ErrorException $e) {
-            BU::assertExceptionMessage($e, 'CLASS=Example2Test FUNCTION=isCalled ID=101.');
+            BU::assertExceptionMessage($e, 'CLASS=ExampleTestSimple FUNCTION=isCalled ID=101.');
             return;
         }
         parent::fail();
@@ -151,7 +151,7 @@ class Example2Test extends \BreakpointDebugging_PHPUnit_FrameworkTestCaseSimple
             B::assert(true, 101);
             B::assert(false, 102);
         } catch (\BreakpointDebugging_ErrorException $e) {
-            BU::assertExceptionMessage($e, 'CLASS=Example2Test FUNCTION=testSomething_B ID=102.');
+            BU::assertExceptionMessage($e, 'CLASS=ExampleTestSimple FUNCTION=testSomething_B ID=102.');
             return;
         }
         parent::fail();

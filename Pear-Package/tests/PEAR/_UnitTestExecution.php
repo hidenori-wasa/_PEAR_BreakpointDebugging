@@ -47,11 +47,11 @@ if (B::getStatic('$exeMode') & B::RELEASE) { // In case of release.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Please, choose unit tests files by customizing.
 $breakpointDebugging_UnitTestFiles = array (
-    'Example2Test.php',
-    'BreakpointDebugging-PHPUnitTest.php',
+    'ExampleTestSimple.php',
+    'BreakpointDebugging-PHPUnitTestSimple.php',
 );
 
 // Executes unit tests of unit test code.
 $breakpointDebugging_PHPUnit->executeUnitTestSimple($breakpointDebugging_UnitTestFiles); exit;
 
-$breakpointDebugging_PHPUnit->displayCodeCoverageReportSimple('BreakpointDebugging-PHPUnitTest.php', 'BreakpointDebugging_PHPUnit.php'); exit;
+$breakpointDebugging_PHPUnit->displayCodeCoverageReportSimple('BreakpointDebugging-PHPUnitTestSimple.php', 'BreakpointDebugging_PHPUnit.php'); exit;

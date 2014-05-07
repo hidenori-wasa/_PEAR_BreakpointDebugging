@@ -231,9 +231,9 @@ abstract class BreakpointDebugging_InAllCase
 
     /**
      * @var array "$_GET" in case of common gateway, or "$_GET" which is built from last of command line parameters in case of command line.
-     * @example: $queryString = '"' . B::httpBuildQuery(array ('ADDITIONAL_KEY' => 1234)) . '"';
-     *           $pPipe = popen('php.exe -f example.php -- ' . $queryString, 'r'); // For Windows.
-     *           $pPipe = popen('php -f example.php -- ' . $queryString . ' &', 'r'); // For Unix.
+     * Example: $queryString = '"' . B::httpBuildQuery(array ('ADDITIONAL_KEY' => 1234)) . '"';
+     *          $pPipe = popen('php.exe -f example.php -- ' . $queryString, 'r'); // For Windows.
+     *          $pPipe = popen('php -f example.php -- ' . $queryString . ' &', 'r'); // For Unix.
      */
     private static $_get;
 
@@ -261,7 +261,7 @@ abstract class BreakpointDebugging_InAllCase
      * @param array  $callStackInfo A call stack info.
      *
      * @return void
-     * @example B::breakpoint('Error message.', debug_backtrace());
+     * Example: B::breakpoint('Error message.', debug_backtrace());
      * @codeCoverageIgnore
      * Because I do not want to stop at breakpoint.
      */
@@ -414,7 +414,7 @@ abstract class BreakpointDebugging_InAllCase
      *
      * @return void
      *
-     * @example
+     * Example:
      *      <?php
      *
      *      require_once './BreakpointDebugging_Inclusion.php';
@@ -565,7 +565,7 @@ EOD;
      *
      * @return void
      *
-     * @example \BreakpointDebugging::registerNotFixedLocation(self::$_isRegister[__METHOD__]);
+     * Example: \BreakpointDebugging::registerNotFixedLocation(self::$_isRegister[__METHOD__]);
      */
     final static function registerNotFixedLocation(&$isRegister)
     {
@@ -596,7 +596,7 @@ EOD;
      *
      * @return void
      *
-     * @example \BreakpointDebugging::addValuesToTrace(array('TEST_CONST' => TEST_CONST, '$testString' => $testString, '$varietyObject' => $varietyObject));
+     * Example: \BreakpointDebugging::addValuesToTrace(array('TEST_CONST' => TEST_CONST, '$testString' => $testString, '$varietyObject' => $varietyObject));
      */
     final static function addValuesToTrace($values)
     {
@@ -648,7 +648,7 @@ EOD;
      * @param string $string Character string which may be not UTF8.
      *
      * @return string UTF8 character string.
-     * @example \BreakpointDebugging::convertMbString($warning['Message']);
+     * Example: \BreakpointDebugging::convertMbString($warning['Message']);
      */
     static function convertMbString($string)
     {
@@ -842,7 +842,7 @@ EOD;
      * @param array $intArray Integer array.
      *
      * @return string Compression character string.
-     * @example fwrite($pFile, \BreakpointDebugging::compressIntArray(array(0xFFFFFFFF, 0x7C, 0x7D, 0x7E, 0x0A, 0x0D)));
+     * Example: fwrite($pFile, \BreakpointDebugging::compressIntArray(array(0xFFFFFFFF, 0x7C, 0x7D, 0x7E, 0x0A, 0x0D)));
      */
     static function compressIntArray($intArray)
     {
@@ -877,7 +877,7 @@ EOD;
      * @param mixed $compressBytes Compression character string by "\BreakpointDebugging::compressIntArray()".
      *
      * @return array Integer array.
-     * @example while ($intArray = \BreakpointDebugging::decompressIntArray(fgets($pFile))) {
+     * Example: while ($intArray = \BreakpointDebugging::decompressIntArray(fgets($pFile))) {
      */
     static function decompressIntArray($compressBytes)
     {
@@ -1480,7 +1480,7 @@ EOD;
      * @param int    $id      Exception identification number inside function.
      *
      * @return void
-     * @example \BreakpointDebugging::internalException($message, 1);
+     * Example: \BreakpointDebugging::internalException($message, 1);
      */
     final static function internalException($message, $id)
     {

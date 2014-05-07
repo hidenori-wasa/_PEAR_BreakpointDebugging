@@ -137,7 +137,7 @@ function BreakpointDebugging_setExecutionMode()
 function BreakpointDebugging_setExecutionModeFlags($executionMode)
 {
     /**
-     * @see "### Debug mode constant number ###" of class "BreakpointDebugging_InAllCase" in "BreakpointDebugging.php".
+     * See "### Debug mode constant number ###" of class "BreakpointDebugging_InAllCase" in "BreakpointDebugging.php".
      */
     // ### Debug mode number ###
     $REMOTE = 1;

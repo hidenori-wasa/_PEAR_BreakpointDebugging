@@ -359,7 +359,7 @@
  *      1. The speed decelerates hardly even if the number of users increases.
  *      2. This extention caches op code after optimization.
  *              As the example, we can code to except debugging code from cache at release.
- *              @example
+ *              Example:
  *                  if (false) { // Excepts from this line.
  *                      // Debug codes.
  *                          .
@@ -407,28 +407,28 @@
  * We do not need error and exception handler coding because an error and an exception
  * which wasn't caught are processed by global handler in "BreakpointDebugging" class.
  *
- * @example
- * <?php
+ * Example:
+ *      <?php
  *
- * require_once './BreakpointDebugging_Inclusion.php';
+ *      require_once './BreakpointDebugging_Inclusion.php';
  *
- * use \BreakpointDebugging as B;
+ *      use \BreakpointDebugging as B;
  *
- * B::checkExeMode(); // Checks the execution mode.
+ *      B::checkExeMode(); // Checks the execution mode.
  *
- * $exeMode = B::getStatic('$exeMode');
- * $logData = 'Data character string.';
- * if ($exeMode & B::RELEASE) { // If release execution mode.
- *      $lockByFlock = &\BreakpointDebugging_LockByFlock::singleton(); // Creates a lock instance.
- *      $lockByFlock->lock(); // Locks php-code.
- *      file_put_contents('Somethig.log', $logData);
- *      $lockByFlock->unlock(); // Unlocks php-code.
- * } else { // If debug execution mode.
- *      B::assert(is_string($logData));
- *      echo $logData;
- * }
+ *      $exeMode = B::getStatic('$exeMode');
+ *      $logData = 'Data character string.';
+ *      if ($exeMode & B::RELEASE) { // If release execution mode.
+ *          $lockByFlock = &\BreakpointDebugging_LockByFlock::singleton(); // Creates a lock instance.
+ *          $lockByFlock->lock(); // Locks php-code.
+ *          file_put_contents('Somethig.log', $logData);
+ *          $lockByFlock->unlock(); // Unlocks php-code.
+ *      } else { // If debug execution mode.
+ *          B::assert(is_string($logData));
+ *          echo $logData;
+ *      }
  *
- * ?>
+ *      ?>
  *
  * ### Running procedure. ###
  * Please, run the following procedure.
@@ -790,7 +790,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      * @param int   $timeout           Same as parent.
      * @param int   $sleepMicroSeconds Same as parent.
      *
-     * @example $pFile = B::fopen(array ($filePath, 'w+b'));
+     * Example: $pFile = B::fopen(array ($filePath, 'w+b'));
      *
      * @return Same as parent.
      */
@@ -1019,7 +1019,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      * @usage
      *      \BreakpointDebugging::assert(<judgment expression>[, <identification number inside function>]);
      *      It is possible to assert that <judgment expression> is "This must be". Especially, this uses to verify a function's argument.
-     *      @example: \BreakpointDebugging::assert(3 <= $value && $value <= 5); // $value should be 3-5.
+     *      Example: \BreakpointDebugging::assert(3 <= $value && $value <= 5); // $value should be 3-5.
      *      Caution: Don't change the value of variable in "\BreakpointDebugging::assert()" function because there isn't executed in case of release.
      */
     static function assert($assertion, $id = null)
@@ -1060,7 +1060,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      *
      * @return array Some changed variables.
      *
-     * @example $gDebugValue = \BreakpointDebugging::convertMbStringForDebug('SJIS', $scalar1, $array2, $scalar2);
+     * Example: $gDebugValue = \BreakpointDebugging::convertMbStringForDebug('SJIS', $scalar1, $array2, $scalar2);
      */
     static function convertMbStringForDebug()
     {
@@ -1145,7 +1145,7 @@ EOD;
      *
      * @return Executed function result.
      *
-     * @example $return = \BreakpointDebugging::displayVerification('function_name', func_get_args());
+     * Example: $return = \BreakpointDebugging::displayVerification('function_name', func_get_args());
      *          $return = \BreakpointDebugging::displayVerification('function_name', array($object, $resource, &$reference));
      */
     static function displayVerification($functionName, $params)

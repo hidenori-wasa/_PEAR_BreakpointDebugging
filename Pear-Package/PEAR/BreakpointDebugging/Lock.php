@@ -6,7 +6,7 @@
  * A synchronous object must be singleton because dead-lock occurs.
  * And, if you use derived class of this class, don't do other synchronous-process ( flock() and so on ) because dead-lock occurs.
  *
- * @example of dead-lock.
+ * Example of dead-lock.
  *      Process A locks file A, and process B locks file B.
  *      Then, process A is waiting for file B, and process B is waiting for file A.
  *
