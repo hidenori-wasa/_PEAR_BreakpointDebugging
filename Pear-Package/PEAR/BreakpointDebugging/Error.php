@@ -996,6 +996,51 @@ abstract class BreakpointDebugging_Error_InAllCase
     }
 
     /**
+     * Gets error HTML template.
+     *
+     * @param string $errorBodyContent Error body content.
+     *
+     * @return string Error HTML template.
+     */
+    static function getErrorHTMLTemplate($errorBodyContent)
+    {
+        $errorHtml = <<<EOD
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>ERROR</title>
+        <style type="text/css">
+        <!--
+        a:link
+        {
+            color: aqua;
+            text-decoration: underline;
+        }
+
+        a:visited
+        {
+            color: aqua;
+            text-decoration: underline;
+        }
+
+        a:active
+        {
+            color: aqua;
+            text-decoration: underline;
+        }
+        -->
+        </style>
+    </head>
+    <body style="background-color: black; color: white; font-size: 25px">
+        $errorBodyContent
+    </body>
+</html>
+EOD;
+        return $errorHtml;
+    }
+
+    /**
      * Build error call stack log except "E_NOTICE".
      *
      * @param string $errorKind    Error kind.
@@ -1246,40 +1291,7 @@ abstract class BreakpointDebugging_Error_InAllCase
         }
         if (!$this->isLogging) {
             self::$_errorBuffer .= ob_get_clean();
-            $errorBuffer = self::$_errorBuffer;
-            $errorHtmlFileContent = <<<EOD
-<!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="UTF-8" />
-        <title>ERROR</title>
-        <style type="text/css">
-        <!--
-        a:link
-        {
-            color: aqua;
-            text-decoration: underline;
-        }
-
-        a:visited
-        {
-            color: aqua;
-            text-decoration: underline;
-        }
-
-        a:active
-        {
-            color: aqua;
-            text-decoration: underline;
-        }
-        -->
-        </style>
-    </head>
-    <body style="background-color: black; color: white; font-size: 25px">
-        $errorBuffer
-    </body>
-</html>
-EOD;
+            $errorHtmlFileContent = self::getErrorHTMLTemplate(self::$_errorBuffer);
             // Makes error HTML file.
             file_put_contents(B::ERROR_WINDOW_NAME . '.html', $errorHtmlFileContent);
             // Opens its file at error window.

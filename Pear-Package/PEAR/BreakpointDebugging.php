@@ -125,6 +125,11 @@ abstract class BreakpointDebugging_InAllCase
     const ERROR_WINDOW_NAME = 'BreakpointDebugging_Error';
 
     /**
+     * @var object "\BreakpointDebugging_PHPUnit" instance.
+     */
+    private static $_phpUnit;
+
+    /**
      * @var mixed Temporary variable.
      */
     static $tmp;
@@ -316,6 +321,18 @@ abstract class BreakpointDebugging_InAllCase
     }
 
     /**
+     * Sets the "\BreakpointDebugging_PHPUnit" object.
+     *
+     * @param object $phpUnit "\BreakpointDebugging_PHPUnit".
+     */
+    static function setPHPUnit($phpUnit)
+    {
+        B::limitAccess('BreakpointDebugging_PHPUnit.php', true);
+
+        self::$_phpUnit = $phpUnit;
+    }
+
+    /**
      * Error exit. You can detect error exit location by call stack after break if you use this.
      *
      * @param mixed $error Error message or error exception instance.
@@ -329,7 +346,7 @@ abstract class BreakpointDebugging_InAllCase
         self::$exeMode &= ~B::IGNORING_BREAK_POINT;
         if (self::$_nativeExeMode & self::UNIT_TEST) {
             // Uses "BreakpointDebugging" package autoloader.
-            spl_autoload_unregister('\BreakpointDebugging_PHPUnit_StaticVariableStorage::loadClass');
+            spl_autoload_unregister(array (self::$_phpUnit->getStaticVariableStorageInstance(), 'loadClass'));
         }
         // If this is not production release.
         if (self::$_nativeExeMode !== (self::REMOTE | self::RELEASE)) {
@@ -1204,6 +1221,25 @@ EOD;
         self::executeJavaScript($javaScript);
     }
 
+    /**
+     * Displays an error into error window, and exits.
+     *
+     * @param string $message Error message by "PHP_EOL".
+     *
+     * @return void
+     */
+    static function windowExitForError($message)
+    {
+        B::windowVirtualOpen(B::ERROR_WINDOW_NAME, B::getErrorHtmlFileTemplate());
+        B::windowHtmlAddition(B::ERROR_WINDOW_NAME, 'pre', 0, $message);
+        B::windowFront(B::ERROR_WINDOW_NAME);
+        if (function_exists('xdebug_break')) {
+            flush();
+            xdebug_break();
+        }
+        exit;
+    }
+
     ///////////////////////////// For package user until here. /////////////////////////////
     /**
      * For "self::iniSet()" and "self::iniCheck()".
@@ -1259,7 +1295,7 @@ EOD;
      *
      * @return string Error HTML template.
      */
-    static protected function getErrorHtmlFileTemplate()
+    static function getErrorHtmlFileTemplate()
     {
         return <<<EOD
 <!DOCTYPE html>
@@ -1616,12 +1652,12 @@ if ($_BreakpointDebugging_EXE_MODE & BA::RELEASE) { // In case of release.
                         // Because unit test is exited.
                         ini_set('xdebug.var_display_max_depth', 5);
 
-                        parent::windowVirtualOpen(parent::ERROR_WINDOW_NAME, BA::getErrorHtmlFileTemplate());
+                        parent::windowVirtualOpen(parent::ERROR_WINDOW_NAME, parent::getErrorHtmlFileTemplate());
                         ob_start();
 
                         var_dump(debug_backtrace());
 
-                        self::windowHtmlAddition(self::ERROR_WINDOW_NAME, 'pre', 0, ob_get_clean());
+                        parent::windowHtmlAddition(parent::ERROR_WINDOW_NAME, 'pre', 0, ob_get_clean());
 
                         // Ends the output buffering.
                         while (ob_get_level() > 0) {

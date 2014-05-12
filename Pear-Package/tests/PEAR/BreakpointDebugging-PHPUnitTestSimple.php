@@ -44,7 +44,7 @@ class BreakpointDebugging_PHPUnitTestSimple extends \BreakpointDebugging_PHPUnit
         );
         BU::setPropertyForTest('BreakpointDebugging_PHPUnit', '$unitTestDir', null);
         $breakpointDebuggingPHPUnit = new \BreakpointDebugging_PHPUnit();
-        $breakpointDebuggingPHPUnit->executeUnitTest($testFileNames);
+        $breakpointDebuggingPHPUnit->executeUnitTest($testFileNames, '', 'PHPUNIT_OWN');
 
         $testFileNames = array (
             'ExampleTest.php',
@@ -52,7 +52,7 @@ class BreakpointDebugging_PHPUnitTestSimple extends \BreakpointDebugging_PHPUnit
         BU::$exeMode |= B::IGNORING_BREAK_POINT;
         BU::setPropertyForTest('BreakpointDebugging_PHPUnit', '$unitTestDir', null);
         try {
-            $breakpointDebuggingPHPUnit->executeUnitTest($testFileNames);
+            $breakpointDebuggingPHPUnit->executeUnitTest($testFileNames, '', 'PHPUNIT_OWN');
         } catch (\BreakpointDebugging_ErrorException $e) {
             BU::assertExceptionMessage($e, 'CLASS=BreakpointDebugging_PHPUnit FUNCTION=executeUnitTest ID=101.');
         }
@@ -69,7 +69,7 @@ class BreakpointDebugging_PHPUnitTestSimple extends \BreakpointDebugging_PHPUnit
         BU::setPropertyForTest('BreakpointDebugging_PHPUnit', '$unitTestDir', null);
         $breakpointDebuggingPHPUnit = new \BreakpointDebugging_PHPUnit();
         try {
-            $breakpointDebuggingPHPUnit->executeUnitTest($testFileNames);
+            $breakpointDebuggingPHPUnit->executeUnitTest($testFileNames, '', 'PHPUNIT_OWN');
         } catch (\BreakpointDebugging_ErrorException $e) {
             BU::assertExceptionMessage($e, 'CLASS=BreakpointDebugging_PHPUnit FUNCTION=executeUnitTest ID=102.');
         }
