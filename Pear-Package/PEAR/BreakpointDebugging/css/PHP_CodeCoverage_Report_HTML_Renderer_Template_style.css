@@ -465,7 +465,8 @@ span.LegendNoCov
 /* Source code view: format for lines which are dead code */
 span.lineDeadCode
 {
-    background-color: #d3d7cf;
+    /* background-color: #d3d7cf; Hidenori Wasa added. */
+    background-color: gray;
 }
 
 /* Source code view: format for NoCov legend */

@@ -118,9 +118,9 @@
  *      Because "apt-get" command controls version of "LAMP", "phpMyAdmin" and "XDebug" for OS.
  *      Therefore, we can do step execution.
  * Recommendation environment for "PHP5.4" Linux.
- *      "Ubuntu14.04LTS desktop" + "This Ubuntu's LAMP" + "This Ubuntu's XDebug".
+ *      "Ubuntu13.10 desktop" + "This Ubuntu's LAMP" + "This Ubuntu's XDebug".
  * Recommendation environment for "PHP5.5" Linux.
- *      "From 'Ubuntu14.10 desktop' until 'Ubuntu16.04LTS desktop'" + "This Ubuntu's LAMP" + "This Ubuntu's XDebug".
+ *      "Ubuntu14.04LTS desktop" + "This Ubuntu's LAMP" + "This Ubuntu's XDebug".
  *
  * Recommendation setting procedure for development of "Ubuntu12.04LTS desktop".
  *      ### Uninstalling procedure. ###

@@ -27,7 +27,7 @@ $breakpointDebugging_UnitTestFiles = array (
 );
 
 // Executes unit tests.
-$breakpointDebugging_PHPUnit->executeUnitTest($breakpointDebugging_UnitTestFiles); exit;
+// $breakpointDebugging_PHPUnit->executeUnitTest($breakpointDebugging_UnitTestFiles); exit;
 //
 // Makes up code coverage report, then displays in browser.
 if (B::getStatic('$exeMode') & B::RELEASE) { // In case of release.
@@ -51,9 +51,10 @@ $breakpointDebugging_UnitTestFiles = array (
 );
 
 // Executes unit tests of unit test code.
-$breakpointDebugging_PHPUnit->executeUnitTestSimple($breakpointDebugging_UnitTestFiles); exit;
-
-// $breakpointDebugging_PHPUnit->displayCodeCoverageReportSimple('BreakpointDebugging-PHPUnitTestSimple.php', 'BreakpointDebugging_PHPUnit.php'); exit;
+// $breakpointDebugging_PHPUnit->executeUnitTestSimple($breakpointDebugging_UnitTestFiles); exit;
+//
+$breakpointDebugging_PHPUnit->displayCodeCoverageReportSimple($breakpointDebugging_UnitTestFiles, 'BreakpointDebugging/LockByFlock.php'); exit;
+// $breakpointDebugging_PHPUnit->displayCodeCoverageReportSimple($breakpointDebugging_UnitTestFiles, 'BreakpointDebugging/PHPUnit/FrameworkTestCaseSimple.php'); exit;
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Please, choose unit tests files by customizing.
 $breakpointDebugging_UnitTestFiles = array (
@@ -61,6 +62,7 @@ $breakpointDebugging_UnitTestFiles = array (
 );
 
 // Executes unit tests of unit test code.
-$breakpointDebugging_PHPUnit->executeUnitTestSimple($breakpointDebugging_UnitTestFiles, 'SIMPLE_OWN'); exit;
-
-// $breakpointDebugging_PHPUnit->displayCodeCoverageReportSimple('BreakpointDebugging-PHPUnitTestSimple.php', 'BreakpointDebugging_PHPUnit.php'); exit;
+// $breakpointDebugging_PHPUnit->executeUnitTestSimple($breakpointDebugging_UnitTestFiles, 'SIMPLE_OWN'); exit;
+//
+// $breakpointDebugging_PHPUnit->displayCodeCoverageReportSimple($breakpointDebugging_UnitTestFiles, 'BreakpointDebugging_PHPUnit.php', 'SIMPLE_OWN'); exit;
+// $breakpointDebugging_PHPUnit->displayCodeCoverageReportSimple($breakpointDebugging_UnitTestFiles, 'BreakpointDebugging/PHPUnit/FrameworkTestCase.php', 'SIMPLE_OWN'); exit;
