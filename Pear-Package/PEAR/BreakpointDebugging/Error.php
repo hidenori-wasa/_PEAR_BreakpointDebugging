@@ -44,6 +44,7 @@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
 use \BreakpointDebugging as B;
+use \BreakpointDebugging_Window as BW;
 
 /**
  * This class do error or exception handling.
@@ -689,7 +690,7 @@ abstract class BreakpointDebugging_Error_InAllCase
                 // Unlocks the error log files.
                 $lockByFileExisting->unlock();
             } else { // If this displays.
-                B::windowHtmlAddition(B::ERROR_WINDOW_NAME, 'pre', 0, $log);
+                BW::htmlAddition(B::ERROR_WINDOW_NAME, 'pre', 0, $log);
             }
             B::breakpoint($message, $callStack);
         } catch (\Exception $e) {

@@ -59,6 +59,7 @@
 require_once './BreakpointDebugging_Inclusion.php';
 
 use \BreakpointDebugging as B;
+use \BreakpointDebugging_Window as BW;
 
 /**
  * Error log files manager.
@@ -147,8 +148,8 @@ EOD;
         try {
             $errorLogDirectory = B::getStatic('$_workDir') . \BreakpointDebugging_Error::getErrorLogDir();
             if (!is_dir($errorLogDirectory)) {
-                B::windowVirtualOpen(__CLASS__, $errorHtmlFileContent);
-                B::windowHtmlAddition(__CLASS__, 'pre', 0, 'Error log directory does not exist.');
+                BW::virtualOpen(__CLASS__, $errorHtmlFileContent);
+                BW::htmlAddition(__CLASS__, 'pre', 0, 'Error log directory does not exist.');
                 goto END_LABEL;
             }
             $errorLogDirElements = scandir($errorLogDirectory);
@@ -179,8 +180,8 @@ EOD;
                     // Deletes the error log file, variable configuring file or the error location file.
                     B::unlink(array ($errorLogDirElementPath));
                 }
-                B::windowVirtualOpen(__CLASS__, $errorHtmlFileContent);
-                B::windowHtmlAddition(__CLASS__, 'pre', 0, 'You must comment out "$developerIP = \'' . $_SERVER['REMOTE_ADDR'] . '\';" inside "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file before your IP is changed.');
+                BW::virtualOpen(__CLASS__, $errorHtmlFileContent);
+                BW::htmlAddition(__CLASS__, 'pre', 0, 'You must comment out "$developerIP = \'' . $_SERVER['REMOTE_ADDR'] . '\';" inside "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file before your IP is changed.');
             } else if (isset($_GET['reset'])) { // When you pushed "Reset error log files" button.
                 // Searches the files which should delete.
                 foreach ($errorLogDirElements as $errorLogDirElement) {
@@ -191,8 +192,8 @@ EOD;
                     // Deletes the error log file, variable configuring file or the error location file.
                     B::unlink(array ($errorLogDirElementPath));
                 }
-                B::windowVirtualOpen(__CLASS__, $errorHtmlFileContent);
-                B::windowHtmlAddition(__CLASS__, 'pre', 0, 'You must comment out "$developerIP = \'' . $_SERVER['REMOTE_ADDR'] . '\';" inside "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file before your IP is changed.');
+                BW::virtualOpen(__CLASS__, $errorHtmlFileContent);
+                BW::htmlAddition(__CLASS__, 'pre', 0, 'You must comment out "$developerIP = \'' . $_SERVER['REMOTE_ADDR'] . '\';" inside "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file before your IP is changed.');
             } else { // In case of first time when this page was called.
                 echo '<body style="background-color:black;color:white">';
                 $thisFileName = basename(__FILE__);

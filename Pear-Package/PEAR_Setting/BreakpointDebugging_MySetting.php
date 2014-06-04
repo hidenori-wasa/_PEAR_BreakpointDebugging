@@ -55,6 +55,18 @@ if (preg_match('`^WIN`xXi', PHP_OS)) {
 }
 
 global $_BreakpointDebugging_EXE_MODE;
+
+$_BreakpointDebugging_modeError = function() {
+    $errorMessage = <<<EOD
+You must set
+    "BREAKPOINTDEBUGGING_MODE=DEBUG_UNIT_TEST",
+    "BREAKPOINTDEBUGGING_MODE=RELEASE_UNIT_TEST",
+    "BREAKPOINTDEBUGGING_MODE=DEBUG" or
+    "BREAKPOINTDEBUGGING_MODE=RELEASE"
+to this project execution parameter.
+EOD;
+    exit('<pre><b>' . $errorMessage . '</b></pre>');
+};
 /**
  * Sets execution mode.
  *
@@ -100,6 +112,10 @@ function BreakpointDebugging_setExecutionMode()
             if ($serverUser['name'] !== $osUserName) { // If server user name is not OS user name.
                 exit('<pre>' . htmlspecialchars("You must set 'User $osUserName' and 'Group <your group name>' of 'httpd.conf' file.", ENT_QUOTES) . '</pre>');
             }
+        }
+        if (!array_key_exists('BREAKPOINTDEBUGGING_MODE', $_BreakpointDebugging_get)) {
+            global $_BreakpointDebugging_modeError;
+            $_BreakpointDebugging_modeError();
         }
         $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags($_BreakpointDebugging_get['BREAKPOINTDEBUGGING_MODE']);
         $REMOTE = 1;
@@ -169,18 +185,13 @@ function BreakpointDebugging_setExecutionModeFlags($executionMode)
         }
     }
 
-    $errorMessage = <<<EOD
-You must set
-    "BREAKPOINTDEBUGGING_MODE=DEBUG_UNIT_TEST",
-    "BREAKPOINTDEBUGGING_MODE=RELEASE_UNIT_TEST",
-    "BREAKPOINTDEBUGGING_MODE=DEBUG" or
-    "BREAKPOINTDEBUGGING_MODE=RELEASE"
-to this project execution parameter.
-EOD;
-    exit('<pre><b>' . $errorMessage . '</b></pre>');
+    global $_BreakpointDebugging_modeError;
+    $_BreakpointDebugging_modeError();
 }
 
 BreakpointDebugging_setExecutionMode();
+
+unset($_BreakpointDebugging_modeError);
 
 require_once 'BreakpointDebugging.php'; // 'BreakpointDebugging.php' must require_once because it is base of all class, and it sets php.ini, and it sets autoload.
 /**

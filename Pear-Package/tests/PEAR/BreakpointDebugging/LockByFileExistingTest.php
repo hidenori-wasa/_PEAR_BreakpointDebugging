@@ -32,7 +32,7 @@ class BreakpointDebugging_LockByFileExistingTest extends \BreakpointDebugging_PH
         $this->lockByFileExisting = null;
         $this->lockByFileExistingInternal = null;
         $main = new \tests_PEAR_BreakpointDebugging_MultiprocessTest_Main();
-        if (!$main->test(1234, '\BreakpointDebugging_LockByFileExisting')) {
+        if (!$main->test(1111, '\BreakpointDebugging_LockByFileExisting')) {
             parent::fail();
         }
     }

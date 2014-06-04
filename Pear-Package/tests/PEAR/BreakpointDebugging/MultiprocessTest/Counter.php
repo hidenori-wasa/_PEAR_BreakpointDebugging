@@ -12,7 +12,7 @@ abstract class Counter
     function __construct($shmopKey)
     {
         $this->shmopId = shmop_open($shmopKey, 'w', 0, 0);
-        if ($this->shmopId === false) {
+        if (empty($this->shmopId)) {
             B::exitForError('Failed "shmop_open()".');
         }
     }

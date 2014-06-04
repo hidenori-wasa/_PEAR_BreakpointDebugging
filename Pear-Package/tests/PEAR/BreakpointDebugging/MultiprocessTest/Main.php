@@ -4,7 +4,6 @@ use \BreakpointDebugging as B;
 
 class tests_PEAR_BreakpointDebugging_MultiprocessTest_Main
 {
-
     private function _initializeCounter($shmopKey)
     {
         if (!extension_loaded('shmop')) {
@@ -28,12 +27,13 @@ class tests_PEAR_BreakpointDebugging_MultiprocessTest_Main
     {
         $this->_initializeCounter($shmopKey);
 
-        $fullFilePath = __DIR__ . '/Lock.php';
+        $fullFilePath = __DIR__ . '\Lock.php';
         $pPipes = array ();
         $queryString = '"' . B::httpBuildQuery(array ('SHMOP_KEY' => $shmopKey, 'CLASS_NAME' => $className)) . '"';
         for ($count = 0; $count < 2; $count++) {
             // Creates and runs a test process.
             if (BREAKPOINTDEBUGGING_IS_WINDOWS) { // For Windows.
+                // include_once $fullFilePath; // For debug.
                 $pPipe = popen('php.exe -f ' . $fullFilePath . ' -- ' . $queryString, 'r');
                 if ($pPipe === false) {
                     throw new \BreakpointDebugging_ErrorException('Failed to "popen()".');

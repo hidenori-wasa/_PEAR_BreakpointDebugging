@@ -84,6 +84,7 @@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
 use \BreakpointDebugging as B;
+use \BreakpointDebugging_Window as BW;
 
 /**
  * Class which locks php-code by shared memory operation.
@@ -340,35 +341,8 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
      */
     private function _buildSharedMemory()
     {
-        set_error_handler('\BreakpointDebugging::handleError', 0);
-        for ($count = 0; $count < 1000; $count++) {
-            $sharedMemoryKey = (microtime(true) * 10000) & 0xFFFFFFFF;
-            if ($sharedMemoryKey === -1) {
-                // @codeCoverageIgnoreStart
-                // Because this is a few probability.
-                continue;
-                // @codeCoverageIgnoreEnd
-            }
-            // It allocates shared memory area as current process number and minimum process number.
-            self::$sharedMemoryID = @shmop_open($sharedMemoryKey, 'n', 0600, self::MEMORY_BLOCK_SIZE);
-            if (self::$sharedMemoryID === false //
-                || self::$sharedMemoryID === null //
-            ) {
-                // @codeCoverageIgnoreStart
-                // Because this is a few probability.
-                continue;
-                // @codeCoverageIgnoreEnd
-            }
-            break;
-        }
-        restore_error_handler();
-
-        if (self::$sharedMemoryID === false) {
-            // @codeCoverageIgnoreStart
-            // Because this is a few probability.
-            throw new \BreakpointDebugging_ErrorException('New shared memory operation opening failed.', 101);
-            // @codeCoverageIgnoreEnd
-        }
+        $sharedMemoryKey = null;
+        list($sharedMemoryKey, self::$sharedMemoryID) = BW::buildSharedMemory(self::MEMORY_BLOCK_SIZE);
         // Register shared memory key.
         $result = rewind($this->pFile);
         B::assert($result !== false);

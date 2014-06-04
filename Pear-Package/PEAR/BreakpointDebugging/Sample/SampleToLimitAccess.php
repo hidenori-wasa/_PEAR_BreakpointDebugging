@@ -13,6 +13,7 @@ chdir('../../../');
 require_once './BreakpointDebugging_Inclusion.php';
 
 use \BreakpointDebugging as B;
+use \BreakpointDebugging_Window as BW;
 use \TestClass as T;
 
 B::checkExeMode(); // Checks the execution mode.
@@ -247,7 +248,7 @@ $htmlFileContent = <<<EOD
     </body>
 </html>
 EOD;
-B::windowVirtualOpen('BreakpointDebugging_limitAccess', $htmlFileContent);
-B::windowHtmlAddition('BreakpointDebugging_limitAccess', 'pre', 0, 'END.');
+BW::virtualOpen('BreakpointDebugging_limitAccess', $htmlFileContent);
+BW::htmlAddition('BreakpointDebugging_limitAccess', 'pre', 0, 'END.');
 
 ?>

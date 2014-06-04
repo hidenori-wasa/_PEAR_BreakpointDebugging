@@ -5,6 +5,7 @@ chdir(str_repeat('../', preg_match_all('`/`xX', $_SERVER['PHP_SELF'], $matches) 
 require_once './BreakpointDebugging_Inclusion.php';
 
 use \BreakpointDebugging as B;
+use \BreakpointDebugging_Window as BW;
 
 class Initialization
 {
@@ -43,8 +44,8 @@ class Initialization
     </body>
 </html>
 EOD;
-        B::windowVirtualOpen(__CLASS__, $htmlFileContent);
-        B::windowHtmlAddition(__CLASS__, 'pre', 0, '<b>Initialization is OK.' . PHP_EOL
+        BW::virtualOpen(__CLASS__, $htmlFileContent);
+        BW::htmlAddition(__CLASS__, 'pre', 0, '<b>Initialization is OK.' . PHP_EOL
             . 'Wait about 10 second until hard disk access stops.' . PHP_EOL
             . 'Then, close this window.' . PHP_EOL
             . 'Then, point location which tool tip does not display with mouse until the result is displayed.</b>'

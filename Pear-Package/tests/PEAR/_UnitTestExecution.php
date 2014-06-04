@@ -27,7 +27,7 @@ $breakpointDebugging_UnitTestFiles = array (
 );
 
 // Executes unit tests.
-// $breakpointDebugging_PHPUnit->executeUnitTest($breakpointDebugging_UnitTestFiles); exit;
+$breakpointDebugging_PHPUnit->executeUnitTest($breakpointDebugging_UnitTestFiles); exit;
 //
 // Makes up code coverage report, then displays in browser.
 if (B::getStatic('$exeMode') & B::RELEASE) { // In case of release.
@@ -51,7 +51,7 @@ $breakpointDebugging_UnitTestFiles = array (
 );
 
 // Executes unit tests of unit test code.
-// $breakpointDebugging_PHPUnit->executeUnitTestSimple($breakpointDebugging_UnitTestFiles); exit;
+$breakpointDebugging_PHPUnit->executeUnitTestSimple($breakpointDebugging_UnitTestFiles); exit;
 //
 $breakpointDebugging_PHPUnit->displayCodeCoverageReportSimple($breakpointDebugging_UnitTestFiles, 'BreakpointDebugging/LockByFlock.php'); exit;
 // $breakpointDebugging_PHPUnit->displayCodeCoverageReportSimple($breakpointDebugging_UnitTestFiles, 'BreakpointDebugging/PHPUnit/FrameworkTestCaseSimple.php'); exit;

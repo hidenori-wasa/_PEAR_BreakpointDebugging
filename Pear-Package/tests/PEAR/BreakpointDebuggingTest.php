@@ -2,6 +2,7 @@
 
 use \BreakpointDebugging as B;
 use \BreakpointDebugging_PHPUnit as BU;
+use \BreakpointDebugging_Window as BW;
 
 /**
  * Test class for BreakpointDebugging.
@@ -357,7 +358,7 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_PHPUnit_FrameworkTest
         parent::assertTrue($month === 'January');
         parent::assertTrue($day === 1);
         parent::assertTrue($year === 2000);
-        B::windowClose('BreakpointDebugging');
+        BW::close('BreakpointDebugging');
     }
 
 }

@@ -571,6 +571,7 @@
 // therefore "use" keyword alias does not be affected by other files.
 use \BreakpointDebugging as B;
 use \BreakpointDebugging_InAllCase as BA;
+use \BreakpointDebugging_Window as BW;
 
 /**
  * This class executes error or exception handling, and it is except release mode.
@@ -643,8 +644,8 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
         if (BA::$exeMode === B::REMOTE //
             && $processUser['name'] === 'root' //
         ) {
-            parent::windowVirtualOpen(parent::ERROR_WINDOW_NAME, parent::getErrorHtmlFileTemplate());
-            B::windowHtmlAddition(B::ERROR_WINDOW_NAME, 'pre', 0, 'Security warning: Recommends to change to "Apache HTTP Server" which Supported "suEXEC" because this "Apache HTTP Server" is executed by "root" user.');
+            BW::virtualOpen(parent::ERROR_WINDOW_NAME, parent::getErrorHtmlFileTemplate());
+            BW::htmlAddition(B::ERROR_WINDOW_NAME, 'pre', 0, 'Security warning: Recommends to change to "Apache HTTP Server" which Supported "suEXEC" because this "Apache HTTP Server" is executed by "root" user.');
         }
     }
 
@@ -885,8 +886,8 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
                         break 2;
                     }
                 }
-                parent::windowVirtualOpen(parent::ERROR_WINDOW_NAME, parent::getErrorHtmlFileTemplate());
-                B::windowHtmlAddition(B::ERROR_WINDOW_NAME, 'pre', 0, 'Path environment variable has not been set for "php.exe" command.' . PHP_EOL . `path`);
+                BW::virtualOpen(parent::ERROR_WINDOW_NAME, parent::getErrorHtmlFileTemplate());
+                BW::htmlAddition(B::ERROR_WINDOW_NAME, 'pre', 0, 'Path environment variable has not been set for "php.exe" command.' . PHP_EOL . `path`);
                 exit;
             }
         }
@@ -1166,7 +1167,7 @@ EOD;
     </body>
 </html>
 EOD;
-        B::windowVirtualOpen(__CLASS__, $functionVerificationHtmlFileContent);
+        BW::virtualOpen(__CLASS__, $functionVerificationHtmlFileContent);
         ob_start();
 
         self::$tmp = $params;
@@ -1187,7 +1188,7 @@ EOD;
         $return = eval('$return = ' . $code . '; echo "<br/><b>RETURN</b> = "; var_dump($return); return $return;');
         echo '//////////////////////////////////////////////////////////////////////////////////////';
 
-        B::windowHtmlAddition(__CLASS__, 'pre', 0, ob_get_clean());
+        BW::htmlAddition(__CLASS__, 'pre', 0, ob_get_clean());
 
         return $return;
     }

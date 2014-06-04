@@ -3,51 +3,44 @@
 require_once './BreakpointDebugging_Inclusion.php';
 
 use \BreakpointDebugging as B;
+use \BreakpointDebugging_Window as BW;
 use \BreakpointDebugging_PHPUnit_StaticVariableStorage as BSS;
 use \BreakpointDebugging_PHPUnit_FrameworkTestCase as BSF;
 
 B::checkExeMode(); // Checks the execution mode.
 
-var_dump(get_current_user());
-// $processUser = posix_getpwuid(posix_geteuid());
-// var_dump($processUser['name']);
+BW::initializeSharedResource();
+
+$test1 = <<<EOD
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8" />
+		<title>テスト１</title>
+	</head>
+	<body style="background-color: black; color: white; font-size: 25px">
+		テスト１ボディー
+	</body>
+</html>
+EOD;
+BW::virtualOpen('test1', $test1);
+
+$test2 = <<<EOD
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8" />
+		<title>テスト２</title>
+	</head>
+	<body style="background-color: black; color: white; font-size: 25px">
+		テスト２ボディー
+	</body>
+</html>
+EOD;
+BW::virtualOpen('test2', $test2);
+echo 'メインテストページ';
 exit;
 
-$filteredSuperGlobals = array (
-    $_COOKIE,
-    $_ENV,
-    $_GET,
-    $_POST,
-    $_SERVER,
-);
-
-$filteredSuperGlobalTypes = array (
-    INPUT_COOKIE,
-    INPUT_ENV,
-    INPUT_GET,
-    INPUT_POST,
-    INPUT_SERVER,
-);
-
-var_dump(ini_get('filter.default'));
-var_dump(ini_get('filter.default_flags'));
-
-for ($count = 0; $count < count($filteredSuperGlobals); $count++) {
-    $filteredSuperGlobalType = $filteredSuperGlobalTypes[$count];
-    $filteredSuperGlobal = &$filteredSuperGlobals[$count];
-    echo 'Type = ' . $filteredSuperGlobalType . '<br />';
-    foreach ($filteredSuperGlobal as $filteredSuperGlobalElementKey => &$filteredSuperGlobalElement) {
-        $filteredSuperGlobalElement = 'DUMMY';
-        if (!filter_has_var($filteredSuperGlobalType, $filteredSuperGlobalElementKey)) {
-            // continue;
-            // xdebug_break();
-        }
-        echo $filteredSuperGlobalElementKey;
-        var_dump(filter_input($filteredSuperGlobalType, $filteredSuperGlobalElementKey, FILTER_UNSAFE_RAW));
-    }
-    var_dump($filteredSuperGlobal);
-}
-return;
 
 
 $htmlFileContent1 = <<<EOD
@@ -78,19 +71,19 @@ EOD;
 
 if (!array_key_exists('test', $_GET)) {
     $once = false;
-    B::windowVirtualOpen('WindowID1', $htmlFileContent1);
-    B::windowVirtualOpen('WindowID2', $htmlFileContent2);
-    B::windowScriptClearance();
-    B::windowHtmlAddition('WindowID1', 'pre', 0, 'Error message 1-1.' . PHP_EOL);
-    B::windowScriptClearance();
-    B::windowHtmlAddition('WindowID1', 'pre', 0, 'Error message 1-2.' . PHP_EOL);
-    B::windowScriptClearance();
-    B::windowHtmlAddition('WindowID2', 'pre', 0, 'Error message 2-1.' . PHP_EOL);
-    B::windowScriptClearance();
-    B::windowHtmlAddition('WindowID2', 'pre', 0, 'Error message 2-2.' . PHP_EOL);
-    // B::windowClose('WindowID2');
-    // B::windowClose('WindowID1');
-    B::windowScriptClearance();
+    BW::virtualOpen('WindowID1', $htmlFileContent1);
+    BW::virtualOpen('WindowID2', $htmlFileContent2);
+    BW::scriptClearance();
+    BW::htmlAddition('WindowID1', 'pre', 0, 'Error message 1-1.' . PHP_EOL);
+    BW::scriptClearance();
+    BW::htmlAddition('WindowID1', 'pre', 0, 'Error message 1-2.' . PHP_EOL);
+    BW::scriptClearance();
+    BW::htmlAddition('WindowID2', 'pre', 0, 'Error message 2-1.' . PHP_EOL);
+    BW::scriptClearance();
+    BW::htmlAddition('WindowID2', 'pre', 0, 'Error message 2-2.' . PHP_EOL);
+    // BW::close('WindowID2');
+    // BW::close('WindowID1');
+    BW::scriptClearance();
 }
 return;
 //

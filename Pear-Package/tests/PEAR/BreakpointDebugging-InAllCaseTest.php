@@ -4,6 +4,7 @@ use \BreakpointDebugging as B;
 use \BreakpointDebugging_InAllCase as BA;
 use \BreakpointDebugging_PHPUnit as BU;
 use \BreakpointDebugging_InAllCaseTest as T;
+use \BreakpointDebugging_Window as BW;
 
 /**
  * Test class for BreakpointDebugging_InAllCase.
@@ -190,7 +191,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_PHPUnit_Fra
     {
         BA::iniCheck('xdebug.remote_host', 'Other1', 'Error message 1.');
         BA::iniCheck('xdebug.remote_host', array ('', '0', '1'), 'Error message 2.');
-        BA::windowClose(BA::ERROR_WINDOW_NAME);
+        BW::close(BA::ERROR_WINDOW_NAME);
     }
 
     /**

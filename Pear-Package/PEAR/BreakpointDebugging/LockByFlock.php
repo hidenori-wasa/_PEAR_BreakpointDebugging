@@ -122,11 +122,9 @@ final class BreakpointDebugging_LockByFlock extends \BreakpointDebugging_Lock
      */
     protected function loopLocking()
     {
-        // @//codeCoverageSimpleIgnoreStart
         flock($this->pFile, LOCK_EX);
     }
 
-    // @//codeCoverageSimpleIgnoreEnd
     /**
      * Loops unlocking.
      *
@@ -134,12 +132,10 @@ final class BreakpointDebugging_LockByFlock extends \BreakpointDebugging_Lock
      */
     protected function loopUnlocking()
     {
-        // @//codeCoverageSimpleIgnoreStart
         B::assert(is_resource($this->pFile));
         flock($this->pFile, LOCK_UN);
     }
 
-    // @//codeCoverageSimpleIgnoreEnd
 }
 
 ?>

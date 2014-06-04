@@ -42,6 +42,7 @@
  */
 use \BreakpointDebugging as B;
 use \BreakpointDebugging_InAllCase as BA;
+use \BreakpointDebugging_Window as BW;
 
 require_once __DIR__ . '/PEAR/Exception.php';
 /**
@@ -203,11 +204,6 @@ abstract class BreakpointDebugging_InAllCase
      * @var bool Once error display flag.
      */
     private static $_onceErrorDispFlag = false;
-
-    /**
-     * @var array Once JavaScript flag.
-     */
-    private static $_onceJavaScript = array ();
 
     /**
      * @var bool Calling exception handler directly?
@@ -394,8 +390,8 @@ abstract class BreakpointDebugging_InAllCase
                 default :
                     throw new \BreakpointDebugging_ErrorException('"' . __METHOD__ . '" parameter1 is mistake.', 101);
             }
-            self::windowVirtualOpen(self::ERROR_WINDOW_NAME, self::getErrorHtmlFileTemplate());
-            self::windowHtmlAddition(self::ERROR_WINDOW_NAME, 'pre', 0, $message);
+            BW::virtualOpen(self::ERROR_WINDOW_NAME, self::getErrorHtmlFileTemplate());
+            BW::htmlAddition(self::ERROR_WINDOW_NAME, 'pre', 0, $message);
             return false;
         }
         if (!(self::$exeMode & self::REMOTE)) { // In case of local.
@@ -403,8 +399,8 @@ abstract class BreakpointDebugging_InAllCase
         }
         // Checks client IP address.
         if ($_SERVER['REMOTE_ADDR'] !== self::$_developerIP) {
-            self::windowVirtualOpen(self::ERROR_WINDOW_NAME, self::getErrorHtmlFileTemplate());
-            self::windowHtmlAddition(self::ERROR_WINDOW_NAME, 'pre', 0, '<b>You must set "$developerIP = \'' . $_SERVER['REMOTE_ADDR'] . '\';" ' . PHP_EOL
+            BW::virtualOpen(self::ERROR_WINDOW_NAME, self::getErrorHtmlFileTemplate());
+            BW::htmlAddition(self::ERROR_WINDOW_NAME, 'pre', 0, '<b>You must set "$developerIP = \'' . $_SERVER['REMOTE_ADDR'] . '\';" ' . PHP_EOL
                 . "\t" . 'into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file.' . PHP_EOL
                 . 'Or, you mistook start "php" page.</b>'
             );
@@ -415,8 +411,8 @@ abstract class BreakpointDebugging_InAllCase
             || empty($_SERVER['HTTPS']) //
             || $_SERVER['HTTPS'] === 'off' //
         ) {
-            self::windowVirtualOpen(self::ERROR_WINDOW_NAME, self::getErrorHtmlFileTemplate());
-            self::windowHtmlAddition(self::ERROR_WINDOW_NAME, 'pre', 0, '<b>You must use "https" protocol.' . PHP_EOL
+            BW::virtualOpen(self::ERROR_WINDOW_NAME, self::getErrorHtmlFileTemplate());
+            BW::htmlAddition(self::ERROR_WINDOW_NAME, 'pre', 0, '<b>You must use "https" protocol.' . PHP_EOL
                 . 'Or, you mistook start "php" page.</b>'
             );
             return false;
@@ -453,7 +449,7 @@ abstract class BreakpointDebugging_InAllCase
         }
 
         if ($isUnitTest) {
-            self::windowVirtualOpen(self::ERROR_WINDOW_NAME, self::getErrorHtmlFileTemplate());
+            BW::virtualOpen(self::ERROR_WINDOW_NAME, self::getErrorHtmlFileTemplate());
             $pearSettingDirName = BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME;
             $errorMessage = <<<EOD
 You must set
@@ -462,7 +458,7 @@ You must set
 to this project execution parameter.
 Or, set "define('BREAKPOINTDEBUGGING_IS_PRODUCTION', false);" of "{$pearSettingDirName}BreakpointDebugging_MySetting.php".
 EOD;
-            self::windowHtmlAddition(self::ERROR_WINDOW_NAME, 'pre', 0, '<b>' . $errorMessage . '</b>');
+            BW::htmlAddition(self::ERROR_WINDOW_NAME, 'pre', 0, '<b>' . $errorMessage . '</b>');
             exit;
         }
     }
@@ -559,7 +555,7 @@ EOD;
         if ($cmpResult) {
             if (self::$_iniCheckErrorInitializationFlag) {
                 self::$_iniCheckErrorInitializationFlag = false;
-                self::windowVirtualOpen(self::ERROR_WINDOW_NAME, self::getErrorHtmlFileTemplate());
+                BW::virtualOpen(self::ERROR_WINDOW_NAME, self::getErrorHtmlFileTemplate());
             }
             ob_start();
 
@@ -567,7 +563,7 @@ EOD;
             . "Current value =";
             var_dump($value);
 
-            self::windowHtmlAddition(self::ERROR_WINDOW_NAME, 'pre', 0, ob_get_clean());
+            BW::htmlAddition(self::ERROR_WINDOW_NAME, 'pre', 0, ob_get_clean());
         } else {
             if (self::$exeMode & self::RELEASE) { // In case of release mode.
                 self::ini('_MySetting.php', self::$onceFlagPerPackage, self::$iniDisplayString);
@@ -1044,36 +1040,11 @@ EOD;
         return false;
     }
 
-    static function executeJavaScript($javaScript)
-    {
-        $buffers = array ();
-        for ($bufferCount = -1; ob_get_level() > 0;) {
-            $bufferCount++;
-            $result = ob_get_clean();
-            if (is_string($result)) {
-                $buffers[$bufferCount] = $result;
-            }
-        }
-
-        echo '<script>' . PHP_EOL
-        . '<!--' . PHP_EOL;
-        echo $javaScript;
-        echo '//-->' . PHP_EOL
-        . '</script>';
-
-        for (; $bufferCount >= 0; $bufferCount--) {
-            ob_start();
-            if (array_key_exists($bufferCount, $buffers)) {
-                echo $buffers[$bufferCount];
-            }
-        }
-    }
-
     /**
      * Copies resource to current work directory.
      *
      * @param string $resourceFileName      Resource file name.
-     * @param string $resourceDirectoryPath Absolute resource directory path.
+     * @param string $resourceDirectoryPath Relative resource directory path.
      *
      * @return string Resource URI which copied to current work directory.
      */
@@ -1083,161 +1054,10 @@ EOD;
         $relativeCWD = substr($cwd, strlen($_SERVER['DOCUMENT_ROOT']) - strlen($cwd) + 1);
         $destResourceFilePath = $cwd . DIRECTORY_SEPARATOR . $resourceFileName;
         if (!is_file($destResourceFilePath)) {
-            $resourceFilePath = $resourceDirectoryPath . $resourceFileName;
+            $resourceFilePath = stream_resolve_include_path($resourceDirectoryPath . $resourceFileName);
             copy($resourceFilePath, $destResourceFilePath);
         }
-        return "//localhost/{$relativeCWD}/{$resourceFileName}";
-    }
-
-    /**
-     * Opens a initialized virtual Window.
-     * CAUTION: This window cannot request including link to itself.
-     *          This window permits only a display.
-     *
-     * @param string $windowName      Window name which opens.
-     * @param string $htmlFileContent HTML file content to initialize.
-     *
-     * @return void
-     */
-    static function windowVirtualOpen($windowName, $htmlFileContent)
-    {
-        if (!isset($_SERVER['SERVER_ADDR'])) { // In case of command line.
-            return;
-        }
-
-        $javaScript = '';
-
-        if (!array_key_exists(__FUNCTION__, self::$_onceJavaScript)) {
-            self::$_onceJavaScript[__FUNCTION__] = true;
-            $javaScript .= file_get_contents(__DIR__ . '/BreakpointDebugging/js/DOM.js');
-        }
-
-        $htmlFileContent = str_replace(array ('\\', '\'', "\r", "\n"), array ('\\\\', '\\\'', '\r', '\n'), $htmlFileContent);
-        $javaScript .= "BreakpointDebugging_windowVirtualOpen('$windowName', '$htmlFileContent');" . PHP_EOL;
-
-        self::executeJavaScript($javaScript);
-    }
-
-    /**
-     * Closes out browser window.
-     *
-     * @param string $windowName
-     *
-     * @return void
-     */
-    static function windowClose($windowName)
-    {
-        if (!isset($_SERVER['SERVER_ADDR'])) { // In case of command line.
-            return;
-        }
-
-        self::executeJavaScript("open('', '$windowName').close();" . PHP_EOL);
-    }
-
-    /**
-     * Moves window to front.
-     *
-     * @param string $windowName Opened window name.
-     *
-     * @return void
-     */
-    static function windowFront($windowName)
-    {
-        if (!isset($_SERVER['SERVER_ADDR'])) { // In case of command line.
-            return;
-        }
-
-        self::executeJavaScript("BreakpointDebugging_windowFront('$windowName');" . PHP_EOL);
-    }
-
-    /**
-     * Writes HTML character string inside a tag of opened window.
-     *
-     * @param string $windowName Opened window name.
-     * @param string $tagName    The tag name.
-     * @param int    $tagNumber  The tag number from 0.
-     * @param string $html       HTML character string which writes inside a tag of opened window.
-     *
-     * @return void
-     */
-    static function windowHtmlAddition($windowName, $tagName, $tagNumber, $html)
-    {
-        if (!isset($_SERVER['SERVER_ADDR'])) { // In case of command line.
-            return;
-        }
-
-        $html = str_replace(array ('\\', '\'', "\r", "\n"), array ('\\\\', '\\\'', '\r', '\n'), $html);
-        self::executeJavaScript("open('', '$windowName').document.getElementsByTagName('$tagName')[$tagNumber].innerHTML += '$html';" . PHP_EOL);
-    }
-
-    /**
-     * Scrolls window by distance.
-     *
-     * @param string $windowName Opened window name.
-     * @param int    $dy         Y vector distance.
-     * @param int    $step       Y vector distance step.
-     *
-     * @return void
-     */
-    static function windowScrollBy($windowName, $dy, $step = 5)
-    {
-        if (!isset($_SERVER['SERVER_ADDR'])) { // In case of command line.
-            return;
-        }
-
-        for ($count = $dy / $step; $count > 0; $count--) {
-            self::executeJavaScript("open('', '$windowName', '').scrollBy(0, $step);" . PHP_EOL);
-        }
-    }
-
-    /**
-     * Clears window's header script.
-     *
-     * @return void
-     */
-    static function windowScriptClearance($start = 0)
-    {
-        // return; // For debug.
-
-        if (!isset($_SERVER['SERVER_ADDR'])) { // In case of command line.
-            return;
-        }
-
-        $javaScript = '';
-
-        if (!array_key_exists(__FUNCTION__, self::$_onceJavaScript)) {
-            self::$_onceJavaScript[__FUNCTION__] = true;
-            $javaScript .= 'function BreakpointDebugging_windowScriptClearance()' . PHP_EOL
-                . '{' . PHP_EOL
-                . '    var $head = document.getElementsByTagName("head")[0];' . PHP_EOL
-                . '    var $scripts = document.getElementsByTagName("script");' . PHP_EOL
-                . "    for(var \$count = \$scripts.length - 1; \$count >= $start; \$count--){" . PHP_EOL
-                . '        $head.removeChild($scripts[$count]);' . PHP_EOL
-                . '    }' . PHP_EOL
-                . '}' . PHP_EOL;
-        }
-
-        $javaScript .= 'BreakpointDebugging_windowScriptClearance();' . PHP_EOL;
-        self::executeJavaScript($javaScript);
-    }
-
-    /**
-     * Displays an error into error window, and exits.
-     *
-     * @param string $message Error message by "PHP_EOL".
-     *
-     * @return void
-     */
-    static function windowExitForError($message)
-    {
-        B::windowVirtualOpen(B::ERROR_WINDOW_NAME, B::getErrorHtmlFileTemplate());
-        B::windowHtmlAddition(B::ERROR_WINDOW_NAME, 'pre', 0, $message);
-        B::windowFront(B::ERROR_WINDOW_NAME);
-        if (function_exists('xdebug_break')) {
-            flush();
-            xdebug_break();
-        }
-        exit;
+        return '//' . $_SERVER['SERVER_NAME'] . '/' . $relativeCWD . '/' . $resourceFileName;
     }
 
     ///////////////////////////// For package user until here. /////////////////////////////
@@ -1652,12 +1472,12 @@ if ($_BreakpointDebugging_EXE_MODE & BA::RELEASE) { // In case of release.
                         // Because unit test is exited.
                         ini_set('xdebug.var_display_max_depth', 5);
 
-                        parent::windowVirtualOpen(parent::ERROR_WINDOW_NAME, parent::getErrorHtmlFileTemplate());
+                        BW::virtualOpen(parent::ERROR_WINDOW_NAME, parent::getErrorHtmlFileTemplate());
                         ob_start();
 
                         var_dump(debug_backtrace());
 
-                        parent::windowHtmlAddition(parent::ERROR_WINDOW_NAME, 'pre', 0, ob_get_clean());
+                        BW::htmlAddition(parent::ERROR_WINDOW_NAME, 'pre', 0, ob_get_clean());
 
                         // Ends the output buffering.
                         while (ob_get_level() > 0) {
