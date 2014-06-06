@@ -56,8 +56,18 @@ use \BreakpointDebugging_Window as BW;
  * @version  Release: @package_version@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-class BreakpointDebugging_DisplayToOtherProcess
+final class BreakpointDebugging_DisplayToOtherProcess
 {
+    /**
+     * @var int Time out seconds.
+     */
+    private static $_timeOutSeconds = 300;
+
+    /**
+     * @var stirng Shared file path.
+     */
+    private static $_sharedFilePath = '';
+
     /**
      * @var int JavaScript reading pointer in shared memory.
      */
@@ -78,7 +88,16 @@ class BreakpointDebugging_DisplayToOtherProcess
         B::assert(self::$_onceFlag);
         self::$_onceFlag = false;
 
-        $shmopFullFilePath = B::getStatic('$_workDir') . '/OtherProcessDisplayByShmop.txt';
+        // Extends maximum execution time.
+        set_time_limit(self::$_timeOutSeconds);
+        // Displays the caution.
+        echo 'This window exists for "JavaScript character string receipt from main process" and "execution".<br />'
+        . '<hr />'
+        . '<strong>Do not stop or delete this window</strong> because this window must exist except timeout\'s ' . self::$_timeOutSeconds . ' seconds from data receipt.<br />'
+        . 'You must wait until timeout if you stopped or deleted.<br />';
+        // Gets shared file path.
+        self::$_sharedFilePath = B::getStatic('$_workDir') . '/SharedFileForOtherProcessDisplay.txt';
+        $sharedFilePath = self::$_sharedFilePath;
         if (extension_loaded('shmop')) { // If "shmop" extention is valid.
             // Defines JavaScript functions of "DOM.js" file.
             BW::executeJavaScript(file_get_contents('BreakpointDebugging/js/DOM.js', true));
@@ -86,13 +105,11 @@ class BreakpointDebugging_DisplayToOtherProcess
                 // 1 second sleep.
                 usleep(1000000);
                 // Waits until file creation.
-                while (!is_file($shmopFullFilePath)) {
-                    // Extends maximum execution time.
-                    set_time_limit(300);
+                while (!is_file($sharedFilePath)) {
                     // 1 second sleep.
                     usleep(1000000);
                 }
-                $shmopKey = file_get_contents($shmopFullFilePath);
+                $shmopKey = file_get_contents($sharedFilePath);
                 if ($shmopKey === false) {
                     continue;
                 }
@@ -104,8 +121,6 @@ class BreakpointDebugging_DisplayToOtherProcess
                     continue;
                 }
                 while (true) {
-                    // Extends maximum execution time.
-                    set_time_limit(300);
                     // Locks the shared memory.
                     if (BW::lockOn2Processes(1, 0, $shmopId) === false) {
                         continue 2;
@@ -118,6 +133,8 @@ class BreakpointDebugging_DisplayToOtherProcess
                     // Calculates read-length.
                     $readLen = $javaScriptWritingPtr - self::$_javaScriptReadingPtr;
                     if ($readLen > 0) {
+                        // Extends maximum execution time.
+                        set_time_limit(self::$_timeOutSeconds);
                         // Gets dispatched JavaScript character string from other process
                         $javaScript = shmop_read($shmopId, self::$_javaScriptReadingPtr + 0, $readLen);
                         if ($javaScript === false) {
@@ -143,30 +160,27 @@ class BreakpointDebugging_DisplayToOtherProcess
                 }
             }
         } else { // If "shmop" extension has not been loaded.
-            $javaScriptFullFilePath = B::getStatic('$_workDir') . '/OtherProcessDisplayByJavaScript.txt';
             while (true) {
                 // Waits until file creation.
-                while (!is_file($javaScriptFullFilePath)) {
-                    // Extends maximum execution time.
-                    set_time_limit(300);
+                while (!is_file($sharedFilePath)) {
                     // 1 second sleep.
                     usleep(1000000);
                 }
                 // Opens the file with read only.
-                $pFile = B::fopen(array ($javaScriptFullFilePath, 'rb'));
+                $pFile = B::fopen(array ($sharedFilePath, 'rb'));
                 if ($pFile === false) {
                     continue;
                 }
                 $javaScript = '';
                 while (true) {
-                    // Extends maximum execution time.
-                    set_time_limit(300);
                     $readData = fread($pFile, 4096);
                     if ($readData === false) {
                         continue 2;
                     }
                     $javaScript .= $readData;
                     if ($readData === '') {
+                        // Extends maximum execution time.
+                        set_time_limit(self::$_timeOutSeconds);
                         // Executes JavaScript.
                         echo $javaScript;
                         flush();
@@ -179,6 +193,21 @@ class BreakpointDebugging_DisplayToOtherProcess
         }
     }
 
+    /**
+     * Unlinks shared file at shutdown.
+     *
+     * @return void
+     */
+    static function shutdown()
+    {
+        if (is_file(self::$_sharedFilePath)) {
+            B::unlink(array (self::$_sharedFilePath));
+        }
+    }
+
 }
+
+// Pushes the shutdown class method.
+register_shutdown_function('\BreakpointDebugging_DisplayToOtherProcess::shutdown');
 
 \BreakpointDebugging_DisplayToOtherProcess::displayToOtherProcess();

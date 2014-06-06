@@ -9,6 +9,11 @@ use \BreakpointDebugging_PHPUnit_FrameworkTestCase as BSF;
 
 B::checkExeMode(); // Checks the execution mode.
 
+$filename = 'C:\xampp\htdocs\Pear-Package\BreakpointDebugging_DisplayToOtherProcess.php';
+if (is_file($filename)) {
+    B::unlink(array ($filename));
+}
+
 BW::initializeSharedResource();
 
 $test1 = <<<EOD

@@ -41,7 +41,6 @@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
 use \BreakpointDebugging as B;
-use \BreakpointDebugging_Window as BW;
 
 /**
  * Class for display to other process windows.
@@ -58,7 +57,12 @@ class BreakpointDebugging_Window
     /**
      * @var \BreakpointDebugging_Window This instance.
      */
-    private static $self;
+    private static $_self;
+
+    /**
+     * @var string Shared file path.
+     */
+    private static $_sharedFilePath;
 
     /**
      * @var array Once JavaScript flag.
@@ -254,21 +258,6 @@ class BreakpointDebugging_Window
     }
 
     /**
-     * Gets URI from relative file name.
-     *
-     * @param string $relativeFilePath Relative file path.
-     *
-     * @return string URI.
-     */
-    static function getURIFromRelativeFilePath($relativeFilePath)
-    {
-        $fullFilePath = stream_resolve_include_path($relativeFilePath);
-        $relativeFilePath = substr($fullFilePath, strlen($_SERVER['DOCUMENT_ROOT']) + 1);
-        $relativeFilePath = str_replace('\\', '/', $relativeFilePath);
-        return "//localhost/$relativeFilePath";
-    }
-
-    /**
      * Creates or initializes shared resource for other process display because session unit test must not send HTML header.
      *
      * @return void
@@ -281,79 +270,75 @@ class BreakpointDebugging_Window
 
         self::$_isShmopValid = extension_loaded('shmop');
 
+        self::$_sharedFilePath = B::getStatic('$_workDir') . '/SharedFileForOtherProcessDisplay.txt';
+        $sharedFilePath = self::$_sharedFilePath;
+        // Generates "Mozilla Firefox" command to open other process page.
+        $url = B::copyResourceToCWD('BreakpointDebugging_DisplayToOtherProcess.php', '');
+        if (BREAKPOINTDEBUGGING_IS_WINDOWS) {
+            $command = '"C:/Program Files/Mozilla Firefox/firefox.exe" "https:' . $url . '"';
+        } else {
+            $command = '"firefox" "https:' . $url . '"';
+        }
+        // Creates this class instance for shared memory close or shared file deletion.
+        self::$_self = new \BreakpointDebugging_Window();
         if (self::$_isShmopValid) { // If "shmop" extention is valid.
-            $shmopFullFilePath = B::getStatic('$_workDir') . '/OtherProcessDisplayByShmop.txt';
-            while (true) {
-                if (is_file($shmopFullFilePath)) {
-                    $shmopKey = file_get_contents($shmopFullFilePath);
-                    B::assert($shmopKey !== false);
-                    set_error_handler('\BreakpointDebugging::handleError', 0);
-                    // Opens shared memory.
-                    self::$_resourceID = @shmop_open($shmopKey, 'w', 0, 0);
-                    restore_error_handler();
-                    // If valid shared memory.
-                    if (!empty(self::$_resourceID)) {
-                        // Creates this class instance for shared memory destruction.
-                        self::$self = new \BreakpointDebugging_Window();
-                        return;
-                    }
+            if (is_file($sharedFilePath)) {
+                $shmopKey = file_get_contents($sharedFilePath);
+                B::assert($shmopKey !== false);
+                set_error_handler('\BreakpointDebugging::handleError', 0);
+                // Opens shared memory.
+                self::$_resourceID = @shmop_open($shmopKey, 'w', 0, 0);
+                restore_error_handler();
+                // If valid shared memory.
+                if (!empty(self::$_resourceID)) {
+                    return;
                 }
-                // Allocates shared memory area.
-                list($shmopKey, self::$_resourceID) = self::buildSharedMemory(1024 * 1024);
-                // Registers the shared memory key.
-                $result = file_put_contents($shmopFullFilePath, $shmopKey);
-                B::assert($result !== false);
-                // Initializes shared memory.
-                $result = shmop_write(self::$_resourceID, sprintf('0000x%08X0x%08X', 23, 23), 0);
-                B::assert($result !== false);
-                // Generates "Mozilla Firefox" command to open other process page.
-                $url = B::copyResourceToCWD('BreakpointDebugging_DisplayToOtherProcess.php', '');
-                if (BREAKPOINTDEBUGGING_IS_WINDOWS) {
-                    $command = '"C:/Program Files/Mozilla Firefox/firefox.exe" "https:' . $url . '"';
-                } else {
-                    $command = '"firefox" "https:' . $url . '"';
-                }
-                if (!(B::getStatic('$exeMode') & B::REMOTE)) { // If local server.
-                    // Opens "BreakpointDebugging_DisplayToOtherProcess.php" page for display in other process.
-                    `$command`;
-                } else { // If remote server.
-                    $isOpenOtherProcessWindow = shmop_read(self::$_resourceID, 3, 1);
-                    if ($isOpenOtherProcessWindow === '0') {
-                        self::executeJavaScript("alert('You must execute following command to open other process window.')");
-                        self::executeJavaScript("alert('$command')");
-                    }
-                }
-                // Closes the shared memory area.
-                shmop_close(self::$_resourceID);
+            }
+            // Allocates shared memory area.
+            list($shmopKey, self::$_resourceID) = self::buildSharedMemory(1024 * 1024);
+            // Registers the shared memory key.
+            $result = file_put_contents($sharedFilePath, $shmopKey);
+            B::assert($result !== false);
+            // Initializes shared memory.
+            $result = shmop_write(self::$_resourceID, sprintf('0000x%08X0x%08X', 23, 23), 0);
+            B::assert($result !== false);
+            if (!(B::getStatic('$exeMode') & B::REMOTE)) { // If local server.
+                // Opens "BreakpointDebugging_DisplayToOtherProcess.php" page for display in other process.
+                `$command`;
+                return;
+            } else { // If remote server.
+                $errorMessage = <<<EOD
+Please, execute following command to open other process window.
+$command
+Then, restart this project.
+EOD;
+                self::exitForError($errorMessage);
             }
         } else { // If "shmop" extension is invalid.
             if (!(B::getStatic('$exeMode') & B::REMOTE)) { // If local server.
                 self::exitForError('You must enable "shmop" extention.');
             } else { // If remote server.
-                $javaScriptFullFilePath = B::getStatic('$_workDir') . '/OtherProcessDisplayByJavaScript.txt';
                 while (true) {
                     while (true) {
-                        if (is_file($javaScriptFullFilePath)) {
-                            $fileStatus = stat($javaScriptFullFilePath);
+                        if (is_file($sharedFilePath)) {
+                            $fileStatus = stat($sharedFilePath);
                             B::assert($fileStatus !== false);
                             // If previous execution had been abnormal end.
                             if ($fileStatus['size'] !== 0) {
                                 break;
                             }
                             // Opens shared file with destruction and writing only.
-                            self::$_resourceID = B::fopen(array ($javaScriptFullFilePath, 'wb'));
+                            self::$_resourceID = B::fopen(array ($sharedFilePath, 'wb'));
                             B::assert(self::$_resourceID !== false);
                             // Checks for abnormal end.
                             $result = fwrite(self::$_resourceID, '<!-- -->');
                             B::assert($result !== false);
-                            // Creates this class instance to unlink shared file.
-                            self::$self = new \BreakpointDebugging_Window();
                             return;
                         }
                         break;
                     }
                     // Creates shared file.
-                    $result = file_put_contents($javaScriptFullFilePath, '');
+                    $result = file_put_contents($sharedFilePath, '');
                     B::assert($result !== false);
                 }
             }
@@ -376,9 +361,8 @@ class BreakpointDebugging_Window
             // Closes the shared file.
             $result = fclose(self::$_resourceID);
             B::assert($result !== false);
-            $javaScriptFullFilePath = B::getStatic('$_workDir') . '/OtherProcessDisplayByJavaScript.txt';
             // Unlinks shared file.
-            B::unlink(array ($javaScriptFullFilePath));
+            B::unlink(array (self::$_sharedFilePath));
         }
         // Unsets resource ID for assertion.
         self::$_resourceID = null;
@@ -489,7 +473,7 @@ class BreakpointDebugging_Window
     /**
      * Clears window's header script.
      *
-     * @param int $start ?????
+     * @param int $start The script tag number for start location to clear.
      *
      * @return void
      */

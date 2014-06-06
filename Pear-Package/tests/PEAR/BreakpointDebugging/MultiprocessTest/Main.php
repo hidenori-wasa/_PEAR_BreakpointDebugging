@@ -27,7 +27,7 @@ class tests_PEAR_BreakpointDebugging_MultiprocessTest_Main
     {
         $this->_initializeCounter($shmopKey);
 
-        $fullFilePath = __DIR__ . '\Lock.php';
+        $fullFilePath = __DIR__ . '/Lock.php';
         $pPipes = array ();
         $queryString = '"' . B::httpBuildQuery(array ('SHMOP_KEY' => $shmopKey, 'CLASS_NAME' => $className)) . '"';
         for ($count = 0; $count < 2; $count++) {
