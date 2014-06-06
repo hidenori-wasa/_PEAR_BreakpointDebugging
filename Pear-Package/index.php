@@ -14,8 +14,6 @@ if (is_file($filename)) {
     B::unlink(array ($filename));
 }
 
-BW::initializeSharedResource();
-
 $test1 = <<<EOD
 <!DOCTYPE html>
 <html>

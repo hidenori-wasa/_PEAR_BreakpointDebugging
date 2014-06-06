@@ -74,6 +74,11 @@ final class BreakpointDebugging_DisplayToOtherProcess
     private static $_javaScriptReadingPtr = '0x00000017';
 
     /**
+     * @var int Shared memory ID or file pointer.
+     */
+    private static $_resourceID;
+
+    /**
      * @var bool Flag of once.
      */
     private static $_onceFlag = true;
@@ -88,7 +93,7 @@ final class BreakpointDebugging_DisplayToOtherProcess
         B::assert(self::$_onceFlag);
         self::$_onceFlag = false;
 
-        // Extends maximum execution time.
+        // Resets maximum execution time.
         set_time_limit(self::$_timeOutSeconds);
         // Displays the caution.
         echo 'This window exists for "JavaScript character string receipt from main process" and "execution".<br />'
@@ -98,9 +103,10 @@ final class BreakpointDebugging_DisplayToOtherProcess
         // Gets shared file path.
         self::$_sharedFilePath = B::getStatic('$_workDir') . '/SharedFileForOtherProcessDisplay.txt';
         $sharedFilePath = self::$_sharedFilePath;
-        if (extension_loaded('shmop')) { // If "shmop" extention is valid.
-            // Defines JavaScript functions of "DOM.js" file.
-            BW::executeJavaScript(file_get_contents('BreakpointDebugging/js/DOM.js', true));
+        // Defines JavaScript functions of "DOM.js" file.
+        BW::executeJavaScript(file_get_contents('BreakpointDebugging/js/DOM.js', true));
+        // If "shmop" extention is valid.
+        if (extension_loaded('shmop')) {
             while (true) {
                 // 1 second sleep.
                 usleep(1000000);
@@ -109,13 +115,15 @@ final class BreakpointDebugging_DisplayToOtherProcess
                     // 1 second sleep.
                     usleep(1000000);
                 }
+                // Gets shared memory key which main process created.
                 $shmopKey = file_get_contents($sharedFilePath);
                 if ($shmopKey === false) {
                     continue;
                 }
                 set_error_handler('\BreakpointDebugging::handleError', 0);
-                // Gets the shared memory reading pointer.
+                // Opens shared memory which main process created.
                 $shmopId = @shmop_open($shmopKey, 'w', 0, 0);
+                self::$_resourceID = $shmopId;
                 restore_error_handler();
                 if (empty($shmopId)) {
                     continue;
@@ -132,10 +140,11 @@ final class BreakpointDebugging_DisplayToOtherProcess
                     }
                     // Calculates read-length.
                     $readLen = $javaScriptWritingPtr - self::$_javaScriptReadingPtr;
+                    // If this process received data from main process.
                     if ($readLen > 0) {
-                        // Extends maximum execution time.
+                        // Resets maximum execution time.
                         set_time_limit(self::$_timeOutSeconds);
-                        // Gets dispatched JavaScript character string from other process
+                        // Gets dispatched JavaScript character string from main process.
                         $javaScript = shmop_read($shmopId, self::$_javaScriptReadingPtr + 0, $readLen);
                         if ($javaScript === false) {
                             continue 2;
@@ -159,8 +168,10 @@ final class BreakpointDebugging_DisplayToOtherProcess
                     usleep(1000000);
                 }
             }
-        } else { // If "shmop" extension has not been loaded.
+        } else { // If "shmop" extension is invalid.
             while (true) {
+                // 1 second sleep.
+                usleep(1000000);
                 // Waits until file creation.
                 while (!is_file($sharedFilePath)) {
                     // 1 second sleep.
@@ -173,21 +184,31 @@ final class BreakpointDebugging_DisplayToOtherProcess
                 }
                 $javaScript = '';
                 while (true) {
-                    $readData = fread($pFile, 4096);
-                    if ($readData === false) {
-                        continue 2;
-                    }
-                    $javaScript .= $readData;
-                    if ($readData === '') {
-                        // Extends maximum execution time.
-                        set_time_limit(self::$_timeOutSeconds);
-                        // Executes JavaScript.
-                        echo $javaScript;
-                        flush();
-                        $javaScript = '';
-                    }
                     // 1 second sleep.
                     usleep(1000000);
+                    // If file does not exist.
+                    if (!is_file($sharedFilePath)) {
+                        continue 2;
+                    }
+                    // If this process did not receive a data from main process.
+                    if (feof($pFile)) {
+                        continue;
+                    }
+                    // Gets dispatched JavaScript character string from main process.
+                    while (true) {
+                        $readData = fread($pFile, 4096);
+                        if (!empty($readData)) {
+                            $javaScript .= $readData;
+                            continue;
+                        }
+                        break;
+                    }
+                    // Resets maximum execution time.
+                    set_time_limit(self::$_timeOutSeconds);
+                    // Executes JavaScript.
+                    echo $javaScript;
+                    flush();
+                    $javaScript = '';
                 }
             }
         }
@@ -200,7 +221,19 @@ final class BreakpointDebugging_DisplayToOtherProcess
      */
     static function shutdown()
     {
+        // If "shmop" extention is valid.
+        if (extension_loaded('shmop')) {
+            // Deletes shared memory.
+            $result = shmop_delete(self::$_resourceID);
+            B::assert($result !== false);
+        } else { // If "shmop" extention is invalid.
+            // Closes the shared file.
+            $result = fclose(self::$_resourceID);
+            B::assert($result !== false);
+        }
+        // If shared file exists.
         if (is_file(self::$_sharedFilePath)) {
+            // Unlinks shared file.
             B::unlink(array (self::$_sharedFilePath));
         }
     }

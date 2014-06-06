@@ -341,7 +341,6 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
      */
     private function _buildSharedMemory()
     {
-        //$sharedMemoryKey = null;
         list($sharedMemoryKey, self::$sharedMemoryID) = BW::buildSharedMemory(self::MEMORY_BLOCK_SIZE);
         // Register shared memory key.
         $result = rewind($this->pFile);

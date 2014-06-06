@@ -79,6 +79,9 @@ class BreakpointDebugging_Window
      */
     private static $_isShmopValid;
 
+    /**
+     * This method is called at execution end.
+     */
     function __destruct()
     {
         self::_deleteOtherProcessForDisplay();
@@ -262,27 +265,49 @@ class BreakpointDebugging_Window
      *
      * @return void
      */
-    static function initializeSharedResource()
+    private static function _initializeSharedResource()
     {
-        if (!isset($_SERVER['SERVER_ADDR'])) { // In case of command line.
-            return;
-        }
+        $openFirefoxWindow = function($command) {
+            // If local server.
+            if (!(B::getStatic('$exeMode') & B::REMOTE)) {
+                // Opens "BreakpointDebugging_DisplayToOtherProcess.php" page for display in other process.
+                `$command`;
+                return;
+            } else { // If remote server.
+                $errorMessage = <<<EOD
+<pre>
+Please, stop this project.
+Next, execute following command to open other process window.
+
+$command
+
+Next, restart this project.
+</pre>
+EOD;
+                exit($errorMessage);
+            }
+        };
+
 
         self::$_isShmopValid = extension_loaded('shmop');
-
+        // Gets full shared file path.
         self::$_sharedFilePath = B::getStatic('$_workDir') . '/SharedFileForOtherProcessDisplay.txt';
         $sharedFilePath = self::$_sharedFilePath;
+        // Copies the "BreakpointDebugging_DisplayToOtherProcess.php" file into current work directory and gets its URI.
+        $uri = B::copyResourceToCWD('BreakpointDebugging_DisplayToOtherProcess.php', '');
         // Generates "Mozilla Firefox" command to open other process page.
-        $url = B::copyResourceToCWD('BreakpointDebugging_DisplayToOtherProcess.php', '');
         if (BREAKPOINTDEBUGGING_IS_WINDOWS) {
-            $command = '"C:/Program Files/Mozilla Firefox/firefox.exe" "https:' . $url . '"';
+            $command = '"C:/Program Files/Mozilla Firefox/firefox.exe" "https:' . $uri . '"';
         } else {
-            $command = '"firefox" "https:' . $url . '"';
+            $command = '"firefox" "https:' . $uri . '"';
         }
         // Creates this class instance for shared memory close or shared file deletion.
         self::$_self = new \BreakpointDebugging_Window();
-        if (self::$_isShmopValid) { // If "shmop" extention is valid.
+        // If "shmop" extention is valid.
+        if (self::$_isShmopValid) {
+            // If shared file exists.
             if (is_file($sharedFilePath)) {
+                // Gets shared memory operation key.
                 $shmopKey = file_get_contents($sharedFilePath);
                 B::assert($shmopKey !== false);
                 set_error_handler('\BreakpointDebugging::handleError', 0);
@@ -302,67 +327,59 @@ class BreakpointDebugging_Window
             // Initializes shared memory.
             $result = shmop_write(self::$_resourceID, sprintf('0000x%08X0x%08X', 23, 23), 0);
             B::assert($result !== false);
-            if (!(B::getStatic('$exeMode') & B::REMOTE)) { // If local server.
-                // Opens "BreakpointDebugging_DisplayToOtherProcess.php" page for display in other process.
-                `$command`;
-                return;
-            } else { // If remote server.
-                $errorMessage = <<<EOD
-Please, execute following command to open other process window.
-$command
-Then, restart this project.
-EOD;
-                self::exitForError($errorMessage);
-            }
+            // Opens "Mozilla Firefox" window.
+            $openFirefoxWindow($command);
         } else { // If "shmop" extension is invalid.
-            if (!(B::getStatic('$exeMode') & B::REMOTE)) { // If local server.
-                self::exitForError('You must enable "shmop" extention.');
+            // If local server.
+            if (!(B::getStatic('$exeMode') & B::REMOTE)) {
+                self::exitForError('You must enable "shmop" extention inside "php.ini" file.');
             } else { // If remote server.
                 while (true) {
-                    while (true) {
-                        if (is_file($sharedFilePath)) {
-                            $fileStatus = stat($sharedFilePath);
-                            B::assert($fileStatus !== false);
-                            // If previous execution had been abnormal end.
-                            if ($fileStatus['size'] !== 0) {
-                                break;
-                            }
-                            // Opens shared file with destruction and writing only.
-                            self::$_resourceID = B::fopen(array ($sharedFilePath, 'wb'));
-                            B::assert(self::$_resourceID !== false);
-                            // Checks for abnormal end.
-                            $result = fwrite(self::$_resourceID, '<!-- -->');
-                            B::assert($result !== false);
-                            return;
+                    // If shared file exists.
+                    if (is_file($sharedFilePath)) {
+                        $fileStatus = stat($sharedFilePath);
+                        B::assert($fileStatus !== false);
+                        // If previous execution had been abnormal end.
+                        if ($fileStatus['size'] !== 0) {
+                            break;
                         }
-                        break;
+                        // Opens shared file with destruction and writing only.
+                        self::$_resourceID = B::fopen(array ($sharedFilePath, 'wb'));
+                        B::assert(self::$_resourceID !== false);
+                        // Checks for abnormal end.
+                        $result = fwrite(self::$_resourceID, '<!-- -->');
+                        B::assert($result !== false);
+                        return;
                     }
                     // Creates shared file.
                     $result = file_put_contents($sharedFilePath, '');
                     B::assert($result !== false);
+                    // Opens "Mozilla Firefox" window.
+                    $openFirefoxWindow($command);
                 }
             }
         }
     }
 
     /**
-     * Deletes other process window for display, and clears shared resource.
+     * Clears shared resource.
      *
      * @return void
      */
     private static function _deleteOtherProcessForDisplay()
     {
-        B::assert(isset(self::$_resourceID));
-
-        if (self::$_isShmopValid) { // If "shmop" extention is valid.
+        // If resource had not been created.
+        if (!isset(self::$_resourceID)) {
+            return;
+        }
+        // If "shmop" extention is valid.
+        if (self::$_isShmopValid) {
             // Closes the shared memory area.
             shmop_close(self::$_resourceID);
-        } else { // If "shmop" extension has not been loaded.
+        } else { // If "shmop" extention is invalid.
             // Closes the shared file.
             $result = fclose(self::$_resourceID);
             B::assert($result !== false);
-            // Unlinks shared file.
-            B::unlink(array (self::$_sharedFilePath));
         }
         // Unsets resource ID for assertion.
         self::$_resourceID = null;
@@ -384,7 +401,9 @@ EOD;
             return;
         }
 
-        B::assert(isset(self::$_resourceID));
+        if (!isset(self::$_resourceID)) {
+            self::_initializeSharedResource();
+        }
 
         $htmlFileContent = str_replace(array ('\\', '\'', "\r", "\n"), array ('\\\\', '\\\'', '\r', '\n'), $htmlFileContent);
         self::_dispatchJavaScript("BreakpointDebugging_windowVirtualOpen('$windowName', '$htmlFileContent');" . PHP_EOL);
@@ -514,13 +533,13 @@ EOD;
      */
     static function exitForError($message)
     {
-        if (isset(self::$_resourceID)) {
-            self::virtualOpen(B::ERROR_WINDOW_NAME, B::getErrorHtmlFileTemplate());
-            self::htmlAddition(B::ERROR_WINDOW_NAME, 'pre', 0, $message);
-            self::front(B::ERROR_WINDOW_NAME);
-        } else {
-            echo '<pre>' . $message . '</pre>';
+        if (!isset($_SERVER['SERVER_ADDR'])) { // In case of command line.
+            return;
         }
+
+        self::virtualOpen(B::ERROR_WINDOW_NAME, B::getErrorHtmlFileTemplate());
+        self::htmlAddition(B::ERROR_WINDOW_NAME, 'pre', 0, $message);
+        self::front(B::ERROR_WINDOW_NAME);
         if (function_exists('xdebug_break')) {
             xdebug_break();
         }
