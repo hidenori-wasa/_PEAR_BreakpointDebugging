@@ -178,11 +178,11 @@ final class BreakpointDebugging_DisplayToOtherProcess
                     usleep(1000000);
                 }
                 // Opens the file with read only.
-                $pFile = B::fopen(array ($sharedFilePath, 'rb'));
+                $pFile = B::fopen(array ($sharedFilePath, 'r+b'));
                 if ($pFile === false) {
                     continue;
                 }
-                $javaScript = '';
+                self::$_resourceID = $pFile;
                 while (true) {
                     // 1 second sleep.
                     usleep(1000000);
@@ -190,25 +190,26 @@ final class BreakpointDebugging_DisplayToOtherProcess
                     if (!is_file($sharedFilePath)) {
                         continue 2;
                     }
-                    // If this process did not receive a data from main process.
-                    if (feof($pFile)) {
-                        continue;
-                    }
                     // Gets dispatched JavaScript character string from main process.
-                    while (true) {
-                        $readData = fread($pFile, 4096);
-                        if (!empty($readData)) {
-                            $javaScript .= $readData;
-                            continue;
-                        }
-                        break;
-                    }
-                    // Resets maximum execution time.
-                    set_time_limit(self::$_timeOutSeconds);
-                    // Executes JavaScript.
-                    echo $javaScript;
-                    flush();
                     $javaScript = '';
+                    do {
+                        $readData = fread($pFile, 4096);
+                        B::assert($readData !== false);
+                        $javaScript .= $readData;
+                    } while (!feof($pFile));
+                    // If this process got dispatched JavaScript character string from main process.
+                    if ($readData !== '') {
+                        // Resets maximum execution time.
+                        set_time_limit(self::$_timeOutSeconds);
+                        // Executes JavaScript.
+                        echo $javaScript;
+                        flush();
+                        // For health check.
+                        $result = fwrite($pFile, ' ');
+                        B::assert($result !== false);
+                        $result = fflush($pFile);
+                        B::assert($result !== false);
+                    }
                 }
             }
         }
@@ -226,15 +227,18 @@ final class BreakpointDebugging_DisplayToOtherProcess
             // Deletes shared memory.
             $result = shmop_delete(self::$_resourceID);
             B::assert($result !== false);
+            // If shared file exists.
+            if (is_file(self::$_sharedFilePath)) {
+                // Unlinks shared file.
+                B::unlink(array (self::$_sharedFilePath));
+            }
         } else { // If "shmop" extention is invalid.
+            // Truncates the shared file to size zero.
+            $result = ftruncate(self::$_resourceID, 0);
+            B::assert($result !== false);
             // Closes the shared file.
             $result = fclose(self::$_resourceID);
             B::assert($result !== false);
-        }
-        // If shared file exists.
-        if (is_file(self::$_sharedFilePath)) {
-            // Unlinks shared file.
-            B::unlink(array (self::$_sharedFilePath));
         }
     }
 

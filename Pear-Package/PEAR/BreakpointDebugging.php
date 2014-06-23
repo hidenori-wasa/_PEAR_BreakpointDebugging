@@ -1052,11 +1052,32 @@ EOD;
     {
         $cwd = getcwd();
         $relativeCWD = substr($cwd, strlen($_SERVER['DOCUMENT_ROOT']) - strlen($cwd) + 1);
-        $destResourceFilePath = $cwd . DIRECTORY_SEPARATOR . $resourceFileName;
-        if (!is_file($destResourceFilePath)) {
+        // If this mode is not production server release.
+        if (isset($_GET['BREAKPOINTDEBUGGING_MODE'])) {
+            $includePaths = ini_get('include_path');
+            $tmpIncludePaths = explode(PATH_SEPARATOR, $includePaths);
+            $topIncludePath = array_shift($tmpIncludePaths);
+            B::assert($topIncludePath === '.');
+            B::iniSet('include_path', implode(PATH_SEPARATOR, $tmpIncludePaths));
             $resourceFilePath = stream_resolve_include_path($resourceDirectoryPath . $resourceFileName);
-            copy($resourceFilePath, $destResourceFilePath);
+            B::iniSet('include_path', $includePaths);
+            $destResourceFilePath = $cwd . DIRECTORY_SEPARATOR . $resourceFileName;
+            // If destination file does not exist.
+            if (!is_file($destResourceFilePath)) {
+                // Copies resource to current work directory.
+                copy($resourceFilePath, $destResourceFilePath);
+                goto AFTER_TREATMENT;
+            }
+            $resourceFileStat = stat($resourceFilePath);
+            $destResourceFileStat = stat($destResourceFilePath);
+            // If resource file was modified.
+            if ($resourceFileStat['mtime'] > $destResourceFileStat['mtime']) {
+                // Copies resource to current work directory.
+                copy($resourceFilePath, $destResourceFilePath);
+            }
         }
+
+        AFTER_TREATMENT:
         return '//' . $_SERVER['SERVER_NAME'] . '/' . $relativeCWD . '/' . $resourceFileName;
     }
 

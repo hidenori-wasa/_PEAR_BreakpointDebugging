@@ -81,7 +81,8 @@ if (B::getXebugExists()) {
     //      B::iniSet('xdebug.dump.SERVER', 'REMOTE_ADDR,REQUEST_METHOD');
     if (B::getStatic('$exeMode') & B::REMOTE) { // In case of remote.
         // ### [XDebug] setting in "php.ini" file or ".htaccess" file. ###
-        B::iniCheck('xdebug.remote_host', array ('127.0.0.1', 'localhost'), 'Sets the \'xdebug.remote_host = "&lt;Remote IDE host of server&gt;"\' of "php.ini file", in other words remote IDE host of server is "&lt;Your host name or IP&gt;".');
+        // Comment out following line if you want to emulate remote by local host.
+        // B::iniCheck('xdebug.remote_host', array ('127.0.0.1', 'localhost'), 'Sets the \'xdebug.remote_host = "&lt;Remote IDE host of server&gt;"\' of "php.ini file", in other words remote IDE host of server is "&lt;Your host name or IP&gt;".');
     } else { // In case of local.
         // ### [XDebug] setting in "php.ini" file. ###
         B::iniCheck('xdebug.remote_host', '127.0.0.1', 'Set \'xdebug.remote_host = "127.0.0.1"\' of "php.ini" file because remote IDE host of server is "127.0.0.1".');
