@@ -9,6 +9,8 @@ use \BreakpointDebugging_PHPUnit_FrameworkTestCase as BSF;
 
 B::checkExeMode(); // Checks the execution mode.
 
+// exit('Success!');
+
 $test1 = <<<EOD
 <!DOCTYPE html>
 <html>

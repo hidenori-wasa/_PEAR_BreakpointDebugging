@@ -100,7 +100,8 @@ function BreakpointDebugging_setExecutionMode()
             // Deletes "BREAKPOINTDEBUGGING_MODE" query variable.
             unset($_BreakpointDebugging_get['BREAKPOINTDEBUGGING_MODE']);
         }
-        $_BreakpointDebugging_EXE_MODE = 2; // For HTTP request query string attack counter-plan.
+        //$_BreakpointDebugging_EXE_MODE = 2; // For HTTP request query string attack counter-plan.
+        $_BreakpointDebugging_EXE_MODE = 3; // For HTTP request query string attack counter-plan.
     } else if (BREAKPOINTDEBUGGING_IS_PRODUCTION === false) { // In case of development.
         // Checks PHP version.
         if (version_compare(PHP_VERSION, '5.3.2', '<') || version_compare(PHP_VERSION, '5.5', '>=')) {
@@ -119,7 +120,7 @@ function BreakpointDebugging_setExecutionMode()
         }
         $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags($_BreakpointDebugging_get['BREAKPOINTDEBUGGING_MODE']);
         $REMOTE = 1;
-        // $_BreakpointDebugging_EXE_MODE |= $REMOTE; // Emulates remote by local host.
+        $_BreakpointDebugging_EXE_MODE |= $REMOTE; // Emulates remote by local host.
     } else {
         exit('<pre>"BREAKPOINTDEBUGGING_IS_PRODUCTION" of "' . __FILE__ . '" must be bool.</pre>');
     }
@@ -129,7 +130,7 @@ function BreakpointDebugging_setExecutionMode()
     $includePaths[1] = './PEAR';
 
     // For debug. ===>
-    if (!BREAKPOINTDEBUGGING_IS_PRODUCTION) { // In case of not production server release.
+    if (!BREAKPOINTDEBUGGING_IS_PRODUCTION) { // In case of development.
         // if ($_BreakpointDebugging_EXE_MODE & $UNIT_TEST) {
         //     $includePaths = array ('.', './PEAR', './PEAROtherPackage'); // For independence execution check.
         // } else {
@@ -247,10 +248,12 @@ function BreakpointDebugging_mySetting()
     $workDir = &B::refStatic('$_workDir');
     // We can change work directory name.
     $workDir = './Work';
-    if (is_dir($workDir)) {
-        B::chmod($workDir, 0700);
-    } else {
-        B::mkdir(array ($workDir, 0700));
+    if (!BREAKPOINTDEBUGGING_IS_PRODUCTION) { // In case of development.
+        if (is_dir($workDir)) {
+            B::chmod($workDir, 0700);
+        } else {
+            B::mkdir(array ($workDir, 0700));
+        }
     }
     $workDir = realpath($workDir);
     // B::assert($workDir !== false, 102);

@@ -84,13 +84,57 @@ final class BreakpointDebugging_DisplayToOtherProcess
     private static $_onceFlag = true;
 
     /**
+     * Displays error information if assertion is false.
+     *
+     * @param bool $assertion Assertion.
+     *
+     * @return void
+     */
+    private static function _assert($assertion)
+    {
+        $callStackInfo = debug_backtrace();
+        reset($callStackInfo);
+        if (!empty($callStackInfo)) {
+            $call = each($callStackInfo);
+            $call = $call['value'];
+            if (array_key_exists('file', $call)) {
+                $errorFile = $call['file'];
+            }
+            if (array_key_exists('line', $call)) {
+                $errorLine = $call['line'];
+            }
+        }
+        if (!is_bool($assertion)) {
+            $errorInfo = <<<EOD
+<pre>
+<strong>Assertion must be bool.</strong>
+FILE: $errorFile
+LINE: $errorLine
+</pre>
+EOD;
+            exit($errorInfo);
+        }
+
+        if ($assertion === false) {
+            $errorInfo = <<<EOD
+<pre>
+<strong>Assertion failed.</strong>
+FILE: $errorFile
+LINE: $errorLine
+</pre>
+EOD;
+            exit($errorInfo);
+        }
+    }
+
+    /**
      * Gets JavaScript character string from other process, and executes it.
      *
      * @return void
      */
     static function displayToOtherProcess()
     {
-        B::assert(self::$_onceFlag);
+        self::_assert(self::$_onceFlag);
         self::$_onceFlag = false;
 
         // Resets maximum execution time.
@@ -194,21 +238,23 @@ final class BreakpointDebugging_DisplayToOtherProcess
                     $javaScript = '';
                     do {
                         $readData = fread($pFile, 4096);
-                        B::assert($readData !== false);
+                        self::_assert($readData !== false);
                         $javaScript .= $readData;
-                    } while (!feof($pFile));
+                    } while ($readData !== '');
                     // If this process got dispatched JavaScript character string from main process.
-                    if ($readData !== '') {
+                    if ($javaScript !== '') {
                         // Resets maximum execution time.
                         set_time_limit(self::$_timeOutSeconds);
                         // Executes JavaScript.
                         echo $javaScript;
                         flush();
-                        // For health check.
-                        $result = fwrite($pFile, ' ');
-                        B::assert($result !== false);
-                        $result = fflush($pFile);
-                        B::assert($result !== false);
+                        if ($javaScript === ' ') {
+                            // For health check.
+                            $result = fwrite($pFile, ' ');
+                            self::_assert($result !== false);
+                            $result = fflush($pFile);
+                            self::_assert($result !== false);
+                        }
                     }
                 }
             }
@@ -226,19 +272,19 @@ final class BreakpointDebugging_DisplayToOtherProcess
         if (extension_loaded('shmop')) {
             // Deletes shared memory.
             $result = shmop_delete(self::$_resourceID);
-            B::assert($result !== false);
+            self::_assert($result !== false);
             // If shared file exists.
             if (is_file(self::$_sharedFilePath)) {
                 // Unlinks shared file.
                 B::unlink(array (self::$_sharedFilePath));
             }
         } else { // If "shmop" extention is invalid.
-            // Truncates the shared file to size zero.
-            $result = ftruncate(self::$_resourceID, 0);
-            B::assert($result !== false);
+            // Truncates the shared file to size 1.
+            $result = ftruncate(self::$_resourceID, 1);
+            self::_assert($result !== false);
             // Closes the shared file.
             $result = fclose(self::$_resourceID);
-            B::assert($result !== false);
+            self::_assert($result !== false);
         }
     }
 

@@ -42,6 +42,9 @@
  */
 use \BreakpointDebugging as B;
 
+if (BREAKPOINTDEBUGGING_IS_PRODUCTION) { // If production server.
+    throw new \BreakpointDebugging_ErrorException('"BreakpointDebugging_Window" class cannot use in case of production server.');
+}
 /**
  * Class for display to other process windows.
  *
@@ -320,6 +323,10 @@ EOD;
                 if (!empty(self::$_resourceID)) {
                     return;
                 }
+                // If remote server.
+                if (B::getStatic('$exeMode') & B::REMOTE) {
+                    echo '<strong>Server was down.</strong>';
+                }
             }
             // Allocates shared memory area.
             list($shmopKey, self::$_resourceID) = self::buildSharedMemory(1024 * 1024);
@@ -342,7 +349,7 @@ EOD;
                         $fileStatus = stat($sharedFilePath);
                         B::assert($fileStatus !== false);
                         // If other process for display had been ending.
-                        if ($fileStatus['size'] === 0) {
+                        if ($fileStatus['size'] === 1) {
                             break;
                         }
                         // Opens the shared file with append writing.
@@ -356,7 +363,7 @@ EOD;
                         B::assert($result !== false);
                         $fileStatus = fstat($pFile);
                         $expectedFileSize = $fileStatus['size'] + 1;
-                        for ($count = 0; $count < 10; $count++) {
+                        for ($count = 0; $count < 5; $count++) {
                             // Wait 1 seconds.
                             usleep(1000000);
                             $fileStatus = fstat($pFile);
@@ -370,7 +377,7 @@ EOD;
                     break;
                 }
                 // Creates shared file, and checks for other process start.
-                $result = file_put_contents($sharedFilePath, '<!-- -->');
+                $result = file_put_contents($sharedFilePath, '');
                 B::assert($result !== false);
                 // Opens "Mozilla Firefox" window.
                 $openFirefoxWindow($command);
