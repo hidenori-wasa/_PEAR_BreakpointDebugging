@@ -41,6 +41,7 @@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
 use \BreakpointDebugging as B;
+use \BreakpointDebugging_Shmop as BS;
 
 if (BREAKPOINTDEBUGGING_IS_PRODUCTION) { // If production server.
     throw new \BreakpointDebugging_ErrorException('"BreakpointDebugging_Window" class cannot use in case of production server.');
@@ -57,6 +58,11 @@ if (BREAKPOINTDEBUGGING_IS_PRODUCTION) { // If production server.
  */
 class BreakpointDebugging_Window
 {
+    /**
+     * @const int Shared memory byte size.
+     */
+    const SHARED_MEMORY_SIZE = 1048576;
+
     /**
      * @var \BreakpointDebugging_Window This instance.
      */
@@ -155,55 +161,54 @@ class BreakpointDebugging_Window
         return shmop_write($shmopId, '0', $lockFlagLocationOfItself);
     }
 
-    /**
-     * Builds shared memory.
-     *
-     * @param int $sharedMemoryBlockSize Shared memory block size.
-     *
-     * @return array Shared memory key and shared memory ID.
-     * @throws \BreakpointDebugging_ErrorException
-     */
-    static function buildSharedMemory($sharedMemoryBlockSize)
-    {
-        B::limitAccess(
-            array ('BreakpointDebugging/LockByShmop.php',
-                'BreakpointDebugging/Window.php',
-            )
-        );
-
-        set_error_handler('\BreakpointDebugging::handleError', 0);
-        for ($count = 0; $count < 1000; $count++) {
-            $sharedMemoryKey = (microtime(true) * 10000) & 0xFFFFFFFF;
-            if ($sharedMemoryKey === -1) {
-                // @codeCoverageIgnoreStart
-                // Because this is a few probability.
-                continue;
-                // @codeCoverageIgnoreEnd
-            }
-            // Allocates shared memory area.
-            $sharedMemoryID = @shmop_open($sharedMemoryKey, 'n', 0600, $sharedMemoryBlockSize);
-            if ($sharedMemoryID === false //
-                || $sharedMemoryID === null //
-            ) {
-                // @codeCoverageIgnoreStart
-                // Because this is a few probability.
-                continue;
-                // @codeCoverageIgnoreEnd
-            }
-            break;
-        }
-        restore_error_handler();
-
-        if ($sharedMemoryID === false) {
-            // @codeCoverageIgnoreStart
-            // Because this is a few probability.
-            throw new \BreakpointDebugging_ErrorException('New shared memory operation opening failed.', 101);
-            // @codeCoverageIgnoreEnd
-        }
-
-        return array ($sharedMemoryKey, $sharedMemoryID);
-    }
-
+//    /**
+//     * Builds shared memory.
+//     *
+//     * @param int $sharedMemoryBlockSize Shared memory block size.
+//     *
+//     * @return array Shared memory key and shared memory ID.
+//     * @throws \BreakpointDebugging_ErrorException
+//     */
+//    static function buildSharedMemory($sharedMemoryBlockSize)
+//    {
+//        B::limitAccess(
+//            array ('BreakpointDebugging/LockByShmop.php',
+//                'BreakpointDebugging/Window.php',
+//            )
+//        );
+//
+//        set_error_handler('\BreakpointDebugging::handleError', 0);
+//        for ($count = 0; $count < 1000; $count++) {
+//            $sharedMemoryKey = (microtime(true) * 10000) & 0xFFFFFFFF;
+//            if ($sharedMemoryKey === -1) {
+//                // @codeCoverageIgnoreStart
+//                // Because this is a few probability.
+//                continue;
+//                // @codeCoverageIgnoreEnd
+//            }
+//            // Allocates shared memory area.
+//            $sharedMemoryID = @shmop_open($sharedMemoryKey, 'n', 0600, $sharedMemoryBlockSize);
+//            if ($sharedMemoryID === false //
+//                || $sharedMemoryID === null //
+//            ) {
+//                // @codeCoverageIgnoreStart
+//                // Because this is a few probability.
+//                continue;
+//                // @codeCoverageIgnoreEnd
+//            }
+//            break;
+//        }
+//        restore_error_handler();
+//
+//        if ($sharedMemoryID === false) {
+//            // @codeCoverageIgnoreStart
+//            // Because this is a few probability.
+//            throw new \BreakpointDebugging_ErrorException('New shared memory operation opening failed.', 101);
+//            // @codeCoverageIgnoreEnd
+//        }
+//
+//        return array ($sharedMemoryKey, $sharedMemoryID);
+//    }
     /**
      * Executes JavaScript.
      *
@@ -242,19 +247,35 @@ class BreakpointDebugging_Window
             . '//-->' . PHP_EOL
             . '</script>' . PHP_EOL;
         if (self::$_isShmopValid) {
-            $result = self::lockOn2Processes(0, 1, self::$_resourceID);
-            B::assert($result !== false);
-            // Gets the writing pointer.
-            $javaScriptWritingPtr = shmop_read(self::$_resourceID, 3, 10);
-            B::assert($javaScriptWritingPtr !== false);
-            // Writes shared resource of JavaScript character string.
-            $result = shmop_write(self::$_resourceID, $javaScriptDispatcher, $javaScriptWritingPtr);
-            B::assert($result !== false);
-            $javaScriptWritingPtr += strlen($javaScriptDispatcher);
-            $javaScriptWritingPtr = sprintf('0x%08X', $javaScriptWritingPtr);
-            // Registers the writing pointer.
-            $result = shmop_write(self::$_resourceID, $javaScriptWritingPtr, 3);
-            B::assert($result !== false);
+            try {
+                $result = self::lockOn2Processes(0, 1, self::$_resourceID);
+                B::assert($result !== false);
+                // Gets the writing pointer.
+                $javaScriptWritingPtr = shmop_read(self::$_resourceID, 3, 10);
+                B::assert($javaScriptWritingPtr !== false);
+                // If area to write overruns shared memory area.
+                if ($javaScriptWritingPtr + strlen($javaScriptDispatcher) >= self::SHARED_MEMORY_SIZE) {
+                    $lastStrLen = self::SHARED_MEMORY_SIZE - $javaScriptWritingPtr;
+                    $javaScriptDispatcherBefore = substr($javaScriptDispatcher, 0, $lastStrLen);
+                    $javaScriptDispatcher = substr($javaScriptDispatcher, $lastStrLen);
+                    // Writes shared resource of JavaScript character string until end of shared memory area.
+                    $result = shmop_write(self::$_resourceID, $javaScriptDispatcherBefore, $javaScriptWritingPtr);
+                    B::assert($result !== false);
+                    // Initializes the shared memory writing pointer.
+                    $javaScriptWritingPtr = 23;
+                }
+                // Writes shared resource of JavaScript character string.
+                $result = shmop_write(self::$_resourceID, $javaScriptDispatcher, $javaScriptWritingPtr);
+                B::assert($result !== false);
+                $javaScriptWritingPtr += strlen($javaScriptDispatcher);
+                $javaScriptWritingPtr = sprintf('0x%08X', $javaScriptWritingPtr);
+                // Registers the writing pointer.
+                $result = shmop_write(self::$_resourceID, $javaScriptWritingPtr, 3);
+                B::assert($result !== false);
+            } catch (\Exception $e) {
+                self::unlockOn2Processes(0, self::$_resourceID);
+                throw $e;
+            }
             self::unlockOn2Processes(0, self::$_resourceID);
         } else {
             // Writes to shared file. Append open file is atomic writing.
@@ -323,13 +344,14 @@ EOD;
                 if (!empty(self::$_resourceID)) {
                     return;
                 }
-                // If remote server.
+                // If remote server. Because it is repaired automatically in case of local server.
                 if (B::getStatic('$exeMode') & B::REMOTE) {
                     echo '<strong>Server was down.</strong>';
                 }
             }
             // Allocates shared memory area.
-            list($shmopKey, self::$_resourceID) = self::buildSharedMemory(1024 * 1024);
+            //list($shmopKey, self::$_resourceID) = self::buildSharedMemory(self::SHARED_MEMORY_SIZE);
+            list($shmopKey, self::$_resourceID) = BS::buildSharedMemory(self::SHARED_MEMORY_SIZE);
             // Registers the shared memory key.
             $result = file_put_contents($sharedFilePath, $shmopKey);
             B::assert($result !== false);

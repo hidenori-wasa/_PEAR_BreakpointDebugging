@@ -182,17 +182,35 @@ EOD;
                     if ($javaScriptWritingPtr === false) {
                         continue 2;
                     }
+                    $javaScript = '';
+                    // If area to write overrun shared memory area.
+                    if (self::$_javaScriptReadingPtr > $javaScriptWritingPtr) {
+                        // Calculates read-length.
+                        $readLen = BW::SHARED_MEMORY_SIZE - self::$_javaScriptReadingPtr;
+                        // Gets dispatched JavaScript character string from main process until end of shared memory area.
+                        $result = shmop_read($shmopId, self::$_javaScriptReadingPtr + 0, $readLen);
+                        if ($result === false) {
+                            continue 2;
+                        }
+                        $javaScript .= $result;
+                        // Initializes the shared memory reading pointer.
+                        self::$_javaScriptReadingPtr = 23;
+                    }
                     // Calculates read-length.
                     $readLen = $javaScriptWritingPtr - self::$_javaScriptReadingPtr;
+                    self::_assert($readLen <= BW::SHARED_MEMORY_SIZE);
                     // If this process received data from main process.
                     if ($readLen > 0) {
                         // Resets maximum execution time.
                         set_time_limit(self::$_timeOutSeconds);
                         // Gets dispatched JavaScript character string from main process.
-                        $javaScript = shmop_read($shmopId, self::$_javaScriptReadingPtr + 0, $readLen);
-                        if ($javaScript === false) {
+                        //$javaScript = shmop_read($shmopId, self::$_javaScriptReadingPtr + 0, $readLen);
+                        $result = shmop_read($shmopId, self::$_javaScriptReadingPtr + 0, $readLen);
+                        //if ($javaScript === false) {
+                        if ($result === false) {
                             continue 2;
                         }
+                        $javaScript .= $result;
                         // Moves the shared memory reading pointer.
                         self::$_javaScriptReadingPtr = $javaScriptWritingPtr;
                         // Registers the shared memory reading pointer.
@@ -294,3 +312,6 @@ EOD;
 register_shutdown_function('\BreakpointDebugging_DisplayToOtherProcess::shutdown');
 
 \BreakpointDebugging_DisplayToOtherProcess::displayToOtherProcess();
+
+// For debug.
+// "C:/Program Files/Mozilla Firefox/firefox.exe" "https://localhost/Pear-Package/index.php?BREAKPOINTDEBUGGING_MODE=DEBUG"

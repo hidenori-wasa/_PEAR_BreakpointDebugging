@@ -8,8 +8,26 @@ use \BreakpointDebugging_PHPUnit_StaticVariableStorage as BSS;
 use \BreakpointDebugging_PHPUnit_FrameworkTestCase as BSF;
 
 B::checkExeMode(); // Checks the execution mode.
-
-// exit('Success!');
+//for ($count = 0; $count < 100; $count++) {
+//    var_dump(uniqid('', true));
+//}
+//exit;
+//$test = <<<EOD
+//<!DOCTYPE html>
+//<html>
+//	<head>
+//		<meta charset="UTF-8" />
+//		<title>テスト１</title>
+//	</head>
+//	<body style="background-color: black; color: white; font-size: 25px">
+//		テスト１ボディー
+//	</body>
+//</html>
+//EOD;
+//BW::virtualOpen('test', $test);
+//sleep(5);
+//BW::scrollBy('test', 100);
+//exit;
 
 $test1 = <<<EOD
 <!DOCTYPE html>

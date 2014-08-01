@@ -194,8 +194,10 @@ abstract class BreakpointDebugging_Lock
             $this->unlock();
         }
         // In case of lock by shared memory operation.
-        if ($this instanceof \BreakpointDebugging_LockByShmop) {
-            // This code is executed in case of "\BreakpointDebugging_LockByShmop" unit test.
+        //if ($this instanceof \BreakpointDebugging_LockByShmop) {
+        if ($this instanceof \BreakpointDebugging_LockByShmopRequest) {
+            //// This code is executed in case of "\BreakpointDebugging_LockByShmop" unit test.
+            // This code is executed in case of "\BreakpointDebugging_LockByShmopRequest" unit test.
             // Closes the shared memory.
             shmop_close(self::$sharedMemoryID);
         }

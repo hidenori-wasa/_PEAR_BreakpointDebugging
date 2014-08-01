@@ -47,6 +47,9 @@ use \BreakpointDebugging as B;
 // Please, set true or false value.
     const BREAKPOINTDEBUGGING_IS_PRODUCTION = false; // In case of development.
 // const BREAKPOINTDEBUGGING_IS_PRODUCTION = true; // In case of production server release.
+//
+// Please, define variable if you emulate remote by local host.
+// $_BreakpointDebugging_emulate_remote = true;
 
 if (preg_match('`^WIN`xXi', PHP_OS)) {
     define('BREAKPOINTDEBUGGING_IS_WINDOWS', true);
@@ -77,7 +80,7 @@ function BreakpointDebugging_setExecutionMode()
     /**
      * @var int Specifies debug mode.
      */
-    global $_BreakpointDebugging_EXE_MODE, $_BreakpointDebugging_get, $_BreakpointDebugging_argSeparatorOutput;
+    global $_BreakpointDebugging_EXE_MODE, $_BreakpointDebugging_get, $_BreakpointDebugging_argSeparatorOutput, $_BreakpointDebugging_emulate_remote;
 
     $_BreakpointDebugging_argSeparatorOutput = '&amp;';
 
@@ -100,7 +103,6 @@ function BreakpointDebugging_setExecutionMode()
             // Deletes "BREAKPOINTDEBUGGING_MODE" query variable.
             unset($_BreakpointDebugging_get['BREAKPOINTDEBUGGING_MODE']);
         }
-        //$_BreakpointDebugging_EXE_MODE = 2; // For HTTP request query string attack counter-plan.
         $_BreakpointDebugging_EXE_MODE = 3; // For HTTP request query string attack counter-plan.
     } else if (BREAKPOINTDEBUGGING_IS_PRODUCTION === false) { // In case of development.
         // Checks PHP version.
@@ -119,11 +121,14 @@ function BreakpointDebugging_setExecutionMode()
             $_BreakpointDebugging_modeError();
         }
         $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags($_BreakpointDebugging_get['BREAKPOINTDEBUGGING_MODE']);
-        $REMOTE = 1;
-        $_BreakpointDebugging_EXE_MODE |= $REMOTE; // Emulates remote by local host.
+        if (isset($_BreakpointDebugging_emulate_remote)) {
+            $REMOTE = 1;
+            $_BreakpointDebugging_EXE_MODE |= $REMOTE;
+        }
     } else {
         exit('<pre>"BREAKPOINTDEBUGGING_IS_PRODUCTION" of "' . __FILE__ . '" must be bool.</pre>');
     }
+    unset($_BreakpointDebugging_emulate_remote);
     // Reference path setting.
     $includePaths = explode(PATH_SEPARATOR, ini_get('include_path'));
     array_unshift($includePaths, $includePaths[0]);

@@ -84,7 +84,8 @@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
 use \BreakpointDebugging as B;
-use \BreakpointDebugging_Window as BW;
+//use \BreakpointDebugging_Window as BW;
+use \BreakpointDebugging_Shmop as BS;
 
 /**
  * Class which locks php-code by shared memory operation.
@@ -341,7 +342,8 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
      */
     private function _buildSharedMemory()
     {
-        list($sharedMemoryKey, self::$sharedMemoryID) = BW::buildSharedMemory(self::MEMORY_BLOCK_SIZE);
+        //list($sharedMemoryKey, self::$sharedMemoryID) = BW::buildSharedMemory(self::MEMORY_BLOCK_SIZE);
+        list($sharedMemoryKey, self::$sharedMemoryID) = BS::buildSharedMemory(self::MEMORY_BLOCK_SIZE);
         // Register shared memory key.
         $result = rewind($this->pFile);
         B::assert($result !== false);
