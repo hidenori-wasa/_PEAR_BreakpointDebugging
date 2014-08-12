@@ -173,6 +173,11 @@ abstract class BreakpointDebugging_Error_InAllCase
     private static $_onceFlag = true;
 
     /**
+     * @var bool Error flag of once.
+     */
+    private static $_onceFlagOfCommand = true;
+
+    /**
      * @var string Error log directory name.
      */
     private static $_errorLogDir = '/ErrorLog/';
@@ -1295,14 +1300,24 @@ EOD;
             $errorHtmlFileContent = self::getErrorHTMLTemplate(self::$_errorBuffer);
             // Makes error HTML file.
             file_put_contents(B::ERROR_WINDOW_NAME . '.html', $errorHtmlFileContent);
-            // Opens its file at error window.
-            echo '<script type="text/javascript">' . PHP_EOL
-            . '<!--' . PHP_EOL
-            . "openedWindow = open('', '" . B::ERROR_WINDOW_NAME . "', '');" . PHP_EOL
-            . "openedWindow.close();" . PHP_EOL
-            . 'open("' . 'http://' . $_SERVER['SERVER_ADDR'] . substr(str_replace('\\', '/', realpath(B::ERROR_WINDOW_NAME . '.html')), strlen($_SERVER['DOCUMENT_ROOT'])) . '", "' . B::ERROR_WINDOW_NAME . '", "");' . PHP_EOL
-            . '//-->' . PHP_EOL
-            . '</script>' . PHP_EOL;
+            if (isset($_SERVER['SERVER_ADDR'])) { // If common gateway.
+                // Opens its file at error window.
+                echo '<script type="text/javascript">' . PHP_EOL
+                . '<!--' . PHP_EOL
+                . "openedWindow = open('', '" . B::ERROR_WINDOW_NAME . "', '');" . PHP_EOL
+                . "openedWindow.close();" . PHP_EOL
+                . 'open("' . 'http://' . $_SERVER['SERVER_ADDR'] . substr(str_replace('\\', '/', realpath(B::ERROR_WINDOW_NAME . '.html')), strlen($_SERVER['DOCUMENT_ROOT'])) . '", "' . B::ERROR_WINDOW_NAME . '", "");' . PHP_EOL
+                . '//-->' . PHP_EOL
+                . '</script>' . PHP_EOL;
+            } else { // If command line.
+                if (self::$_onceFlagOfCommand) {
+                    self::$_onceFlagOfCommand = false;
+                    $firefoxStartCommand = BW::generateMozillaFirefoxStartCommand('file://' . realpath(B::ERROR_WINDOW_NAME . '.html'));
+                    // Displays the note for error display.
+                    echo '<strong>You should execute following command for error display.</strong><br />';
+                    echo $firefoxStartCommand . '<br />';
+                }
+            }
         }
         // Unlocks the error log files.
         $this->_lockByFileExisting->unlock();

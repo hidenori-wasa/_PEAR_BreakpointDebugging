@@ -4,30 +4,20 @@ require_once './BreakpointDebugging_Inclusion.php';
 
 use \BreakpointDebugging as B;
 use \BreakpointDebugging_Window as BW;
+use \BreakpointDebugging_Shmop as BS;
 use \BreakpointDebugging_PHPUnit_StaticVariableStorage as BSS;
 use \BreakpointDebugging_PHPUnit_FrameworkTestCase as BSF;
 
 B::checkExeMode(); // Checks the execution mode.
-//for ($count = 0; $count < 100; $count++) {
-//    var_dump(uniqid('', true));
-//}
-//exit;
-//$test = <<<EOD
-//<!DOCTYPE html>
-//<html>
-//	<head>
-//		<meta charset="UTF-8" />
-//		<title>テスト１</title>
-//	</head>
-//	<body style="background-color: black; color: white; font-size: 25px">
-//		テスト１ボディー
-//	</body>
-//</html>
-//EOD;
-//BW::virtualOpen('test', $test);
-//sleep(5);
-//BW::scrollBy('test', 100);
-//exit;
+//
+// Constructs instance.
+$LockByShmopRequest = &\BreakpointDebugging_LockByShmopRequest::singleton();
+$LockByShmopRequest->lock();
+//usleep(10000000);
+$LockByShmopRequest->unlock();
+exit('Success!');
+
+
 
 $test1 = <<<EOD
 <!DOCTYPE html>

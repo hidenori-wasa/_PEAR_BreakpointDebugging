@@ -893,6 +893,16 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
         }
     }
 
+//    static function shutdown()
+//    {
+//        parent::shutdown();
+//
+//        if (!isset($_SERVER['SERVER_ADDR'])) { // If command line.
+//            $firefoxStartCommand = BW::generateMozillaFirefoxStartCommand('file://' . realpath(B::ERROR_WINDOW_NAME . '.html'));
+//            // Starts the "Mozilla Firefox" web browser, then displays error information.
+//            `$firefoxStartCommand`;
+//        }
+//    }
     ///////////////////////////// For package user from here in case of debug mode. /////////////////////////////
     /**
      * Checks a invoker file path.

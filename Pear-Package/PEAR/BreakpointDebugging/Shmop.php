@@ -68,7 +68,9 @@ final class BreakpointDebugging_Shmop
     {
         B::limitAccess(
             array ('BreakpointDebugging/LockByShmop.php',
+                'BreakpointDebugging_LockByShmopResponse.php',
                 'BreakpointDebugging/Window.php',
+                'index.php', // For debug.
             )
         );
 
@@ -116,7 +118,10 @@ final class BreakpointDebugging_Shmop
     {
         set_error_handler('\BreakpointDebugging::handleError', 0);
         $sharedMemoryKey = fread($pFile, 10);
-        B::assert(!empty($sharedMemoryKey));
+        //B::assert(!empty($sharedMemoryKey));
+        if (strlen($sharedMemoryKey) !== 10) {
+            return false;
+        }
         // Open shared memory to read and write.
         $sharedMemoryID = @shmop_open($sharedMemoryKey, 'w', 0, 0);
         restore_error_handler();

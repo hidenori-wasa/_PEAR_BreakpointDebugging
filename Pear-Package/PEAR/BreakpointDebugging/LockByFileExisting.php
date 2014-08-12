@@ -132,7 +132,10 @@ final class BreakpointDebugging_LockByFileExisting extends \BreakpointDebugging_
      */
     protected function loopLocking()
     {
-        $this->pFile = B::fopen(array ($this->lockFilePath, 'x+b'), 0600, $this->timeout, $this->sleepMicroSeconds);
+        //$this->pFile = B::fopen(array ($this->lockFilePath, 'x+b'), 0600, $this->timeout, $this->sleepMicroSeconds);
+        $pFile = B::fopen(array ($this->lockFilePath, 'x+b'), 0600, $this->timeout, $this->sleepMicroSeconds);
+        // Closes the file because "popen()" copies file resource. Therefore, the file can do "unlink()".
+        fclose($pFile);
     }
 
     /**
@@ -142,9 +145,9 @@ final class BreakpointDebugging_LockByFileExisting extends \BreakpointDebugging_
      */
     protected function loopUnlocking()
     {
-        if (is_resource($this->pFile)) {
-            fclose($this->pFile);
-        }
+        //if (is_resource($this->pFile)) {
+        //    fclose($this->pFile);
+        //}
         if (!is_file($this->lockFilePath)) {
             // @codeCoverageIgnoreStart
             // This code may not be executed but it remains for safety.

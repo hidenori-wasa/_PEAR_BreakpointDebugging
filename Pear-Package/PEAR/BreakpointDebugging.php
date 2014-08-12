@@ -1384,7 +1384,8 @@ EOD;
      * @return void
      * @codeCoverageIgnore
      */
-    final static function shutdown()
+    //final static function shutdown()
+    static function shutdown()
     {
         // Keeps the project work directory at "__destruct".
         chdir(self::$_pwd);

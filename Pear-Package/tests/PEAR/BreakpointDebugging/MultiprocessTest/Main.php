@@ -1,6 +1,7 @@
 <?php
 
 use \BreakpointDebugging as B;
+use \BreakpointDebugging_Window as BW;
 
 class tests_PEAR_BreakpointDebugging_MultiprocessTest_Main
 {
@@ -77,7 +78,8 @@ class tests_PEAR_BreakpointDebugging_MultiprocessTest_Main
         if (max($results) !== '250') {
             // Displays error.
             foreach ($results as $result) {
-                echo $result;
+                //echo $result;
+                BW::virtualOpen('MultiProcessTestError', $result);
             }
             return false;
         }

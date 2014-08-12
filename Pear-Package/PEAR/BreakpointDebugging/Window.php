@@ -161,54 +161,6 @@ class BreakpointDebugging_Window
         return shmop_write($shmopId, '0', $lockFlagLocationOfItself);
     }
 
-//    /**
-//     * Builds shared memory.
-//     *
-//     * @param int $sharedMemoryBlockSize Shared memory block size.
-//     *
-//     * @return array Shared memory key and shared memory ID.
-//     * @throws \BreakpointDebugging_ErrorException
-//     */
-//    static function buildSharedMemory($sharedMemoryBlockSize)
-//    {
-//        B::limitAccess(
-//            array ('BreakpointDebugging/LockByShmop.php',
-//                'BreakpointDebugging/Window.php',
-//            )
-//        );
-//
-//        set_error_handler('\BreakpointDebugging::handleError', 0);
-//        for ($count = 0; $count < 1000; $count++) {
-//            $sharedMemoryKey = (microtime(true) * 10000) & 0xFFFFFFFF;
-//            if ($sharedMemoryKey === -1) {
-//                // @codeCoverageIgnoreStart
-//                // Because this is a few probability.
-//                continue;
-//                // @codeCoverageIgnoreEnd
-//            }
-//            // Allocates shared memory area.
-//            $sharedMemoryID = @shmop_open($sharedMemoryKey, 'n', 0600, $sharedMemoryBlockSize);
-//            if ($sharedMemoryID === false //
-//                || $sharedMemoryID === null //
-//            ) {
-//                // @codeCoverageIgnoreStart
-//                // Because this is a few probability.
-//                continue;
-//                // @codeCoverageIgnoreEnd
-//            }
-//            break;
-//        }
-//        restore_error_handler();
-//
-//        if ($sharedMemoryID === false) {
-//            // @codeCoverageIgnoreStart
-//            // Because this is a few probability.
-//            throw new \BreakpointDebugging_ErrorException('New shared memory operation opening failed.', 101);
-//            // @codeCoverageIgnoreEnd
-//        }
-//
-//        return array ($sharedMemoryKey, $sharedMemoryID);
-//    }
     /**
      * Executes JavaScript.
      *
@@ -287,13 +239,29 @@ class BreakpointDebugging_Window
     }
 
     /**
+     * Generates "Mozilla Firefox" start command.
+     *
+     * @param string $uri URI for display.
+     */
+    static function generateMozillaFirefoxStartCommand($uri)
+    {
+        if (BREAKPOINTDEBUGGING_IS_WINDOWS) {
+            return '"C:/Program Files/Mozilla Firefox/firefox.exe" "' . $uri . '"';
+        } else {
+            return '"firefox" "' . $uri . '"';
+        }
+    }
+
+    /**
      * Creates or initializes shared resource for other process display because session unit test must not send HTML header.
      *
      * @return void
      */
     private static function _initializeSharedResource()
     {
-        $openFirefoxWindow = function($command) {
+        //$openFirefoxWindow = function($command) {
+        $openFirefoxWindow = function($uri) {
+            $command = \BreakpointDebugging_Window::generateMozillaFirefoxStartCommand($uri);
             // If local server.
             if (!(B::getStatic('$exeMode') & B::REMOTE)) {
                 // Opens "BreakpointDebugging_DisplayToOtherProcess.php" page for display in other process.
@@ -320,13 +288,13 @@ EOD;
         self::$_sharedFilePath = B::getStatic('$_workDir') . '/SharedFileForOtherProcessDisplay.txt';
         $sharedFilePath = self::$_sharedFilePath;
         // Copies the "BreakpointDebugging_DisplayToOtherProcess.php" file into current work directory, and gets its URI.
-        $uri = B::copyResourceToCWD('BreakpointDebugging_DisplayToOtherProcess.php', '');
-        // Generates "Mozilla Firefox" command to open other process page.
-        if (BREAKPOINTDEBUGGING_IS_WINDOWS) {
-            $command = '"C:/Program Files/Mozilla Firefox/firefox.exe" "https:' . $uri . '"';
-        } else {
-            $command = '"firefox" "https:' . $uri . '"';
-        }
+        $uri = 'https:' . B::copyResourceToCWD('BreakpointDebugging_DisplayToOtherProcess.php', '');
+        //// Generates "Mozilla Firefox" command to open other process page.
+        //if (BREAKPOINTDEBUGGING_IS_WINDOWS) {
+        //    $command = '"C:/Program Files/Mozilla Firefox/firefox.exe" "https:' . $uri . '"';
+        //} else {
+        //    $command = '"firefox" "https:' . $uri . '"';
+        //}
         // Creates this class instance for shared memory close or shared file deletion.
         self::$_self = new \BreakpointDebugging_Window();
         // If "shmop" extention is valid.
@@ -350,7 +318,6 @@ EOD;
                 }
             }
             // Allocates shared memory area.
-            //list($shmopKey, self::$_resourceID) = self::buildSharedMemory(self::SHARED_MEMORY_SIZE);
             list($shmopKey, self::$_resourceID) = BS::buildSharedMemory(self::SHARED_MEMORY_SIZE);
             // Registers the shared memory key.
             $result = file_put_contents($sharedFilePath, $shmopKey);
@@ -359,7 +326,8 @@ EOD;
             $result = shmop_write(self::$_resourceID, sprintf('0000x%08X0x%08X', 23, 23), 0);
             B::assert($result !== false);
             // Opens "Mozilla Firefox" window.
-            $openFirefoxWindow($command);
+            //$openFirefoxWindow($command);
+            $openFirefoxWindow($uri);
         } else { // If "shmop" extension is invalid.
             // If local server.
             if (!(B::getStatic('$exeMode') & B::REMOTE)) {
@@ -402,7 +370,8 @@ EOD;
                 $result = file_put_contents($sharedFilePath, '');
                 B::assert($result !== false);
                 // Opens "Mozilla Firefox" window.
-                $openFirefoxWindow($command);
+                //$openFirefoxWindow($command);
+                $openFirefoxWindow($uri);
             }
         }
     }

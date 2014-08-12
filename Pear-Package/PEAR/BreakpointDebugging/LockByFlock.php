@@ -75,6 +75,11 @@ use \BreakpointDebugging as B;
 final class BreakpointDebugging_LockByFlock extends \BreakpointDebugging_Lock
 {
     /**
+     * @var resource File pointer of lock flag file.
+     */
+    private $_pFile;
+
+    /**
      * Singleton method.
      *
      * @param int $timeout           The timeout.
@@ -99,8 +104,8 @@ final class BreakpointDebugging_LockByFlock extends \BreakpointDebugging_Lock
     {
         parent::__construct($lockFilePath, $timeout, $sleepMicroSeconds);
 
-        $this->pFile = B::fopen(array ($lockFilePath, 'ab'));
-        B::assert(stream_supports_lock($this->pFile), 101);
+        $this->_pFile = B::fopen(array ($lockFilePath, 'ab'));
+        B::assert(stream_supports_lock($this->_pFile), 101);
     }
 
     /**
@@ -110,8 +115,8 @@ final class BreakpointDebugging_LockByFlock extends \BreakpointDebugging_Lock
     {
         parent::__destruct();
 
-        if (is_resource($this->pFile)) {
-            fclose($this->pFile);
+        if (is_resource($this->_pFile)) {
+            fclose($this->_pFile);
         }
     }
 
@@ -122,7 +127,7 @@ final class BreakpointDebugging_LockByFlock extends \BreakpointDebugging_Lock
      */
     protected function loopLocking()
     {
-        flock($this->pFile, LOCK_EX);
+        flock($this->_pFile, LOCK_EX);
     }
 
     /**
@@ -132,8 +137,8 @@ final class BreakpointDebugging_LockByFlock extends \BreakpointDebugging_Lock
      */
     protected function loopUnlocking()
     {
-        B::assert(is_resource($this->pFile));
-        flock($this->pFile, LOCK_UN);
+        B::assert(is_resource($this->_pFile));
+        flock($this->_pFile, LOCK_UN);
     }
 
 }

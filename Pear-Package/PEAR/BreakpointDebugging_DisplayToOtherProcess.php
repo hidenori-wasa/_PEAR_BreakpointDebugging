@@ -204,9 +204,7 @@ EOD;
                         // Resets maximum execution time.
                         set_time_limit(self::$_timeOutSeconds);
                         // Gets dispatched JavaScript character string from main process.
-                        //$javaScript = shmop_read($shmopId, self::$_javaScriptReadingPtr + 0, $readLen);
                         $result = shmop_read($shmopId, self::$_javaScriptReadingPtr + 0, $readLen);
-                        //if ($javaScript === false) {
                         if ($result === false) {
                             continue 2;
                         }
