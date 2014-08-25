@@ -213,7 +213,7 @@ abstract class BreakpointDebugging_InAllCase
     /**
      * @var string The project work directory.
      */
-    private static $_pwd;
+    protected static $pwd;
 
     /**
      * @var int Execution mode.
@@ -1050,8 +1050,7 @@ EOD;
      */
     static function copyResourceToCWD($resourceFileName, $resourceDirectoryPath)
     {
-        $cwd = getcwd();
-        $relativeCWD = substr($cwd, strlen($_SERVER['DOCUMENT_ROOT']) - strlen($cwd) + 1);
+        $relativeCWD = substr(self::$pwd, strlen($_SERVER['DOCUMENT_ROOT']) - strlen(self::$pwd) + 1);
         // If this mode is not production server release.
         if (isset($_GET['BREAKPOINTDEBUGGING_MODE'])) {
             $includePaths = ini_get('include_path');
@@ -1061,7 +1060,7 @@ EOD;
             B::iniSet('include_path', implode(PATH_SEPARATOR, $tmpIncludePaths));
             $resourceFilePath = stream_resolve_include_path($resourceDirectoryPath . $resourceFileName);
             B::iniSet('include_path', $includePaths);
-            $destResourceFilePath = $cwd . DIRECTORY_SEPARATOR . $resourceFileName;
+            $destResourceFilePath = self::$pwd . DIRECTORY_SEPARATOR . $resourceFileName;
             // If destination file does not exist.
             if (!is_file($destResourceFilePath)) {
                 // Copies resource to current work directory.
@@ -1163,7 +1162,7 @@ EOD;
 
         B::limitAccess(array ('BreakpointDebugging_InDebug.php'));
 
-        self::$_pwd = getcwd();
+        self::$pwd = getcwd();
         self::$_get = $_BreakpointDebugging_get;
         unset($_BreakpointDebugging_get);
         self::$staticProperties['$_get'] = &self::$_get;
@@ -1384,11 +1383,10 @@ EOD;
      * @return void
      * @codeCoverageIgnore
      */
-    //final static function shutdown()
     static function shutdown()
     {
-        // Keeps the project work directory at "__destruct".
-        chdir(self::$_pwd);
+        // Keeps the project work directory at "__destruct" and shutdown.
+        chdir(self::$pwd);
     }
 
 }
@@ -1545,6 +1543,7 @@ if ($_BreakpointDebugging_EXE_MODE & BA::RELEASE) { // In case of release.
     // This does not invoke extended class method exceptionally because its class is not defined.
     BA::setXebugExists(extension_loaded('xdebug'));
     include_once __DIR__ . '/BreakpointDebugging_InDebug.php';
+    include_once __DIR__ . '/BreakpointDebugging_NativeFunctions_InDebug.php';
 }
 
 // Pushes autoload class method.

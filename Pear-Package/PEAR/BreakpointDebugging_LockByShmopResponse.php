@@ -58,9 +58,14 @@ use \BreakpointDebugging_Shmop as BS;
 final class BreakpointDebugging_LockByShmopResponse
 {
     /**
-     * @var int Time out seconds.
+     * @var int Timeout seconds.
      */
-    private static $_timeOutSeconds = 300; // 86400; // 1 day.
+    private static $_timeoutSeconds = 86400; // 1 day.
+
+    /**
+     * @var int Response timeout seconds.
+     */
+    private static $_responseTimeoutSeconds = 10;
 
     /**
      * @var stirng Shared memory key file path.
@@ -76,6 +81,11 @@ final class BreakpointDebugging_LockByShmopResponse
      * @var resource Shared memory key file pointer.
      */
     private static $_pFile;
+
+    /**
+     * @var int Location that unit test stops this process.
+     */
+    private static $_stopLocation;
 
     /**
      * Displays error information if assertion is false.
@@ -158,6 +168,7 @@ EOD;
         $uniqueIdResponseLocation = $writtenRequestLocation + 1;
         $writtenResponseLocation = $uniqueIdResponseLocation + $uniqueIdSize;
         $lockingLocation = $writtenResponseLocation + 1;
+        self::$_stopLocation = $lockingLocation + 1;
         // Gets shared file path.
         self::$_shmopKeyFilePath = B::getStatic('$_workDir') . '/LockByShmopRequest.txt';
         $shmopKeyFilePath = self::$_shmopKeyFilePath;
@@ -179,17 +190,25 @@ EOD;
             // Destroys file then opens as writing mode.
             self::$_pFile = B::fopen(array ($shmopKeyFilePath, 'w+b'));
             // Builds shared memory, then registers shared memory key into file.
-            $shmopId = self::_buildSharedMemory($lockingLocation + 1);
+            $shmopId = self::_buildSharedMemory(self::$_stopLocation + 1);
             break;
         }
+        // Initialilze shared memory.
+        $result = shmop_write($shmopId, str_repeat("\x20", self::$_stopLocation + 1), 0);
+        self::_assert($result !== false);
         self::$_shmopID = $shmopId;
 
-        //`"C:/Program Files/Mozilla Firefox/firefox.exe" "https://localhost/Pear-Package/index.php?BREAKPOINTDEBUGGING_MODE=DEBUG"`; // For debug.
-        // Resets maximum execution time.
+        // `"C:/Program Files/Mozilla Firefox/firefox.exe" "https://localhost/Pear-Package/index.php?BREAKPOINTDEBUGGING_MODE=DEBUG"`; // For debug.
+        // Resets the timeout.
         $startTime = time();
         while (true) {
+            // If other process stops this process.
+            $isStop = shmop_read($shmopId, self::$_stopLocation, 1);
+            if ($isStop === '1') {
+                exit;
+            }
             // If the timeout.
-            if (time() - $startTime > self::$_timeOutSeconds) {
+            if (time() - $startTime > self::$_timeoutSeconds) {
                 exit;
             }
             // 0.1 second sleep.
@@ -242,11 +261,21 @@ EOD;
             // self::_assert($result !== false);
             // <=== For debug
             //
+            // Resets the response timeout.
+            $startTime = time();
             // Waits requested process until accept response for timeout.
             while (true) {
-                // If the timeout.
-                if (time() - $startTime > self::$_timeOutSeconds) {
+                // If other process stops this process.
+                $isStop = shmop_read($shmopId, self::$_stopLocation, 1);
+                if ($isStop === '1') {
                     exit;
+                }
+                // If response-timeout.
+                if (time() - $startTime > self::$_responseTimeoutSeconds) {
+                    // Initializes shared memory.
+                    $result = shmop_write($shmopId, str_repeat("\x20", self::$_stopLocation + 1), 0);
+                    self::_assert($result !== false);
+                    break;
                 }
                 // If request process accepted response.
                 $isLocking = shmop_read($shmopId, $lockingLocation, 1);
@@ -254,18 +283,14 @@ EOD;
                 if ($isLocking === '1') {
                     break;
                 }
-                //// 0.1 second sleep.
-                //usleep(100000);
                 // If it has been unlocked.
                 $isWrittenResponse = shmop_read($shmopId, $writtenResponseLocation, 1);
                 self::_assert($isWrittenResponse !== false);
                 if ($isWrittenResponse !== '1') {
-                    //continue;
-                    // break;
-                    self::_assert(false);
+                    break;
                 }
             }
-            // Resets maximum execution time.
+            // Resets the timeout.
             $startTime = time();
         }
     }
@@ -277,18 +302,11 @@ EOD;
      */
     static function shutdown()
     {
-        // Deletes shared memory.
-        $result = shmop_delete(self::$_shmopID);
-        self::_assert($result === true);
+        // Says this process shutdown.
+        $result = shmop_write(self::$_shmopID, '0', self::$_stopLocation);
+        self::_assert($result !== false);
         // Closes the shared memory.
         shmop_close(self::$_shmopID);
-        //// Cleans up file status cache.
-        //clearstatcache();
-        //// If shared file exists.
-        //self::_assert(is_file(self::$_shmopKeyFilePath));
-        //// Truncates shared memory key file.
-        //$result = ftruncate(self::$_pFile, 0);
-        //self::_assert($result === true);
         // Closes the file pointer.
         $result = fclose(self::$_pFile);
         self::_assert($result === true);

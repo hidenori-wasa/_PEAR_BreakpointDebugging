@@ -23,6 +23,31 @@ class BreakpointDebugging_LockByShmopRequestTest extends \BreakpointDebugging_PH
 
     function tearDown()
     {
+        // Stops "\BreakpointDebugging_LockByShmopResponse" class instance.
+        $sharedMemoryID = BU::getPropertyForTest('BreakpointDebugging_LockByShmopRequest', '$_sharedMemoryID');
+        $stopLocation = BU::getPropertyForTest('BreakpointDebugging_LockByShmopRequest', '$_stopLocation');
+        $isExisting = shmop_read($sharedMemoryID, $stopLocation, 1);
+        B::assert($isExisting !== false);
+        if ($isExisting === ' ') {
+            $result = shmop_write($sharedMemoryID, '1', $stopLocation);
+            B::assert($result !== false);
+            while (true) {
+                // 0.2 second sleep.
+                usleep(200000);
+                $isStop = shmop_read($sharedMemoryID, $stopLocation, 1);
+                B::assert($isStop !== false);
+                if ($isStop === '0') {
+                    BU::setPropertyForTest('BreakpointDebugging_LockByShmopRequest', '$_sharedMemoryID', null);
+                    // Closes the pipe for static backup, but apache socket error is caused.
+                    $pPipe = BU::getPropertyForTest('BreakpointDebugging_LockByShmopRequest', '$_pPipe');
+                    if (is_resource($pPipe)) {
+                        $result = pclose($pPipe);
+                        B::assert($result !== -1);
+                    }
+                    break;
+                }
+            }
+        }
         // Destructs instance.
         $this->LockByShmopRequest = null;
         parent::tearDown();
@@ -31,7 +56,29 @@ class BreakpointDebugging_LockByShmopRequestTest extends \BreakpointDebugging_PH
     /**
      * @covers \BreakpointDebugging_LockByShmopRequest<extended>
      */
+    function testMultiprocess()
+    {
+        // Destructs instance.
+        $this->LockByShmopRequest = null;
+        $main = new \tests_PEAR_BreakpointDebugging_MultiprocessTest_Main();
+        if (!$main->test(1234, '\BreakpointDebugging_LockByShmopRequest')) {
+            parent::fail();
+        }
+    }
+
+    /**
+     * @covers \BreakpointDebugging_LockByShmopRequest<extended>
+     */
     function testLockThenUnlock_A()
+    {
+        $this->LockByShmopRequest->lock();
+        $this->LockByShmopRequest->unlock();
+    }
+
+    /**
+     * @covers \BreakpointDebugging_LockByShmopRequest<extended>
+     */
+    function testLockThenUnlock_A2()
     {
         $this->LockByShmopRequest->lock();
         $this->LockByShmopRequest->unlock();
@@ -197,19 +244,6 @@ class BreakpointDebugging_LockByShmopRequestTest extends \BreakpointDebugging_PH
         parent::markTestSkippedInRelease(); // Because this unit test is assertion.
         // Constructs instance of other class.
         $lockByFlock = &\BreakpointDebugging_LockByFlock::singleton(5, 10);
-    }
-
-    /**
-     * @covers \BreakpointDebugging_LockByShmopRequest<extended>
-     */
-    function testMultiprocess()
-    {
-        // Destructs instance.
-        $this->LockByShmopRequest = null;
-        $main = new \tests_PEAR_BreakpointDebugging_MultiprocessTest_Main();
-        if (!$main->test(1234, '\BreakpointDebugging_LockByShmopRequest')) {
-            parent::fail();
-        }
     }
 
 }

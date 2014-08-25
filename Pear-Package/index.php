@@ -1,5 +1,7 @@
 <?php
 
+namespace BreakpointDebugging;
+
 require_once './BreakpointDebugging_Inclusion.php';
 
 use \BreakpointDebugging as B;
@@ -9,7 +11,22 @@ use \BreakpointDebugging_PHPUnit_StaticVariableStorage as BSS;
 use \BreakpointDebugging_PHPUnit_FrameworkTestCase as BSF;
 
 B::checkExeMode(); // Checks the execution mode.
-//
+
+$pPipe = popen($testFileName, 'rb');
+pclose($pPipe);
+exit('Done!');
+
+
+
+$testFileName = B::getStatic('$_workDir') . '/test.txt';
+$result = file_put_contents($testFileName, '');
+B::assert($result !== false);
+$pFile = fopen($testFileName, 'rb');
+// fclose($pFile);
+exit('Done!');
+
+
+
 // Constructs instance.
 $LockByShmopRequest = &\BreakpointDebugging_LockByShmopRequest::singleton();
 $LockByShmopRequest->lock();

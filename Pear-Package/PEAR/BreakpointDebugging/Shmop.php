@@ -118,7 +118,6 @@ final class BreakpointDebugging_Shmop
     {
         set_error_handler('\BreakpointDebugging::handleError', 0);
         $sharedMemoryKey = fread($pFile, 10);
-        //B::assert(!empty($sharedMemoryKey));
         if (strlen($sharedMemoryKey) !== 10) {
             return false;
         }

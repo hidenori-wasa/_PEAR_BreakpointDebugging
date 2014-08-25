@@ -78,7 +78,6 @@ class tests_PEAR_BreakpointDebugging_MultiprocessTest_Main
         if (max($results) !== '250') {
             // Displays error.
             foreach ($results as $result) {
-                //echo $result;
                 BW::virtualOpen('MultiProcessTestError', $result);
             }
             return false;

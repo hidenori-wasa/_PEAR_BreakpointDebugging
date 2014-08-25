@@ -259,7 +259,6 @@ class BreakpointDebugging_Window
      */
     private static function _initializeSharedResource()
     {
-        //$openFirefoxWindow = function($command) {
         $openFirefoxWindow = function($uri) {
             $command = \BreakpointDebugging_Window::generateMozillaFirefoxStartCommand($uri);
             // If local server.
@@ -289,12 +288,6 @@ EOD;
         $sharedFilePath = self::$_sharedFilePath;
         // Copies the "BreakpointDebugging_DisplayToOtherProcess.php" file into current work directory, and gets its URI.
         $uri = 'https:' . B::copyResourceToCWD('BreakpointDebugging_DisplayToOtherProcess.php', '');
-        //// Generates "Mozilla Firefox" command to open other process page.
-        //if (BREAKPOINTDEBUGGING_IS_WINDOWS) {
-        //    $command = '"C:/Program Files/Mozilla Firefox/firefox.exe" "https:' . $uri . '"';
-        //} else {
-        //    $command = '"firefox" "https:' . $uri . '"';
-        //}
         // Creates this class instance for shared memory close or shared file deletion.
         self::$_self = new \BreakpointDebugging_Window();
         // If "shmop" extention is valid.
@@ -326,7 +319,6 @@ EOD;
             $result = shmop_write(self::$_resourceID, sprintf('0000x%08X0x%08X', 23, 23), 0);
             B::assert($result !== false);
             // Opens "Mozilla Firefox" window.
-            //$openFirefoxWindow($command);
             $openFirefoxWindow($uri);
         } else { // If "shmop" extension is invalid.
             // If local server.
@@ -370,7 +362,6 @@ EOD;
                 $result = file_put_contents($sharedFilePath, '');
                 B::assert($result !== false);
                 // Opens "Mozilla Firefox" window.
-                //$openFirefoxWindow($command);
                 $openFirefoxWindow($uri);
             }
         }

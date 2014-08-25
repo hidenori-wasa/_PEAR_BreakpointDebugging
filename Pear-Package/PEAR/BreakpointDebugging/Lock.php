@@ -81,11 +81,6 @@ abstract class BreakpointDebugging_Lock
      */
     protected $lockFilePath;
 
-//    /**
-//     * @var resource File pointer of lock flag file.
-//     */
-//    protected $pFile;
-
     /**
      * @var int Seconds number of timeout.
      */
@@ -179,7 +174,6 @@ abstract class BreakpointDebugging_Lock
         $this->timeout = $timeout;
         $this->sleepMicroSeconds = $sleepMicroSeconds;
         $this->lockFilePath = $lockFilePath;
-        //$this->pFile = null;
     }
 
     /**
@@ -193,12 +187,6 @@ abstract class BreakpointDebugging_Lock
             // This code is executed in case of debug unit test because assertion test is executed in case of debug mode.
             $this->unlock();
         }
-        //// In case of lock by shared memory operation.
-        //if ($this instanceof \BreakpointDebugging_LockByShmopRequest) {
-        //    // This code is executed in case of "\BreakpointDebugging_LockByShmopRequest" unit test.
-        //    // Closes the shared memory.
-        //    shmop_close(self::$sharedMemoryID);
-        //}
         B::assert($lockCount <= 0, 101);
     }
 
