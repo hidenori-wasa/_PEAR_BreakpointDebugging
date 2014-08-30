@@ -6,11 +6,14 @@ require_once './BreakpointDebugging_Inclusion.php';
 
 use \BreakpointDebugging as B;
 use \BreakpointDebugging_Window as BW;
-use \BreakpointDebugging_Shmop as BS;
 use \BreakpointDebugging_PHPUnit_StaticVariableStorage as BSS;
 use \BreakpointDebugging_PHPUnit_FrameworkTestCase as BSF;
 
 B::checkExeMode(); // Checks the execution mode.
+
+exit('Done!');
+
+
 
 $pPipe = popen($testFileName, 'rb');
 pclose($pPipe);

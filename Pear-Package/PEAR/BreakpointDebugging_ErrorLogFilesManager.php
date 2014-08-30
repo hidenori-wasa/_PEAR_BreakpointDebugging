@@ -9,14 +9,13 @@
  *      in "BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php'" file.
  * Procedure2: Register your IP address to "$developerIP"
  *      in "BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php'" file.
- * Procedure3: Upload this page to the project current directory.
- * Procedure4: Call this page from browser.
- * Procedure5: Download by clicking all "Download error log file" button.
- * Procedure6: Click "Delete all error log files" button.
- * Procedure7: Debug php code by downloaded error log files.
- * Procedure8: Go to "Procedure5" if "Download error log file" button exists.
- * Procedure9: Upload repaired php code.
- * Procedure10: Click "Reset error log files" button.
+ * Procedure3: Call this page from browser.
+ * Procedure4: Download by clicking all "Download error log file" button.
+ * Procedure5: Click "Delete all error log files" button.
+ * Procedure6: Debug php code by downloaded error log files.
+ * Procedure7: Go to "Procedure5" if "Download error log file" button exists.
+ * Procedure8: Upload repaired php code.
+ * Procedure9: Click "Reset error log files" button.
  *
  * PHP version 5.3.2-5.4.x
  *

@@ -9,13 +9,20 @@ use \BreakpointDebugging as B;
 $projectDirPath = str_repeat('../', preg_match_all('`/`xX', $_SERVER['PHP_SELF'], $matches) - 2);
 chdir(__DIR__ . '/' . $projectDirPath);
 require_once './BreakpointDebugging_Inclusion.php';
+// Copies the "BreakpointDebugging_*.php" file into current work directory.
+B::copyResourceToCWD('NativeClass.php', 'BreakpointDebugging/Sample/');
 require_once './NativeClass.php'; // Test class.
 
 B::checkExeMode(); // Checks the execution mode.
 
-$testNumber = 2;
+$testNumber = 1;
+
+echo '<pre>Error output test.' . PHP_EOL;
+echo '    Displays error in case of "DEBUG".' . PHP_EOL;
+echo '    Logs error to "' . B::getStatic('$_workDir') . DIRECTORY_SEPARATOR . 'ErrorLog' . DIRECTORY_SEPARATOR . '" in case of "RELEASE".</pre>';
 
 if ($testNumber === 1) {
+    echo 'Tests plural character sets.';
     // Registers the function being not fixed.
     static $isRegister = false;
     B::registerNotFixedLocation($isRegister);
@@ -23,6 +30,7 @@ if ($testNumber === 1) {
     var_dump(B::convertMbString("\x95\xB6\x8E\x9A \xE6\x96\x87\xE5\xAD\x97 "));
     echo 'Is not displayed.';
 } else if ($testNumber === 2) {
+    echo 'Tests a error output.';
     // Registers the function being not fixed.
     static $isRegister = false;
     B::registerNotFixedLocation($isRegister);

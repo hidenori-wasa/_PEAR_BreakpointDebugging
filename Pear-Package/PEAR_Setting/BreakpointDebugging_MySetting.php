@@ -259,6 +259,9 @@ function BreakpointDebugging_mySetting()
         } else {
             B::mkdir(array ($workDir, 0700));
         }
+        // Copies the "BreakpointDebugging_*.php" file into current work directory.
+        B::copyResourceToCWD('BreakpointDebugging_ErrorLogFilesManager.php', '');
+        B::copyResourceToCWD('BreakpointDebugging_PHPUnit_DisplayCodeCoverageReport.php', '');
     }
     $workDir = realpath($workDir);
     // B::assert($workDir !== false, 102);

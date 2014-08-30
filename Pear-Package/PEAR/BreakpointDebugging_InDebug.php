@@ -441,9 +441,7 @@
  * Procedure 3: Set *.php file format to utf8, but we should create backup of
  *      php files because multibyte strings may be destroyed.
  * Procedure 4: Copy
- *          "BreakpointDebugging_Inclusion.php",
- *          "BreakpointDebugging_ErrorLogFilesManager.php" and
- *          "BreakpointDebugging_PHPUnit_DisplayCodeCoverageReport.php" (Requires "BreakpointDebugging_PHPUnit" package.)
+ *          "BreakpointDebugging_Inclusion.php"
  *      into your project directory.
  *      And, copy
  *          "BreakpointDebugging_MySetting*.php"

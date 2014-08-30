@@ -1078,6 +1078,20 @@ EOD;
             try {
                 // If this does a log.
                 if (B::getStatic('$exeMode') & B::RELEASE) {
+                    $loggingWritingFlag = false;
+                    // Writes log writing flag.
+                    $writeLogWritingFlag = function ($pVarConfFile, &$loggingWritingFlag) {
+                        // Checks a writing existing.
+                        if (!$loggingWritingFlag) {
+                            // Writes "self::ENABLED_ERROR_LOG_FILE_NAME" flag because server may be crushed during following writing.
+                            rewind($pVarConfFile);
+                            fwrite($pVarConfFile, \BreakpointDebugging_Error_InAllCase::ENABLED_ERROR_LOG_FILE_NAME);
+                            fflush($pVarConfFile);
+                            // Sets a writing existing.
+                            $loggingWritingFlag = true;
+                        }
+                    };
+
                     // When "ErrorLog" directory does not exist.
                     $this->_errorLogDirectory = B::getStatic('$_workDir') . self::$_errorLogDir;
                     if (!is_dir($this->_errorLogDirectory)) {
@@ -1093,21 +1107,19 @@ EOD;
                         $logEnableString = fread($this->_pVarConfFile, strlen(self::DISABLED_ERROR_LOG_FILE_NAME));
                         if ($logEnableString !== self::DISABLED_ERROR_LOG_FILE_NAME) {
                             $this->_repairLoggingSystemFile($logEnableString);
-                        } else {
-                            rewind($this->_pVarConfFile);
-                            fwrite($this->_pVarConfFile, self::ENABLED_ERROR_LOG_FILE_NAME);
                         }
                     } else {
                         // Creates and opens variable configuring file.
                         $this->_pVarConfFile = B::fopen(array ($varConfFilePath, 'x+b'));
                         // Sets current error log file name.
                         fwrite($this->_pVarConfFile, self::ENABLED_ERROR_LOG_FILE_NAME . $this->_prefixOfErrorLogFileName . '1.log' . PHP_EOL);
+                        // Sets a writing existing.
+                        $loggingWritingFlag = true;
                     }
-                    fflush($this->_pVarConfFile);
                     rewind($this->_pVarConfFile);
 
                     // Gets current error log file name.
-                    $this->_currentErrorLogFileName = substr(trim(fgets($this->_pVarConfFile)), strlen(self::ENABLED_ERROR_LOG_FILE_NAME));
+                    $this->_currentErrorLogFileName = substr(trim(fgets($this->_pVarConfFile)), strlen(self::DISABLED_ERROR_LOG_FILE_NAME));
                     $this->_errorLogFilePath = $this->_errorLogDirectory . $this->_currentErrorLogFileName;
                     // When current error log file does not exist.
                     if (!is_file($this->_errorLogFilePath)) {
@@ -1157,6 +1169,8 @@ EOD;
                                 $pathNumber = 1;
                             }
                             $nativeCallStackArray[$pathNumber] = $path;
+                            // Writes log writing flag.
+                            $writeLogWritingFlag($this->_pVarConfFile, $loggingWritingFlag);
                             // Sets the error path and its number.
                             // Disk access is executed per sector.
                             // Therefore, compresses from error path to sequential number because it is purpose to decrease disk access.
@@ -1195,6 +1209,8 @@ EOD;
                         // Skips same error.
                         goto END_LABEL;
                     } else {
+                        // Writes log writing flag.
+                        $writeLogWritingFlag($this->_pVarConfFile, $loggingWritingFlag);
                         // Registers the call stack information character string.
                         fseek($pErrorLocationFile, 0, SEEK_END);
                         fwrite($pErrorLocationFile, $callStackInfoString);
@@ -1287,8 +1303,11 @@ EOD;
                     // Closes the error location file.
                     fclose($pErrorLocationFile);
                 }
-                rewind($this->_pVarConfFile);
-                fwrite($this->_pVarConfFile, self::DISABLED_ERROR_LOG_FILE_NAME);
+                // Checks a writing existing.
+                if ($loggingWritingFlag) {
+                    rewind($this->_pVarConfFile);
+                    fwrite($this->_pVarConfFile, self::DISABLED_ERROR_LOG_FILE_NAME);
+                }
                 // Closes variable configuring file.
                 fclose($this->_pVarConfFile);
             }
