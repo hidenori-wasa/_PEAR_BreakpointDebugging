@@ -79,7 +79,7 @@ abstract class BreakpointDebugging_Error_InAllCase
     /**
      * @var string Variable configuring file name.
      */
-    private $_varConfFileName = 'ErrorLog.var.conf';
+    const VAR_CONF_FILE_NAME = 'ErrorLog.var.conf';
 
     /**
      * @const string Key of enabled error log file name.
@@ -94,7 +94,7 @@ abstract class BreakpointDebugging_Error_InAllCase
     /**
      * @var string Prefix of error log file name.
      */
-    private $_prefixOfErrorLogFileName = 'php_error_';
+    const PREFIX_OF_ERROR_LOG_FILE_NAME = 'php_error_';
 
     /**
      * @var string Error log file extension.
@@ -180,7 +180,7 @@ abstract class BreakpointDebugging_Error_InAllCase
     /**
      * @var string Error log directory name.
      */
-    private static $_errorLogDir = '/ErrorLog/';
+    const ERROR_LOG_DIR = '/ErrorLog/';
 
     /**
      * @var string Error log buffer.
@@ -194,7 +194,7 @@ abstract class BreakpointDebugging_Error_InAllCase
      */
     static function getErrorLogDir()
     {
-        return self::$_errorLogDir;
+        return self::ERROR_LOG_DIR;
     }
 
     /**
@@ -655,7 +655,7 @@ abstract class BreakpointDebugging_Error_InAllCase
             $log = B::convertMbString($log);
             // If this does a log.
             if (B::getStatic('$exeMode') & B::RELEASE) {
-                $errorLogDirectory = B::getStatic('$_workDir') . self::$_errorLogDir;
+                $errorLogDirectory = B::getStatic('$_workDir') . self::ERROR_LOG_DIR;
                 $logFileName = 'InternalError.log';
                 $errorLogFilePath = $errorLogDirectory . $logFileName;
                 // Locks internal error log file.
@@ -861,24 +861,24 @@ abstract class BreakpointDebugging_Error_InAllCase
         }
         $this->_pCurrentErrorLogFileSize = 0;
         // Gets next error log file name.
-        $nextNumber = substr($this->_currentErrorLogFileName, strlen($this->_prefixOfErrorLogFileName), 1) + 1;
+        $nextNumber = substr($this->_currentErrorLogFileName, strlen(self::PREFIX_OF_ERROR_LOG_FILE_NAME), 1) + 1;
         if ($nextNumber > 8) {
             // Error log file rotation.
             $nextNumber = 1;
         }
-        $nextErrorLogFilePath = $this->_errorLogDirectory . $this->_prefixOfErrorLogFileName . $nextNumber . $this->_errorLogFileExt;
+        $nextErrorLogFilePath = $this->_errorLogDirectory . self::PREFIX_OF_ERROR_LOG_FILE_NAME . $nextNumber . $this->_errorLogFileExt;
         // When next error log file exists.
         if (is_file($nextErrorLogFilePath)) {
             // Deletes next error log file.
             B::unlink(array ($nextErrorLogFilePath));
         }
         // Seeks to error log file number.
-        fseek($this->_pVarConfFile, strlen(self::ENABLED_ERROR_LOG_FILE_NAME . $this->_prefixOfErrorLogFileName));
+        fseek($this->_pVarConfFile, strlen(self::ENABLED_ERROR_LOG_FILE_NAME . self::PREFIX_OF_ERROR_LOG_FILE_NAME));
 
         // Sets next error log file name number to variable configuring file.
         fwrite($this->_pVarConfFile, $nextNumber);
         // Creates current error log filename.
-        $this->_currentErrorLogFileName = substr_replace($this->_currentErrorLogFileName, $nextNumber . $this->_errorLogFileExt, strlen($this->_prefixOfErrorLogFileName));
+        $this->_currentErrorLogFileName = substr_replace($this->_currentErrorLogFileName, $nextNumber . $this->_errorLogFileExt, strlen(self::PREFIX_OF_ERROR_LOG_FILE_NAME));
     }
 
     /**
@@ -938,7 +938,7 @@ abstract class BreakpointDebugging_Error_InAllCase
             }
             $fileNumbers[] = base_convert($matches[2], 36, 10);
         }
-        $line1pre = self::ENABLED_ERROR_LOG_FILE_NAME . $this->_prefixOfErrorLogFileName;
+        $line1pre = self::ENABLED_ERROR_LOG_FILE_NAME . self::PREFIX_OF_ERROR_LOG_FILE_NAME;
         $line1sa = '.log' . PHP_EOL;
         $line1 = $line1pre . '1' . $line1sa;
         $line = $lines[$count];
@@ -1082,23 +1082,23 @@ EOD;
                     // Writes log writing flag.
                     $writeLogWritingFlag = function ($pVarConfFile, &$loggingWritingFlag) {
                         // Checks a writing existing.
-                        if (!$loggingWritingFlag) {
+                        if ($loggingWritingFlag === true) {
                             // Writes "self::ENABLED_ERROR_LOG_FILE_NAME" flag because server may be crushed during following writing.
                             rewind($pVarConfFile);
                             fwrite($pVarConfFile, \BreakpointDebugging_Error_InAllCase::ENABLED_ERROR_LOG_FILE_NAME);
                             fflush($pVarConfFile);
-                            // Sets a writing existing.
-                            $loggingWritingFlag = true;
+                            // Sets a writing flag.
+                            $loggingWritingFlag = 'WROTE';
                         }
                     };
 
                     // When "ErrorLog" directory does not exist.
-                    $this->_errorLogDirectory = B::getStatic('$_workDir') . self::$_errorLogDir;
+                    $this->_errorLogDirectory = B::getStatic('$_workDir') . self::ERROR_LOG_DIR;
                     if (!is_dir($this->_errorLogDirectory)) {
                         // Makes directory, sets permission and sets own user.
                         B::mkdir(array ($this->_errorLogDirectory, 0700));
                     }
-                    $varConfFilePath = $this->_errorLogDirectory . $this->_varConfFileName;
+                    $varConfFilePath = $this->_errorLogDirectory . self::VAR_CONF_FILE_NAME;
                     // If variable configuring file exists.
                     if (is_file($varConfFilePath)) {
                         // Opens variable configuring file.
@@ -1106,13 +1106,18 @@ EOD;
                         // Checks the abnormal termination.
                         $logEnableString = fread($this->_pVarConfFile, strlen(self::DISABLED_ERROR_LOG_FILE_NAME));
                         if ($logEnableString !== self::DISABLED_ERROR_LOG_FILE_NAME) {
+                            // Sets a writing existing.
+                            $loggingWritingFlag = true;
+                            // Writes log writing flag.
+                            $writeLogWritingFlag($this->_pVarConfFile, $loggingWritingFlag);
+                            // Repairs the logging system file.
                             $this->_repairLoggingSystemFile($logEnableString);
                         }
                     } else {
                         // Creates and opens variable configuring file.
                         $this->_pVarConfFile = B::fopen(array ($varConfFilePath, 'x+b'));
                         // Sets current error log file name.
-                        fwrite($this->_pVarConfFile, self::ENABLED_ERROR_LOG_FILE_NAME . $this->_prefixOfErrorLogFileName . '1.log' . PHP_EOL);
+                        fwrite($this->_pVarConfFile, self::ENABLED_ERROR_LOG_FILE_NAME . self::PREFIX_OF_ERROR_LOG_FILE_NAME . '1.log' . PHP_EOL);
                         // Sets a writing existing.
                         $loggingWritingFlag = true;
                     }
@@ -1174,6 +1179,7 @@ EOD;
                             // Sets the error path and its number.
                             // Disk access is executed per sector.
                             // Therefore, compresses from error path to sequential number because it is purpose to decrease disk access.
+                            fseek($this->_pVarConfFile, 0, SEEK_END);
                             fwrite($this->_pVarConfFile, $path . '?' . $pathNumber . PHP_EOL);
                             break;
                         }
@@ -1304,7 +1310,7 @@ EOD;
                     fclose($pErrorLocationFile);
                 }
                 // Checks a writing existing.
-                if ($loggingWritingFlag) {
+                if ($loggingWritingFlag === 'WROTE') {
                     rewind($this->_pVarConfFile);
                     fwrite($this->_pVarConfFile, self::DISABLED_ERROR_LOG_FILE_NAME);
                 }

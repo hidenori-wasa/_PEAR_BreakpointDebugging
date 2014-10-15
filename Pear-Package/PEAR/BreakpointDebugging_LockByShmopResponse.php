@@ -116,10 +116,7 @@ FILE: $errorFile
 LINE: $errorLine
 </pre>
 EOD;
-            exit($errorInfo);
-        }
-
-        if ($assertion === false) {
+        } else if ($assertion === false) {
             $errorInfo = <<<EOD
 <pre>
 <strong>Assertion failed.</strong>
@@ -127,8 +124,10 @@ FILE: $errorFile
 LINE: $errorLine
 </pre>
 EOD;
-            exit($errorInfo);
+        } else {
+            return;
         }
+        \BreakpointDebugging_Window::exitForError($errorInfo);
     }
 
     /**
@@ -202,7 +201,7 @@ EOD;
         // Resets the timeout.
         $startTime = time();
         while (true) {
-            // If other process stops this process.
+            // If other process stops this process. (For unit test)
             $isStop = shmop_read($shmopId, self::$_stopLocation, 1);
             if ($isStop === '1') {
                 exit;
@@ -265,7 +264,7 @@ EOD;
             $startTime = time();
             // Waits requested process until accept response for timeout.
             while (true) {
-                // If other process stops this process.
+                // If other process stops this process. (For unit test)
                 $isStop = shmop_read($shmopId, self::$_stopLocation, 1);
                 if ($isStop === '1') {
                     exit;
@@ -302,14 +301,16 @@ EOD;
      */
     static function shutdown()
     {
+        // Closes the file pointer.
+        $result = fclose(self::$_pFile);
+        self::_assert($result === true);
         // Says this process shutdown.
         $result = shmop_write(self::$_shmopID, '0', self::$_stopLocation);
         self::_assert($result !== false);
         // Closes the shared memory.
         shmop_close(self::$_shmopID);
-        // Closes the file pointer.
-        $result = fclose(self::$_pFile);
-        self::_assert($result === true);
+        // Returns the result.
+        echo 'Done.';
     }
 
 }

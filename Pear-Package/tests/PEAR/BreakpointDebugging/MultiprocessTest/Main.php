@@ -2,6 +2,7 @@
 
 use \BreakpointDebugging as B;
 use \BreakpointDebugging_Window as BW;
+use \BreakpointDebugging_LockByShmopRequest as BLS;
 
 class tests_PEAR_BreakpointDebugging_MultiprocessTest_Main
 {
@@ -32,43 +33,10 @@ class tests_PEAR_BreakpointDebugging_MultiprocessTest_Main
         $pPipes = array ();
         $queryString = '"' . B::httpBuildQuery(array ('SHMOP_KEY' => $shmopKey, 'CLASS_NAME' => $className)) . '"';
         for ($count = 0; $count < 2; $count++) {
-            // Creates and runs a test process.
-            if (BREAKPOINTDEBUGGING_IS_WINDOWS) { // For Windows.
-                // include_once $fullFilePath; // For debug.
-                $pPipe = popen('php.exe -f ' . $fullFilePath . ' -- ' . $queryString, 'r');
-                if ($pPipe === false) {
-                    throw new \BreakpointDebugging_ErrorException('Failed to "popen()".');
-                }
-            } else { // For Unix.
-                // include_once $fullFilePath; // For debug.
-                // "&" is the background execution of command.
-                $pPipe = popen('php -f ' . $fullFilePath . ' -- ' . $queryString . ' &', 'r');
-                if ($pPipe === false) {
-                    throw new \BreakpointDebugging_ErrorException('Failed to "popen()".');
-                }
-                // Executes command to asynchronization.
-                if (!stream_set_blocking($pPipe, 0)) {
-                    throw new \BreakpointDebugging_ErrorException('Failed to "stream_set_blocking($pPipe, 0)".');
-                }
-            }
-            $pPipes[] = $pPipe;
+            $pPipes[] = BLS::popen($fullFilePath, $queryString);
         }
 
-        $results = array ();
-        if (BREAKPOINTDEBUGGING_IS_WINDOWS) {
-            foreach ($pPipes as $pPipe) {
-                $results[] = stream_get_contents($pPipe);
-            }
-        } else {
-            foreach ($pPipes as $pPipe) {
-                // Waits until command execution end.
-                if (!stream_set_blocking($pPipe, 1)) {
-                    throw new \BreakpointDebugging_ErrorException('Failed to "stream_set_blocking($pPipe, 1)".');
-                }
-                // Gets command's stdout.
-                $results[] = stream_get_contents($pPipe);
-            }
-        }
+        $results = BLS::waitForMultipleProcesses($pPipes);
 
         foreach ($pPipes as $pPipe) {
             // Deletes a test process.

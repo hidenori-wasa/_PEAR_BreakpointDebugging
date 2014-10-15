@@ -12,24 +12,22 @@ $breakpointDebugging_PHPUnit = new \BreakpointDebugging_PHPUnit();
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Please, choose unit tests files by customizing.
 $breakpointDebugging_UnitTestFiles = array (
-    /*
-      'ExampleTest.php',
-      'PHPUnit1Test.php',
-      'PHPUnit2Test.php',
-      'BreakpointDebugging-ExceptionTest.php',
-      'BreakpointDebugging-InAllCaseTest.php',
-      'BreakpointDebuggingTest.php',
-      'BreakpointDebugging/Error-InAllCaseTest.php',
-      'BreakpointDebugging/ErrorTest.php',
-      'BreakpointDebugging/LockByFileExistingTest.php',
-      'BreakpointDebugging/LockByFlockTest.php',
-     */
+    'ExampleTest.php',
+    'PHPUnit1Test.php',
+    'PHPUnit2Test.php',
+    'BreakpointDebugging-ExceptionTest.php',
+    'BreakpointDebugging-InAllCaseTest.php',
+    'BreakpointDebuggingTest.php',
+    'BreakpointDebugging/Error-InAllCaseTest.php',
+    'BreakpointDebugging/ErrorTest.php',
+    'BreakpointDebugging/LockByFileExistingTest.php',
+    'BreakpointDebugging/LockByFlockTest.php',
     'BreakpointDebugging/LockByShmopRequestTest.php',
-    // 'BreakpointDebugging/OverrideClassTest.php',
+    'BreakpointDebugging/OverrideClassTest.php',
 );
 
 // Executes unit tests.
-// $breakpointDebugging_PHPUnit->executeUnitTest($breakpointDebugging_UnitTestFiles); exit;
+$breakpointDebugging_PHPUnit->executeUnitTest($breakpointDebugging_UnitTestFiles); exit;
 //
 // Makes up code coverage report, then displays in browser.
 if (B::getStatic('$exeMode') & B::RELEASE) { // In case of release.

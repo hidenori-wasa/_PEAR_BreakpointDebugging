@@ -315,7 +315,7 @@ function BreakpointDebugging_mySetting()
     B::iniSet('track_errors', '');
     // This changes "php.ini" file setting into "arg_separator.output = "&amp;" to be based on XHTML fully.
     B::iniSet('arg_separator.output', '&amp;');
-    // PHP It limits directory which opens a file.
+    // Directory limitation which opens a file.
     B::iniSet('open_basedir', $openBasedir);
     if ($exeMode & B::REMOTE) { // In case of remote.
         // Windows e-mail sending server setting.

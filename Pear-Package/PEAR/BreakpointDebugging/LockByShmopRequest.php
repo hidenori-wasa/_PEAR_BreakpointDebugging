@@ -65,6 +65,7 @@
  */
 use \BreakpointDebugging as B;
 use \BreakpointDebugging_Shmop as BS;
+use \BreakpointDebugging_BlackList as BB;
 
 /**
  * Class which locks php-code by shared memory operation.
@@ -86,9 +87,9 @@ final class BreakpointDebugging_LockByShmopRequest extends \BreakpointDebugging_
     private static $_writtenResponseLocation;
     private static $_lockingLocation;
     private static $_stopLocation;
-    private static $_pPipe;
     private static $_lockingObject;
-    private static $_sharedMemoryID;
+    private $_sharedMemoryID;
+    private $_pPipe;
 
     /**
      * Singleton method.
@@ -137,6 +138,85 @@ final class BreakpointDebugging_LockByShmopRequest extends \BreakpointDebugging_
     }
 
     /**
+     * Opens command line process pipe.
+     *
+     * @param string $fullFilePath Full file path to open a pipe as page.
+     * @param array  $queryString  A query character string.
+     *
+     * @return resource Opened process pipe.
+     * @throws \BreakpointDebugging_ErrorException
+     */
+    static function popen($fullFilePath, $queryString)
+    {
+        // Creates and runs a test process.
+        if (BREAKPOINTDEBUGGING_IS_WINDOWS) { // For Windows.
+            // include_once $fullFilePath; // For debug.
+            $pPipe = popen('php.exe -f ' . $fullFilePath . ' -- ' . $queryString, 'r');
+            if ($pPipe === false) {
+                throw new \BreakpointDebugging_ErrorException('Failed to "popen()".');
+            }
+        } else { // For Unix.
+            // include_once $fullFilePath; // For debug.
+            // "&" is the background execution of command.
+            $pPipe = popen('php -f ' . $fullFilePath . ' -- ' . $queryString . ' &', 'r');
+            if ($pPipe === false) {
+                throw new \BreakpointDebugging_ErrorException('Failed to "popen()".');
+            }
+            // Executes command to asynchronization.
+            if (!stream_set_blocking($pPipe, 0)) {
+                throw new \BreakpointDebugging_ErrorException('Failed to "stream_set_blocking($pPipe, 0)".');
+            }
+        }
+        return $pPipe;
+    }
+
+    /**
+     * Waits for multiple processes, then returns its results.
+     *
+     * @param array $pPipes The pipes of multiple processes which opened by "popen()".
+     *
+     * @return array Results of multiple processes.
+     * @throws \BreakpointDebugging_ErrorException
+     */
+    static function waitForMultipleProcesses($pPipes)
+    {
+        $results = array ();
+        if (BREAKPOINTDEBUGGING_IS_WINDOWS) {
+            foreach ($pPipes as $pPipe) {
+                $results[] = stream_get_contents($pPipe);
+            }
+        } else {
+            foreach ($pPipes as $pPipe) {
+                // Waits until command execution end.
+                if (!stream_set_blocking($pPipe, 1)) {
+                    throw new \BreakpointDebugging_ErrorException('Failed to "stream_set_blocking($pPipe, 1)".');
+                }
+                // Gets command's stdout.
+                $results[] = stream_get_contents($pPipe);
+            }
+        }
+        return $results;
+    }
+
+    /**
+     * The after treatment.
+     *
+     * @return void
+     */
+    private function _afterTreatment()
+    {
+        // Waits for process return.
+        self::waitForMultipleProcesses(array ($this->_pPipe));
+        // Closes the pipe.
+        $result = pclose($this->_pPipe);
+        B::assert($result !== -1);
+        // Closes the shared memory.
+        shmop_close($this->_sharedMemoryID);
+        // Initializes the shared memory ID.
+        $this->_sharedMemoryID = null;
+    }
+
+    /**
      * Creates response process.
      *
      * @param type $pFile
@@ -166,23 +246,8 @@ final class BreakpointDebugging_LockByShmopRequest extends \BreakpointDebugging_
             // Creates response process.
             $fullFilePath = './BreakpointDebugging_LockByShmopResponse.php';
             $queryString = '"' . B::httpBuildQuery(array ()) . '"';
-            if (BREAKPOINTDEBUGGING_IS_WINDOWS) { // For Windows.
-                $pPipe = popen('php.exe -f ' . $fullFilePath . ' -- ' . $queryString, 'r');
-                if ($pPipe === false) {
-                    throw new \BreakpointDebugging_ErrorException('Failed to "popen()".');
-                }
-            } else { // For Unix.
-                // "&" is the background execution of command.
-                $pPipe = popen('php -f ' . $fullFilePath . ' -- ' . $queryString . ' &', 'r');
-                if ($pPipe === false) {
-                    throw new \BreakpointDebugging_ErrorException('Failed to "popen()".');
-                }
-                // Executes command to asynchronization.
-                if (!stream_set_blocking($pPipe, 0)) {
-                    throw new \BreakpointDebugging_ErrorException('Failed to "stream_set_blocking($pPipe, 0)".');
-                }
-            }
-            self::$_pPipe = $pPipe;
+            $this->_pPipe = &BB::refLockByShmopRequestPPipe();
+            $this->_pPipe = self::popen($fullFilePath, $queryString);
             // Waits until shared memory initializing.
             while (true) {
                 // 0.1 second sleep.
@@ -203,6 +268,16 @@ final class BreakpointDebugging_LockByShmopRequest extends \BreakpointDebugging_
             self::$_lockingObject->unlock();
             throw $e;
         }
+        // If this process is not unit test.
+        if (!(B::getStatic('$exeMode') & B::UNIT_TEST)) {
+            // Unlocks "php" code.
+            self::$_lockingObject->unlock();
+            echo '<strong>Sorry, please retry.</strong>';
+            flush();
+            $this->_afterTreatment();
+            exit;
+        }
+
         AFTER_TREATMENT:
         // Unlocks "php" code.
         self::$_lockingObject->unlock();
@@ -235,21 +310,22 @@ final class BreakpointDebugging_LockByShmopRequest extends \BreakpointDebugging_
         self::$_lockingObject = &\BreakpointDebugging_LockByFileExisting::internalSingleton();
 
         $pFile = null;
+        $this->_sharedMemoryID = &BB::refLockByShmopRequestSharedMemoryID();
         while (true) {
             // Gets shared memory key file pointer and ID if it does not exist.
-            list($pFile, self::$_sharedMemoryID) = self::_getShmopKeyFilePointerAndID($pFile, self::$_sharedMemoryID);
+            list($pFile, $this->_sharedMemoryID) = self::_getShmopKeyFilePointerAndID($pFile, $this->_sharedMemoryID);
             // If shared memory exists.
-            if (self::$_sharedMemoryID) {
+            if ($this->_sharedMemoryID) {
                 // Closes the file pointer.
                 $result = fclose($pFile);
                 B::assert($result === true);
                 // If response process was not shutdowned.
-                if (shmop_read(self::$_sharedMemoryID, self::$_stopLocation, 1) !== '0') {
+                if (shmop_read($this->_sharedMemoryID, self::$_stopLocation, 1) !== '0') {
                     return;
                 }
             }
             // Creates response process.
-            list($pFile, self::$_sharedMemoryID) = self::_createResponseProcess($pFile, self::$_sharedMemoryID);
+            list($pFile, $this->_sharedMemoryID) = self::_createResponseProcess($pFile, $this->_sharedMemoryID);
         }
     }
 
@@ -289,10 +365,10 @@ final class BreakpointDebugging_LockByShmopRequest extends \BreakpointDebugging_
                 // Waits until unlocking.
                 while (true) {
                     // If response process was shutdowned.
-                    if (shmop_read(self::$_sharedMemoryID, self::$_stopLocation, 1) === '0') {
+                    if (shmop_read($this->_sharedMemoryID, self::$_stopLocation, 1) === '0') {
                         break 2;
                     }
-                    $isLocked = shmop_read(self::$_sharedMemoryID, self::$_lockingLocation, 1);
+                    $isLocked = shmop_read($this->_sharedMemoryID, self::$_lockingLocation, 1);
                     B::assert($isLocked !== false);
                     if ($isLocked !== '1') {
                         break;
@@ -302,22 +378,22 @@ final class BreakpointDebugging_LockByShmopRequest extends \BreakpointDebugging_
                     usleep($this->sleepMicroSeconds);
                 }
 
-                $IsWritingRequest = shmop_read(self::$_sharedMemoryID, self::$_writingRequestLocation, 1);
+                $IsWritingRequest = shmop_read($this->_sharedMemoryID, self::$_writingRequestLocation, 1);
                 B::assert($IsWritingRequest !== false);
                 // If other process is writing.
                 if ($IsWritingRequest === '1') {
                     continue;
                 }
                 // Writes locking request.
-                $result = shmop_write(self::$_sharedMemoryID, '1' . $this->_uniqueID . $this->_uniqueID . '1', 0);
+                $result = shmop_write($this->_sharedMemoryID, '1' . $this->_uniqueID . $this->_uniqueID . '1', 0);
                 B::assert($result !== false);
                 // Waits until response.
                 while (true) {
                     // If response process was shutdowned.
-                    if (shmop_read(self::$_sharedMemoryID, self::$_stopLocation, 1) === '0') {
+                    if (shmop_read($this->_sharedMemoryID, self::$_stopLocation, 1) === '0') {
                         break 2;
                     }
-                    $wasWrittenResponse = shmop_read(self::$_sharedMemoryID, self::$_writtenResponseLocation, 1);
+                    $wasWrittenResponse = shmop_read($this->_sharedMemoryID, self::$_writtenResponseLocation, 1);
                     B::assert($wasWrittenResponse !== false);
                     // If response process has written response.
                     if ($wasWrittenResponse === '1') {
@@ -325,27 +401,19 @@ final class BreakpointDebugging_LockByShmopRequest extends \BreakpointDebugging_
                     }
                     $judgeTimeout($startTime, $this->timeout);
                 }
-                $uniqueID = shmop_read(self::$_sharedMemoryID, self::$_uniqueIdResponseLocation, self::$_uniqueIdSize);
+                $uniqueID = shmop_read($this->_sharedMemoryID, self::$_uniqueIdResponseLocation, self::$_uniqueIdSize);
                 // If response is not unique ID of this process.
                 if ($uniqueID !== $this->_uniqueID) {
                     continue;
                 }
                 // This process accepted response.
-                $result = shmop_write(self::$_sharedMemoryID, '1', self::$_lockingLocation);
+                $result = shmop_write($this->_sharedMemoryID, '1', self::$_lockingLocation);
                 break 2;
             }
             restore_error_handler();
-            // Closes the pipe.
-            if (is_resource(self::$_pPipe)) {
-                $result = pclose(self::$_pPipe);
-                B::assert($result !== -1);
-            }
-            // Closes the shared memory.
-            shmop_close(self::$_sharedMemoryID);
-            // Initializes the shared memory ID.
-            self::$_sharedMemoryID = null;
+            $this->_afterTreatment();
             // Creates response process because response process was shutdowned.
-            list($pFile, self::$_sharedMemoryID) = self::_createResponseProcess($pFile, self::$_sharedMemoryID);
+            list($pFile, $this->_sharedMemoryID) = self::_createResponseProcess($pFile, $this->_sharedMemoryID);
         }
         restore_error_handler();
         if (is_resource($pFile)) {
@@ -363,8 +431,22 @@ final class BreakpointDebugging_LockByShmopRequest extends \BreakpointDebugging_
     protected function loopUnlocking()
     {
         // Initializes shared memory.
-        $result = shmop_write(self::$_sharedMemoryID, str_repeat("\x20", self::$_stopLocation + 1), 0);
+        $result = shmop_write($this->_sharedMemoryID, str_repeat("\x20", self::$_stopLocation + 1), 0);
         B::assert($result !== false);
     }
 
+    static function shutdown()
+    {
+        $sharedMemoryID = &BB::refLockByShmopRequestSharedMemoryID();
+        if ($sharedMemoryID !== null) {
+            // Closes the shared memory.
+            shmop_close($sharedMemoryID);
+            // Initializes the shared memory ID.
+            $sharedMemoryID = null;
+        }
+    }
+
 }
+
+// Pushes the shutdown class method.
+register_shutdown_function('\BreakpointDebugging_LockByShmopRequest::shutdown');

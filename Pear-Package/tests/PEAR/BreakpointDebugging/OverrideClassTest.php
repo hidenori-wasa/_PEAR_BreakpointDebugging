@@ -2,6 +2,8 @@
 
 use \BreakpointDebugging as B;
 
+// Copies the "BreakpointDebugging_*.php" file into current work directory.
+B::copyResourceToCWD('NativeClass.php', 'BreakpointDebugging/Sample/');
 // Overrides a class without inheritance.
 class NativeClassOverriding extends \BreakpointDebugging_OverrideClass
 {

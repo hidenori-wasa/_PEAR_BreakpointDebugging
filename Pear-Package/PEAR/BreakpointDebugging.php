@@ -344,8 +344,7 @@ abstract class BreakpointDebugging_InAllCase
             // Uses "BreakpointDebugging" package autoloader.
             spl_autoload_unregister(array (self::$_phpUnit->getStaticVariableStorageInstance(), 'loadClass'));
         }
-        // If this is not production release.
-        if (self::$_nativeExeMode !== (self::REMOTE | self::RELEASE)) {
+        if (!BREAKPOINTDEBUGGING_IS_PRODUCTION) { // In case of development.
             // Displays error call stack instead of log.
             self::$exeMode &= ~self::RELEASE;
             // Avoids exception throw.

@@ -11,6 +11,49 @@ use \BreakpointDebugging_PHPUnit_FrameworkTestCase as BSF;
 
 B::checkExeMode(); // Checks the execution mode.
 
+$shmopKeyFilePath = B::getStatic('$_workDir') . '/LockByShmopRequest.txt';
+//set_error_handler('\BreakpointDebugging::handleError', 0);
+// Opens shared memory key file.
+$pFile = fopen($shmopKeyFilePath, 'rb');
+//restore_error_handler();
+$sharedMemoryID = \BreakpointDebugging_Shmop::getSharedMemoryID($pFile);
+$result = fclose($pFile);
+B::assert($result === true);
+
+// Says to shutdown response process.
+$result = shmop_write($sharedMemoryID, '1', 73);
+B::assert($result !== false);
+// This process waits until response process was shutdowned.
+while (true) {
+    // If response process was shutdowned.
+    if (shmop_read($sharedMemoryID, 73, 1) === '0') {
+        exit('Response process was shutdowned.');
+    }
+    sleep(1);
+}
+
+
+
+
+
+// Constructs instance.
+$LockByShmopRequest = &\BreakpointDebugging_LockByShmopRequest::singleton();
+$LockByShmopRequest->lock();
+//usleep(10000000);
+$LockByShmopRequest->unlock();
+exit('Success!');
+
+
+
+$value = popen('php.exe -f C:\xampp\htdocs\Pear-Package\BreakpointDebugging_LockByShmopResponse.php', 'r');
+
+// Excepts socket resources.
+if (is_resource($value) //
+// && get_resource_type($value) === '???' //
+) {
+    var_dump(get_resource_type($value));
+}
+
 exit('Done!');
 
 
@@ -27,15 +70,6 @@ B::assert($result !== false);
 $pFile = fopen($testFileName, 'rb');
 // fclose($pFile);
 exit('Done!');
-
-
-
-// Constructs instance.
-$LockByShmopRequest = &\BreakpointDebugging_LockByShmopRequest::singleton();
-$LockByShmopRequest->lock();
-//usleep(10000000);
-$LockByShmopRequest->unlock();
-exit('Success!');
 
 
 

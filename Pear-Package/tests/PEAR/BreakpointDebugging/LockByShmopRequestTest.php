@@ -2,6 +2,7 @@
 
 use \BreakpointDebugging as B;
 use \BreakpointDebugging_PHPUnit as BU;
+use \BreakpointDebugging_LockByShmopRequest as BLS;
 
 class BreakpointDebugging_LockByShmopRequestTest extends \BreakpointDebugging_PHPUnit_FrameworkTestCase
 {
@@ -16,41 +17,51 @@ class BreakpointDebugging_LockByShmopRequestTest extends \BreakpointDebugging_PH
         ) {
             $this->markTestSkipped('"shmop" extention has been not loaded.');
         }
-        // Constructs instance.
-        // $this->LockByShmopRequest = &\BreakpointDebugging_LockByShmopRequest::singleton(5, 10);
+        // Constructs request process.
         $this->LockByShmopRequest = &\BreakpointDebugging_LockByShmopRequest::singleton(300);
     }
 
     function tearDown()
     {
-        // Stops "\BreakpointDebugging_LockByShmopResponse" class instance.
-        $sharedMemoryID = BU::getPropertyForTest('BreakpointDebugging_LockByShmopRequest', '$_sharedMemoryID');
-        $stopLocation = BU::getPropertyForTest('BreakpointDebugging_LockByShmopRequest', '$_stopLocation');
-        $isExisting = shmop_read($sharedMemoryID, $stopLocation, 1);
-        B::assert($isExisting !== false);
-        if ($isExisting === ' ') {
-            $result = shmop_write($sharedMemoryID, '1', $stopLocation);
-            B::assert($result !== false);
-            while (true) {
-                // 0.2 second sleep.
-                usleep(200000);
-                $isStop = shmop_read($sharedMemoryID, $stopLocation, 1);
-                B::assert($isStop !== false);
-                if ($isStop === '0') {
-                    BU::setPropertyForTest('BreakpointDebugging_LockByShmopRequest', '$_sharedMemoryID', null);
-                    // Closes the pipe for static backup, but apache socket error is caused.
-                    $pPipe = BU::getPropertyForTest('BreakpointDebugging_LockByShmopRequest', '$_pPipe');
-                    if (is_resource($pPipe)) {
-                        $result = pclose($pPipe);
-                        B::assert($result !== -1);
-                    }
-                    break;
-                }
-            }
-        }
-        // Destructs instance.
+        // Destructs request process.
         $this->LockByShmopRequest = null;
         parent::tearDown();
+    }
+
+    static function tearDownAfterClass()
+    {
+        // Says to shutdown response process.
+        $sharedMemoryID = &\BreakpointDebugging_BlackList::refLockByShmopRequestSharedMemoryID();
+        $stopLocation = BU::getPropertyForTest('\BreakpointDebugging_LockByShmopRequest', '$_stopLocation');
+        $result = shmop_write($sharedMemoryID, '1', $stopLocation);
+        B::assert($result !== false);
+        // Waits for process return.
+        $pPipe = &\BreakpointDebugging_BlackList::refLockByShmopRequestPPipe();
+        BLS::waitForMultipleProcesses(array ($pPipe));
+        // Closes the process pipe.
+        $result = pclose($pPipe);
+        B::assert($result !== -1);
+    }
+
+    /**
+     * @covers \BreakpointDebugging_LockByShmopRequest<extended>
+     */
+    function testSingleton()
+    {
+        // Destructs request process.
+        $this->LockByShmopRequest = null;
+        // Destructs response process.
+        self::tearDownAfterClass();
+        // Closes the shared memory.
+        $sharedMemoryID = &\BreakpointDebugging_BlackList::refLockByShmopRequestSharedMemoryID();
+        shmop_close($sharedMemoryID);
+        // Initializes the shared memory ID.
+        $sharedMemoryID = null;
+        // Writes wrong shared memory key.
+        $pFile = B::fopen(array (B::getStatic('$_workDir') . '/LockByShmopRequest.txt', 'wb'));
+        fwrite($pFile, 'dummydummy');
+        fclose($pFile);
+        \BreakpointDebugging_LockByShmopRequest::singleton(5, 10);
     }
 
     /**
@@ -95,18 +106,6 @@ class BreakpointDebugging_LockByShmopRequestTest extends \BreakpointDebugging_PH
         parent::markTestSkippedInRelease(); // Because this unit test is assertion.
 
         $tmp = clone $this->LockByShmopRequest;
-    }
-
-    /**
-     * @covers \BreakpointDebugging_LockByShmopRequest<extended>
-     */
-    function testSingleton()
-    {
-        $pFile = B::fopen(array (B::getStatic('$_workDir') . '/LockByShmopRequest.txt', 'wb'));
-        fwrite($pFile, 'dummydummy');
-        fclose($pFile);
-        BU::setPropertyForTest('\BreakpointDebugging_Lock', '$_instance', null);
-        \BreakpointDebugging_LockByShmopRequest::singleton(5, 10);
     }
 
     /**
