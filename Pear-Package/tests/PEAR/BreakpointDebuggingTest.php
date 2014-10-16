@@ -10,18 +10,6 @@ use \BreakpointDebugging_Window as BW;
  */
 class BreakpointDebuggingTest extends \BreakpointDebugging_PHPUnit_FrameworkTestCase
 {
-    function setUp()
-    {
-        parent::setUp();
-
-        $errorLogDirectory = B::getStatic('$_workDir') . \BreakpointDebugging_Error_InAllCase::ERROR_LOG_DIR;
-        $varConfFilePath = $errorLogDirectory . \BreakpointDebugging_Error_InAllCase::VAR_CONF_FILE_NAME;
-        if (is_file($varConfFilePath)) {
-            B::unlink(array ($varConfFilePath));
-        }
-        B::assert(!is_file($varConfFilePath));
-    }
-
     /**
      * @covers \BreakpointDebugging<extended>
      */

@@ -2,7 +2,7 @@
 
 use \BreakpointDebugging as B;
 use \BreakpointDebugging_PHPUnit as BU;
-use \BreakpointDebugging_Error_InAllCaseTest as T;
+use \BreakpointDebugging_ErrorInAllCaseTest as T;
 
 function test4_($error)
 {

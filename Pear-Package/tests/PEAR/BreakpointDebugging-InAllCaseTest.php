@@ -20,6 +20,18 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_PHPUnit_Fra
     /**
      * @covers \BreakpointDebugging_InAllCase<extended>
      */
+    public function testExceptionHandler()
+    {
+        $pPrevious = new \Exception('Previous exception.', E_USER_WARNING);
+        $pException = new \Exception('Exception.', E_USER_WARNING, $pPrevious);
+        BU::$exeMode |= B::IGNORING_BREAK_POINT;
+        ob_start();
+        BA::handleException($pException);
+    }
+
+    /**
+     * @covers \BreakpointDebugging_InAllCase<extended>
+     */
     public function testClearRecursiveArrayElement()
     {
         // It sets "count($_SERVER)" to "B::$_maxLogElementNumber" because it is purpose to execute without array slicing.
@@ -331,7 +343,8 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_PHPUnit_Fra
         try {
             BA::fopen(array ($testFileName, 'x+b'), 0700, 2);
         } catch (\PHPUnit_Framework_Error_Warning $e) {
-            parent::assertTrue(strpos($e->getMessage(), 'failed to open stream:') !== false);
+            //parent::assertTrue(strpos($e->getMessage(), 'failed to open stream:') !== false);
+            BU::assertExceptionMessage($e, 'failed to open stream:');
         }
         fclose($pFile);
         parent::assertTrue(is_file($testFileName));
@@ -375,18 +388,6 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_PHPUnit_Fra
         if (T::$testAutoload === 3) { // In case of creating new instance.
             new \NativeClass();
         }
-    }
-
-    /**
-     * @covers \BreakpointDebugging_InAllCase<extended>
-     */
-    public function testExceptionHandler()
-    {
-        $pPrevious = new \Exception('Previous exception.', E_USER_WARNING);
-        $pException = new \Exception('Exception.', E_USER_WARNING, $pPrevious);
-        BU::$exeMode |= B::IGNORING_BREAK_POINT;
-        ob_start();
-        BA::handleException($pException);
     }
 
     /**

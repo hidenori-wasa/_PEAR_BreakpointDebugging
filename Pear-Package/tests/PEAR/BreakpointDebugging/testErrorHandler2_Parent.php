@@ -1,7 +1,7 @@
 <?php
 
 use \BreakpointDebugging as B;
-use \BreakpointDebugging_Error_InAllCaseTest as T;
+use \BreakpointDebugging_ErrorInAllCaseTest as T;
 
 function test4($error)
 {

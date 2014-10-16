@@ -309,7 +309,7 @@ EOD;
         self::_assert($result !== false);
         // Closes the shared memory.
         shmop_close(self::$_shmopID);
-        // Returns the result.
+        // Returns a result.
         echo 'Done.';
     }
 

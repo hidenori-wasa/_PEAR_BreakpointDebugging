@@ -1274,7 +1274,7 @@ EOD;
             }
         } catch (\Exception $e) {
             // @codeCoverageIgnoreStart
-            // Because unit test may not cause internal exception inside "\BreakpointDebugging_Error_InAllCase::handleException2()".
+            // Because unit test may not cause internal exception inside "\BreakpointDebugging_ErrorInAllCase::handleException2()".
             if (self::$_nativeExeMode & self::UNIT_TEST) {
                 restore_error_handler();
                 throw $e;
@@ -1311,7 +1311,7 @@ EOD;
             $error->handleError2($errorNumber, $errorMessage, self::$prependErrorLog, debug_backtrace());
         } catch (\Exception $e) {
             // @codeCoverageIgnoreStart
-            // Because unit test may not cause internal exception inside "\BreakpointDebugging_Error_InAllCase::handleError2()".
+            // Because unit test may not cause internal exception inside "\BreakpointDebugging_ErrorInAllCase::handleError2()".
             if (self::$_nativeExeMode & self::UNIT_TEST) {
                 restore_error_handler();
                 throw $e;
@@ -1359,13 +1359,7 @@ EOD;
      */
     final static function internalException($message, $id)
     {
-        B::limitAccess(
-            array (
-                'BreakpointDebugging/Error.php',
-                'BreakpointDebugging/Error_InDebug.php',
-                'BreakpointDebugging/LockByFileExisting.php'
-            )
-        );
+        B::limitAccess('BreakpointDebugging/ErrorInAllCase.php');
 
         B::assert(func_num_args() === 2);
         B::assert(is_string($message));

@@ -90,7 +90,8 @@ class BreakpointDebugging_PHPUnitTestSimple extends \BreakpointDebugging_PHPUnit
         try {
             BU::getPropertyForTest('notExistClassName', 'dummy');
         } catch (\ReflectionException $e) {
-            parent::assertTrue(strpos($e->getMessage(), 'Class notExistClassName does not exist') !== false);
+            //parent::assertTrue(strpos($e->getMessage(), 'Class notExistClassName does not exist') !== false);
+            BU::assertExceptionMessage($e, 'Class notExistClassName does not exist');
         }
     }
 
@@ -99,7 +100,8 @@ class BreakpointDebugging_PHPUnitTestSimple extends \BreakpointDebugging_PHPUnit
         try {
             BU::getPropertyForTest('BreakpointDebuggingTestExample', 'notExistPropertyName');
         } catch (\BreakpointDebugging_ErrorException $e) {
-            parent::assertTrue(strpos($e->getMessage(), 'CLASS=BreakpointDebugging_PHPUnit FUNCTION=getPropertyForTest ID=101.') !== false);
+            //parent::assertTrue(strpos($e->getMessage(), 'CLASS=BreakpointDebugging_PHPUnit FUNCTION=getPropertyForTest ID=101.') !== false);
+            BU::assertExceptionMessage($e, 'CLASS=BreakpointDebugging_PHPUnit FUNCTION=getPropertyForTest ID=101.');
         }
     }
 
@@ -108,7 +110,8 @@ class BreakpointDebugging_PHPUnitTestSimple extends \BreakpointDebugging_PHPUnit
         try {
             BU::getPropertyForTest('BreakpointDebuggingTestExample', '$privateStaticBase'); // Private static property of base class.
         } catch (\BreakpointDebugging_ErrorException $e) {
-            parent::assertTrue(strpos($e->getMessage(), 'CLASS=BreakpointDebugging_PHPUnit FUNCTION=getPropertyForTest ID=101.') !== false);
+            //parent::assertTrue(strpos($e->getMessage(), 'CLASS=BreakpointDebugging_PHPUnit FUNCTION=getPropertyForTest ID=101.') !== false);
+            BU::assertExceptionMessage($e, 'CLASS=BreakpointDebugging_PHPUnit FUNCTION=getPropertyForTest ID=101.');
         }
     }
 
@@ -119,7 +122,8 @@ class BreakpointDebugging_PHPUnitTestSimple extends \BreakpointDebugging_PHPUnit
         try {
             BU::getPropertyForTest($pBreakpointDebuggingTestExample, '$privateStaticBase'); // Private static property of base class.
         } catch (\BreakpointDebugging_ErrorException $e) {
-            parent::assertTrue(strpos($e->getMessage(), 'CLASS=BreakpointDebugging_PHPUnit FUNCTION=getPropertyForTest') !== false);
+            //parent::assertTrue(strpos($e->getMessage(), 'CLASS=BreakpointDebugging_PHPUnit FUNCTION=getPropertyForTest') !== false);
+            BU::assertExceptionMessage($e, 'CLASS=BreakpointDebugging_PHPUnit FUNCTION=getPropertyForTest');
         }
     }
 
@@ -148,7 +152,8 @@ class BreakpointDebugging_PHPUnitTestSimple extends \BreakpointDebugging_PHPUnit
         try {
             BU::setPropertyForTest($pBreakpointDebuggingTestExample, '$privateStaticBase', 'change'); // Private static property of base class.
         } catch (\BreakpointDebugging_ErrorException $e) {
-            parent::assertTrue(strpos($e->getMessage(), 'CLASS=BreakpointDebugging_PHPUnit FUNCTION=setPropertyForTest ID=101.') !== false);
+            //parent::assertTrue(strpos($e->getMessage(), 'CLASS=BreakpointDebugging_PHPUnit FUNCTION=setPropertyForTest ID=101.') !== false);
+            BU::assertExceptionMessage($e, 'CLASS=BreakpointDebugging_PHPUnit FUNCTION=setPropertyForTest ID=101.');
         }
     }
 
@@ -159,7 +164,8 @@ class BreakpointDebugging_PHPUnitTestSimple extends \BreakpointDebugging_PHPUnit
         try {
             BU::setPropertyForTest($pBreakpointDebuggingTestExample, '$privateAutoBase', 'change'); // Private auto property of base class.
         } catch (\BreakpointDebugging_ErrorException $e) {
-            parent::assertTrue(strpos($e->getMessage(), 'CLASS=BreakpointDebugging_PHPUnit FUNCTION=setPropertyForTest ID=101.') !== false);
+            //parent::assertTrue(strpos($e->getMessage(), 'CLASS=BreakpointDebugging_PHPUnit FUNCTION=setPropertyForTest ID=101.') !== false);
+            BU::assertExceptionMessage($e, 'CLASS=BreakpointDebugging_PHPUnit FUNCTION=setPropertyForTest ID=101.');
         }
     }
 
@@ -170,7 +176,8 @@ class BreakpointDebugging_PHPUnitTestSimple extends \BreakpointDebugging_PHPUnit
         try {
             BU::setPropertyForTest($pBreakpointDebuggingTestExample, '$notExistPropertyName', 'change');
         } catch (\BreakpointDebugging_ErrorException $e) {
-            parent::assertTrue(strpos($e->getMessage(), 'CLASS=BreakpointDebugging_PHPUnit FUNCTION=setPropertyForTest ID=101.') !== false);
+            //parent::assertTrue(strpos($e->getMessage(), 'CLASS=BreakpointDebugging_PHPUnit FUNCTION=setPropertyForTest ID=101.') !== false);
+            BU::assertExceptionMessage($e, 'CLASS=BreakpointDebugging_PHPUnit FUNCTION=setPropertyForTest ID=101.');
         }
     }
 

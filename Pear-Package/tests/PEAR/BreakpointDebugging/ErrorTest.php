@@ -57,21 +57,21 @@ class BreakpointDebugging_ErrorTest extends \BreakpointDebugging_PHPUnit_Framewo
         $maxLogStringSize = 140000;
 
         $exceptionWithGLOBALS = function ($self) {
-                try {
-                    B::addValuesToTrace(array (array ('TestString')));
-                    $self->throwException2($GLOBALS, array ('Test1.'));
-                } catch (\Exception $e) {
-                    B::handleException($e);
-                }
-            };
+            try {
+                B::addValuesToTrace(array (array ('TestString')));
+                $self->throwException2($GLOBALS, array ('Test1.'));
+            } catch (\Exception $e) {
+                B::handleException($e);
+            }
+        };
 
         $logfileMaximumCapacityException = function ($self) {
-                try {
-                    $self->throwException2(str_repeat('1234567890', 14000), array ('Test1.'), 1.1);
-                } catch (\Exception $e) {
-                    B::handleException($e);
-                }
-            };
+            try {
+                $self->throwException2(str_repeat('1234567890', 14000), array ('Test1.'), 1.1);
+            } catch (\Exception $e) {
+                B::handleException($e);
+            }
+        };
 
         BU::$exeMode |= B::IGNORING_BREAK_POINT;
         BU::$exeMode ^= B::REMOTE;
@@ -94,7 +94,7 @@ class BreakpointDebugging_ErrorTest extends \BreakpointDebugging_PHPUnit_Framewo
             // SJIS + UTF-8
             $this->_error->handleException2(new \Exception(), "\x95\xB6\x8E\x9A \xE6\x96\x87\xE5\xAD\x97 ");
         } catch (\BreakpointDebugging_ErrorException $e) {
-            parent::assertTrue(strpos($e->getMessage(), 'CLASS=BreakpointDebugging_Error_InAllCase FUNCTION=convertMbString ID=3.') !== false);
+            BU::assertExceptionMessage($e, 'CLASS=BreakpointDebugging_ErrorInAllCase FUNCTION=convertMbString ID=3.');
         }
 
         // Skips "\BreakpointDebugging_Error::convertMbString()" "SJIS + UTF-8" error exception.
@@ -135,7 +135,7 @@ class BreakpointDebugging_ErrorTest extends \BreakpointDebugging_PHPUnit_Framewo
      * @covers \BreakpointDebugging_Error<extended>
      *
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_Error_InAllCase FUNCTION=handleError2 ID=5.
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_ErrorInAllCase FUNCTION=handleError2 ID=5.
      */
     function testHandleError2_B()
     {

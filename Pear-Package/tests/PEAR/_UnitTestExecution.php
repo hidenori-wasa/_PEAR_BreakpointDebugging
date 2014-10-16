@@ -18,7 +18,7 @@ $breakpointDebugging_UnitTestFiles = array (
     'BreakpointDebugging-ExceptionTest.php',
     'BreakpointDebugging-InAllCaseTest.php',
     'BreakpointDebuggingTest.php',
-    'BreakpointDebugging/Error-InAllCaseTest.php',
+    'BreakpointDebugging/ErrorInAllCaseTest.php',
     'BreakpointDebugging/ErrorTest.php',
     'BreakpointDebugging/LockByFileExistingTest.php',
     'BreakpointDebugging/LockByFlockTest.php',
@@ -32,10 +32,10 @@ $breakpointDebugging_PHPUnit->executeUnitTest($breakpointDebugging_UnitTestFiles
 // Makes up code coverage report, then displays in browser.
 if (B::getStatic('$exeMode') & B::RELEASE) { // In case of release.
     // $breakpointDebugging_PHPUnit->displayCodeCoverageReport('BreakpointDebuggingTest.php', 'PEAR/BreakpointDebugging.php'); exit; // "BreakpointDebugging", "BreakpointDebugging_Middle" class is ? (Windows).
-    // $breakpointDebugging_PHPUnit->displayCodeCoverageReport('BreakpointDebugging/Error-InAllCaseTest.php', 'PEAR/BreakpointDebugging/Error.php'); exit;
+    // $breakpointDebugging_PHPUnit->displayCodeCoverageReport('BreakpointDebugging/ErrorInAllCaseTest.php', 'PEAR/BreakpointDebugging/Error.php'); exit;
 } else { // In case of debug.
     // $breakpointDebugging_PHPUnit->displayCodeCoverageReport('BreakpointDebuggingTest.php', 'PEAR/BreakpointDebugging_InDebug.php'); exit;
-    // $breakpointDebugging_PHPUnit->displayCodeCoverageReport('BreakpointDebugging/ErrorTest.php', 'PEAR/BreakpointDebugging/Error_InDebug.php'); exit;
+    // $breakpointDebugging_PHPUnit->displayCodeCoverageReport('BreakpointDebugging/ErrorTest.php', 'PEAR/BreakpointDebugging/Error.php'); exit;
 }
 // In case of debug or release.
 // $breakpointDebugging_PHPUnit->displayCodeCoverageReport('BreakpointDebugging-ExceptionTest.php', 'PEAROtherPackage/BreakpointDebugging_PHPUnit.php'); exit;
