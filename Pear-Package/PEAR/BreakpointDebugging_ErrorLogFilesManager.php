@@ -4,7 +4,8 @@
  * Error log files manager.
  *
  * Please, run the following procedure.
- * Procedure1: Set "const BREAKPOINTDEBUGGING_IS_PRODUCTION = false;" in "BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php'" file.
+ * Procedure1: Switch to production mode with "./BreakpointDebugging_ProductionSwitcher.php" page
+ *      if "const BREAKPOINTDEBUGGING_IS_PRODUCTION = false;" in "BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php'".
  * Procedure2: Register your IP address to "$developerIP"
  *      in "BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php'" file.
  * Procedure3: Call this page from browser.
