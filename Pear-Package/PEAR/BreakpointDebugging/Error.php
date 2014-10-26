@@ -1,7 +1,10 @@
 <?php
 
 /**
- * Error handling class.
+ * Does error or exception handling.
+ *
+ * There is this file to increase speed when does not do error or exception handling.
+ * In other words, this file does not cause "__autoload()" because does not read except for error or exception handling.
  *
  * PHP version 5.3.2-5.4.x
  *
@@ -43,7 +46,7 @@
 use \BreakpointDebugging as B;
 
 /**
- * Error handling class.
+ * Does error or exception handling.
  *
  * @category PHP
  * @package  BreakpointDebugging
@@ -56,8 +59,6 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_ErrorInAllCas
 {
     /**
      * Makes HTML tags.
-     *
-     * @return void
      */
     function __construct()
     {
@@ -104,12 +105,12 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_ErrorInAllCas
     }
 
     /**
-     * For debug.
+     * This is Called as global exception handler.
      *
-     * @param object $pException Same as parent.
-     * @param string $prependLog Same as parent.
+     * @param object $pException Exception info.
+     * @param string $prependLog This prepend this parameter logging.
      *
-     * @return Same as parent.
+     * @return void
      */
     function handleException2($pException, $prependLog)
     {
@@ -221,12 +222,13 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_ErrorInAllCas
     }
 
     /**
-     * For debug.
+     * Error log writing.
+     * This reduces amount of memory consumption in case of production server.
      *
-     * @param mixed &$pTmpLog Same as parent.
-     * @param mixed $pLog     Same as parent.
+     * @param mixed &$pTmpLog Error temporary log pointer.
+     * @param mixed $pLog     Error log pointer.
      *
-     * @return Same as parent.
+     * @return void
      */
     protected function logWriting(&$pTmpLog, $pLog = false)
     {
@@ -258,12 +260,13 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_ErrorInAllCas
     }
 
     /**
-     * For debug.
+     * Error log buffer writing.
+     * This reduces amount of memory consumption in case of production server.
      *
-     * @param mixed  &$pLogBuffer Same as parent.
-     * @param string $log         Same as parent.
+     * @param mixed  &$pLogBuffer Error log buffer pointer.
+     * @param string $log         Error log.
      *
-     * @return Same as parent.
+     * @return void
      */
     protected function logBufferWriting(&$pLogBuffer, $log)
     {
@@ -278,7 +281,7 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_ErrorInAllCas
                 echo $log;
                 $this->logByteSize += strlen($log);
             } else {
-                if (B::getStatic('$exeMode') & B::REMOTE) { // In case of remote.
+                if (B::getStatic('$exeMode') & B::REMOTE) { // In case of remote mode.
                     fwrite($pLogBuffer, $log);
                 } else { // In case of local.
                     $pLogBuffer[] = $log;

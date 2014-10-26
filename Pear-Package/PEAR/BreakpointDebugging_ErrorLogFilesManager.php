@@ -4,9 +4,7 @@
  * Error log files manager.
  *
  * Please, run the following procedure.
- * Procedure1: Set
- *      "$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_setExecutionModeFlags('RELEASE');"
- *      in "BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php'" file.
+ * Procedure1: Set "const BREAKPOINTDEBUGGING_IS_PRODUCTION = false;" in "BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php'" file.
  * Procedure2: Register your IP address to "$developerIP"
  *      in "BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php'" file.
  * Procedure3: Call this page from browser.
@@ -194,7 +192,7 @@ EOD;
                 BW::virtualOpen(__CLASS__, $errorHtmlFileContent);
                 BW::htmlAddition(__CLASS__, 'pre', 0, 'You must comment out "$developerIP = \'' . $_SERVER['REMOTE_ADDR'] . '\';" inside "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file before your IP is changed.');
             } else { // In case of first time when this page was called.
-                echo '<body style="background-color:black;color:white">';
+                echo '<body style="background-color: black; color: white">';
                 $thisFileName = basename(__FILE__);
                 $fontStyle = 'style="font-size: 25px; font-weight: bold;"';
                 // Makes error log download-buttons.

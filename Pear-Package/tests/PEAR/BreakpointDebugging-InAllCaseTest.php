@@ -343,7 +343,6 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_PHPUnit_Fra
         try {
             BA::fopen(array ($testFileName, 'x+b'), 0700, 2);
         } catch (\PHPUnit_Framework_Error_Warning $e) {
-            //parent::assertTrue(strpos($e->getMessage(), 'failed to open stream:') !== false);
             BU::assertExceptionMessage($e, 'failed to open stream:');
         }
         fclose($pFile);

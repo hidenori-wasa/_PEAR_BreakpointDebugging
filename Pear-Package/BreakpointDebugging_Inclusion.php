@@ -40,6 +40,7 @@
  * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-define('BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME', './PEAR_Setting/'); // We can change "PEAR" setting dir name.
+//define('BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME', './PEAR_Setting/'); // We can change "PEAR" setting dir name.
+define('BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME', './BreakpointDebugging_PEAR_Setting/'); // We can change "PEAR" setting dir name.
 
 require_once BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php';

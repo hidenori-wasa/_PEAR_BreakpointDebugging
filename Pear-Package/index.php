@@ -11,6 +11,20 @@ use \BreakpointDebugging_PHPUnit_FrameworkTestCase as BSF;
 
 B::checkExeMode(); // Checks the execution mode.
 
+$array = array (
+    'fruit1' => 'リンゴ',
+    'fruit2' => 'ゴーヤ',
+    'ヤクザ',
+    'fruit4' => false,
+    'fruit5' => 'ロクデナシ'
+);
+
+for (reset($array); ($key = key($array)) !== null; next($array)) {
+    var_dump($key);
+}
+
+exit;
+
 $shmopKeyFilePath = B::getStatic('$_workDir') . '/LockByShmopRequest.txt';
 //set_error_handler('\BreakpointDebugging::handleError', 0);
 // Opens shared memory key file.

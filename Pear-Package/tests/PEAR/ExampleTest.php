@@ -151,7 +151,6 @@ class ExampleTest extends \BreakpointDebugging_PHPUnit_FrameworkTestCase
             B::assert(true, 101);
             B::assert(false, 102);
         } catch (\BreakpointDebugging_ErrorException $e) {
-            //parent::assertTrue(preg_match('`CLASS=ExampleTest FUNCTION=testSomething_B ID=102\.$`X', $e->getMessage()) === 1);
             BU::assertExceptionMessage($e, 'CLASS=ExampleTest FUNCTION=testSomething_B ID=102.');
             return;
         }

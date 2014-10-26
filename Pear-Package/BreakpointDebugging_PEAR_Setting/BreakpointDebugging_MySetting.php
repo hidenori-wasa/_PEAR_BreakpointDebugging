@@ -44,9 +44,8 @@
  */
 use \BreakpointDebugging as B;
 
-// Please, set true or false value.
-    const BREAKPOINTDEBUGGING_IS_PRODUCTION = false; // In case of development.
-// const BREAKPOINTDEBUGGING_IS_PRODUCTION = true; // In case of production server release.
+// Is it production server mode?
+    const BREAKPOINTDEBUGGING_IS_PRODUCTION = false; // "\BreakpointDebugging_ProductionSwitcher" class changes this line automatically.
 //
 // Please, define variable if you emulate remote by local host.
 // $_BreakpointDebugging_emulate_remote = true;
@@ -252,7 +251,7 @@ function BreakpointDebugging_mySetting()
     // B::assert($result, 101);
     $workDir = &B::refStatic('$_workDir');
     // We can change work directory name.
-    $workDir = './Work';
+    $workDir = './BreakpointDebugging_Work';
     if (!BREAKPOINTDEBUGGING_IS_PRODUCTION) { // In case of development.
         if (is_dir($workDir)) {
             B::chmod($workDir, 0700);
@@ -262,6 +261,7 @@ function BreakpointDebugging_mySetting()
         // Copies the "BreakpointDebugging_*.php" file into current work directory.
         B::copyResourceToCWD('BreakpointDebugging_ErrorLogFilesManager.php', '');
         B::copyResourceToCWD('BreakpointDebugging_PHPUnit_DisplayCodeCoverageReport.php', '');
+        B::copyResourceToCWD('BreakpointDebugging_ProductionSwitcher.php', '');
     }
     $workDir = realpath($workDir);
     // B::assert($workDir !== false, 102);

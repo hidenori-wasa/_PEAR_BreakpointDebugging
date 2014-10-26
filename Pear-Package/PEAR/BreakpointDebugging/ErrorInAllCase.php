@@ -1,10 +1,7 @@
 <?php
 
 /**
- * This class does error or exception handling.
- *
- * There is this file to increase speed when does not do error or exception handling.
- * In other words, this file does not cause "__autoload()" because does not read except for error or exception handling.
+ * This class exists for release mode or both mode against child class.
  *
  * PHP version 5.3.2-5.4.x
  *
@@ -13,7 +10,7 @@
  * 2. Copyrighters do not take responsibility for this file code.
  *
  * LICENSE:
- * Copyright (c) 2012-2013, Hidenori Wasa
+ * Copyright (c) 2012-2014, Hidenori Wasa
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -47,7 +44,7 @@ use \BreakpointDebugging as B;
 use \BreakpointDebugging_Window as BW;
 
 /**
- * This class do error or exception handling.
+ * This class exists for release mode or both mode against child class.
  *
  * @category PHP
  * @package  BreakpointDebugging
@@ -224,9 +221,7 @@ abstract class BreakpointDebugging_ErrorInAllCase
     }
 
     /**
-     * Makes HTML tags.
-     *
-     * @return void
+     * Is called from child.
      */
     function __construct()
     {
@@ -511,12 +506,12 @@ abstract class BreakpointDebugging_ErrorInAllCase
     }
 
     /**
-     * This is Called as global exception handler.
+     * Is called from child.
      *
-     * @param object $pException Exception info.
-     * @param string $prependLog This prepend this parameter logging.
+     * @param object $pException Same as child.
+     * @param string $prependLog Same as child.
      *
-     * @return void
+     * @return Same as child.
      */
     function handleException2($pException, $prependLog)
     {
@@ -874,12 +869,12 @@ abstract class BreakpointDebugging_ErrorInAllCase
     }
 
     /**
-     * Changes the log file.
+     * Is called from child.
      *
-     * @param mixed $pTmpLog Error temporary log pointer.
+     * @param mixed $pTmpLog Same as child.
      *
-     * @return void
-     * @throw \BreakpointDebugging_OutOfLogRangeException
+     * @return Same as child.
+     * @throw Same as child.
      */
     protected function changeLogFile($pTmpLog)
     {
@@ -921,11 +916,11 @@ abstract class BreakpointDebugging_ErrorInAllCase
     }
 
     /**
-     * Checks the log byte size.
+     * Is called from child class.
      *
-     * @param mixed $pTmpLog Error temporary log pointer.
+     * @param mixed $pTmpLog Same as child.
      *
-     * @return void
+     * @return Same as child.
      */
     protected function checkLogByteSize($pTmpLog)
     {
@@ -1522,13 +1517,12 @@ EOD;
     }
 
     /**
-     * Error log writing.
-     * This reduces amount of memory consumption in case of production server.
+     * Is called from child class.
      *
-     * @param mixed &$pTmpLog Error temporary log pointer.
-     * @param mixed $pLog     Error log pointer.
+     * @param mixed &$pTmpLog Same as child.
+     * @param mixed $pLog     Same as child.
      *
-     * @return void
+     * @return Same as child.
      */
     protected function logWriting(&$pTmpLog, $pLog = false)
     {
@@ -1548,13 +1542,12 @@ EOD;
     }
 
     /**
-     * Error log buffer writing.
-     * This reduces amount of memory consumption in case of production server.
+     * Is called from child class.
      *
-     * @param mixed  &$pLogBuffer Error log buffer pointer.
-     * @param string $log         Error log.
+     * @param mixed  &$pLogBuffer Same as child.
+     * @param string $log         Same as child.
      *
-     * @return void
+     * @return Same as child.
      */
     protected function logBufferWriting(&$pLogBuffer, $log)
     {

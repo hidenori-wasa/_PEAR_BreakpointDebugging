@@ -1151,6 +1151,36 @@ EOD;
     }
 
     /**
+     * Initializes sync.
+     *
+     * @return void
+     */
+    static function initializeSync()
+    {
+        B::limitAccess(
+            array (
+            'BreakpointDebugging.php',
+            'BreakpointDebugging/PHPUnit/FrameworkTestCaseSimple.php',
+            )
+            , true
+        );
+
+        // Unlinks synchronization files.
+        $lockFilePaths = array (
+            'LockByFileExistingOfInternal.txt',
+            'LockByFileExisting.txt',
+        );
+        $workDir = B::getStatic('$_workDir');
+        foreach ($lockFilePaths as $lockFilePath) {
+            $lockFilePath = realpath($workDir . '/' . $lockFilePath);
+            if (is_file($lockFilePath)) {
+                B::unlink(array ($lockFilePath));
+            }
+            B::assert(!is_file($lockFilePath));
+        }
+    }
+
+    /**
      * Initializes static properties.
      *
      * @return void
@@ -1161,6 +1191,12 @@ EOD;
 
         B::limitAccess(array ('BreakpointDebugging_InDebug.php'));
 
+        if (!BREAKPOINTDEBUGGING_IS_PRODUCTION // If development mode.
+            && isset($_SERVER['SERVER_ADDR']) // If common gateway.
+        ) {
+            // Initializes sync files.
+            B::initializeSync();
+        }
         self::$pwd = getcwd();
         self::$_get = $_BreakpointDebugging_get;
         unset($_BreakpointDebugging_get);
