@@ -449,31 +449,24 @@
  * Procedure 5: Edit BreakpointDebugging_MySetting*.php for customize.
  *      Then, it fixes part setting about all execution modes.
  *      Especially, "define('BREAKPOINTDEBUGGING_IS_PRODUCTION', true);" is important to security in case of production server.
- * Procedure 6: Copy following in your project php code.
- *      require_once './BreakpointDebugging_Inclusion.php';
- * Procedure 7: Check debugging-mode using "B::checkExeMode()" in start page,
- *      and set
- *          BREAKPOINTDEBUGGING_MODE=DEBUG,
- *          BREAKPOINTDEBUGGING_MODE=RELEASE,
- *          BREAKPOINTDEBUGGING_MODE=DEBUG_UNIT_TEST or     (Requires "BreakpointDebugging_PHPUnit" package.)
- *          BREAKPOINTDEBUGGING_MODE=RELEASE_UNIT_TEST      (Requires "BreakpointDebugging_PHPUnit" package.)
- *      to your project parameter setting.
- *      Then, use "B::getStatic('$exeMode')" to get value.
- *      Lastly, we should execute all codes using
- *          "\BreakpointDebugging_PHPUnit::executeUnitTest()" and
- *          "\BreakpointDebugging_PHPUnit::displayCodeCoverageReport()"
- *      of "BreakpointDebugging_PHPUnit" package before release.
- *      Then, we must enable "define('BREAKPOINTDEBUGGING_IS_PRODUCTION', true);" of "BreakpointDebugging_MySetting.php" in case of production server use.
- *      Because server must not display "XDebug" and error logging information.
+ * Procedure 6: Implement a code like "Example" of "How to code breakpoint debugging" section.
+ * Procedure 7: Add following query character string to execution URI. Example: "http://localhost/<project name>/index.php?BREAKPOINTDEBUGGING_MODE=DEBUG"
+ *          BREAKPOINTDEBUGGING_MODE=DEBUG,                 (Development mode.)
+ *          BREAKPOINTDEBUGGING_MODE=RELEASE,               (Development mode.)
+ *          BREAKPOINTDEBUGGING_MODE=DEBUG_UNIT_TEST or     (Development mode. Requires "BreakpointDebugging_PHPUnit" package.)
+ *          BREAKPOINTDEBUGGING_MODE=RELEASE_UNIT_TEST      (Development mode. Requires "BreakpointDebugging_PHPUnit" package.)
+ *      Set it to project's parameter setting in case of IDE.
+ *      Then, we can use "B::getStatic('$exeMode')" to get execution mode.
+ *      Also, see the file level document of "BreakpointDebugging_PHPUnit.php" file about unit test.
  *
  *      Please, follow execution mode procedure.
  *          Procedure 1: Use "DEBUG" or "DEBUG_UNIT_TEST" mode at local server. This mode can do debug step execution.
  *          Procedure 2: Use "RELEASE" or "RELEASE_UNIT_TEST" mode at local server. This mode can do release step execution.
  *          Procedure 3: Use "DEBUG" or "DEBUG_UNIT_TEST" mode at remote server. This mode can do production server display debugging.
  *          Procedure 4: Use "RELEASE" or "RELEASE_UNIT_TEST" mode at remote server. This mode can do production server logging debugging.
- *          Procedure 5: Use production mode at remote server. This mode uses as production server. Also, this mode fixes mode for security.
- *              Set "const BREAKPOINTDEBUGGING_IS_PRODUCTION = true;" inside of "BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME + 'BreakpointDebugging_MySetting.php'" file.
- *          If you changed remote "php.ini" file, you must redo from procedure 3 because to increase the production mode execution speed.
+ * Procedure 8: Release the code to production server.
+ *      See the file level document of "BreakpointDebugging_ProductionSwitcher.php" file.
+ * If you changed remote "php.ini" file, you must redo from procedure 3 because to increase the production mode execution speed.
  *
  * Caution: Do not execute "ini_set('error_log', ...)" because
  * this package uses local log rotation instead of system log.
@@ -499,7 +492,7 @@
  * Class which locks php-code by file existing.
  *      class BreakpointDebugging_LockByFileExisting
  * Class which locks php-code by shared memory operation.
- *      class BreakpointDebugging_LockByShmop
+ *      class BreakpointDebugging_LockByShmopRequest
  * Class which locks php-code by "flock()".
  *      class BreakpointDebugging_LockByFlock
  *

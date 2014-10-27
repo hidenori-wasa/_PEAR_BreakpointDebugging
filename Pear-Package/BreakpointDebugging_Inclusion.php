@@ -10,7 +10,7 @@
  * 2. Copyrighters do not take responsibility for this file code.
  *
  * LICENSE:
- * Copyright (c) 2012-2013, Hidenori Wasa
+ * Copyright (c) 2012-2014, Hidenori Wasa
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -40,7 +40,6 @@
  * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-//define('BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME', './PEAR_Setting/'); // We can change "PEAR" setting dir name.
 define('BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME', './BreakpointDebugging_PEAR_Setting/'); // We can change "PEAR" setting dir name.
 
 require_once BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php';

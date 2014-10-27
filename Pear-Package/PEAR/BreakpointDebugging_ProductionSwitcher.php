@@ -4,13 +4,20 @@
  * Tool to switch production mode and development mode.
  *
  * Please, run the following procedure.
- * Procedure1: Set "const BREAKPOINTDEBUGGING_IS_PRODUCTION = false;" in "BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php'" file.
- * Procedure2: Display "./BreakpointDebugging_ProductionSwitcher.php" page, and click "Switch to production" button or "Switch to development" button.
+ * Procedure1: Display "./BreakpointDebugging_ProductionSwitcher.php" page with browser.
+ * Procedure2: Click showing button ("Switch to production" button or "Switch to development" button).
  *
  * "Switch to development" button:
- *      1. Deletes "// <BREAKPOINTDEBUGGING_COMMENT> " of "\BreakpointDebugging::assert()", "\BreakpointDebugging::iniSet()" and "\BreakpointDebugging::iniCheck()" line.
+ *      1. Sets "const BREAKPOINTDEBUGGING_IS_PRODUCTION = false;" to "BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php'" file.
+ *              This mode stops at error location, then we can do step execution even though we execute unit test.
+ *              Also, this mode displays error information.
+ *              Moreover, we can change execution page and execution mode by project configuration change of IDE only.
+ *      2. Deletes "// <BREAKPOINTDEBUGGING_COMMENT> " of "\BreakpointDebugging::assert()", "\BreakpointDebugging::iniSet()" and "\BreakpointDebugging::iniCheck()" line.
  * "Switch to production" button:
  *      1. Sets "const BREAKPOINTDEBUGGING_IS_PRODUCTION = true;" to "BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php'" file.
+ *              This mode does not display "XDebug" and error logging information for security.
+ *              Also, this mode cannot change mode by URL rewriting for security.
+ *              Moreover, increases execution speed.
  *      2. Inserts "// <BREAKPOINTDEBUGGING_COMMENT> " into "\BreakpointDebugging::assert()" line.
  *
  * PHP version 5.3.2-5.4.x
@@ -272,6 +279,7 @@ EOD;
                     $makeButton('development', $getHtmlFileContent);
                     $html = <<<EOD
 <ol>
+    <li>Sets "const BREAKPOINTDEBUGGING_IS_PRODUCTION = false;" to "{$settingDirName}BreakpointDebugging_MySetting.php" file.</li>
     <li>Deletes "// &lt;BREAKPOINTDEBUGGING_COMMENT&gt; " of "\BreakpointDebugging::assert()", "\BreakpointDebugging::iniSet()" and "\BreakpointDebugging::iniCheck()" line.</li>
 </ol>
 <hr />
