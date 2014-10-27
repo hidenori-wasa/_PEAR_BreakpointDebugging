@@ -53,7 +53,6 @@
  * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-//////////////////////////////////////////////////////////////////
 require_once './BreakpointDebugging_Inclusion.php';
 
 use \BreakpointDebugging as B;
@@ -242,5 +241,3 @@ EOD;
 }
 
 \BreakpointDebugging_ErrorLogFilesManager::manageErrorLogFiles();
-
-?>

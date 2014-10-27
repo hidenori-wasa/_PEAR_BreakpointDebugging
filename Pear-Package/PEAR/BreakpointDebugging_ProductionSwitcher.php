@@ -216,10 +216,6 @@ class BreakpointDebugging_ProductionSwitcher
      */
     static function switchMode()
     {
-        self::$_modeErrorMessage = 'You must set "const BREAKPOINTDEBUGGING_IS_PRODUCTION = false;" in "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php".';
-        if (BREAKPOINTDEBUGGING_IS_PRODUCTION) {
-            exit(self::$_modeErrorMessage);
-        }
         if (!B::checkDevelopmentSecurity()) {
             exit;
         }
@@ -272,24 +268,27 @@ EOD;
                     BW::htmlAddition(__CLASS__, 'body', 0, $html);
                 };
                 // Makes buttons.
-                $makeButton('development', $getHtmlFileContent);
-                $html = <<<EOD
+                if (BREAKPOINTDEBUGGING_IS_PRODUCTION) {
+                    $makeButton('development', $getHtmlFileContent);
+                    $html = <<<EOD
 <ol>
     <li>Deletes "// &lt;BREAKPOINTDEBUGGING_COMMENT&gt; " of "\BreakpointDebugging::assert()", "\BreakpointDebugging::iniSet()" and "\BreakpointDebugging::iniCheck()" line.</li>
 </ol>
 <hr />
 EOD;
-                BW::htmlAddition(__CLASS__, 'body', 0, $html);
-                $makeButton('production', $getHtmlFileContent);
-                $settingDirName = BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME;
-                $html = <<<EOD
+                    BW::htmlAddition(__CLASS__, 'body', 0, $html);
+                } else {
+                    $makeButton('production', $getHtmlFileContent);
+                    $settingDirName = BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME;
+                    $html = <<<EOD
 <ol>
     <li>Sets "const BREAKPOINTDEBUGGING_IS_PRODUCTION = true;" to "{$settingDirName}BreakpointDebugging_MySetting.php" file.</li>
     <li>Inserts "// &lt;BREAKPOINTDEBUGGING_COMMENT&gt; " into "\BreakpointDebugging::assert()" line.</li>
 </ol>
 <hr />
 EOD;
-                BW::htmlAddition(__CLASS__, 'body', 0, $html);
+                    BW::htmlAddition(__CLASS__, 'body', 0, $html);
+                }
                 goto END_LABEL;
             }
 
@@ -300,7 +299,7 @@ EOD;
                 if ($pFile === false) {
                     BW::virtualOpen(__CLASS__, $getHtmlFileContent('ProductionSwitcherError'));
                     BW::htmlAddition(__CLASS__, 'body', 0, '"' . $phpFilePath . '" file cannot open.');
-                    throw new \BreakpointDebugging_ErrorException('"' . $phpFilePath . '" file cannot open.');
+                    throw new \BreakpointDebugging_ErrorException('');
                 }
                 $lines = array ();
                 while (($result = fgets($pFile)) !== false) {
@@ -353,24 +352,30 @@ EOD;
                             break 2;
                         }
                     }
+                    // In case of error.
+                    BW::virtualOpen(__CLASS__, $getHtmlFileContent('ProductionSwitcherError'));
+                    BW::htmlAddition(__CLASS__, 'body', 0, 'You must define "const BREAKPOINTDEBUGGING_IS_PRODUCTION = false;" in "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php".');
                 } else { // 'Switch to development' button was pushed.
                     foreach ($lines as &$line) {
-                        // Checks that "BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php'" file is "const BREAKPOINTDEBUGGING_IS_PRODUCTION = false;".
-                        $result = preg_match(
-                            '`^ [[:blank:]]* const [[:blank:]]* BREAKPOINTDEBUGGING_IS_PRODUCTION [[:blank:]]* = [[:blank:]]* false [[:blank:]]* ;`xXs', //
-                            $line //
+                        // Sets "const BREAKPOINTDEBUGGING_IS_PRODUCTION = false;" to "BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php'" file.
+                        $result = preg_replace(
+                            '`^ ( [[:blank:]]* const [[:blank:]]* BREAKPOINTDEBUGGING_IS_PRODUCTION [[:blank:]]* = [[:blank:]]* ) true ( [[:blank:]]* ; .* )`xXs', //
+                            '$1false$2', //
+                            $line, //
+                            1 //
                         );
-                        B::assert($result !== false);
-                        if ($result === 1) {
+                        B::assert($result !== null);
+                        if ($result !== $line) {
+                            $line = $result;
+                            $writeAndClose($pFile, $lines, $fullMySettingFilePath, __CLASS__, true);
                             break 2;
                         }
                     }
+                    // In case of error.
+                    BW::virtualOpen(__CLASS__, $getHtmlFileContent('ProductionSwitcherError'));
+                    BW::htmlAddition(__CLASS__, 'body', 0, 'You must define "const BREAKPOINTDEBUGGING_IS_PRODUCTION = true;" in "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php".');
                 }
-
-                // In case of error.
-                BW::virtualOpen(__CLASS__, $getHtmlFileContent('ProductionSwitcherError'));
-                BW::htmlAddition(__CLASS__, 'body', 0, self::$_modeErrorMessage);
-                goto END_LABEL;
+                throw new \BreakpointDebugging_ErrorException('');
             }
             foreach ($phpFilePaths as $phpFilePath => $value) {
                 B::assert($value === true);

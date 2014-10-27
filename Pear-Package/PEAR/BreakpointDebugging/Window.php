@@ -3,6 +3,8 @@
 /**
  * Class for display to other process windows.
  *
+ * This class should be used for development because customer needs command input.
+ *
  * PHP version 5.3.2-5.4.x
  *
  * LICENSE OVERVIEW:
@@ -43,9 +45,6 @@
 use \BreakpointDebugging as B;
 use \BreakpointDebugging_Shmop as BS;
 
-if (BREAKPOINTDEBUGGING_IS_PRODUCTION) { // If production server.
-    throw new \BreakpointDebugging_ErrorException('"BreakpointDebugging_Window" class cannot use in case of production server.');
-}
 /**
  * Class for display to other process windows.
  *

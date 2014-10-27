@@ -12,7 +12,7 @@
  * 2. Copyrighters do not take responsibility for this file code.
  *
  * LICENSE:
- * Copyright (c) 2012-2013, Hidenori Wasa
+ * Copyright (c) 2012-2014, Hidenori Wasa
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -134,15 +134,13 @@ function BreakpointDebugging_setExecutionMode()
     $includePaths[1] = './PEAR';
 
     // For debug. ===>
-    if (!BREAKPOINTDEBUGGING_IS_PRODUCTION) { // In case of development.
-        // if ($_BreakpointDebugging_EXE_MODE & $UNIT_TEST) {
-        //     $includePaths = array ('.', './PEAR', './PEAROtherPackage'); // For independence execution check.
-        // } else {
-        //     $includePaths = array ('.', './PEAR'); // For independence execution check.
-        // }
-        array_unshift($includePaths, $includePaths[0]);
-        $includePaths[1] = './PEAROtherPackage';
-    }
+    // if ($_BreakpointDebugging_EXE_MODE & $UNIT_TEST) {
+    //     $includePaths = array ('.', './PEAR', './PEAROtherPackage'); // For independence execution check.
+    // } else {
+    //     $includePaths = array ('.', './PEAR'); // For independence execution check.
+    // }
+    array_unshift($includePaths, $includePaths[0]);
+    $includePaths[1] = './PEAROtherPackage';
     // <=== For debug.
 
     ini_set('include_path', implode(PATH_SEPARATOR, $includePaths));
