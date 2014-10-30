@@ -303,7 +303,7 @@ EOD;
             // 'Switch to production' button was pushed.
             // Or, 'Switch to development' button was pushed.
             $getFileToArray = function ($phpFilePath, $getHtmlFileContent) {
-                $pFile = B::fopen(array ($phpFilePath, 'r+b'));
+                $pFile = B::fopen(array ($phpFilePath, 'r+b'), 0644);
                 if ($pFile === false) {
                     BW::virtualOpen(__CLASS__, $getHtmlFileContent('ProductionSwitcherError'));
                     BW::htmlAddition(__CLASS__, 'body', 0, '"' . $phpFilePath . '" file cannot open.');
@@ -329,7 +329,7 @@ EOD;
                     // Displays the progress.
                     BW::htmlAddition($thisClassName, 'body', 0, '<span style="color: red">Writing "' . $fullFilePath . '".</span><br />');
                     // Writes the array to "*.php" file.
-                    file_put_contents($fullFilePath, $lines);
+                    B::filePutContents($fullFilePath, $lines, 0644);
                     // Displays the progress.
                     BW::htmlAddition($thisClassName, 'body', 0, 'Deleting "' . $newFullFilePath . '".<br />');
                     // Deletes the "*.php.copy" file.

@@ -421,7 +421,7 @@
  *      if ($exeMode & B::RELEASE) { // If release execution mode.
  *          $lockByFlock = &\BreakpointDebugging_LockByFlock::singleton(); // Creates a lock instance.
  *          $lockByFlock->lock(); // Locks php-code.
- *          file_put_contents('Somethig.log', $logData);
+ *          B::filePutContents('Somethig.log', $logData);
  *          $lockByFlock->unlock(); // Unlocks php-code.
  *      } else { // If debug execution mode.
  *          B::assert(is_string($logData));
@@ -783,10 +783,10 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
      *
      * @return Same as parent.
      */
-    static function fopen(array $params, $permission = null, $timeout = 10, $sleepMicroSeconds = 1000000)
+    static function fopen(array $params, $permission = 0600, $timeout = 10, $sleepMicroSeconds = 1000000)
     {
         self::assert(func_num_args() <= 4);
-        self::assert((is_int($permission) || is_null($permission)) && 0 <= $permission && $permission <= 0777);
+        self::assert(is_int($permission) && 0 <= $permission && $permission <= 0777);
         self::assert(is_int($timeout));
         self::assert(is_int($sleepMicroSeconds));
 

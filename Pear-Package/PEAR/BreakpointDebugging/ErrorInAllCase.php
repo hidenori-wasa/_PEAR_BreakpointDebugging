@@ -682,7 +682,7 @@ abstract class BreakpointDebugging_ErrorInAllCase
                     // When "ErrorLog" directory does not exist.
                     if (!is_dir($errorLogDirectory)) {
                         // Makes directory, sets permission and sets own user.
-                        B::mkdir(array ($errorLogDirectory, 0700));
+                        B::mkdir(array ($errorLogDirectory));
                     }
                     // Strips HTML and PHP tags.
                     $log = strip_tags($log);
@@ -1132,7 +1132,7 @@ EOD;
                     $this->_errorLogDirectory = B::getStatic('$_workDir') . self::ERROR_LOG_DIR;
                     if (!is_dir($this->_errorLogDirectory)) {
                         // Makes directory, sets permission and sets own user.
-                        B::mkdir(array ($this->_errorLogDirectory, 0700));
+                        B::mkdir(array ($this->_errorLogDirectory));
                     }
                     $varConfFilePath = $this->_errorLogDirectory . self::VAR_CONF_FILE_NAME;
                     // If variable configuring file exists.
@@ -1360,7 +1360,7 @@ EOD;
             self::$_errorBuffer .= ob_get_clean();
             $errorHtmlFileContent = self::getErrorHTMLTemplate(self::$_errorBuffer);
             // Makes error HTML file.
-            file_put_contents(B::ERROR_WINDOW_NAME . '.html', $errorHtmlFileContent);
+            B::filePutContents(B::ERROR_WINDOW_NAME . '.html', $errorHtmlFileContent, 0644);
             if (isset($_SERVER['SERVER_ADDR'])) { // If common gateway.
                 // Opens its file at error window.
                 echo '<script type="text/javascript">' . PHP_EOL

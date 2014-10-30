@@ -315,7 +315,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_PHPUnit_Fra
             return;
         }
         clearstatcache();
-        parent::assertTrue(substr(sprintf('%o', fileperms($testDirName)), -4) === '0777');
+        parent::assertTrue(substr(sprintf('%o', fileperms($testDirName)), -4) === '0700');
     }
 
     /**
@@ -339,9 +339,9 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_PHPUnit_Fra
         if (is_file($testFileName)) {
             BA::unlink(array ($testFileName));
         }
-        $pFile = BA::fopen(array ($testFileName, 'w+b'), 0700);
+        $pFile = BA::fopen(array ($testFileName, 'w+b'), 0600);
         try {
-            BA::fopen(array ($testFileName, 'x+b'), 0700, 2);
+            BA::fopen(array ($testFileName, 'x+b'), 0600, 2);
         } catch (\PHPUnit_Framework_Error_Warning $e) {
             BU::assertExceptionMessage($e, 'failed to open stream:');
         }
@@ -351,7 +351,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_PHPUnit_Fra
             return;
         }
         clearstatcache();
-        parent::assertTrue(substr(sprintf('%o', fileperms($testFileName)), -4) === '0700');
+        parent::assertTrue(substr(sprintf('%o', fileperms($testFileName)), -4) === '0600');
     }
 
     /**

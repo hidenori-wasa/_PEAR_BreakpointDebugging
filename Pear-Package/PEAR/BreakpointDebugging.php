@@ -704,7 +704,7 @@ EOD;
     /**
      * "mkdir" method which sets permission and sets own user to owner.
      *
-     * @param array $params            "mkdir()" parameters.
+     * @param array $params            "mkdir()" parameters. But, default permission is "0700".
      * @param int   $timeout           Seconds number of timeout.
      * @param int   $sleepMicroSeconds Micro seconds to sleep.
      *
@@ -714,18 +714,10 @@ EOD;
     {
         B::limitAccess('BreakpointDebugging_InDebug.php');
 
-        if (self::_retryForFilesystemFunction('mkdir', $params, $timeout, $sleepMicroSeconds)) {
-            if (array_key_exists(1, $params)) {
-                $permission = $params[1];
-            } else {
-                $permission = 0777;
-            }
-            return B::chmod($params[0], $permission, $timeout, $sleepMicroSeconds);
+        if (!array_key_exists(1, $params)) {
+            $params[1] = 0700;
         }
-        // @codeCoverageIgnoreStart
-        // Because "PHPUnit" package throws exception.
-        return false;
-        // @codeCoverageIgnoreEnd
+        return self::_retryForFilesystemFunction('mkdir', $params, $timeout, $sleepMicroSeconds);
     }
 
     /**
@@ -809,29 +801,42 @@ EOD;
     /**
      * "fopen" method which sets the file mode, permission and sets own user to owner.
      *
-     * @param array $params            "fopen()" parameters.
+     * @param array $params            "fopen()" parameters. But, default permission is "0600".
      * @param int   $permission        The file permission.
      * @param int   $timeout           Seconds number of timeout.
      * @param int   $sleepMicroSeconds Micro seconds to sleep.
      *
      * @return resource The file pointer resource or false.
      */
-    static function fopen(array $params, $permission = null, $timeout = 10, $sleepMicroSeconds = 1000000)
+    static function fopen(array $params, $permission = 0600, $timeout = 10, $sleepMicroSeconds = 1000000)
     {
         B::limitAccess('BreakpointDebugging_InDebug.php');
 
         $pFile = self::_retryForFilesystemFunction('fopen', $params, $timeout, $sleepMicroSeconds);
         if ($pFile) {
-            if (is_null($permission) //
-                || B::chmod($params[0], $permission, $timeout, $sleepMicroSeconds) //
-            ) {
-                return $pFile;
-            }
+            B::chmod($params[0], $permission, $timeout, $sleepMicroSeconds);
+            return $pFile;
             // @codeCoverageIgnoreStart
             // Because "PHPUnit" package throws exception.
         }
         return false;
         // @codeCoverageIgnoreEnd
+    }
+
+    /**
+     * "file_put_contents()" with permission.
+     *
+     * @param string   $filename   Same as "file_put_contents()".
+     * @param mixed    $params     Same as "file_put_contents()".
+     * @param int      $permission The file permission.
+     * @param int      $flags      Same as "file_put_contents()".
+     * @param resource $context    Same as "file_put_contents()".
+     */
+    static function filePutContents($filename, $params, $permission = 0600, $flags = 0, $context = null)
+    {
+        $result = file_put_contents($filename, $params, $flags, $context);
+        self::chmod($filename, $permission);
+        return $result;
     }
 
     /**

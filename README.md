@@ -24,9 +24,10 @@ The dependences
 
 * OS requires "Linux" or "Windows".
 * PHP version = 5.3.2-5.4.x
+* Requires "Mozilla Firefox" web browser, and "Windows" must be in "C:/Program Files/Mozilla Firefox/firefox.exe".
 * Requires "Xdebug extension" in case of local host. "Xdebug" extension is required because (uses breakpoint, displays for fatal error and detects infinity recursive function call).
 * Requires "Xdebug extension" if you want features of above in case of `$_BreakpointDebugging_EXE_MODE = B::REMOTE` mode. (optional).
-* Requires "shmop extension" if you use `\BreakpointDebugging_LockByShmop` class. (optional).
+* Requires "shmop extension" if you use `\BreakpointDebugging_LockByShmopRequest` class. (optional).
 * Requires environment which `flock()` enables if you use `\BreakpointDebugging_LockByFlock` class. (optional).
 
 How to sniff my code.

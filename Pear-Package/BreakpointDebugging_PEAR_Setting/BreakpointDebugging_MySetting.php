@@ -254,7 +254,7 @@ function BreakpointDebugging_mySetting()
         if (is_dir($workDir)) {
             B::chmod($workDir, 0700);
         } else {
-            B::mkdir(array ($workDir, 0700));
+            B::mkdir(array ($workDir));
         }
         // Copies the "BreakpointDebugging_*.php" file into current work directory.
         B::copyResourceToCWD('BreakpointDebugging_ErrorLogFilesManager.php', '');

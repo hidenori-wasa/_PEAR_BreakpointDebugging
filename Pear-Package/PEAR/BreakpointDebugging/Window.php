@@ -44,6 +44,7 @@
  */
 use \BreakpointDebugging as B;
 use \BreakpointDebugging_Shmop as BS;
+use \BreakpointDebugging_Window as BW;
 
 /**
  * Class for display to other process windows.
@@ -259,13 +260,14 @@ class BreakpointDebugging_Window
     private static function _initializeSharedResource()
     {
         $openFirefoxWindow = function($uri) {
-            $command = \BreakpointDebugging_Window::generateMozillaFirefoxStartCommand($uri);
-            // If local server.
-            if (!(B::getStatic('$exeMode') & B::REMOTE)) {
+            $command = BW::generateMozillaFirefoxStartCommand($uri);
+            if (!(B::getStatic('$exeMode') & B::REMOTE) // If local server.
+                && BREAKPOINTDEBUGGING_IS_WINDOWS // If Windows.
+            ) {
                 // Opens "BreakpointDebugging_DisplayToOtherProcess.php" page for display in other process.
                 `$command`;
                 return;
-            } else { // If remote server.
+            } else {
                 $errorMessage = <<<EOD
 <pre>
 Please, stop this project.
@@ -288,7 +290,7 @@ EOD;
         // Copies the "BreakpointDebugging_DisplayToOtherProcess.php" file into current work directory, and gets its URI.
         $uri = 'https:' . B::copyResourceToCWD('BreakpointDebugging_DisplayToOtherProcess.php', '');
         // Creates this class instance for shared memory close or shared file deletion.
-        self::$_self = new \BreakpointDebugging_Window();
+        self::$_self = new BW();
         // If "shmop" extention is valid.
         if (self::$_isShmopValid) {
             // If shared file exists.
@@ -312,7 +314,7 @@ EOD;
             // Allocates shared memory area.
             list($shmopKey, self::$_resourceID) = BS::buildSharedMemory(self::SHARED_MEMORY_SIZE);
             // Registers the shared memory key.
-            $result = file_put_contents($sharedFilePath, $shmopKey);
+            $result = B::filePutContents($sharedFilePath, $shmopKey);
             B::assert($result !== false);
             // Initializes shared memory.
             $result = shmop_write(self::$_resourceID, sprintf('0000x%08X0x%08X', 23, 23), 0);
@@ -358,7 +360,7 @@ EOD;
                     break;
                 }
                 // Creates shared file, and checks for other process start.
-                $result = file_put_contents($sharedFilePath, '');
+                $result = B::filePutContents($sharedFilePath, '');
                 B::assert($result !== false);
                 // Opens "Mozilla Firefox" window.
                 $openFirefoxWindow($uri);

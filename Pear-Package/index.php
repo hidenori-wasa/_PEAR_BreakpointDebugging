@@ -79,7 +79,7 @@ exit('Done!');
 
 
 $testFileName = B::getStatic('$_workDir') . '/test.txt';
-$result = file_put_contents($testFileName, '');
+$result = B::filePutContents($testFileName, '');
 B::assert($result !== false);
 $pFile = fopen($testFileName, 'rb');
 // fclose($pFile);
