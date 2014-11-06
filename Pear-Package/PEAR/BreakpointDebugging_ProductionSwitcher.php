@@ -74,6 +74,7 @@ use BreakpointDebugging_Window as BW;
  */
 class BreakpointDebugging_ProductionSwitcher
 {
+
     /**
      * @var array Black list paths to manage.
      */
@@ -110,10 +111,13 @@ class BreakpointDebugging_ProductionSwitcher
         // Extracts directory elements.
         $dirElements = scandir($fullDirPath);
         foreach ($dirElements as $dirElement) {
-            if ($dirElement === '.' || $dirElement === '..') {
+            $fullDirElement = str_replace('\\', '/', $fullDirPath) . '/' . $dirElement;
+            if ($dirElement === '.' //
+                || $dirElement === '..' //
+                || is_link($fullDirElement) // Skips symbolic link.
+            ) {
                 continue;
             }
-            $fullDirElement = str_replace('\\', '/', $fullDirPath) . '/' . $dirElement;
             foreach (self::$_blackListPaths as $fullBlackListPath => $value) {
                 B::assert($value === true);
                 // If black list.

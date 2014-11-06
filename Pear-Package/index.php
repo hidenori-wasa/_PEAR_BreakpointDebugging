@@ -11,6 +11,42 @@ use \BreakpointDebugging_PHPUnit_FrameworkTestCase as BSF;
 
 B::checkExeMode(); // Checks the execution mode.
 
+function _scandir($fullDirPath, &$phpFilePaths)
+{
+// Extracts directory elements.
+    $dirElements = scandir($fullDirPath);
+    foreach ($dirElements as $dirElement) {
+        $fullDirElement = str_replace('\\', '/', $fullDirPath) . '/' . $dirElement;
+        if ($dirElement === '.' //
+            || $dirElement === '..' //
+            || is_link($fullDirElement) //
+        ) {
+            continue;
+        }
+        // If directory.
+        if (is_dir($fullDirElement)) {
+            // Recursive call.
+            _scandir($fullDirElement, $phpFilePaths);
+        }
+        // If this is "*.php" file except unit test file.
+        if (is_file($fullDirElement) //
+            && preg_match('`.*(?<!Test)\.php$`xX', $fullDirElement) //
+        ) {
+            // Registers full "*.php" file path.
+            $phpFilePaths[$fullDirElement] = true;
+        }
+    }
+}
+
+$phpFilePaths = array ();
+// Recursive symbolic link directory.
+// $fullDirPath = 'C:\xampp\htdocs\Pear-Package\PEAR\BreakpointDebugging\Sample';
+$fullDirPath = '/home/hidenori/private-www/Pear-Package/PEAR/BreakpointDebugging/Sample';
+_scandir($fullDirPath, $phpFilePaths);
+var_dump($phpFilePaths);
+
+exit;
+
 $array = array (
     'fruit1' => 'リンゴ',
     'fruit2' => 'ゴーヤ',
@@ -191,6 +227,7 @@ class TestClassB
 $testClassB = new \TestClassB();
 $testArray = array ($testClassB);
 $testClassA = new \TestClassA();
+
 function test()
 {
     global $_BreakpointDebugging_EXE_MODE, $testClassB, $testArray, $referenceA, $referenceB, $referenceC, $referenceD, $recursiveReferenceA;
