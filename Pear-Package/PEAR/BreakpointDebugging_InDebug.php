@@ -448,14 +448,13 @@
  *      to "const BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME" directory of your project directory.
  * Procedure 5: Edit BreakpointDebugging_MySetting*.php for customize.
  *      Then, it fixes part setting about all execution modes.
- *      Especially, "define('BREAKPOINTDEBUGGING_IS_PRODUCTION', true);" is important to security in case of production server.
+ *      Especially, setting to "const BREAKPOINTDEBUGGING_IS_PRODUCTION = true;" by "./BreakpointDebugging_ProductionSwitcher.php" is important to security in case of production server.
  * Procedure 6: Implement a code like "Example" of "How to code breakpoint debugging" section.
- * Procedure 7: Add following query character string to execution URI. Example: "http://localhost/<project name>/index.php?BREAKPOINTDEBUGGING_MODE=DEBUG"
- *          BREAKPOINTDEBUGGING_MODE=DEBUG,                 (Development mode.)
- *          BREAKPOINTDEBUGGING_MODE=RELEASE,               (Development mode.)
- *          BREAKPOINTDEBUGGING_MODE=DEBUG_UNIT_TEST or     (Development mode. Requires "BreakpointDebugging_PHPUnit" package.)
- *          BREAKPOINTDEBUGGING_MODE=RELEASE_UNIT_TEST      (Development mode. Requires "BreakpointDebugging_PHPUnit" package.)
- *      Set it to project's parameter setting in case of IDE.
+ * Procedure 7: Choose the following execution mode into "BreakpointDebugging_MySetting.php".
+ *          define('BREAKPOINTDEBUGGING_MODE', 'DEBUG_UNIT_TEST');          // (Development mode. Requires "BreakpointDebugging_PHPUnit" package.)
+ *          // define('BREAKPOINTDEBUGGING_MODE', 'RELEASE_UNIT_TEST');     // (Development mode. Requires "BreakpointDebugging_PHPUnit" package.)
+ *          // define('BREAKPOINTDEBUGGING_MODE', 'DEBUG');                 // (Development mode.)
+ *          // define('BREAKPOINTDEBUGGING_MODE', 'RELEASE');               // (Development mode.)
  *      Then, we can use "B::getStatic('$exeMode')" to get execution mode.
  *      Also, see the file level document of "BreakpointDebugging_PHPUnit.php" file about unit test.
  *
@@ -464,12 +463,11 @@
  *          Procedure 2: Use "RELEASE" or "RELEASE_UNIT_TEST" mode at local server. This mode can do release step execution.
  *          Procedure 3: Use "DEBUG" or "DEBUG_UNIT_TEST" mode at remote server. This mode can do production server display debugging.
  *          Procedure 4: Use "RELEASE" or "RELEASE_UNIT_TEST" mode at remote server. This mode can do production server logging debugging.
- * Procedure 8: Release the code to production server.
+ *      If you changed remote "php.ini" file, you must redo from procedure 3 because to increase the production mode execution speed.
+ * Procedure 8: Release the code to production server. And, change it to production mode.
  *      See the file level document of "BreakpointDebugging_ProductionSwitcher.php" file.
- * If you changed remote "php.ini" file, you must redo from procedure 3 because to increase the production mode execution speed.
  *
- * Caution: Do not execute "ini_set('error_log', ...)" because
- * this package uses local log rotation instead of system log.
+ * Caution: Do not execute "ini_set('error_log', ...)" because this package uses local log rotation instead of system log.
  *
  * Option procedure: Register at top of the function or method or file
  *      which has been not fixed. Copy following.

@@ -1,7 +1,8 @@
 <?php
 
-chdir(str_repeat('../', preg_match_all('`/`xX', $_SERVER['PHP_SELF'], $matches) - 2));
-unset($matches);
+//chdir(str_repeat('../', preg_match_all('`/`xX', $_SERVER['PHP_SELF'], $matches) - 2));
+chdir(str_repeat('../', 2));
+//unset($matches);
 
 require_once './BreakpointDebugging_Inclusion.php';
 

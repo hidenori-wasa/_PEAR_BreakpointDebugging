@@ -319,6 +319,13 @@ EOD;
             // Initializes shared memory.
             $result = shmop_write(self::$_resourceID, sprintf('0000x%08X0x%08X', 23, 23), 0);
             B::assert($result !== false);
+            // If "CakePHP".
+            //if (is_file(getcwd() . '/WasaCakeTestStart.php')) {
+            if (BREAKPOINTDEBUGGING_IS_CAKE) {
+                // CakePHPSamples/app/webroot/
+                $uri = str_replace('\\', '/', $uri);
+                $uri = str_replace('/app/webroot/', '/', $uri);
+            }
             // Opens "Mozilla Firefox" window.
             $openFirefoxWindow($uri);
         } else { // If "shmop" extension is invalid.

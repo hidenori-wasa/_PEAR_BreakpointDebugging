@@ -57,6 +57,7 @@ require_once __DIR__ . '/PEAR/Exception.php';
  */
 abstract class BreakpointDebugging_Exception_InAllCase extends \PEAR_Exception
 {
+
     /**
      * Constructs instance.
      *
@@ -450,12 +451,20 @@ abstract class BreakpointDebugging_InAllCase
         if ($isUnitTest) {
             BW::virtualOpen(self::ERROR_WINDOW_NAME, self::getErrorHtmlFileTemplate());
             $pearSettingDirName = BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME;
+//            $errorMessage = <<<EOD
+//You must set
+//    "BREAKPOINTDEBUGGING_MODE=DEBUG_UNIT_TEST" or
+//    "BREAKPOINTDEBUGGING_MODE=RELEASE_UNIT_TEST"
+//to this project execution parameter.
+//Or, set "define('BREAKPOINTDEBUGGING_IS_PRODUCTION', false);" of "{$pearSettingDirName}BreakpointDebugging_MySetting.php".
+//EOD;
             $errorMessage = <<<EOD
 You must set
-    "BREAKPOINTDEBUGGING_MODE=DEBUG_UNIT_TEST" or
-    "BREAKPOINTDEBUGGING_MODE=RELEASE_UNIT_TEST"
-to this project execution parameter.
-Or, set "define('BREAKPOINTDEBUGGING_IS_PRODUCTION', false);" of "{$pearSettingDirName}BreakpointDebugging_MySetting.php".
+    "define('BREAKPOINTDEBUGGING_MODE', 'DEBUG_UNIT_TEST');" or
+    "define('BREAKPOINTDEBUGGING_MODE', 'RELEASE_UNIT_TEST');"
+into "{$pearSettingDirName}BreakpointDebugging_MySetting.php".
+Or, set "const BREAKPOINTDEBUGGING_IS_PRODUCTION = false;" of "{$pearSettingDirName}BreakpointDebugging_MySetting.php"
+with "./BreakpointDebugging_ProductionSwitcher.php".
 EOD;
             BW::htmlAddition(self::ERROR_WINDOW_NAME, 'pre', 0, '<b>' . $errorMessage . '</b>');
             exit;
@@ -1056,11 +1065,15 @@ EOD;
     {
         $relativeCWD = substr(self::$pwd, strlen($_SERVER['DOCUMENT_ROOT']) - strlen(self::$pwd) + 1);
         // If this mode is not production server release.
-        if (isset($_GET['BREAKPOINTDEBUGGING_MODE'])) {
+        //if (isset($_GET['BREAKPOINTDEBUGGING_MODE'])) {
+        if (!BREAKPOINTDEBUGGING_IS_PRODUCTION) {
             $includePaths = ini_get('include_path');
             $tmpIncludePaths = explode(PATH_SEPARATOR, $includePaths);
-            $topIncludePath = array_shift($tmpIncludePaths);
-            B::assert($topIncludePath === '.');
+            //$topIncludePath = array_shift($tmpIncludePaths);
+            //B::assert($topIncludePath === '.');
+            $searchKey = array_search('.', $tmpIncludePaths, true);
+            B::assert($searchKey !== false);
+            unset($tmpIncludePaths[$searchKey]);
             B::iniSet('include_path', implode(PATH_SEPARATOR, $tmpIncludePaths));
             $resourceFilePath = stream_resolve_include_path($resourceDirectoryPath . $resourceFileName);
             B::iniSet('include_path', $includePaths);
@@ -1441,6 +1454,7 @@ if ($_BreakpointDebugging_EXE_MODE & BA::RELEASE) { // In case of release.
 
     abstract class BreakpointDebugging_Middle extends \BreakpointDebugging_InAllCase
     {
+
         /**
          * Empties in release.
          *
@@ -1507,6 +1521,7 @@ if ($_BreakpointDebugging_EXE_MODE & BA::RELEASE) { // In case of release.
 
         final class BreakpointDebugging extends \BreakpointDebugging_Middle
         {
+
             /**
              * Assertion error is stopped at break point in case of release unit test.
              *

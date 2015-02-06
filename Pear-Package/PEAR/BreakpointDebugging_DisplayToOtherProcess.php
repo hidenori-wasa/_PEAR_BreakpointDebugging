@@ -40,7 +40,8 @@
  * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-$_GET['BREAKPOINTDEBUGGING_MODE'] = "DEBUG";
+//$_GET['BREAKPOINTDEBUGGING_MODE'] = "DEBUG";
+define('BREAKPOINTDEBUGGING_MODE', 'DEBUG');
 require_once './BreakpointDebugging_Inclusion.php';
 
 use \BreakpointDebugging as B;
