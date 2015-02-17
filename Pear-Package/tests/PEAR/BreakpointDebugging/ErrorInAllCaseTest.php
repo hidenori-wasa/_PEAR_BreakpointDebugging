@@ -115,7 +115,7 @@ class BreakpointDebugging_ErrorInAllCaseTest extends \BreakpointDebugging_PHPUni
     {
         $error = &$this->_error;
 
-        parent::markTestSkippedInDebug(); // Because this unit test is the logging check.
+        BU::markTestSkippedInDebug(); // Because this unit test is the logging check.
 
         $testString = 'Test string.';
         B::addValuesToTrace(array ('$testString' => $testString));
@@ -131,6 +131,7 @@ class BreakpointDebugging_ErrorInAllCaseTest extends \BreakpointDebugging_PHPUni
 
         $parentFileNumber = $this->_getFileNumber($parentFilePath);
         $thisFileNumber = $this->_getFileNumber(__FILE__);
+
         function test2_($error)
         {
             BU::$exeMode |= B::IGNORING_BREAK_POINT;
@@ -231,7 +232,7 @@ class BreakpointDebugging_ErrorInAllCaseTest extends \BreakpointDebugging_PHPUni
      */
     function testHandleException2_A()
     {
-        parent::markTestSkippedInDebug(); // Because this unit test is the logging check.
+        BU::markTestSkippedInDebug(); // Because this unit test is the logging check.
 
         $maxLogStringSize = &B::refStatic('$_maxLogStringSize');
         $maxLogStringSize = 140000;
@@ -286,7 +287,8 @@ class BreakpointDebugging_ErrorInAllCaseTest extends \BreakpointDebugging_PHPUni
     {
         $error = &$this->_error;
 
-        parent::markTestSkippedInDebug(); // Because this unit test is the logging check.
+        BU::markTestSkippedInDebug(); // Because this unit test is the logging check.
+
         function handleError($error)
         {
             BU::$exeMode |= B::IGNORING_BREAK_POINT;
@@ -305,6 +307,7 @@ class BreakpointDebugging_ErrorInAllCaseTest extends \BreakpointDebugging_PHPUni
 
         $parentFileNumber = $this->_getFileNumber($parentFilePath);
         $thisFileNumber = $this->_getFileNumber(__FILE__);
+
         function test2($error)
         {
             trigger_error2($error);
@@ -380,7 +383,7 @@ class BreakpointDebugging_ErrorInAllCaseTest extends \BreakpointDebugging_PHPUni
      */
     function testHandleError2_A()
     {
-        parent::markTestSkippedInDebug(); // Because this unit test is the logging check.
+        BU::markTestSkippedInDebug(); // Because this unit test is the logging check.
 
         BU::$exeMode |= B::IGNORING_BREAK_POINT;
         $this->_error->handleError2(255, '', B::$prependErrorLog, debug_backtrace());
@@ -394,7 +397,7 @@ class BreakpointDebugging_ErrorInAllCaseTest extends \BreakpointDebugging_PHPUni
      */
     function testConvertMbString()
     {
-        parent::markTestSkippedInDebug(); // Because this unit test is the logging check.
+        BU::markTestSkippedInDebug(); // Because this unit test is the logging check.
         // SJIS + UTF-8
         B::$prependExceptionLog = "\x95\xB6\x8E\x9A \xE6\x96\x87\xE5\xAD\x97 ";
         BU::$exeMode |= B::IGNORING_BREAK_POINT;

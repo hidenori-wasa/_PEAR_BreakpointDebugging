@@ -384,8 +384,8 @@ abstract class BreakpointDebugging_InAllCase
             switch ($necessaryExeMode) {
                 case self::RELEASE:
                     $message = '<b>You must set' . PHP_EOL
-                        . '    "BREAKPOINTDEBUGGING_MODE=RELEASE"' . PHP_EOL
-                        . 'to this project execution parameter.</b>';
+                        . '    "define(\'BREAKPOINTDEBUGGING_MODE\', \'RELEASE\');"' . PHP_EOL
+                        . 'into "BreakpointDebugging_MySetting.php".</b>';
                     break;
                 default :
                     throw new \BreakpointDebugging_ErrorException('"' . __METHOD__ . '" parameter1 is mistake.', 101);
@@ -451,13 +451,6 @@ abstract class BreakpointDebugging_InAllCase
         if ($isUnitTest) {
             BW::virtualOpen(self::ERROR_WINDOW_NAME, self::getErrorHtmlFileTemplate());
             $pearSettingDirName = BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME;
-//            $errorMessage = <<<EOD
-//You must set
-//    "BREAKPOINTDEBUGGING_MODE=DEBUG_UNIT_TEST" or
-//    "BREAKPOINTDEBUGGING_MODE=RELEASE_UNIT_TEST"
-//to this project execution parameter.
-//Or, set "define('BREAKPOINTDEBUGGING_IS_PRODUCTION', false);" of "{$pearSettingDirName}BreakpointDebugging_MySetting.php".
-//EOD;
             $errorMessage = <<<EOD
 You must set
     "define('BREAKPOINTDEBUGGING_MODE', 'DEBUG_UNIT_TEST');" or
@@ -1065,12 +1058,9 @@ EOD;
     {
         $relativeCWD = substr(self::$pwd, strlen($_SERVER['DOCUMENT_ROOT']) - strlen(self::$pwd) + 1);
         // If this mode is not production server release.
-        //if (isset($_GET['BREAKPOINTDEBUGGING_MODE'])) {
         if (!BREAKPOINTDEBUGGING_IS_PRODUCTION) {
             $includePaths = ini_get('include_path');
             $tmpIncludePaths = explode(PATH_SEPARATOR, $includePaths);
-            //$topIncludePath = array_shift($tmpIncludePaths);
-            //B::assert($topIncludePath === '.');
             $searchKey = array_search('.', $tmpIncludePaths, true);
             B::assert($searchKey !== false);
             unset($tmpIncludePaths[$searchKey]);
@@ -1536,7 +1526,7 @@ if ($_BreakpointDebugging_EXE_MODE & BA::RELEASE) { // In case of release.
                 ) {
                     // @codeCoverageIgnoreStart
                     if (function_exists('xdebug_break')) {
-                        xdebug_break(); // You must use "parent::markTestSkippedInRelease(); // Because this unit test is assertion." at top of unit test class method.
+                        xdebug_break(); // You must use "\BreakpointDebugging_PHPUnit::markTestSkippedInRelease(); // Because this unit test is assertion." at top of unit test class method.
                     } else {
                         // Because unit test is exited.
                         ini_set('xdebug.var_display_max_depth', 5);

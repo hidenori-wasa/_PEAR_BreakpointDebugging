@@ -1,9 +1,6 @@
 <?php
 
-//chdir(str_repeat('../', preg_match_all('`/`xX', $_SERVER['PHP_SELF'], $matches) - 2));
 chdir(str_repeat('../', 2));
-//unset($matches);
-
 require_once './BreakpointDebugging_Inclusion.php';
 
 use \BreakpointDebugging as B;
@@ -16,15 +13,17 @@ $breakpointDebugging_UnitTestFiles = array (
     'ExampleTest.php',
     'PHPUnit1Test.php',
     'PHPUnit2Test.php',
-    'BreakpointDebugging-ExceptionTest.php',
-    'BreakpointDebugging-InAllCaseTest.php',
-    'BreakpointDebuggingTest.php',
-    'BreakpointDebugging/ErrorInAllCaseTest.php',
-    'BreakpointDebugging/ErrorTest.php',
-    'BreakpointDebugging/LockByFileExistingTest.php',
-    'BreakpointDebugging/LockByFlockTest.php',
-    'BreakpointDebugging/LockByShmopRequestTest.php',
-    'BreakpointDebugging/OverrideClassTest.php',
+    /*
+      'BreakpointDebugging-ExceptionTest.php',
+      'BreakpointDebugging-InAllCaseTest.php',
+      'BreakpointDebuggingTest.php',
+      'BreakpointDebugging/ErrorInAllCaseTest.php',
+      'BreakpointDebugging/ErrorTest.php',
+      'BreakpointDebugging/LockByFileExistingTest.php',
+      'BreakpointDebugging/LockByFlockTest.php',
+      'BreakpointDebugging/LockByShmopRequestTest.php',
+      'BreakpointDebugging/OverrideClassTest.php',
+     */
 );
 
 // Executes unit tests.

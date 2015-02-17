@@ -10,12 +10,13 @@ use \BreakpointDebugging_Window as BW;
  */
 class BreakpointDebuggingTest extends \BreakpointDebugging_PHPUnit_FrameworkTestCase
 {
+
     /**
      * @covers \BreakpointDebugging<extended>
      */
     function testCheckSuperUserExecution()
     {
-        parent::markTestSkippedInRelease(); // Because this unit test class method does not exist.
+        BU::markTestSkippedInRelease(); // Because this unit test class method does not exist.
 
         BU::$exeMode |= B::REMOTE;
         B::checkSuperUserExecution();
@@ -228,7 +229,7 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_PHPUnit_FrameworkTest
      */
     function testAssert_A()
     {
-        parent::markTestSkippedInRelease(); // Because this unit test class method is difference.
+        BU::markTestSkippedInRelease(); // Because this unit test class method is difference.
 
         B::assert(false, 1);
     }
@@ -241,7 +242,7 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_PHPUnit_FrameworkTest
      */
     function testAssert_A2()
     {
-        parent::markTestSkippedInRelease(); // Because this unit test class method is difference.
+        BU::markTestSkippedInRelease(); // Because this unit test class method is difference.
 
         B::assert(false, 123);
     }
@@ -254,7 +255,7 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_PHPUnit_FrameworkTest
      */
     public function testAssert_C()
     {
-        parent::markTestSkippedInRelease(); // Because this unit test class method is difference.
+        BU::markTestSkippedInRelease(); // Because this unit test class method is difference.
 
         B::assert('dummy', 'dummy', 'notExist');
     }
@@ -267,7 +268,7 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_PHPUnit_FrameworkTest
      */
     public function testAssert_D()
     {
-        parent::markTestSkippedInRelease(); // Because this unit test class method is difference.
+        BU::markTestSkippedInRelease(); // Because this unit test class method is difference.
 
         B::assert('incorrectType');
     }
@@ -280,7 +281,7 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_PHPUnit_FrameworkTest
      */
     public function testAssert_E()
     {
-        parent::markTestSkippedInRelease(); // Because this unit test class method is difference.
+        BU::markTestSkippedInRelease(); // Because this unit test class method is difference.
 
         B::assert(true, 'incorrectType');
     }
@@ -294,7 +295,7 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_PHPUnit_FrameworkTest
             parent::markTestSkipped();
         }
 
-        parent::markTestSkippedInRelease(); // Because this unit test class method does not exist.
+        BU::markTestSkippedInRelease(); // Because this unit test class method does not exist.
 
         $testArray = array (2, "\xE6\x96\x87\xE5\xAD\x97 ");
         $debugValues = B::convertMbStringForDebug('SJIS', 1, $testArray, "\xE6\x96\x87\xE5\xAD\x97 ");
@@ -326,7 +327,7 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_PHPUnit_FrameworkTest
      */
     public function testIniSet_H()
     {
-        parent::markTestSkippedInRelease(); // Because this unit test class method does not exist.
+        BU::markTestSkippedInRelease(); // Because this unit test class method does not exist.
 
         B::iniSet('doc_root', 'dummy'); // Cannot set 'doc_root'.
     }
@@ -339,7 +340,7 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_PHPUnit_FrameworkTest
      */
     public function testIniSet_I()
     {
-        parent::markTestSkippedInRelease(); // Because this unit test class method does not exist.
+        BU::markTestSkippedInRelease(); // Because this unit test class method does not exist.
 
         B::iniSet('not_exist', 'true'); // 'not_exist' does not exist.
     }
@@ -349,7 +350,7 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_PHPUnit_FrameworkTest
      */
     public function testDisplayVerification_A()
     {
-        parent::markTestSkippedInRelease(); // Because this unit test class method does not exist.
+        BU::markTestSkippedInRelease(); // Because this unit test class method does not exist.
 
         $mandate = "January 01 2000";
         ob_start();

@@ -197,7 +197,7 @@ EOD;
         self::_assert($result !== false);
         self::$_shmopID = $shmopId;
 
-        // `"C:/Program Files/Mozilla Firefox/firefox.exe" "https://localhost/Pear-Package/index.php?BREAKPOINTDEBUGGING_MODE=DEBUG"`; // For debug.
+        // `"C:/Program Files/Mozilla Firefox/firefox.exe" "https://localhost/Pear-Package/index.php"`; // For debug.
         // Resets the timeout.
         $startTime = time();
         while (true) {

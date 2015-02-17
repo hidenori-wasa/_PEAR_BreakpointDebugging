@@ -2,9 +2,7 @@
 
 use \BreakpointDebugging as B;
 
-//class PHPUnit1Test extends \BreakpointDebugging_PHPUnit_FrameworkTestCase
-App::uses('CakeTestCase', 'TestSuite');
-class PHPUnit1Test extends \CakeTestCase
+class PHPUnit1Test extends \BreakpointDebugging_PHPUnit_FrameworkTestCase
 {
     static $initialValueOfGlobal;
     static $initialReferenceOfGlobal;

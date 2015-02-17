@@ -69,20 +69,6 @@ if (is_file('./WasaCakeTestStart.php')) {
     define('BREAKPOINTDEBUGGING_IS_CAKE', false);
 }
 
-//global $_BreakpointDebugging_EXE_MODE, $_BreakpointDebugging_modeError;
-//
-//$_BreakpointDebugging_modeError = function() {
-//    $errorMessage = <<<EOD
-//You must set
-//    "BREAKPOINTDEBUGGING_MODE=DEBUG_UNIT_TEST",
-//    "BREAKPOINTDEBUGGING_MODE=RELEASE_UNIT_TEST",
-//    "BREAKPOINTDEBUGGING_MODE=DEBUG" or
-//    "BREAKPOINTDEBUGGING_MODE=RELEASE"
-//to this project execution parameter.
-//EOD;
-//    exit('<pre><b>' . $errorMessage . '</b></pre>');
-//};
-
 /**
  * Sets execution mode.
  *
@@ -112,10 +98,6 @@ function BreakpointDebugging_setExecutionMode()
     }
 
     if (BREAKPOINTDEBUGGING_IS_PRODUCTION === true) { // In case of production server release.
-//        if (array_key_exists('BREAKPOINTDEBUGGING_MODE', $_BreakpointDebugging_get)) {
-//            // Deletes "BREAKPOINTDEBUGGING_MODE" query variable.
-//            unset($_BreakpointDebugging_get['BREAKPOINTDEBUGGING_MODE']);
-//        }
         $_BreakpointDebugging_EXE_MODE = 3; // For HTTP request query string attack counter-plan.
     } else if (BREAKPOINTDEBUGGING_IS_PRODUCTION === false) { // In case of development.
         // Checks PHP version.
@@ -129,11 +111,6 @@ function BreakpointDebugging_setExecutionMode()
                 exit('<pre>' . htmlspecialchars("You must set 'User $osUserName' and 'Group <your group name>' of 'httpd.conf' file.", ENT_QUOTES) . '</pre>');
             }
         }
-        //if (!array_key_exists('BREAKPOINTDEBUGGING_MODE', $_BreakpointDebugging_get)) {
-        //    global $_BreakpointDebugging_modeError;
-        //    $_BreakpointDebugging_modeError();
-        //}
-        //$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_getExecutionModeFlags($_BreakpointDebugging_get['BREAKPOINTDEBUGGING_MODE']);
         $_BreakpointDebugging_EXE_MODE = BreakpointDebugging_getExecutionModeFlags();
         if (isset($_BreakpointDebugging_emulate_remote)) {
             $REMOTE = 1;
@@ -168,7 +145,6 @@ function BreakpointDebugging_setExecutionMode()
  *
  * @return int The flags of execution mode.
  */
-//function BreakpointDebugging_getExecutionModeFlags($executionMode)
 function BreakpointDebugging_getExecutionModeFlags()
 {
     /**
@@ -181,7 +157,6 @@ function BreakpointDebugging_getExecutionModeFlags()
 
     // In case of direct command call or local "php" page call.
     if (!isset($_SERVER['SERVER_ADDR']) || $_SERVER['SERVER_ADDR'] === '127.0.0.1') { // In case of local.
-        //switch ($executionMode) {
         switch (BREAKPOINTDEBUGGING_MODE) {
             case 'RELEASE':
                 return $RELEASE; // Local server debug by breakpoint and logging.
@@ -193,7 +168,6 @@ function BreakpointDebugging_getExecutionModeFlags()
                 return $UNIT_TEST; // Unit test of debug code on local server.
         }
     } else { // In case of remote.
-        //switch ($executionMode) {
         switch (BREAKPOINTDEBUGGING_MODE) {
             case 'RELEASE':
                 return $REMOTE | $RELEASE; // Remote server release by logging. We must execute "$_BreakpointDebugging_EXE_MODE = $REMOTE" before this, and we must set on last for security.
@@ -206,13 +180,10 @@ function BreakpointDebugging_getExecutionModeFlags()
         }
     }
 
-    //global $_BreakpointDebugging_modeError;
-    //$_BreakpointDebugging_modeError();
     exit('<pre><b>Mistaken "BREAKPOINTDEBUGGING_MODE" value.</b></pre>');
 }
 
 BreakpointDebugging_setExecutionMode();
-//unset($_BreakpointDebugging_modeError);
 
 require_once 'BreakpointDebugging.php'; // 'BreakpointDebugging.php' must require_once because it is base of all class, and it sets php.ini, and it sets autoload.
 /**

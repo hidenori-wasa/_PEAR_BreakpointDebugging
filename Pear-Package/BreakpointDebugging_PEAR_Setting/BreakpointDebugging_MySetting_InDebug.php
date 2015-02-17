@@ -222,9 +222,6 @@ B::assert(B::getStatic('$_maxLogFileByteSize') % 4096 === 0);
 B::assert(1 <= B::getStatic('$_maxLogParamNestingLevel') && B::getStatic('$_maxLogParamNestingLevel') <= 100);
 B::assert(1 <= B::getStatic('$_maxLogElementNumber') && B::getStatic('$_maxLogElementNumber') <= 100);
 B::assert(1 <= B::getStatic('$_maxLogStringSize'));
-//// "include_path" of "BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php'" file must begin with "." or "./".
-//B::assert(strpos(ini_get('include_path'), '.' . PATH_SEPARATOR) === 0 || strpos(ini_get('include_path'), './' . PATH_SEPARATOR) === 0);
-//
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // ### Super global variable filter setting. ###
 B::iniCheck('filter.default', 'unsafe_raw', 'Set \'filter.default = unsafe_raw\' of "php.ini" or ".htaccess" file because of unit test\'s static backup.');

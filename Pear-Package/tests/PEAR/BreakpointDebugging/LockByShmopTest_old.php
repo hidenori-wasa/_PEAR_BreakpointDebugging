@@ -48,7 +48,7 @@ class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_PHPUnit_F
      */
     function test__clone()
     {
-        parent::markTestSkippedInRelease(); // Because this unit test is assertion.
+        BU::markTestSkippedInRelease(); // Because this unit test is assertion.
 
         $tmp = clone $this->LockByShmop;
     }
@@ -119,7 +119,7 @@ class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_PHPUnit_F
      */
     function testLockThenUnlock_C()
     {
-        parent::markTestSkippedInRelease(); // Because this unit test is assertion.
+        BU::markTestSkippedInRelease(); // Because this unit test is assertion.
 
         $this->LockByShmop->unlock();
     }
@@ -132,7 +132,7 @@ class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_PHPUnit_F
      */
     function testLockThenUnlock_D()
     {
-        parent::markTestSkippedInRelease(); // Because this unit test is assertion.
+        BU::markTestSkippedInRelease(); // Because this unit test is assertion.
 
         try {
             $this->LockByShmop->lock();
@@ -151,7 +151,7 @@ class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_PHPUnit_F
      */
     function testLockThenUnlock_E()
     {
-        parent::markTestSkippedInRelease(); // Because this unit test is assertion.
+        BU::markTestSkippedInRelease(); // Because this unit test is assertion.
 
         $this->LockByShmop->lock();
         // Calls "__destruct()".
@@ -166,7 +166,7 @@ class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_PHPUnit_F
      */
     function testLockThenUnlock_F()
     {
-        parent::markTestSkippedInRelease(); // Because this unit test is assertion.
+        BU::markTestSkippedInRelease(); // Because this unit test is assertion.
 
         $this->LockByShmop->lock();
         $this->LockByShmop->lock();
@@ -193,7 +193,7 @@ class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_PHPUnit_F
      */
     function testSingleton_B()
     {
-        parent::markTestSkippedInRelease(); // Because this unit test is assertion.
+        BU::markTestSkippedInRelease(); // Because this unit test is assertion.
         // Constructs instance of other class.
         $lockByFileExisting = &\BreakpointDebugging_LockByFileExisting::singleton(5, 10);
     }
@@ -206,7 +206,7 @@ class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_PHPUnit_F
      */
     function testSingleton_C()
     {
-        parent::markTestSkippedInRelease(); // Because this unit test is assertion.
+        BU::markTestSkippedInRelease(); // Because this unit test is assertion.
         // Constructs instance of other class.
         $lockByFlock = &\BreakpointDebugging_LockByFlock::singleton(5, 10);
     }

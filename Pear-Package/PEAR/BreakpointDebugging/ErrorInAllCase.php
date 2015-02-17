@@ -297,7 +297,6 @@ abstract class BreakpointDebugging_ErrorInAllCase
         B::assert(is_array($pTmpLog) || is_resource($pTmpLog) || $pTmpLog === null);
         B::assert(is_bool($onceFlag2));
         B::assert(is_string($func));
-        //B::assert(is_string($class));
         B::assert(is_string($class) || is_array($class));
         B::assert(is_string($line) || is_int($line));
         B::assert(is_string($tabs));

@@ -40,7 +40,6 @@
  * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-//$_GET['BREAKPOINTDEBUGGING_MODE'] = "DEBUG";
 define('BREAKPOINTDEBUGGING_MODE', 'DEBUG');
 require_once './BreakpointDebugging_Inclusion.php';
 
@@ -313,4 +312,4 @@ register_shutdown_function('\BreakpointDebugging_DisplayToOtherProcess::shutdown
 \BreakpointDebugging_DisplayToOtherProcess::displayToOtherProcess();
 
 // For debug.
-// "C:/Program Files/Mozilla Firefox/firefox.exe" "https://localhost/Pear-Package/index.php?BREAKPOINTDEBUGGING_MODE=DEBUG"
+// "C:/Program Files/Mozilla Firefox/firefox.exe" "https://localhost/Pear-Package/index.php"

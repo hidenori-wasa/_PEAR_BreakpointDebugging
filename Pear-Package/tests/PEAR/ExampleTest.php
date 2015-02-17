@@ -129,7 +129,7 @@ class ExampleTest extends \BreakpointDebugging_PHPUnit_FrameworkTestCase
         //
         // include_once __DIR__ . '/AFile.php'; // We must not include a file because "loadClass" is only once per file. (Cannot detect!)
 
-        parent::markTestSkippedInDebug();
+        BU::markTestSkippedInDebug();
 
         // Destructs the instance.
         $this->_pTestObject = null;
@@ -143,7 +143,7 @@ class ExampleTest extends \BreakpointDebugging_PHPUnit_FrameworkTestCase
      */
     public function testSomething_B()
     {
-        parent::markTestSkippedInRelease();
+        BU::markTestSkippedInRelease();
 
         // How to use "try-catch" syntax instead of "@expectedException" and "@expectedExceptionMessage".
         // This way can test an error after static status was changed.
