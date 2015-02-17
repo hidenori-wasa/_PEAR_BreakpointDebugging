@@ -122,7 +122,7 @@ class ExampleTestSimple extends \BreakpointDebugging_PHPUnit_FrameworkTestCaseSi
         // spl_autoload_register('\ExampleTestSimple::loadClass', true, true); // We must not register "loadClass" function at top of stack by "spl_autoload_register()". (Autodetects)
         //
         // include_once __DIR__ . '/AFile.php'; // We must not include a file because "loadClass" is only once per file. (Cannot detect!)
-        if (BU::markTestSkippedInDebug()) {
+        if (parent::markTestSkippedInDebug()) {
             return;
         }
 
