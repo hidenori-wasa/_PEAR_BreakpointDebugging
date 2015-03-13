@@ -102,8 +102,8 @@ if (B::getXebugExists()) {
     // Display by var_dump(), local variables or Function Traces.
     B::iniSet('xdebug.var_display_max_depth', $xdebugVarDisplayMaxDepth, false);
     // Shows function call parameters name and value.
-    // B::iniSet('xdebug.collect_params', '4', false);
-    B::iniSet('xdebug.collect_params', '2', false);
+    B::iniSet('xdebug.collect_params', '4', false);
+    // B::iniSet('xdebug.collect_params', '2', false);
     // Does not gather local variables information for "xdebug_get_declared_vars()".
     B::iniSet('xdebug.collect_vars', '0', false);
     // Shows stack-traces.

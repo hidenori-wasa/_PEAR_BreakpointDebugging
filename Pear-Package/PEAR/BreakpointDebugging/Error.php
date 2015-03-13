@@ -57,6 +57,7 @@ use \BreakpointDebugging as B;
  */
 final class BreakpointDebugging_Error extends \BreakpointDebugging_ErrorInAllCase
 {
+
     /**
      * Makes HTML tags.
      */
@@ -65,9 +66,7 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_ErrorInAllCas
         B::limitAccess('BreakpointDebugging.php');
         B::assert(func_num_args() === 0);
 
-        if (B::getStatic('$exeMode') & B::RELEASE) { // In case of release mode.
-            parent::__construct();
-        } else { // In case of debug mode.
+        if (B::isDebug()) { // In case of debug mode.
             $this->maxLogFileByteSize = B::getStatic('$_maxLogFileByteSize');
             $this->isLogging = false;
             $this->mark = '&diams;';
@@ -101,6 +100,8 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_ErrorInAllCas
                 $this->tags['uint test anchor href'] = '';
                 $this->tags['uint test anchor name'] = '';
             }
+        } else { // In case of release mode.
+            parent::__construct();
         }
     }
 
@@ -118,7 +119,7 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_ErrorInAllCas
         B::assert($pException instanceof \Exception);
         B::assert(is_string($prependLog));
 
-        if (!(B::getStatic('$exeMode') & B::RELEASE)) { // In case of debug mode.
+        if (B::isDebug()) { // In case of debug mode.
             // Forces unlocking to avoid lock-count assertion error if forces a exit.
             \BreakpointDebugging_Lock::forceUnlocking();
         }
@@ -135,15 +136,15 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_ErrorInAllCas
      */
     protected function changeLogFile($pTmpLog)
     {
-        if (B::getStatic('$exeMode') & B::RELEASE) { // In case of release mode.
-            parent::changeLogFile($pTmpLog);
-        } else { // In case of debug mode.
+        if (B::isDebug()) { // In case of debug mode.
             $continuingMark = PHP_EOL . str_repeat("\t", 1) . '.';
             $continuingMark = PHP_EOL . '### Omits since then because it exceeded logfile maximum capacity. ###' . $continuingMark . $continuingMark . $continuingMark;
             $this->logBufferWriting($pTmpLog, $continuingMark);
             $this->logWriting($pTmpLog);
             // This exception is caught inside handler.
             throw new \BreakpointDebugging_OutOfLogRangeException('', 101);
+        } else { // In case of release mode.
+            parent::changeLogFile($pTmpLog);
         }
     }
 
@@ -236,9 +237,7 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_ErrorInAllCas
         B::assert(is_array($pTmpLog) || is_resource($pTmpLog));
         B::assert(is_resource($pLog) || $pLog === false);
 
-        if (B::getStatic('$exeMode') & B::RELEASE) { // In case of release mode.
-            parent::logWriting($pTmpLog, $pLog);
-        } else { // In case of debug mode.
+        if (B::isDebug()) { // In case of debug mode.
             $tmpLog = '';
             if (B::getStatic('$exeMode') & B::REMOTE) { // In case of remote mode.
                 rewind($pTmpLog);
@@ -256,6 +255,8 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_ErrorInAllCas
             }
             echo $tmpLog;
             $pTmpLog = null;
+        } else { // In case of release mode.
+            parent::logWriting($pTmpLog, $pLog);
         }
     }
 
@@ -274,9 +275,7 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_ErrorInAllCas
         B::assert(is_array($pLogBuffer) || is_resource($pLogBuffer) || $pLogBuffer === null);
         B::assert(is_string($log));
 
-        if (B::getStatic('$exeMode') & B::RELEASE) { // In case of release mode.
-            parent::logBufferWriting($pLogBuffer, $log);
-        } else { // In case of debug mode.
+        if (B::isDebug()) { // In case of debug mode.
             if ($pLogBuffer === null) {
                 echo $log;
                 $this->logByteSize += strlen($log);
@@ -287,6 +286,8 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_ErrorInAllCas
                     $pLogBuffer[] = $log;
                 }
             }
+        } else { // In case of release mode.
+            parent::logBufferWriting($pLogBuffer, $log);
         }
     }
 

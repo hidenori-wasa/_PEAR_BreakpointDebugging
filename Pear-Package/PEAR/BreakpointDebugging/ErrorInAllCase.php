@@ -352,10 +352,10 @@ abstract class BreakpointDebugging_ErrorInAllCase
      */
     private function _lowerHypertextReferenceAnchor($referenceName)
     {
-        if (B::getStatic('$exeMode') & B::RELEASE) {
-            return 'same ' . $referenceName;
-        } else {
+        if (B::isDebug()) {
             return '<a href="#' . $referenceName . '">same ' . $referenceName . '</a>';
+        } else {
+            return 'same ' . $referenceName;
         }
     }
 
@@ -368,10 +368,10 @@ abstract class BreakpointDebugging_ErrorInAllCase
      */
     private function _setHypertextReference($referenceName)
     {
-        if (B::getStatic('$exeMode') & B::RELEASE) {
-            return $referenceName;
-        } else {
+        if (B::isDebug()) {
             return '<a name="' . $referenceName . '">' . $referenceName . '</a>';
+        } else {
+            return $referenceName;
         }
     }
 
@@ -675,7 +675,9 @@ abstract class BreakpointDebugging_ErrorInAllCase
             }
             $log = B::convertMbString($log);
             // If this does a log.
-            if (B::getStatic('$exeMode') & B::RELEASE) {
+            if (B::isDebug()) { // If this displays.
+                BW::htmlAddition(B::ERROR_WINDOW_NAME, 'pre', 0, $log);
+            } else {
                 $errorLogDirectory = B::getStatic('$_workDir') . self::ERROR_LOG_DIR;
                 $logFileName = 'InternalError.log';
                 $errorLogFilePath = $errorLogDirectory . $logFileName;
@@ -715,8 +717,6 @@ abstract class BreakpointDebugging_ErrorInAllCase
                 }
                 // Unlocks the error log files.
                 $lockByFileExisting->unlock();
-            } else { // If this displays.
-                BW::htmlAddition(B::ERROR_WINDOW_NAME, 'pre', 0, $log);
             }
             B::breakpoint($message, $callStack);
         } catch (\Exception $e) {
@@ -1117,7 +1117,7 @@ EOD;
         try {
             try {
                 // If this does a log.
-                if (B::getStatic('$exeMode') & B::RELEASE) {
+                if (!B::isDebug()) {
                     $loggingWritingFlag = false;
                     // Writes log writing flag.
                     $writeLogWritingFlag = function ($pVarConfFile, &$loggingWritingFlag) {
@@ -1328,7 +1328,7 @@ EOD;
             }
 
             // If this does a log.
-            if (B::getStatic('$exeMode') & B::RELEASE) {
+            if (!B::isDebug()) {
                 // Gets current error log file name.
                 $this->_errorLogFilePath = $this->_errorLogDirectory . $this->_currentErrorLogFileName;
                 // When current error log file does not exist.

@@ -1,6 +1,7 @@
 <?php
 
-chdir(str_repeat('../', 2));
+// Changes current directory to web root.
+chdir('../../');
 require_once './BreakpointDebugging_Inclusion.php';
 
 use \BreakpointDebugging as B;
@@ -10,10 +11,10 @@ $breakpointDebugging_PHPUnit = new \BreakpointDebugging_PHPUnit();
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Please, choose unit tests files by customizing.
 $breakpointDebugging_UnitTestFiles = array (
-    'ExampleTest.php',
-    'PHPUnit1Test.php',
-    'PHPUnit2Test.php',
     /*
+      'ExampleTest.php',
+      'PHPUnit1Test.php',
+      'PHPUnit2Test.php',
       'BreakpointDebugging-ExceptionTest.php',
       'BreakpointDebugging-InAllCaseTest.php',
       'BreakpointDebuggingTest.php',
@@ -22,20 +23,20 @@ $breakpointDebugging_UnitTestFiles = array (
       'BreakpointDebugging/LockByFileExistingTest.php',
       'BreakpointDebugging/LockByFlockTest.php',
       'BreakpointDebugging/LockByShmopRequestTest.php',
-      'BreakpointDebugging/OverrideClassTest.php',
      */
+    'BreakpointDebugging/OverrideClassTest.php',
 );
 
 // Executes unit tests.
 $breakpointDebugging_PHPUnit->executeUnitTest($breakpointDebugging_UnitTestFiles); exit;
-//
+
 // Makes up code coverage report, then displays in browser.
-if (B::getStatic('$exeMode') & B::RELEASE) { // In case of release.
-    // $breakpointDebugging_PHPUnit->displayCodeCoverageReport('BreakpointDebuggingTest.php', 'PEAR/BreakpointDebugging.php'); exit; // "BreakpointDebugging", "BreakpointDebugging_Middle" class is ? (Windows).
-    // $breakpointDebugging_PHPUnit->displayCodeCoverageReport('BreakpointDebugging/ErrorInAllCaseTest.php', 'PEAR/BreakpointDebugging/ErrorInAllCaseTest.php'); exit;
-} else { // In case of debug.
+if (B::isDebug()) { // In case of debug.
     // $breakpointDebugging_PHPUnit->displayCodeCoverageReport('BreakpointDebuggingTest.php', 'PEAR/BreakpointDebugging_InDebug.php'); exit;
     // $breakpointDebugging_PHPUnit->displayCodeCoverageReport('BreakpointDebugging/ErrorTest.php', 'PEAR/BreakpointDebugging/Error.php'); exit;
+} else { // In case of release.
+    // $breakpointDebugging_PHPUnit->displayCodeCoverageReport('BreakpointDebuggingTest.php', 'PEAR/BreakpointDebugging.php'); exit; // "BreakpointDebugging", "BreakpointDebugging_Middle" class is ? (Windows).
+    // $breakpointDebugging_PHPUnit->displayCodeCoverageReport('BreakpointDebugging/ErrorInAllCaseTest.php', 'PEAR/BreakpointDebugging/ErrorInAllCaseTest.php'); exit;
 }
 // In case of debug or release.
 // $breakpointDebugging_PHPUnit->displayCodeCoverageReport('BreakpointDebugging-ExceptionTest.php', 'PEAROtherPackage/BreakpointDebugging_PHPUnit.php'); exit;

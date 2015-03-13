@@ -178,7 +178,9 @@ abstract class TestClass_InAllCase
 
 }
 
-if (B::getStatic('$exeMode') & B::RELEASE) { // In case of release.
+if (B::isDebug()) { // In case of debug.
+    include_once __DIR__ . '/SampleToLimitAccess_InDebug.php';
+} else { // In case of release.
     /**
      * Dummy.
      *
@@ -191,6 +193,7 @@ if (B::getStatic('$exeMode') & B::RELEASE) { // In case of release.
      */
     class TestClass extends \TestClass_InAllCase
     {
+
         /**
          * Dummy.
          *
@@ -205,8 +208,6 @@ if (B::getStatic('$exeMode') & B::RELEASE) { // In case of release.
 
     }
 
-} else { // In case of not release.
-    include_once __DIR__ . '/SampleToLimitAccess_InDebug.php';
 }
 
 $pTestClass = new T();

@@ -304,6 +304,16 @@ abstract class BreakpointDebugging_InAllCase
     }
 
     /**
+     * Is this the debug execution mode? This class method is needed for code coverage report.
+     *
+     * @return type
+     */
+    static function isDebug()
+    {
+        return !(self::$exeMode & self::RELEASE);
+    }
+
+    /**
      * Generates URL-encoded query character string by adding specification to native.
      *
      * @param array $additionalElements Array of specification query-character-strings.
