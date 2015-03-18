@@ -11,9 +11,9 @@ $breakpointDebugging_PHPUnit = new \BreakpointDebugging_PHPUnit();
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Please, choose unit tests files by customizing.
 $breakpointDebugging_UnitTestFiles = array (
-    // 'sub/ExampleTest.php',
+    'sub/ExampleTest.php',
     'PHPUnit1Test.php',
-    // 'PHPUnit2Test.php',
+    'PHPUnit2Test.php',
 );
 
 // Specifies the test directory.

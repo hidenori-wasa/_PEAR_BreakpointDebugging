@@ -1320,6 +1320,12 @@ EOD;
         set_error_handler('\BreakpointDebugging_Error::handleInternalError', -1);
 
         try {
+            if (BREAKPOINTDEBUGGING_IS_CAKE //
+                && \BREAKPOINTDEBUGGING_IS_PRODUCTION //
+            ) {
+                \ErrorHandler::handleException($pException);
+            }
+
             $error = new \BreakpointDebugging_Error();
             $error->handleException2($pException, self::$prependExceptionLog);
             if (self::$_nativeExeMode & self::UNIT_TEST) {

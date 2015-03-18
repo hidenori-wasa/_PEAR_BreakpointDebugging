@@ -185,13 +185,6 @@ function BreakpointDebugging_getExecutionModeFlags()
 
 BreakpointDebugging_setExecutionMode();
 
-global $_BreakpointDebugging_EXE_MODE;
-if ($_BreakpointDebugging_EXE_MODE & 2) {
-    define('BREAKPOINTDEBUGGING_IS_DEBUG', false);
-} else {
-    define('BREAKPOINTDEBUGGING_IS_DEBUG', true);
-}
-
 require_once 'BreakpointDebugging.php'; // 'BreakpointDebugging.php' must require_once because it is base of all class, and it sets php.ini, and it sets autoload.
 /**
  * Sets global variables and "php.ini" variables.

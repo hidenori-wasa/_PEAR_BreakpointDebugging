@@ -674,10 +674,10 @@ abstract class BreakpointDebugging_ErrorInAllCase
                 $log .= ob_get_clean();
             }
             $log = B::convertMbString($log);
-            // If this does a log.
+
             if (B::isDebug()) { // If this displays.
                 BW::htmlAddition(B::ERROR_WINDOW_NAME, 'pre', 0, $log);
-            } else {
+            } else { // If this does a log.
                 $errorLogDirectory = B::getStatic('$_workDir') . self::ERROR_LOG_DIR;
                 $logFileName = 'InternalError.log';
                 $errorLogFilePath = $errorLogDirectory . $logFileName;
