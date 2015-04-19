@@ -17,7 +17,7 @@ The features list
 * The override class feature.
 * Execution mode.
 
-Please, read the file level document block of `PEAR/BreakpointDebugging_Option.php`.
+Please, read the class level document block of `PEAR/BreakpointDebugging_InDebug.php`.
 
 The dependences
 ---------------

@@ -5,39 +5,17 @@
  *
  * PHP version 5.3.2-5.4.x
  *
- * LICENSE OVERVIEW:
- * 1. Do not change license text.
- * 2. Copyrighters do not take responsibility for this file code.
- *
  * LICENSE:
- * Copyright (c) 2012-2014, Hidenori Wasa
+ * Copyright (c) 2012-, Hidenori Wasa
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *
- * Redistributions of source code must retain the above copyright notice,
- * this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright notice,
- * this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the distribution.
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
- * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * License content is written in "PEAR/BreakpointDebugging/BREAKPOINTDEBUGGING_LICENSE.txt".
  *
  * @category PHP
  * @package  BreakpointDebugging
  * @author   Hidenori Wasa <public@hidenori-wasa.com>
- * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
+ * @license  http://opensource.org/licenses/mit-license.php  MIT License
+ * @version  Release: @package_version@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
 use \BreakpointDebugging as B;
@@ -49,138 +27,199 @@ use \BreakpointDebugging_Window as BW;
  * @category PHP
  * @package  BreakpointDebugging
  * @author   Hidenori Wasa <public@hidenori-wasa.com>
- * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
+ * @license  http://opensource.org/licenses/mit-license.php  MIT License
  * @version  Release: @package_version@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
 abstract class BreakpointDebugging_ErrorInAllCase
 {
+    /**
+     * HTML of hypertext reference as uint test anchor.
+     *
+     * @var string
+     */
     protected $uintTestAnchorHref = '<a href="#UnitTestAnchor">To unit test error information.</a>';
+
+    /**
+     * HTML of name as uint test anchor.
+     *
+     * @var string
+     */
     protected $uintTestAnchorName = '<a name="UnitTestAnchor"></a>';
 
     /**
-     * @var array Logged call-stacks.
+     * Logged call-stacks.
+     *
+     * @var array
      */
     private $_loggedCallStacks = array ();
 
     /**
-     * @var array Logged arrays.
+     * Logged arrays.
+     *
+     * @var array
      */
     private $_loggedArrays = array ();
 
     /**
-     * @var array Logged objects.
+     * Logged objects.
+     *
+     * @var array
      */
     private $_loggedObjects = array ();
 
     /**
-     * @const string Variable configuring file name.
+     * Variable configuring file name.
+     *
+     * @const string
      */
     const VAR_CONF_FILE_NAME = 'ErrorLog.var.conf';
 
     /**
-     * @const string Key of enabled error log file name.
+     * Key of enabled error log file name.
+     *
+     * @const string
      */
     const ENABLED_ERROR_LOG_FILE_NAME = 'ENABLED_ERROR_LOG_FILE_NAME_=';
 
     /**
-     * @const string Key of disabled error log file name.
+     * Key of disabled error log file name.
+     *
+     * @const string
      */
     const DISABLED_ERROR_LOG_FILE_NAME = 'DISABLED_ERROR_LOG_FILE_NAME=';
 
     /**
-     * @const string Prefix of error log file name.
+     * Prefix of error log file name.
+     *
+     * @const string
      */
     const PREFIX_OF_ERROR_LOG_FILE_NAME = 'php_error_';
 
     /**
-     * @var string Error log file extension.
+     * Error log file extension.
+     *
+     * @var string
      */
     private $_errorLogFileExt = '.log';
 
     /**
-     * @var string Error log file path.
-     *             Warning: When you use existing log, it is destroyed if it is not "UTF-8". It is necessary to be a single character sets.
+     * Error log file path.
+     * Warning: When you use existing log, it is destroyed if it is not "UTF-8". It is necessary to be a single character sets.
+     *
+     * @var string
      */
     private $_errorLogFilePath;
 
     /**
-     * @var resource Current error log file size.
+     * Current error log file size.
+     *
+     * @var resource
      */
     private $_pCurrentErrorLogFileSize;
 
     /**
-     * @var resource Error log file pointer.
+     * Error log file pointer.
+     *
+     * @var resource
      */
     protected $pErrorLogFile;
 
     /**
-     * @var array Call stack information.
+     * Call stack information.
+     *
+     * @var array
      */
     private $_callStack;
 
     /**
-     * @var bool Is logging?
+     * Is logging?
+     *
+     * @var bool
      */
     protected $isLogging;
 
     /**
-     * @var string Mark.
+     * Mark.
+     *
+     * @var string
      */
     protected $mark;
 
     /**
-     * @var array HTML tags.
+     * HTML tags.
+     *
+     * @var array
      */
     protected $tags = array ();
 
     /**
-     * @var object Locking object.
+     * Locking object.
+     *
+     * @var object
      */
     private $_lockByFileExisting;
 
     /**
-     * @var string Current error log filename.
+     * Current error log filename.
+     *
+     * @var string
      */
     private $_currentErrorLogFileName;
 
     /**
-     * @var string Full path of error log directory.
+     * Full path of error log directory.
+     *
+     * @var string
      */
     private $_errorLogDirectory;
 
     /**
-     * @var resource Variable configuring file.
+     * Variable configuring file.
+     *
+     * @var resource
      */
     private $_pVarConfFile;
 
     /**
-     * @var int Maximum log file byte size.
+     * Maximum log file byte size.
+     *
+     * @var int
      */
     protected $maxLogFileByteSize;
 
     /**
-     * @var string The log byte size.
+     * The log byte size.
+     *
+     * @var string
      */
     protected $logByteSize = 0;
 
     /**
-     * @var bool Error flag of once.
+     * Error flag of once.
+     *
+     * @var bool
      */
     private static $_onceFlag = true;
 
     /**
-     * @var bool Error flag of once.
+     * Error flag of once.
+     *
+     * @var bool
      */
     private static $_onceFlagOfCommand = true;
 
     /**
-     * @const string Error log directory name.
+     * Error log directory name.
+     *
+     * @const string
      */
     const ERROR_LOG_DIR = '/ErrorLog/';
 
     /**
-     * @var string Error log buffer.
+     * Error log buffer.
+     *
+     * @var string
      */
     private static $_errorBuffer = '';
 
@@ -197,7 +236,7 @@ abstract class BreakpointDebugging_ErrorInAllCase
     /**
      * Sets HTML tags.
      *
-     * @param array &$tags HTML tags.
+     * @param array $tags HTML tags.
      *
      * @return void
      */
@@ -279,13 +318,13 @@ abstract class BreakpointDebugging_ErrorInAllCase
     /**
      * Add function-values to log.
      *
-     * @param mixed  &$pTmpLog2  Error temporary log pointer.
-     * @param mixed  &$pTmpLog   Error temporary log pointer.
-     * @param bool   &$onceFlag2 False means logging parameter header.
-     * @param string $func       Function name of call stack.
-     * @param string $class      Class name of call stack.
-     * @param mixed  $line       Line number of call stack.
-     * @param string $tabs       Tabs to indent.
+     * @param mixed  $pTmpLog2  Error temporary log pointer.
+     * @param mixed  $pTmpLog   Error temporary log pointer.
+     * @param bool   $onceFlag2 False means logging parameter header.
+     * @param string $func      Function name of call stack.
+     * @param string $class     Class name of call stack.
+     * @param mixed  $line      Line number of call stack.
+     * @param string $tabs      Tabs to indent.
      *
      * @return void
      */
@@ -378,7 +417,7 @@ abstract class BreakpointDebugging_ErrorInAllCase
     /**
      * This method builds array information.
      *
-     * @param mixed &$pTmpLog  Error temporary log pointer.
+     * @param mixed $pTmpLog   Error temporary log pointer.
      * @param mixed $paramName Parameter name or number.
      * @param array $array     The array to reflect.
      * @param int   $tabNumber The tab number to indent.
@@ -442,7 +481,7 @@ abstract class BreakpointDebugging_ErrorInAllCase
     /**
      * This method builds property and constant information inside class difinition.
      *
-     * @param mixed  &$pTmpLog  Error temporary log pointer.
+     * @param mixed  $pTmpLog   Error temporary log pointer.
      * @param mixed  $paramName Parameter name or number.
      * @param object $object    The object to reflect.
      * @param int    $tabNumber The tab number to indent.
@@ -769,11 +808,11 @@ abstract class BreakpointDebugging_ErrorInAllCase
     /**
      * Add parameter header to error log.
      *
-     * @param mixed  &$pTmpLog Error temporary log pointer.
-     * @param string $file     File name.
-     * @param mixed  $line     Line number.
-     * @param string $func     Function name.
-     * @param string $class    Class name.
+     * @param mixed  $pTmpLog Error temporary log pointer.
+     * @param string $file    File name.
+     * @param mixed  $line    Line number.
+     * @param string $func    Function name.
+     * @param string $class   Class name.
      *
      * @return void
      */
@@ -817,14 +856,14 @@ abstract class BreakpointDebugging_ErrorInAllCase
     /**
      * Output fixed-function to logging.
      *
-     * @param array  $callStack  The call stack.
-     * @param mixed  &$pTmpLog   Error temporary log pointer.
-     * @param bool   &$onceFlag2 False means logging parameter header.
-     * @param mixed  &$func      Function name of call stack.
-     * @param mixed  &$class     Class name of call stack.
-     * @param string $file       File name of call stack.
-     * @param mixed  $line       Line number of call stack.
-     * @param string $tabs       Tabs to indent.
+     * @param array  $callStack The call stack.
+     * @param mixed  $pTmpLog   Error temporary log pointer.
+     * @param bool   $onceFlag2 False means logging parameter header.
+     * @param mixed  $func      Function name of call stack.
+     * @param mixed  $class     Class name of call stack.
+     * @param string $file      File name of call stack.
+     * @param mixed  $line      Line number of call stack.
+     * @param string $tabs      Tabs to indent.
      *
      * @return void
      */
@@ -878,6 +917,7 @@ abstract class BreakpointDebugging_ErrorInAllCase
      * @param mixed $pTmpLog Same as child.
      *
      * @return Same as child.
+     *
      * @throw Same as child.
      */
     protected function changeLogFile($pTmpLog)
@@ -1412,7 +1452,7 @@ EOD;
     /**
      * Get parameter type and value.
      *
-     * @param mixed &$pTmpLog   Error temporary log pointer.
+     * @param mixed $pTmpLog    Error temporary log pointer.
      * @param mixed $paramName  Parameter name or number.
      * @param mixed $paramValue Parameter value.
      * @param int   $tabNumber  The tab number to indent.
@@ -1487,7 +1527,7 @@ EOD;
     /**
      * Analyze parameter part of back trace array, and return string.
      *
-     * @param mixed &$pTmpLog        Error temporary log pointer.
+     * @param mixed $pTmpLog         Error temporary log pointer.
      * @param array $backtraceParams Back trace parameters.
      * @param int   $tabNumber       The tab number to indent.
      *
@@ -1523,8 +1563,8 @@ EOD;
     /**
      * Is called from child class.
      *
-     * @param mixed &$pTmpLog Same as child.
-     * @param mixed $pLog     Same as child.
+     * @param mixed $pTmpLog Same as child.
+     * @param mixed $pLog    Same as child.
      *
      * @return Same as child.
      */
@@ -1548,8 +1588,8 @@ EOD;
     /**
      * Is called from child class.
      *
-     * @param mixed  &$pLogBuffer Same as child.
-     * @param string $log         Same as child.
+     * @param mixed  $pLogBuffer Same as child.
+     * @param string $log        Same as child.
      *
      * @return Same as child.
      */

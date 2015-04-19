@@ -3,41 +3,17 @@
 /**
  * Class for breakpoint debugging.
  *
- * PHP version 5.3.2-5.4.x
- *
- * LICENSE OVERVIEW:
- * 1. Do not change license text.
- * 2. Copyrighters do not take responsibility for this file code.
- *
  * LICENSE:
- * Copyright (c) 2012-2014, Hidenori Wasa
+ * Copyright (c) 2012-, Hidenori Wasa
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *
- * Redistributions of source code must retain the above copyright notice,
- * this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright notice,
- * this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the distribution.
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
- * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * License content is written in "PEAR/BreakpointDebugging/BREAKPOINTDEBUGGING_LICENSE.txt".
  *
  * @category PHP
  * @package  BreakpointDebugging
  * @author   Hidenori Wasa <public@hidenori-wasa.com>
- * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
+ * @license  http://opensource.org/licenses/mit-license.php  MIT License
+ * @version  Release: @package_version@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
 use \BreakpointDebugging as B;
@@ -48,10 +24,12 @@ require_once __DIR__ . '/PEAR/Exception.php';
 /**
  * Own package exception.
  *
+ * PHP version 5.3.2-5.4.x
+ *
  * @category PHP
  * @package  BreakpointDebugging
  * @author   Hidenori Wasa <public@hidenori-wasa.com>
- * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
+ * @license  http://opensource.org/licenses/mit-license.php  MIT License
  * @version  Release: @package_version@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
@@ -84,7 +62,7 @@ abstract class BreakpointDebugging_Exception_InAllCase extends \PEAR_Exception
  * @category PHP
  * @package  BreakpointDebugging
  * @author   Hidenori Wasa <public@hidenori-wasa.com>
- * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
+ * @license  http://opensource.org/licenses/mit-license.php  MIT License
  * @version  Release: @package_version@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
@@ -92,165 +70,237 @@ abstract class BreakpointDebugging_InAllCase
 {
     // ### Debug mode constant number ###
     /**
-     * @const int This flag means executing on practical use server. This flag means executing on local development server if it is not set.
+     * This flag means executing on practical use server. This flag means executing on local development server if it is not set.
+     *
+     * @const int
      */
     const REMOTE = 1;
 
     /**
-     * @const int This flag means executing release code. This flag means executing debug code if it is not set.
+     * This flag means executing release code. This flag means executing debug code if it is not set.
+     *
+     * @const int
      */
     const RELEASE = 2;
 
     /**
-     * @const int This flag means executing unit test. This flag means not executing unit test if it is not set.
+     * This flag means executing unit test. This flag means not executing unit test if it is not set.
+     *
+     * @const int
      */
     const UNIT_TEST = 4;
 
     /**
-     * @const int This flag means ignoring break point. This flag means enabling break point if it is not set.
+     * This flag means ignoring break point. This flag means enabling break point if it is not set.
+     *
+     * @const int
      */
     const IGNORING_BREAK_POINT = 8;
 
     /**
-     *  @const string Character string which means recursive array.
+     * Character string which means recursive array.
+     *
+     *  @const string
      */
     const RECURSIVE_ARRAY = '### Omits recursive array. ###';
 
     /**
-     * @const string Character string which means using "$GLOBALS".
+     * Character string which means using "$GLOBALS".
+     *
+     * @const string
      */
     const GLOBALS_USING = '### Omits own recursive array inside "$GLOBALS". ###';
 
     /**
-     * @const string Error window name.
+     * Error window name.
+     *
+     * @const string
      */
     const ERROR_WINDOW_NAME = 'BreakpointDebugging_Error';
 
     /**
-     * @var object "\BreakpointDebugging_PHPUnit" instance.
+     * "\BreakpointDebugging_PHPUnit" instance.
+     *
+     * @var object
      */
     private static $_phpUnit;
 
     /**
-     * @var mixed Temporary variable.
+     * Temporary variable.
+     *
+     * @var mixed
      */
     static $tmp;
 
     /**
-     * @var array Static properties reference.
+     * Static properties reference.
+     *
+     * @var array
      */
     protected static $staticProperties;
 
     /**
-     * @var array Static property limitings reference.
+     * Static property limitings reference.
+     *
+     * @var array
      */
     protected static $staticPropertyLimitings;
 
     /**
-     * @var bool "Xdebug" existing-flag.
+     * "Xdebug" existing-flag.
+     *
+     * @var bool
      */
     private static $_xdebugExists;
 
     /**
-     * @var string Developer IP for remote error log file manager, remote code coverage report display and remote unit test.
+     * Developer IP for remote error log file manager, remote code coverage report display and remote unit test.
+     *
+     * @var string
      */
     private static $_developerIP = '127.0.0.1';
 
     /**
-     * @var string This prepend to logging when self::handleException() is called.
+     * This prepend to logging when self::handleException() is called.
+     *
+     * @var string
      */
     static $prependExceptionLog = '';
 
     /**
-     * @var string This prepend to logging when self::handleError() is called.
+     * This prepend to logging when self::handleError() is called.
+     *
+     * @var string
      */
     static $prependErrorLog = '';
 
     /**
-     * @var int Maximum log file byte size.
+     * Maximum log file byte size.
+     *
+     * @var int
      */
     private static $_maxLogFileByteSize = 131072; // 1 << 17
 
     /**
-     * @var int Max log parameter nesting level.
+     * Max log parameter nesting level.
+     *
+     * @var int
      */
     private static $_maxLogParamNestingLevel = 20;
 
     /**
-     * @var int Maximum count of elements in log. ( Total of parameters or array elements )
+     * Maximum count of elements in log. ( Total of parameters or array elements )
+     *
+     * @var int
      */
     private static $_maxLogElementNumber;
 
     /**
-     * @var int Maximum string type byte-count of log.
+     * Maximum string type byte-count of log.
+     *
+     * @var int
      */
     private static $_maxLogStringSize = 3000;
 
     /**
-     * @var string Work directory of this package.
+     * Work directory of this package.
+     *
+     * @var string
      */
     private static $_workDir;
 
     /**
-     * @var array Locations to be not Fixed.
+     * Locations to be not Fixed.
+     *
+     * @var array
      */
     private static $_notFixedLocations = array ();
 
     /**
-     * @var array Values to trace.
+     * Values to trace.
+     *
+     * @var array
      */
     private static $_valuesToTrace;
 
     /**
-     * @var bool Once error display flag.
+     * Once error display flag.
+     *
+     * @var bool
      */
     private static $_onceErrorDispFlag = false;
 
     /**
-     * @var bool Calling exception handler directly?
+     * Calling exception handler directly?
+     *
+     * @var bool
      */
     private static $_callingExceptionHandlerDirectly = false;
 
     /**
-     * @var string The project work directory.
+     * The project work directory.
+     *
+     * @var string
      */
     protected static $pwd;
 
     /**
-     * @var int Execution mode.
+     * Execution mode.
+     *
+     * @var int
      */
     protected static $exeMode;
 
     /**
-     * @var int Native execution mode.
+     * Native execution mode.
+     *
+     * @var int
      */
     private static $_nativeExeMode;
 
     /**
-     * @var string Error initialization flag of "self::iniCheck()" class method.
+     * Error initialization flag of "self::iniCheck()" class method.
+     *
+     * @var string
      */
     private static $_iniCheckErrorInitializationFlag = true;
 
     /**
-     * @var array "$_GET" in case of common gateway, or "$_GET" which is built from last of command line parameters in case of command line.
-     * Example: $queryString = '"' . B::httpBuildQuery(array ('ADDITIONAL_KEY' => 1234)) . '"';
-     *          $pPipe = popen('php.exe -f example.php -- ' . $queryString, 'r'); // For Windows.
-     *          $pPipe = popen('php -f example.php -- ' . $queryString . ' &', 'r'); // For Unix.
+     * "$_GET" in case of common gateway, or "$_GET" which is built from last of command line parameters in case of command line.
+     *
+     * <pre>
+     * Example:
+     *
+     * <code>
+     *      $queryString = '"' . B::httpBuildQuery(array ('ADDITIONAL_KEY' => 1234)) . '"';
+     *      $pPipe = popen('php.exe -f example.php -- ' . $queryString, 'r'); // For Windows.
+     *      $pPipe = popen('php -f example.php -- ' . $queryString . ' &', 'r'); // For Unix.
+     * </code>
+     *
+     * </pre>
+     *
+     * @var array
      */
     private static $_get;
 
     /**
-     * @var string The display character string for production server performance.
+     * The display character string for production server performance.
+     *
+     * @var string
      */
     protected static $iniDisplayString;
 
     /**
-     * @var array Setting option filenames.
+     * Setting option filenames.
+     *
+     * @var array
      */
     protected static $onceFlagPerPackage = array ();
 
     /**
-     * @var bool Is it spl autoload call?
+     * Is it spl autoload call?
+     *
+     * @var bool
      */
     private static $_isSplAutoLoadCall = false;
 
@@ -259,11 +309,20 @@ abstract class BreakpointDebugging_InAllCase
      * Debugs by using breakpoint.
      * We must define this class method outside namespace, and we must not change method name when we call this method.
      *
+     * <pre>
+     * Example:
+     *
+     * <code>
+     *      B::breakpoint('Error message.', debug_backtrace());
+     * </code>
+     *
+     * </pre>
+     *
      * @param string $message       Message.
      * @param array  $callStackInfo A call stack info.
      *
      * @return void
-     * Example: B::breakpoint('Error message.', debug_backtrace());
+     *
      * @codeCoverageIgnore
      * Because I do not want to stop at breakpoint.
      */
@@ -306,7 +365,7 @@ abstract class BreakpointDebugging_InAllCase
     /**
      * Is this the debug execution mode? This class method is needed for code coverage report.
      *
-     * @return type
+     * @return bool Is this the debug execution mode?
      */
     static function isDebug()
     {
@@ -331,6 +390,8 @@ abstract class BreakpointDebugging_InAllCase
      * Sets the "\BreakpointDebugging_PHPUnit" object.
      *
      * @param object $phpUnit "\BreakpointDebugging_PHPUnit".
+     *
+     * @return void
      */
     static function setPHPUnit($phpUnit)
     {
@@ -345,6 +406,7 @@ abstract class BreakpointDebugging_InAllCase
      * @param mixed $error Error message or error exception instance.
      *
      * @return void
+     *
      * @codeCoverageIgnore
      * Because this class method exits.
      */
@@ -410,7 +472,8 @@ abstract class BreakpointDebugging_InAllCase
         // Checks client IP address.
         if ($_SERVER['REMOTE_ADDR'] !== self::$_developerIP) {
             BW::virtualOpen(self::ERROR_WINDOW_NAME, self::getErrorHtmlFileTemplate());
-            BW::htmlAddition(self::ERROR_WINDOW_NAME, 'pre', 0, '<b>You must set "$developerIP = \'' . $_SERVER['REMOTE_ADDR'] . '\';" ' . PHP_EOL
+            BW::htmlAddition(
+                self::ERROR_WINDOW_NAME, 'pre', 0, '<b>You must set "$developerIP = \'' . $_SERVER['REMOTE_ADDR'] . '\';" ' . PHP_EOL
                 . "\t" . 'into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file.' . PHP_EOL
                 . 'Or, you mistook start "php" page.</b>'
             );
@@ -422,7 +485,8 @@ abstract class BreakpointDebugging_InAllCase
             || $_SERVER['HTTPS'] === 'off' //
         ) {
             BW::virtualOpen(self::ERROR_WINDOW_NAME, self::getErrorHtmlFileTemplate());
-            BW::htmlAddition(self::ERROR_WINDOW_NAME, 'pre', 0, '<b>You must use "https" protocol.' . PHP_EOL
+            BW::htmlAddition(
+                self::ERROR_WINDOW_NAME, 'pre', 0, '<b>You must use "https" protocol.' . PHP_EOL
                 . 'Or, you mistook start "php" page.</b>'
             );
             return false;
@@ -433,21 +497,25 @@ abstract class BreakpointDebugging_InAllCase
     /**
      * Checks unit-test-execution-mode.
      *
-     * @param bool $isUnitTest It is unit test?
-     *
-     * @return void
-     *
+     * <pre>
      * Example:
+     *
+     * <code>
      *      <?php
-     *
      *      require_once './BreakpointDebugging_Inclusion.php';
-     *
      *      use \BreakpointDebugging as B;
-     *
      *      B::checkExeMode(); // Checks the execution mode.
      *          .
      *          .
      *          .
+     * </code>
+     *
+     * </pre>
+     *
+     * @param bool $isUnitTest It is unit test?
+     *
+     * @return void
+     *
      * @codeCoverageIgnore
      * Because this class method does not exist in case of unit test.
      */
@@ -585,7 +653,7 @@ EOD;
     /**
      * This registers as function or method being not fixed.
      *
-     * @param bool &$isRegister Is this registered?
+     * @param bool $isRegister Is this registered?
      *
      * @return void
      *
@@ -669,10 +737,18 @@ EOD;
      * This method changes it to unify multibyte character strings such as system-output or user input, and this returns UTF-8 multibyte character strings.
      * This is security for not mixing a character sets.
      *
+     * <pre>
+     * Example:
+     *
+     * <code>
+     *      \BreakpointDebugging::convertMbString($warning['Message']);
+     * </code>
+     *
+     * </pre>
+     *
      * @param string $string Character string which may be not UTF8.
      *
      * @return string UTF8 character string.
-     * Example: \BreakpointDebugging::convertMbString($warning['Message']);
      */
     static function convertMbString($string)
     {
@@ -756,6 +832,7 @@ EOD;
      * @param bool   $isTermination     This call is termination?
      *
      * @return mixed The result or false.
+     *
      * @throw Instance of \Exception.
      */
     private static function _retryForFilesystemFunction($functionName, array $params, $timeout, $sleepMicroSeconds, $isTermination = false)
@@ -843,6 +920,8 @@ EOD;
      * @param int      $permission The file permission.
      * @param int      $flags      Same as "file_put_contents()".
      * @param resource $context    Same as "file_put_contents()".
+     *
+     * @return mixed "false" if failure.
      */
     static function filePutContents($filename, $params, $permission = 0600, $flags = 0, $context = null)
     {
@@ -868,10 +947,18 @@ EOD;
     /**
      * Compresses integer array.
      *
+     * <pre>
+     * Example:
+     *
+     * <code>
+     *      fwrite($pFile, \BreakpointDebugging::compressIntArray(array(0xFFFFFFFF, 0x7C, 0x7D, 0x7E, 0x0A, 0x0D)));
+     * </code>
+     *
+     * </pre>
+     *
      * @param array $intArray Integer array.
      *
      * @return string Compression character string.
-     * Example: fwrite($pFile, \BreakpointDebugging::compressIntArray(array(0xFFFFFFFF, 0x7C, 0x7D, 0x7E, 0x0A, 0x0D)));
      */
     static function compressIntArray($intArray)
     {
@@ -903,10 +990,18 @@ EOD;
     /**
      * Decompresses to integer array.
      *
+     * <pre>
+     * Example:
+     *
+     * <code>
+     *      while ($intArray = \BreakpointDebugging::decompressIntArray(fgets($pFile))) {
+     * </code>
+     *
+     * </pre>
+     *
      * @param mixed $compressBytes Compression character string by "\BreakpointDebugging::compressIntArray()".
      *
      * @return array Integer array.
-     * Example: while ($intArray = \BreakpointDebugging::decompressIntArray(fgets($pFile))) {
      */
     static function decompressIntArray($compressBytes)
     {
@@ -941,7 +1036,7 @@ EOD;
     /**
      * Clears recursive array element.
      *
-     * @param array $parentArray   Parent array to search element.
+     * @param array $parentArray  Parent array to search element.
      * @param array $parentsArray Array of parents to compare ID.
      *
      * @return array Array which changed.
@@ -1011,7 +1106,7 @@ EOD;
     /**
      * Clears recursive array element.
      *
-     * @param mixed &$recursiveArray Recursive array. Keeps reference to this-variable by reference copy. CAUTION: This array is changed.
+     * @param mixed $recursiveArray Recursive array. Keeps reference to this-variable by reference copy. CAUTION: This array is changed.
      *
      * @return mixed Array which changed.
      */
@@ -1101,9 +1196,9 @@ EOD;
     /**
      * For "self::iniSet()" and "self::iniCheck()".
      *
-     * @param string $cmpNameSuffix       Comparison file name suffix.
-     * @param array  &$onceFlagPerPackage Once flag per package.
-     * @param string $displayString       A display string.
+     * @param string $cmpNameSuffix      Comparison file name suffix.
+     * @param array  $onceFlagPerPackage Once flag per package.
+     * @param string $displayString      A display string.
      *
      * @return void
      */
@@ -1179,8 +1274,7 @@ EOD;
             array (
             'BreakpointDebugging.php',
             'BreakpointDebugging/PHPUnit/FrameworkTestCaseSimple.php',
-            )
-            , true
+            ), true
         );
 
         // Unlinks synchronization files.
@@ -1411,11 +1505,19 @@ EOD;
     /**
      * Calls exception handler inside global error handling or global exception handling. (For this package developer).
      *
+     * <pre>
+     * Example:
+     *
+     * <code>
+     *      \BreakpointDebugging::internalException($message, 1);
+     * </code>
+     *
+     * </pre>
+     *
      * @param string $message Exception message.
      * @param int    $id      Exception identification number inside function.
      *
      * @return void
-     * Example: \BreakpointDebugging::internalException($message, 1);
      */
     final static function internalException($message, $id)
     {
@@ -1434,6 +1536,7 @@ EOD;
      * Debugs by calling "__destructor()" of all object.
      *
      * @return void
+     *
      * @codeCoverageIgnore
      */
     static function shutdown()
@@ -1453,7 +1556,7 @@ if ($_BreakpointDebugging_EXE_MODE & BA::RELEASE) { // In case of release.
      * @category PHP
      * @package  BreakpointDebugging
      * @author   Hidenori Wasa <public@hidenori-wasa.com>
-     * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
+     * @license  http://opensource.org/licenses/mit-license.php  MIT License
      * @version  Release: @package_version@
      * @link     http://pear.php.net/package/BreakpointDebugging
      */
@@ -1477,6 +1580,7 @@ if ($_BreakpointDebugging_EXE_MODE & BA::RELEASE) { // In case of release.
          * @param bool $assertion Dummy.
          *
          * @return void
+         *
          * @codeCoverageIgnore
          * Because this class method is overridden.
          */
@@ -1520,11 +1624,10 @@ if ($_BreakpointDebugging_EXE_MODE & BA::RELEASE) { // In case of release.
          * @category PHP
          * @package  BreakpointDebugging
          * @author   Hidenori Wasa <public@hidenori-wasa.com>
-         * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
+         * @license  http://opensource.org/licenses/mit-license.php  MIT License
          * @version  Release: @package_version@
          * @link     http://pear.php.net/package/BreakpointDebugging
          */
-
         final class BreakpointDebugging extends \BreakpointDebugging_Middle
         {
 
@@ -1573,11 +1676,10 @@ if ($_BreakpointDebugging_EXE_MODE & BA::RELEASE) { // In case of release.
          * @category PHP
          * @package  BreakpointDebugging
          * @author   Hidenori Wasa <public@hidenori-wasa.com>
-         * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
+         * @license  http://opensource.org/licenses/mit-license.php  MIT License
          * @version  Release: @package_version@
          * @link     http://pear.php.net/package/BreakpointDebugging
          */
-
         final class BreakpointDebugging extends \BreakpointDebugging_Middle
         {
 
@@ -1623,7 +1725,7 @@ if (B::getStatic('$exeMode') & BA::UNIT_TEST) { // In case of unit test.
      * @category PHP
      * @package  BreakpointDebugging
      * @author   Hidenori Wasa <public@hidenori-wasa.com>
-     * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
+     * @license  http://opensource.org/licenses/mit-license.php  MIT License
      * @version  Release: @package_version@
      * @link     http://pear.php.net/package/BreakpointDebugging
      */
@@ -1639,7 +1741,7 @@ if (B::getStatic('$exeMode') & BA::UNIT_TEST) { // In case of unit test.
  * @category PHP
  * @package  BreakpointDebugging
  * @author   Hidenori Wasa <public@hidenori-wasa.com>
- * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
+ * @license  http://opensource.org/licenses/mit-license.php  MIT License
  * @version  Release: @package_version@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
@@ -1654,7 +1756,7 @@ class BreakpointDebugging_ErrorException extends \BreakpointDebugging_Exception
  * @category PHP
  * @package  BreakpointDebugging
  * @author   Hidenori Wasa <public@hidenori-wasa.com>
- * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
+ * @license  http://opensource.org/licenses/mit-license.php  MIT License
  * @version  Release: @package_version@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */

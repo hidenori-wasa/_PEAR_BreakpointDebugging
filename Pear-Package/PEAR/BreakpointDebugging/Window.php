@@ -3,43 +3,17 @@
 /**
  * Class for display to other process windows.
  *
- * This class should be used for development because customer needs command input.
- *
- * PHP version 5.3.2-5.4.x
- *
- * LICENSE OVERVIEW:
- * 1. Do not change license text.
- * 2. Copyrighters do not take responsibility for this file code.
- *
  * LICENSE:
- * Copyright (c) 2014, Hidenori Wasa
+ * Copyright (c) 2014-, Hidenori Wasa
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *
- * Redistributions of source code must retain the above copyright notice,
- * this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright notice,
- * this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the distribution.
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
- * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * License content is written in "PEAR/BreakpointDebugging/BREAKPOINTDEBUGGING_LICENSE.txt".
  *
  * @category PHP
  * @package  BreakpointDebugging
  * @author   Hidenori Wasa <public@hidenori-wasa.com>
- * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
+ * @license  http://opensource.org/licenses/mit-license.php  MIT License
+ * @version  Release: @package_version@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
 use \BreakpointDebugging as B;
@@ -49,42 +23,58 @@ use \BreakpointDebugging_Window as BW;
 /**
  * Class for display to other process windows.
  *
+ * This class should be used for development because customer needs command input.
+ *
+ * PHP version 5.3.2-5.4.x
+ *
  * @category PHP
  * @package  BreakpointDebugging
  * @author   Hidenori Wasa <public@hidenori-wasa.com>
- * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
+ * @license  http://opensource.org/licenses/mit-license.php  MIT License
  * @version  Release: @package_version@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
 class BreakpointDebugging_Window
 {
     /**
-     * @const int Shared memory byte size.
+     * Shared memory byte size.
+     *
+     * @const int
      */
     const SHARED_MEMORY_SIZE = 1048576;
 
     /**
-     * @var \BreakpointDebugging_Window This instance.
+     * This instance.
+     *
+     * @var \BreakpointDebugging_Window
      */
     private static $_self;
 
     /**
-     * @var string Shared file path.
+     * Shared file path.
+     *
+     * @var string
      */
     private static $_sharedFilePath;
 
     /**
-     * @var array Once JavaScript flag.
+     * Once JavaScript flag.
+     *
+     * @var array
      */
     private static $_onceJavaScript = array ();
 
     /**
-     * @var int Shared memory operation ID or file pointer.
+     * Shared memory operation ID or file pointer.
+     *
+     * @var int
      */
     private static $_resourceID;
 
     /**
-     * @var bool Is "shmop" extention valid?
+     * Is "shmop" extention valid?
+     *
+     * @var bool
      */
     private static $_isShmopValid;
 
@@ -187,7 +177,7 @@ class BreakpointDebugging_Window
     /**
      * Dispatches the shared resource of JavaScript to other process for display.
      *
-     * @param type $javaScript
+     * @param string $javaScript JavaScript character string.
      *
      * @return void
      */
@@ -242,6 +232,8 @@ class BreakpointDebugging_Window
      * Generates "Mozilla Firefox" start command.
      *
      * @param string $uri URI for display.
+     *
+     * @return void
      */
     static function generateMozillaFirefoxStartCommand($uri)
     {
@@ -259,7 +251,7 @@ class BreakpointDebugging_Window
      */
     private static function _initializeSharedResource()
     {
-        $openFirefoxWindow = function($uri) {
+        $openFirefoxWindow = function ($uri) {
             $command = BW::generateMozillaFirefoxStartCommand($uri);
             if (!(B::getStatic('$exeMode') & B::REMOTE) // If local server.
                 && BREAKPOINTDEBUGGING_IS_WINDOWS // If Windows.
@@ -424,7 +416,7 @@ EOD;
     /**
      * Closes out browser window.
      *
-     * @param string $windowName
+     * @param string $windowName Window name.
      *
      * @return void
      */

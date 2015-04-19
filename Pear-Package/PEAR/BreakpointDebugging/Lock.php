@@ -3,48 +3,19 @@
 /**
  * The abstract base class which lock php-code.
  *
- * A synchronous object must be singleton because dead-lock occurs.
- * And, if you use derived class of this class, don't do other synchronous-process ( flock() and so on ) because dead-lock occurs.
- *
- * Example of dead-lock.
- *      Process A locks file A, and process B locks file B.
- *      Then, process A is waiting for file B, and process B is waiting for file A.
- *
  * PHP version 5.3.2-5.4.x
  *
- * LICENSE OVERVIEW:
- * 1. Do not change license text.
- * 2. Copyrighters do not take responsibility for this file code.
- *
  * LICENSE:
- * Copyright (c) 2012-2013, Hidenori Wasa
+ * Copyright (c) 2012-, Hidenori Wasa
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *
- * Redistributions of source code must retain the above copyright notice,
- * this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright notice,
- * this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the distribution.
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
- * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * License content is written in "PEAR/BreakpointDebugging/BREAKPOINTDEBUGGING_LICENSE.txt".
  *
  * @category PHP
  * @package  BreakpointDebugging
  * @author   Hidenori Wasa <public@hidenori-wasa.com>
- * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
+ * @license  http://opensource.org/licenses/mit-license.php  MIT License
+ * @version  Release: @package_version@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
 use \BreakpointDebugging as B;
@@ -52,52 +23,75 @@ use \BreakpointDebugging as B;
 /**
  * The abstract base class which lock php-code.
  *
+ * A synchronous object must be singleton because dead-lock occurs.
+ * And, if you use derived class of this class, don't do other synchronous-process ( flock() and so on ) because dead-lock occurs.
+ *
+ * Example of dead-lock.
+ *      Process A locks file A, and process B locks file B.
+ *      Then, process A is waiting for file B, and process B is waiting for file A.
+ *
  * @category PHP
  * @package  BreakpointDebugging
  * @author   Hidenori Wasa <public@hidenori-wasa.com>
- * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
+ * @license  http://opensource.org/licenses/mit-license.php  MIT License
  * @version  Release: @package_version@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
 abstract class BreakpointDebugging_Lock
 {
     /**
-     * @var object Maintains a instance of internal.
+     * Maintains a instance of internal.
+     *
+     * @var object
      */
     private static $_internalInstance = null;
 
     /**
-     * @var object Maintains a instance.
+     * Maintains a instance.
+     *
+     * @var object
      */
     private static $_instance = null;
 
     /**
-     * @var int The lock count.
+     * The lock count.
+     *
+     * @var int
      */
     protected $lockCount;
 
     /**
-     * @var string Lock-flag-file path.
+     * Lock-flag-file path.
+     *
+     * @var string
      */
     protected $lockFilePath;
 
     /**
-     * @var int Seconds number of timeout.
+     * Seconds number of timeout.
+     *
+     * @var int
      */
     protected $timeout;
 
     /**
-     * @var int Micro seconds to sleep.
+     * Micro seconds to sleep.
+     *
+     * @var int
      */
     protected $sleepMicroSeconds;
 
     /**
-     * @var int Shared memory ID.
+     * Shared memory ID.
+     *
+     * @var int
      */
     protected static $sharedMemoryID;
 
     /**
-     * @var type
+     * Current object class name.
+     *
+     * @var string
      */
     private static $_currentClassName = null;
 
@@ -196,6 +190,7 @@ abstract class BreakpointDebugging_Lock
      * @return void
      */
     abstract protected function loopLocking();
+
     /**
      * Lock php-code.
      * Permit going through the only process or thread, then other processes or threads have been waited.
@@ -227,6 +222,7 @@ abstract class BreakpointDebugging_Lock
      * @return void
      */
     abstract protected function loopUnlocking();
+
     /**
      * Unlock php-code.
      * This permits going through other processes or threads.
@@ -274,5 +270,3 @@ abstract class BreakpointDebugging_Lock
     }
 
 }
-
-?>

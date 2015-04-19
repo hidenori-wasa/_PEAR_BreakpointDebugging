@@ -3,6 +3,32 @@
 /**
  * Class for breakpoint debugging in case of debug mode.
  *
+ * LICENSE:
+ * Copyright (c) 2012-, Hidenori Wasa
+ * All rights reserved.
+ *
+ * License content is written in "PEAR/BreakpointDebugging/BREAKPOINTDEBUGGING_LICENSE.txt".
+ *
+ * @category PHP
+ * @package  BreakpointDebugging
+ * @author   Hidenori Wasa <public@hidenori-wasa.com>
+ * @license  http://opensource.org/licenses/mit-license.php  MIT License
+ * @version  Release: @package_version@
+ * @link     http://pear.php.net/package/BreakpointDebugging
+ */
+// File to have "use" keyword does not inherit scope into a file including itself,
+// also it does not inherit scope into a file including,
+// and moreover "use" keyword alias has priority over class definition,
+// therefore "use" keyword alias does not be affected by other files.
+use \BreakpointDebugging as B;
+use \BreakpointDebugging_InAllCase as BA;
+use \BreakpointDebugging_Window as BW;
+
+/**
+ * This class executes error or exception handling, and it is except release mode.
+ *
+ * PHP version 5.3.2-5.4.x
+ *
  * "*_InDebug.php" file does not use on release. Therefore, response time is zero in release.
  * These file names put "_" to cause error when we do autoload.
  *
@@ -46,19 +72,19 @@
  *      // Disable "IIS" server because port 80 conflicts with "Apache".
  *      // Create "lang.tmp" file. ( In case of Japan )
  *      C:\xampp\htdocs\xampp\lang.tmp
- *      	ja
+ *          ja
  *      // Disconnect outbound HTTP connection of Apache.
  *      C:\xampp\apache\conf\httpd.conf
- *      	before:
- *  		Listen 80
- *      	after:
- *  		Listen 127.0.0.1:80
+ *          before:
+ *          Listen 80
+ *          after:
+ *          Listen 127.0.0.1:80
  *      // Disconnect outbound SSL connection of Apache.
  *      C:\xampp\apache\conf\extra\httpd-ssl.conf
- *      	before:
- *  		Listen 443
- *      	after:
- *  		Listen 127.0.0.1:443
+ *          before:
+ *          Listen 443
+ *          after:
+ *          Listen 127.0.0.1:443
  *      // Change the configuration file of "MySQLi".
  *      C:\xampp\mysql\bin\my.ini
  *              .
@@ -215,33 +241,33 @@
  *              before:
  *              $cfg['Servers'][$i]['auth_type'] = 'cookie';
  *              after:
- *          	$cfg['Servers'][$i]['auth_type']     = 'config';
- *          	$cfg['Servers'][$i]['user']          = 'root';
- *          	$cfg['Servers'][$i]['password']      = 'wasapass'; // use here your password
- *          	before:
- *          	// $cfg['Servers'][$i]['pmadb'] = 'phpmyadmin';
- *          	// $cfg['Servers'][$i]['bookmarktable'] = 'pma_bookmark';
- *          	// $cfg['Servers'][$i]['relation'] = 'pma_relation';
- *          	// $cfg['Servers'][$i]['table_info'] = 'pma_table_info';
- *          	// $cfg['Servers'][$i]['table_coords'] = 'pma_table_coords';
- *          	// $cfg['Servers'][$i]['pdf_pages'] = 'pma_pdf_pages';
- *          	// $cfg['Servers'][$i]['column_info'] = 'pma_column_info';
- *          	// $cfg['Servers'][$i]['history'] = 'pma_history';
- *          	// $cfg['Servers'][$i]['tracking'] = 'pma_tracking';
- *          	// $cfg['Servers'][$i]['designer_coords'] = 'pma_designer_coords';
- *          	// $cfg['Servers'][$i]['userconfig'] = 'pma_userconfig';
- *          	after:
- *          	$cfg['Servers'][$i]['pmadb'] = 'phpmyadmin';
- *          	$cfg['Servers'][$i]['bookmarktable'] = 'pma_bookmark';
- *          	$cfg['Servers'][$i]['relation'] = 'pma_relation';
- *          	$cfg['Servers'][$i]['table_info'] = 'pma_table_info';
- *          	$cfg['Servers'][$i]['table_coords'] = 'pma_table_coords';
- *          	$cfg['Servers'][$i]['pdf_pages'] = 'pma_pdf_pages';
- *          	$cfg['Servers'][$i]['column_info'] = 'pma_column_info';
- *          	$cfg['Servers'][$i]['history'] = 'pma_history';
- *          	$cfg['Servers'][$i]['tracking'] = 'pma_tracking';
- *          	$cfg['Servers'][$i]['designer_coords'] = 'pma_designer_coords';
- *          	$cfg['Servers'][$i]['userconfig'] = 'pma_userconfig';
+ *              $cfg['Servers'][$i]['auth_type']     = 'config';
+ *              $cfg['Servers'][$i]['user']          = 'root';
+ *              $cfg['Servers'][$i]['password']      = 'wasapass'; // use here your password
+ *              before:
+ *              // $cfg['Servers'][$i]['pmadb'] = 'phpmyadmin';
+ *              // $cfg['Servers'][$i]['bookmarktable'] = 'pma_bookmark';
+ *              // $cfg['Servers'][$i]['relation'] = 'pma_relation';
+ *              // $cfg['Servers'][$i]['table_info'] = 'pma_table_info';
+ *              // $cfg['Servers'][$i]['table_coords'] = 'pma_table_coords';
+ *              // $cfg['Servers'][$i]['pdf_pages'] = 'pma_pdf_pages';
+ *              // $cfg['Servers'][$i]['column_info'] = 'pma_column_info';
+ *              // $cfg['Servers'][$i]['history'] = 'pma_history';
+ *              // $cfg['Servers'][$i]['tracking'] = 'pma_tracking';
+ *              // $cfg['Servers'][$i]['designer_coords'] = 'pma_designer_coords';
+ *              // $cfg['Servers'][$i]['userconfig'] = 'pma_userconfig';
+ *              after:
+ *              $cfg['Servers'][$i]['pmadb'] = 'phpmyadmin';
+ *              $cfg['Servers'][$i]['bookmarktable'] = 'pma_bookmark';
+ *              $cfg['Servers'][$i]['relation'] = 'pma_relation';
+ *              $cfg['Servers'][$i]['table_info'] = 'pma_table_info';
+ *              $cfg['Servers'][$i]['table_coords'] = 'pma_table_coords';
+ *              $cfg['Servers'][$i]['pdf_pages'] = 'pma_pdf_pages';
+ *              $cfg['Servers'][$i]['column_info'] = 'pma_column_info';
+ *              $cfg['Servers'][$i]['history'] = 'pma_history';
+ *              $cfg['Servers'][$i]['tracking'] = 'pma_tracking';
+ *              $cfg['Servers'][$i]['designer_coords'] = 'pma_designer_coords';
+ *              $cfg['Servers'][$i]['userconfig'] = 'pma_userconfig';
  *      // Extensions which "phpMyAdmin" needs. ( Confirms by "phpinfo()" )
  *          "zlib" or "bz2"
  *          "mbstring"
@@ -517,75 +543,33 @@
  *      "__destruct()" class method is called if we overwrite null value to variable because value of all reference is disabled.
  *      However, memory area and reference count is kept.
  *
- * PHP version 5.3.2-5.4.x
- *
- * LICENSE OVERVIEW:
- * 1. Do not change license text.
- * 2. Copyrighters do not take responsibility for this file code.
- *
- * LICENSE:
- * Copyright (c) 2012-2013, Hidenori Wasa
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *
- * Redistributions of source code must retain the above copyright notice,
- * this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright notice,
- * this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the distribution.
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
- * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
  * @category PHP
  * @package  BreakpointDebugging
  * @author   Hidenori Wasa <public@hidenori-wasa.com>
- * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
- * @link     http://pear.php.net/package/BreakpointDebugging
- */
-// File to have "use" keyword does not inherit scope into a file including itself,
-// also it does not inherit scope into a file including,
-// and moreover "use" keyword alias has priority over class definition,
-// therefore "use" keyword alias does not be affected by other files.
-use \BreakpointDebugging as B;
-use \BreakpointDebugging_InAllCase as BA;
-use \BreakpointDebugging_Window as BW;
-
-/**
- * This class executes error or exception handling, and it is except release mode.
- *
- * @category PHP
- * @package  BreakpointDebugging
- * @author   Hidenori Wasa <public@hidenori-wasa.com>
- * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
+ * @license  http://opensource.org/licenses/mit-license.php  MIT License
  * @version  Release: @package_version@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
 final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
 {
     /**
-     * @var array The class method call locations.
+     * The class method call locations.
+     *
+     * @var array
      */
     private static $_callLocations = array ();
 
     /**
-     * @var array Setting option filenames.
+     * Setting option filenames.
+     *
+     * @var array
      */
     private static $_onceFlagPerPackageInDebug = array ();
 
     /**
-     * @var string Include-paths.
+     * Include-paths.
+     *
+     * @var string
      */
     private static $_includePaths;
 
@@ -772,12 +756,19 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
     /**
      * For debug.
      *
+     * <pre>
+     * Example:
+     *
+     * <code>
+     *      $pFile = B::fopen(array ($filePath, 'w+b'));
+     * </code>
+     *
+     * </pre>
+     *
      * @param array $params            Same as parent.
      * @param int   $permission        Same as parent.
      * @param int   $timeout           Same as parent.
      * @param int   $sleepMicroSeconds Same as parent.
-     *
-     * Example: $pFile = B::fopen(array ($filePath, 'w+b'));
      *
      * @return Same as parent.
      */
@@ -1051,9 +1042,16 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
     /**
      * This changes a character sets to display a multibyte character string with local window of debugger, and this returns it.
      *
-     * @return array Some changed variables.
+     * <pre>
+     * Example:
      *
-     * Example: $gDebugValue = \BreakpointDebugging::convertMbStringForDebug('SJIS', $scalar1, $array2, $scalar2);
+     * <code>
+     *      $gDebugValue = \BreakpointDebugging::convertMbStringForDebug('SJIS', $scalar1, $array2, $scalar2);
+     * </code>
+     *
+     * </pre>
+     *
+     * @return array Some changed variables.
      */
     static function convertMbStringForDebug()
     {
@@ -1133,13 +1131,20 @@ EOD;
      * Executes function by parameter array, then displays executed function line, file, parameters and results.
      * Does not exist in case of release because this method uses for a function verification display.
      *
+     * <pre>
+     * Example:
+     *
+     * <code>
+     *      $return = \BreakpointDebugging::displayVerification('function_name', func_get_args());
+     *      $return = \BreakpointDebugging::displayVerification('function_name', array($object, $resource, &$reference));
+     * </code>
+     *
+     * </pre>
+     *
      * @param string $functionName Function name.
      * @param array  $params       Parameter array.
      *
      * @return Executed function result.
-     *
-     * Example: $return = \BreakpointDebugging::displayVerification('function_name', func_get_args());
-     *          $return = \BreakpointDebugging::displayVerification('function_name', array($object, $resource, &$reference));
      */
     static function displayVerification($functionName, $params)
     {

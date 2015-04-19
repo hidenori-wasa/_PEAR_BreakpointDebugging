@@ -3,12 +3,37 @@
 /**
  * Class which locks php-code by shared memory operation.
  *
+ * PHP version 5.3.2-5.4.x
+ *
+ * LICENSE:
+ * Copyright (c) 2012-, Hidenori Wasa
+ * All rights reserved.
+ *
+ * License content is written in "PEAR/BreakpointDebugging/BREAKPOINTDEBUGGING_LICENSE.txt".
+ *
+ * @category PHP
+ * @package  BreakpointDebugging
+ * @author   Hidenori Wasa <public@hidenori-wasa.com>
+ * @license  http://opensource.org/licenses/mit-license.php  MIT License
+ * @version  Release: @package_version@
+ * @link     http://pear.php.net/package/BreakpointDebugging
+ */
+use \BreakpointDebugging as B;
+use \BreakpointDebugging_Shmop as BS;
+use \BreakpointDebugging_BlackList as BB;
+
+/**
+ * Class which locks php-code by shared memory operation.
+ *
  * This class requires "shmop" extension.
  * We can synchronize applications by setting the same directory
  * to "$workDir = &B::refStatic('$_workDir'); $workDir = <work directory>;"
  * of "BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php'".
  *
+ * <pre>
  * Example of usage.
+ *
+ * <code>
  *      $LockByShmopRequest = &\BreakpointDebugging_LockByShmopRequest::singleton(); // Creates a lock instance.
  *      $LockByShmopRequest->lock(); // Locks php-code.
  *      try {
@@ -22,73 +47,96 @@
  *          throw $e;
  *      }
  *      $LockByShmopRequest->unlock(); // Unlocks php-code.
+ * </code>
  *
  * This class is same as "BreakpointDebugging_LockByFileExisting".
  * However, hard disk has only a few access.
- *
- * PHP version 5.3.2-5.4.x
- *
- * LICENSE OVERVIEW:
- * 1. Do not change license text.
- * 2. Copyrighters do not take responsibility for this file code.
- *
- * LICENSE:
- * Copyright (c) 2014, Hidenori Wasa
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *
- * Redistributions of source code must retain the above copyright notice,
- * this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright notice,
- * this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the distribution.
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
- * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * </pre>
  *
  * @category PHP
  * @package  BreakpointDebugging
  * @author   Hidenori Wasa <public@hidenori-wasa.com>
- * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
- * @link     http://pear.php.net/package/BreakpointDebugging
- */
-use \BreakpointDebugging as B;
-use \BreakpointDebugging_Shmop as BS;
-use \BreakpointDebugging_BlackList as BB;
-
-/**
- * Class which locks php-code by shared memory operation.
- *
- * @category PHP
- * @package  BreakpointDebugging
- * @author   Hidenori Wasa <public@hidenori-wasa.com>
- * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
+ * @license  http://opensource.org/licenses/mit-license.php  MIT License
  * @version  Release: @package_version@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
 final class BreakpointDebugging_LockByShmopRequest extends \BreakpointDebugging_Lock
 {
+    /**
+     * Shared memory operation key file path.
+     *
+     * @var string
+     */
     private static $_shmopKeyFilePath;
+
+    /**
+     * Unique ID size.
+     *
+     * @var int
+     */
     private static $_uniqueIdSize;
+
+    /**
+     * Unique ID.
+     *
+     * @var string
+     */
     private $_uniqueID;
+
+    /**
+     * Writing request location.
+     *
+     * @var int
+     */
     private static $_writingRequestLocation;
+
+    /**
+     * Unique ID response location.
+     *
+     * @var int
+     */
     private static $_uniqueIdResponseLocation;
+
+    /**
+     * Written response location.
+     *
+     * @var int
+     */
     private static $_writtenResponseLocation;
+
+    /**
+     * Locking location.
+     *
+     * @var int
+     */
     private static $_lockingLocation;
+
+    /**
+     * The stop location.
+     *
+     * @var int
+     */
     private static $_stopLocation;
+
+    /**
+     * Locking object.
+     *
+     * @var \BreakpointDebugging_LockByFileExisting
+     */
     private static $_lockingObject;
+
+    /**
+     * Shared memory ID.
+     *
+     * @var int
+     */
     private $_sharedMemoryID;
+
+    /**
+     * The process file pointer.
+     *
+     * @var resource
+     */
     private $_pPipe;
 
     /**
@@ -219,11 +267,10 @@ final class BreakpointDebugging_LockByShmopRequest extends \BreakpointDebugging_
     /**
      * Creates response process.
      *
-     * @param type $pFile
-     * @param type $sharedMemoryID
+     * @param resource $pFile          Current shared memory key file pointer.
+     * @param int      $sharedMemoryID Current shared memory ID.
      *
      * @return array Shared memory key file pointer and ID.
-     *
      * @throws Exception
      * @throws \BreakpointDebugging_ErrorException
      */
@@ -435,6 +482,11 @@ final class BreakpointDebugging_LockByShmopRequest extends \BreakpointDebugging_
         B::assert($result !== false);
     }
 
+    /**
+     * Closes the shared memory.
+     * 
+     * @return void
+     */
     static function shutdown()
     {
         $sharedMemoryID = &BB::refLockByShmopRequestSharedMemoryID();

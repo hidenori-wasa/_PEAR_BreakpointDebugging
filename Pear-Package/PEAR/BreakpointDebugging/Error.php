@@ -3,44 +3,17 @@
 /**
  * Does error or exception handling.
  *
- * There is this file to increase speed when does not do error or exception handling.
- * In other words, this file does not cause "__autoload()" because does not read except for error or exception handling.
- *
- * PHP version 5.3.2-5.4.x
- *
- * LICENSE OVERVIEW:
- * 1. Do not change license text.
- * 2. Copyrighters do not take responsibility for this file code.
- *
  * LICENSE:
- * Copyright (c) 2013-2014, Hidenori Wasa
+ * Copyright (c) 2013-, Hidenori Wasa
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *
- * Redistributions of source code must retain the above copyright notice,
- * this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright notice,
- * this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the distribution.
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
- * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * License content is written in "PEAR/BreakpointDebugging/BREAKPOINTDEBUGGING_LICENSE.txt".
  *
  * @category PHP
  * @package  BreakpointDebugging
  * @author   Hidenori Wasa <public@hidenori-wasa.com>
- * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
+ * @license  http://opensource.org/licenses/mit-license.php  MIT License
+ * @version  Release: @package_version@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
 use \BreakpointDebugging as B;
@@ -48,10 +21,15 @@ use \BreakpointDebugging as B;
 /**
  * Does error or exception handling.
  *
+ * There is this file to increase speed when does not do error or exception handling.
+ * In other words, this file does not cause "__autoload()" because does not read except for error or exception handling.
+ *
+ * PHP version 5.3.2-5.4.x
+ *
  * @category PHP
  * @package  BreakpointDebugging
  * @author   Hidenori Wasa <public@hidenori-wasa.com>
- * @license  http://www.opensource.org/licenses/bsd-license.php  BSD 2-Clause
+ * @license  http://opensource.org/licenses/mit-license.php  MIT License
  * @version  Release: @package_version@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
@@ -132,6 +110,7 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_ErrorInAllCas
      * @param mixed $pTmpLog Error temporary log pointer.
      *
      * @return void
+     *
      * @throw \BreakpointDebugging_OutOfLogRangeException
      */
     protected function changeLogFile($pTmpLog)
@@ -203,7 +182,7 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_ErrorInAllCas
     /**
      * Close error-log-pointer.
      *
-     * @param mixed &$pTmpLog Error temporary log pointer.
+     * @param mixed $pTmpLog Error temporary log pointer.
      *
      * @return void
      */
@@ -226,8 +205,8 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_ErrorInAllCas
      * Error log writing.
      * This reduces amount of memory consumption in case of production server.
      *
-     * @param mixed &$pTmpLog Error temporary log pointer.
-     * @param mixed $pLog     Error log pointer.
+     * @param mixed $pTmpLog Error temporary log pointer.
+     * @param mixed $pLog    Error log pointer.
      *
      * @return void
      */
@@ -264,8 +243,8 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_ErrorInAllCas
      * Error log buffer writing.
      * This reduces amount of memory consumption in case of production server.
      *
-     * @param mixed  &$pLogBuffer Error log buffer pointer.
-     * @param string $log         Error log.
+     * @param mixed  $pLogBuffer Error log buffer pointer.
+     * @param string $log        Error log.
      *
      * @return void
      */
@@ -295,8 +274,8 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_ErrorInAllCas
      * Error log combination.
      * This reduces amount of memory consumption in case of production server.
      *
-     * @param mixed &$pTmpLog  Error temporary log pointer.
-     * @param mixed &$pTmpLog2 Error temporary log pointer.
+     * @param mixed $pTmpLog  Error temporary log pointer.
+     * @param mixed $pTmpLog2 Error temporary log pointer.
      *
      * @return void
      */
