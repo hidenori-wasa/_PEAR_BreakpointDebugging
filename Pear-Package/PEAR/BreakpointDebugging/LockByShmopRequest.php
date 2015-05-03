@@ -3,8 +3,6 @@
 /**
  * Class which locks php-code by shared memory operation.
  *
- * PHP version 5.3.2-5.4.x
- *
  * LICENSE:
  * Copyright (c) 2012-, Hidenori Wasa
  * All rights reserved.
@@ -24,6 +22,8 @@ use \BreakpointDebugging_BlackList as BB;
 
 /**
  * Class which locks php-code by shared memory operation.
+ *
+ * PHP version 5.3.2-5.4.x
  *
  * This class requires "shmop" extension.
  * We can synchronize applications by setting the same directory
@@ -150,7 +150,7 @@ final class BreakpointDebugging_LockByShmopRequest extends \BreakpointDebugging_
      */
     static function &singleton($timeout = 60, $expire = 300, $sleepMicroSeconds = 100000)
     {
-        B::assert(extension_loaded('shmop'), 101);
+        \BreakpointDebugging::assert(extension_loaded('shmop'), 101);
 
         return parent::singletonBase('\\' . __CLASS__, B::getStatic('$_workDir') . '/LockByShmopRequest.txt', $timeout, $expire, $sleepMicroSeconds);
     }
@@ -178,7 +178,7 @@ final class BreakpointDebugging_LockByShmopRequest extends \BreakpointDebugging_
                 $sharedMemoryID = BS::getSharedMemoryID($pFile);
                 if (!$sharedMemoryID) {
                     $result = fclose($pFile);
-                    B::assert($result === true);
+                    \BreakpointDebugging::assert($result === true);
                 }
             }
         }
@@ -257,7 +257,7 @@ final class BreakpointDebugging_LockByShmopRequest extends \BreakpointDebugging_
         self::waitForMultipleProcesses(array ($this->_pPipe));
         // Closes the pipe.
         $result = pclose($this->_pPipe);
-        B::assert($result !== -1);
+        \BreakpointDebugging::assert($result !== -1);
         // Closes the shared memory.
         shmop_close($this->_sharedMemoryID);
         // Initializes the shared memory ID.
@@ -304,7 +304,7 @@ final class BreakpointDebugging_LockByShmopRequest extends \BreakpointDebugging_
                 // If shared memory exists.
                 if ($sharedMemoryID) {
                     $isInit = shmop_read($sharedMemoryID, self::$_stopLocation, 1);
-                    B::assert($isInit !== false);
+                    \BreakpointDebugging::assert($isInit !== false);
                     if ($isInit === ' ') {
                         break;
                     }
@@ -365,7 +365,7 @@ final class BreakpointDebugging_LockByShmopRequest extends \BreakpointDebugging_
             if ($this->_sharedMemoryID) {
                 // Closes the file pointer.
                 $result = fclose($pFile);
-                B::assert($result === true);
+                \BreakpointDebugging::assert($result === true);
                 // If response process was not shutdowned.
                 if (shmop_read($this->_sharedMemoryID, self::$_stopLocation, 1) !== '0') {
                     return;
@@ -416,7 +416,7 @@ final class BreakpointDebugging_LockByShmopRequest extends \BreakpointDebugging_
                         break 2;
                     }
                     $isLocked = shmop_read($this->_sharedMemoryID, self::$_lockingLocation, 1);
-                    B::assert($isLocked !== false);
+                    \BreakpointDebugging::assert($isLocked !== false);
                     if ($isLocked !== '1') {
                         break;
                     }
@@ -426,14 +426,14 @@ final class BreakpointDebugging_LockByShmopRequest extends \BreakpointDebugging_
                 }
 
                 $IsWritingRequest = shmop_read($this->_sharedMemoryID, self::$_writingRequestLocation, 1);
-                B::assert($IsWritingRequest !== false);
+                \BreakpointDebugging::assert($IsWritingRequest !== false);
                 // If other process is writing.
                 if ($IsWritingRequest === '1') {
                     continue;
                 }
                 // Writes locking request.
                 $result = shmop_write($this->_sharedMemoryID, '1' . $this->_uniqueID . $this->_uniqueID . '1', 0);
-                B::assert($result !== false);
+                \BreakpointDebugging::assert($result !== false);
                 // Waits until response.
                 while (true) {
                     // If response process was shutdowned.
@@ -441,7 +441,7 @@ final class BreakpointDebugging_LockByShmopRequest extends \BreakpointDebugging_
                         break 2;
                     }
                     $wasWrittenResponse = shmop_read($this->_sharedMemoryID, self::$_writtenResponseLocation, 1);
-                    B::assert($wasWrittenResponse !== false);
+                    \BreakpointDebugging::assert($wasWrittenResponse !== false);
                     // If response process has written response.
                     if ($wasWrittenResponse === '1') {
                         break;
@@ -466,7 +466,7 @@ final class BreakpointDebugging_LockByShmopRequest extends \BreakpointDebugging_
         if (is_resource($pFile)) {
             // Closes the file pointer.
             $result = fclose($pFile);
-            B::assert($result === true);
+            \BreakpointDebugging::assert($result === true);
         }
     }
 
@@ -479,12 +479,12 @@ final class BreakpointDebugging_LockByShmopRequest extends \BreakpointDebugging_
     {
         // Initializes shared memory.
         $result = shmop_write($this->_sharedMemoryID, str_repeat("\x20", self::$_stopLocation + 1), 0);
-        B::assert($result !== false);
+        \BreakpointDebugging::assert($result !== false);
     }
 
     /**
      * Closes the shared memory.
-     * 
+     *
      * @return void
      */
     static function shutdown()

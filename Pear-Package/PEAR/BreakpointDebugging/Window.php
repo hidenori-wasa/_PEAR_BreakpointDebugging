@@ -23,9 +23,9 @@ use \BreakpointDebugging_Window as BW;
 /**
  * Class for display to other process windows.
  *
- * This class should be used for development because customer needs command input.
- *
  * PHP version 5.3.2-5.4.x
+ *
+ * This class should be used for development because customer needs command input.
  *
  * @category PHP
  * @package  BreakpointDebugging

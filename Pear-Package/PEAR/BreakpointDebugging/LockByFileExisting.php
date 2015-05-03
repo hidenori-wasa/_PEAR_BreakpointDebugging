@@ -3,8 +3,6 @@
 /**
  * Class which locks php-code by file existing.
  *
- * PHP version 5.3.2-5.4.x
- *
  * LICENSE:
  * Copyright (c) 2012-, Hidenori Wasa
  * All rights reserved.
@@ -22,6 +20,8 @@ use \BreakpointDebugging as B;
 
 /**
  * Class which locks php-code by file existing.
+ *
+ * PHP version 5.3.2-5.4.x
  *
  * This class is required for environment where "flock()" doesn't exist.
  * We can synchronize applications by setting the same directory

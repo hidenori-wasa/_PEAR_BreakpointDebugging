@@ -328,9 +328,9 @@ abstract class BreakpointDebugging_InAllCase
      */
     static function breakpoint($message, $callStackInfo)
     {
-        B::assert(func_num_args() === 2);
-        B::assert(is_string($message));
-        B::assert(is_array($callStackInfo));
+        \BreakpointDebugging::assert(func_num_args() === 2);
+        \BreakpointDebugging::assert(is_string($message));
+        \BreakpointDebugging::assert(is_array($callStackInfo));
 
         if (self::$exeMode === (B::REMOTE | B::RELEASE) //
             || (self::$exeMode & B::IGNORING_BREAK_POINT) //
@@ -381,7 +381,7 @@ abstract class BreakpointDebugging_InAllCase
      */
     static function httpBuildQuery($additionalElements)
     {
-        B::assert(count(array_diff_key($additionalElements, self::$_get)) === count($additionalElements));
+        \BreakpointDebugging::assert(count(array_diff_key($additionalElements, self::$_get)) === count($additionalElements));
 
         return http_build_query(array_merge($additionalElements, self::$_get));
     }
@@ -440,33 +440,42 @@ abstract class BreakpointDebugging_InAllCase
     /**
      * Checks security before we run development page.
      *
-     * @param mixed $necessaryExeMode Necessary execution mode. Does not check execution mode if this is false.
+     * @param mixed $necessaryExeMode Necessary execution mode. Does not check execution mode if this is null.
      *
      * @return bool Success or failure.
      */
-    static function checkDevelopmentSecurity($necessaryExeMode = false)
+    static function checkDevelopmentSecurity($necessaryExeMode = null)
     {
-        B::assert(func_num_args() <= 1);
-        B::assert($necessaryExeMode === false || is_int($necessaryExeMode));
+        \BreakpointDebugging::assert(func_num_args() <= 1);
+        \BreakpointDebugging::assert($necessaryExeMode === null || is_string($necessaryExeMode));
 
         // Checks the execution mode.
-        if ($necessaryExeMode !== false //
-            && !(self::$exeMode & $necessaryExeMode) //
-        ) {
-            switch ($necessaryExeMode) {
-                case self::RELEASE:
-                    $message = '<b>You must set' . PHP_EOL
-                        . '    "define(\'BREAKPOINTDEBUGGING_MODE\', \'RELEASE\');"' . PHP_EOL
-                        . 'into "BreakpointDebugging_MySetting.php".</b>';
-                    break;
-                default :
-                    throw new \BreakpointDebugging_ErrorException('"' . __METHOD__ . '" parameter1 is mistake.', 101);
+        if ($necessaryExeMode !== null) {
+            while (true) {
+                switch ($necessaryExeMode) {
+                    case 'RELEASE':
+                        if (self::$exeMode & self::RELEASE) { // In case of release.
+                            break 2;
+                        }
+                        $message = '<b>You must set' . PHP_EOL
+                            . '    "define(\'BREAKPOINTDEBUGGING_MODE\', \'RELEASE\');"' . PHP_EOL
+                            . 'into "BreakpointDebugging_MySetting.php".</b>';
+                        break;
+                    case 'LOCAL':
+                        if (!isset($_SERVER['SERVER_ADDR']) || $_SERVER['SERVER_ADDR'] === '127.0.0.1') { // In case of local.
+                            break 2;
+                        }
+                        $message = '<b>You must execute in local.</b>';
+                        break;
+                    default :
+                        throw new \BreakpointDebugging_ErrorException('"' . __METHOD__ . '" parameter1 is mistake.', 101);
+                }
+                BW::virtualOpen(self::ERROR_WINDOW_NAME, self::getErrorHtmlFileTemplate());
+                BW::htmlAddition(self::ERROR_WINDOW_NAME, 'pre', 0, $message);
+                return false;
             }
-            BW::virtualOpen(self::ERROR_WINDOW_NAME, self::getErrorHtmlFileTemplate());
-            BW::htmlAddition(self::ERROR_WINDOW_NAME, 'pre', 0, $message);
-            return false;
         }
-        if (!(self::$exeMode & self::REMOTE)) { // In case of local.
+        if (!isset($_SERVER['SERVER_ADDR']) || $_SERVER['SERVER_ADDR'] === '127.0.0.1') { // In case of local.
             return true;
         }
         // Checks client IP address.
@@ -661,7 +670,7 @@ EOD;
      */
     final static function registerNotFixedLocation(&$isRegister)
     {
-        B::assert(func_num_args() === 1);
+        \BreakpointDebugging::assert(func_num_args() === 1);
 
         // When it has been registered.
         if (!empty($isRegister)) {
@@ -692,8 +701,8 @@ EOD;
      */
     final static function addValuesToTrace($values)
     {
-        B::assert(func_num_args() === 1);
-        B::assert(is_array($values));
+        \BreakpointDebugging::assert(func_num_args() === 1);
+        \BreakpointDebugging::assert(is_array($values));
 
         $backTrace = debug_backtrace();
         $callInfo = &$backTrace[0];
@@ -966,7 +975,7 @@ EOD;
 
         $compressBytes = '';
         foreach ($intArray as $int) {
-            B::assert(preg_match('`^[0-9]$ | ^[1-9][0-9]+$`xX', $int) === 1);
+            \BreakpointDebugging::assert(preg_match('`^[0-9]$ | ^[1-9][0-9]+$`xX', $int) === 1);
             for ($diff = 1, $delimiter = 0x80, $tmpBytes = ''; $diff; $int = $diff / 0x7D) {
                 // This changes from decimal number to 126 number.
                 $diff = 0x7D * (int) ($int / 0x7D);
@@ -1167,7 +1176,7 @@ EOD;
             $includePaths = ini_get('include_path');
             $tmpIncludePaths = explode(PATH_SEPARATOR, $includePaths);
             $searchKey = array_search('.', $tmpIncludePaths, true);
-            B::assert($searchKey !== false);
+            \BreakpointDebugging::assert($searchKey !== false);
             unset($tmpIncludePaths[$searchKey]);
             B::iniSet('include_path', implode(PATH_SEPARATOR, $tmpIncludePaths));
             $resourceFilePath = stream_resolve_include_path($resourceDirectoryPath . $resourceFileName);
@@ -1288,7 +1297,7 @@ EOD;
             if (is_file($lockFilePath)) {
                 B::unlink(array ($lockFilePath));
             }
-            B::assert(!is_file($lockFilePath));
+            \BreakpointDebugging::assert(!is_file($lockFilePath));
         }
     }
 
@@ -1414,8 +1423,8 @@ EOD;
         set_error_handler('\BreakpointDebugging_Error::handleInternalError', -1);
 
         try {
-            if (BREAKPOINTDEBUGGING_IS_CAKE //
-                && \BREAKPOINTDEBUGGING_IS_PRODUCTION //
+            if (BREAKPOINTDEBUGGING_IS_PRODUCTION //
+                && BREAKPOINTDEBUGGING_IS_CAKE //
             ) {
                 \ErrorHandler::handleException($pException);
             }
@@ -1523,9 +1532,9 @@ EOD;
     {
         B::limitAccess('BreakpointDebugging/ErrorInAllCase.php');
 
-        B::assert(func_num_args() === 2);
-        B::assert(is_string($message));
-        B::assert(is_int($id));
+        \BreakpointDebugging::assert(func_num_args() === 2);
+        \BreakpointDebugging::assert(is_string($message));
+        \BreakpointDebugging::assert(is_int($id));
 
         B::callExceptionHandlerDirectly($message, $id);
         // @codeCoverageIgnoreStart
@@ -1705,7 +1714,7 @@ if ($_BreakpointDebugging_EXE_MODE & BA::RELEASE) { // In case of release.
 
 // Pushes autoload class method.
 $result = spl_autoload_register('\BreakpointDebugging::loadClass');
-B::assert($result);
+\BreakpointDebugging::assert($result);
 // Shifts global exception handler.
 set_exception_handler('\BreakpointDebugging::handleException');
 // Shifts global error handler.( -1 sets all bits on 1. Therefore, this specifies error, warning and note of all kinds.)

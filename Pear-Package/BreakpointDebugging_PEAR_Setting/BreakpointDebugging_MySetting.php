@@ -74,7 +74,7 @@ function BreakpointDebugging_setExecutionMode()
 
     if (BREAKPOINTDEBUGGING_IS_PRODUCTION === true) { // In case of production server release.
         $_BreakpointDebugging_EXE_MODE = 3; // For HTTP request query string attack counter-plan.
-    } else if (BREAKPOINTDEBUGGING_IS_PRODUCTION === false) { // In case of development.
+    } else { // In case of development.
         // Checks PHP version.
         if (version_compare(PHP_VERSION, '5.3.2', '<') || version_compare(PHP_VERSION, '5.5', '>=')) {
             exit('<pre>PHP version must be "5.3.2-" or "5.4.x".</pre>');
@@ -91,8 +91,6 @@ function BreakpointDebugging_setExecutionMode()
             $REMOTE = 1;
             $_BreakpointDebugging_EXE_MODE |= $REMOTE;
         }
-    } else {
-        exit('<pre>"BREAKPOINTDEBUGGING_IS_PRODUCTION" of "' . __FILE__ . '" must be bool.</pre>');
     }
     unset($_BreakpointDebugging_emulate_remote);
     // Reference path setting.
@@ -160,6 +158,8 @@ BreakpointDebugging_setExecutionMode();
 
 require_once 'BreakpointDebugging.php'; // 'BreakpointDebugging.php' must require_once because it is base of all class, and it sets php.ini, and it sets autoload.
 
+\BreakpointDebugging::assert(is_bool(BREAKPOINTDEBUGGING_IS_PRODUCTION));
+
 /**
  * Sets global variables and "php.ini" variables.
  *
@@ -209,10 +209,10 @@ function BreakpointDebugging_mySetting()
     // header('Content-type: text/html; charset=utf-8');
     // Set "mbstring.detect_order = UTF-8, UTF-7, ASCII, EUC-JP,SJIS, eucJP-win, SJIS-win, JIS, ISO-2022-JP" of "php.ini" file because this is purpose to define default value of character code detection.
     $result = mb_detect_order('UTF-8, UTF-7, ASCII, EUC-JP,SJIS, eucJP-win, SJIS-win, JIS, ISO-2022-JP');
-    // B::assert($result, 101);
+    // \BreakpointDebugging::assert($result, 101);
     $workDir = &B::refStatic('$_workDir');
     // We can change work directory name.
-    $workDir = './BreakpointDebugging_Work';
+    $workDir = './BreakpointDebugging_Work/';
     if (!BREAKPOINTDEBUGGING_IS_PRODUCTION) { // In case of development.
         if (is_dir($workDir)) {
             B::chmod($workDir, 0700);
@@ -225,7 +225,7 @@ function BreakpointDebugging_mySetting()
         B::copyResourceToCWD('BreakpointDebugging_ProductionSwitcher.php', '');
     }
     $workDir = realpath($workDir);
-    // B::assert($workDir !== false, 102);
+    // \BreakpointDebugging::assert($workDir !== false, 102);
     // ### <=== Please, set item.
     //
     ////////////////////////////////////////////////////////////////////////////////

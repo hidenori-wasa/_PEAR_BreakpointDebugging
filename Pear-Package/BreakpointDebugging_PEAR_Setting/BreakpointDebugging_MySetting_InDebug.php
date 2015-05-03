@@ -163,7 +163,6 @@ if (version_compare(PHP_VERSION, '5.4', '<')) {
 // B::iniCheck('expose_php', '', 'This should change "php.ini" file setting into "expose_php = Off" for security.');
 // This changes "php.ini" file setting into "arg_separator.output = "&amp;" to be based on XHTML fully.
 B::iniSet('arg_separator.output', '&amp;');
-//B::iniCheck('short_open_tag', '1', 'This should change "php.ini" file setting into "short_open_tag = On" because it needs for xampp using "&lt;?" opening tag.');
 B::iniCheck('short_open_tag', '', 'You must change "php.ini" file setting into "short_open_tag = Off" because "BreakpointDebugging_ProductionSwitcher" does not detect "&lt;?" opening tag.');
 B::iniCheck('asp_tags', '', 'This should change "php.ini" file setting into "asp_tags = Off" because it can distinguish between other languages by using "&lt;php?" opening tag.');
 // This changes "php.ini" file setting into "ignore_user_abort = Off" because it is purpose to end execution of script when client is disconnected.
@@ -197,10 +196,10 @@ B::iniSet('log_errors', '', false);
 B::iniSet('html_errors', '1', false);
 // // This doesn't make usual error report invalid.
 // B::iniCheck( 'xmlrpc_errors', '', 'Set "xmlrpc_errors = Off" in "php.ini" file because this does not change usual error report invalidly.');
-B::assert(B::getStatic('$_maxLogFileByteSize') % 4096 === 0);
-B::assert(1 <= B::getStatic('$_maxLogParamNestingLevel') && B::getStatic('$_maxLogParamNestingLevel') <= 100);
-B::assert(1 <= B::getStatic('$_maxLogElementNumber') && B::getStatic('$_maxLogElementNumber') <= 100);
-B::assert(1 <= B::getStatic('$_maxLogStringSize'));
+\BreakpointDebugging::assert(B::getStatic('$_maxLogFileByteSize') % 4096 === 0);
+\BreakpointDebugging::assert(1 <= B::getStatic('$_maxLogParamNestingLevel') && B::getStatic('$_maxLogParamNestingLevel') <= 100);
+\BreakpointDebugging::assert(1 <= B::getStatic('$_maxLogElementNumber') && B::getStatic('$_maxLogElementNumber') <= 100);
+\BreakpointDebugging::assert(1 <= B::getStatic('$_maxLogStringSize'));
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // ### Super global variable filter setting. ###
 B::iniCheck('filter.default', 'unsafe_raw', 'Set \'filter.default = unsafe_raw\' of "php.ini" or ".htaccess" file because of unit test\'s static backup.');

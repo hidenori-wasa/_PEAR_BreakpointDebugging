@@ -3,8 +3,6 @@
 /**
  * Class which locks php-code by "flock()".
  *
- * PHP version 5.3.2-5.4.x
- *
  * LICENSE:
  * Copyright (c) 2012-, Hidenori Wasa
  * All rights reserved.
@@ -22,6 +20,8 @@ use \BreakpointDebugging as B;
 
 /**
  * Class which locks php-code by "flock()".
+ *
+ * PHP version 5.3.2-5.4.x
  *
  * This class has to be environment which can use "flock()".
  * We can synchronize applications by setting the same directory
@@ -91,7 +91,7 @@ final class BreakpointDebugging_LockByFlock extends \BreakpointDebugging_Lock
         parent::__construct($lockFilePath, $timeout, $sleepMicroSeconds);
 
         $this->_pFile = B::fopen(array ($lockFilePath, 'ab'));
-        B::assert(stream_supports_lock($this->_pFile), 101);
+        \BreakpointDebugging::assert(stream_supports_lock($this->_pFile), 101);
     }
 
     /**
@@ -123,7 +123,7 @@ final class BreakpointDebugging_LockByFlock extends \BreakpointDebugging_Lock
      */
     protected function loopUnlocking()
     {
-        B::assert(is_resource($this->_pFile));
+        \BreakpointDebugging::assert(is_resource($this->_pFile));
         flock($this->_pFile, LOCK_UN);
     }
 

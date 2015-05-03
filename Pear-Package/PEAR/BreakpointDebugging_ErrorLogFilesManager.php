@@ -96,7 +96,7 @@ final class BreakpointDebugging_ErrorLogFilesManager
      */
     static function manageErrorLogFiles()
     {
-        if (!B::checkDevelopmentSecurity(B::RELEASE)) {
+        if (!B::checkDevelopmentSecurity('RELEASE')) {
             exit;
         }
 

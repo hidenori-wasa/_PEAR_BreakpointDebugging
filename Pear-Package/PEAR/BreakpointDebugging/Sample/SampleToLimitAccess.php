@@ -178,7 +178,7 @@ abstract class TestClass_InAllCase
 
 }
 
-if (B::isDebug()) { // In case of debug.
+if (\BreakpointDebugging::isDebug()) { // In case of debug.
     include_once __DIR__ . '/SampleToLimitAccess_InDebug.php';
 } else { // In case of release.
     /**

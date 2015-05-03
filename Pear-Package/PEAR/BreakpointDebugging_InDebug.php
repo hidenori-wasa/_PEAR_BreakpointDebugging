@@ -491,7 +491,7 @@ use \BreakpointDebugging_Window as BW;
  *          Procedure 4: Use "RELEASE" or "RELEASE_UNIT_TEST" mode at remote server. This mode can do production server logging debugging.
  *      If you changed remote "php.ini" file, you must redo from procedure 3 because to increase the production mode execution speed.
  * Procedure 8: Release the code to production server. And, change it to production mode.
- *      See the file level document of "BreakpointDebugging_ProductionSwitcher.php" file.
+ *      See the class level document of "BreakpointDebugging_ProductionSwitcher.php" file.
  *
  * Caution: Do not execute "ini_set('error_log', ...)" because this package uses local log rotation instead of system log.
  *

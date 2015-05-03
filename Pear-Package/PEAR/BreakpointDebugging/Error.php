@@ -42,9 +42,9 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_ErrorInAllCas
     function __construct()
     {
         B::limitAccess('BreakpointDebugging.php');
-        B::assert(func_num_args() === 0);
+        \BreakpointDebugging::assert(func_num_args() === 0);
 
-        if (B::isDebug()) { // In case of debug mode.
+        if (\BreakpointDebugging::isDebug()) { // In case of debug mode.
             $this->maxLogFileByteSize = B::getStatic('$_maxLogFileByteSize');
             $this->isLogging = false;
             $this->mark = '&diams;';
@@ -93,11 +93,11 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_ErrorInAllCas
      */
     function handleException2($pException, $prependLog)
     {
-        B::assert(func_num_args() === 2);
-        B::assert($pException instanceof \Exception);
-        B::assert(is_string($prependLog));
+        \BreakpointDebugging::assert(func_num_args() === 2);
+        \BreakpointDebugging::assert($pException instanceof \Exception);
+        \BreakpointDebugging::assert(is_string($prependLog));
 
-        if (B::isDebug()) { // In case of debug mode.
+        if (\BreakpointDebugging::isDebug()) { // In case of debug mode.
             // Forces unlocking to avoid lock-count assertion error if forces a exit.
             \BreakpointDebugging_Lock::forceUnlocking();
         }
@@ -115,7 +115,7 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_ErrorInAllCas
      */
     protected function changeLogFile($pTmpLog)
     {
-        if (B::isDebug()) { // In case of debug mode.
+        if (\BreakpointDebugging::isDebug()) { // In case of debug mode.
             $continuingMark = PHP_EOL . str_repeat("\t", 1) . '.';
             $continuingMark = PHP_EOL . '### Omits since then because it exceeded logfile maximum capacity. ###' . $continuingMark . $continuingMark . $continuingMark;
             $this->logBufferWriting($pTmpLog, $continuingMark);
@@ -166,7 +166,7 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_ErrorInAllCas
      */
     protected function logPointerOpening()
     {
-        B::assert(func_num_args() === 0);
+        \BreakpointDebugging::assert(func_num_args() === 0);
 
         $exemode = B::getStatic('$exeMode');
         // In case of remote mode or release mode.
@@ -188,8 +188,8 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_ErrorInAllCas
      */
     protected function logPointerClosing(&$pTmpLog)
     {
-        B::assert(func_num_args() === 1);
-        B::assert(is_array($pTmpLog) || is_resource($pTmpLog) || $pTmpLog === null);
+        \BreakpointDebugging::assert(func_num_args() === 1);
+        \BreakpointDebugging::assert(is_array($pTmpLog) || is_resource($pTmpLog) || $pTmpLog === null);
 
         $exemode = B::getStatic('$exeMode');
         // In case of remote mode or release mode.
@@ -212,11 +212,11 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_ErrorInAllCas
      */
     protected function logWriting(&$pTmpLog, $pLog = false)
     {
-        B::assert(func_num_args() <= 2);
-        B::assert(is_array($pTmpLog) || is_resource($pTmpLog));
-        B::assert(is_resource($pLog) || $pLog === false);
+        \BreakpointDebugging::assert(func_num_args() <= 2);
+        \BreakpointDebugging::assert(is_array($pTmpLog) || is_resource($pTmpLog));
+        \BreakpointDebugging::assert(is_resource($pLog) || $pLog === false);
 
-        if (B::isDebug()) { // In case of debug mode.
+        if (\BreakpointDebugging::isDebug()) { // In case of debug mode.
             $tmpLog = '';
             if (B::getStatic('$exeMode') & B::REMOTE) { // In case of remote mode.
                 rewind($pTmpLog);
@@ -250,11 +250,11 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_ErrorInAllCas
      */
     protected function logBufferWriting(&$pLogBuffer, $log)
     {
-        B::assert(func_num_args() === 2);
-        B::assert(is_array($pLogBuffer) || is_resource($pLogBuffer) || $pLogBuffer === null);
-        B::assert(is_string($log));
+        \BreakpointDebugging::assert(func_num_args() === 2);
+        \BreakpointDebugging::assert(is_array($pLogBuffer) || is_resource($pLogBuffer) || $pLogBuffer === null);
+        \BreakpointDebugging::assert(is_string($log));
 
-        if (B::isDebug()) { // In case of debug mode.
+        if (\BreakpointDebugging::isDebug()) { // In case of debug mode.
             if ($pLogBuffer === null) {
                 echo $log;
                 $this->logByteSize += strlen($log);
@@ -281,7 +281,7 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_ErrorInAllCas
      */
     protected function logCombination(&$pTmpLog, &$pTmpLog2)
     {
-        B::assert(func_num_args() === 2);
+        \BreakpointDebugging::assert(func_num_args() === 2);
 
         if (!isset($pTmpLog)) {
             return;
@@ -291,15 +291,15 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_ErrorInAllCas
         if (($exemode & B::REMOTE) //
             || ($exemode & B::RELEASE) //
         ) {
-            B::assert(is_resource($pTmpLog));
-            B::assert(is_resource($pTmpLog2));
+            \BreakpointDebugging::assert(is_resource($pTmpLog));
+            \BreakpointDebugging::assert(is_resource($pTmpLog2));
             rewind($pTmpLog2);
             while (!feof($pTmpLog2)) {
                 fwrite($pTmpLog, fread($pTmpLog2, 4096));
             }
         } else { // In case of local debug mode.
-            B::assert(is_array($pTmpLog));
-            B::assert(is_array($pTmpLog2));
+            \BreakpointDebugging::assert(is_array($pTmpLog));
+            \BreakpointDebugging::assert(is_array($pTmpLog2));
             if (count($pTmpLog2) !== 0) {
                 $pTmpLog = array_merge($pTmpLog, $pTmpLog2);
             }

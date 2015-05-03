@@ -11,6 +11,8 @@ $breakpointDebugging_PHPUnit = new \BreakpointDebugging_PHPUnit();
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Please, choose unit tests files by customizing.
 $breakpointDebugging_UnitTestFiles = array (
+    'BreakpointDebugging-ProductionSwitcherTest.php',
+    /*
     'ExampleTest.php',
     'PHPUnit1Test.php',
     'PHPUnit2Test.php',
@@ -23,6 +25,7 @@ $breakpointDebugging_UnitTestFiles = array (
     'BreakpointDebugging/LockByFlockTest.php',
     'BreakpointDebugging/LockByShmopRequestTest.php',
     'BreakpointDebugging/OverrideClassTest.php',
+    */
 );
 
 // Executes unit tests.

@@ -242,8 +242,8 @@ abstract class BreakpointDebugging_ErrorInAllCase
      */
     protected function setHTMLTags(&$tags)
     {
-        B::assert(func_num_args() === 1);
-        B::assert(is_array($tags));
+        \BreakpointDebugging::assert(func_num_args() === 1);
+        \BreakpointDebugging::assert(is_array($tags));
 
         $tags['font']['caution'] = '';
         $tags['font']['bool'] = '';
@@ -294,8 +294,8 @@ abstract class BreakpointDebugging_ErrorInAllCase
      */
     protected function convertMbString($string)
     {
-        B::assert(func_num_args() === 1);
-        B::assert(is_string($string));
+        \BreakpointDebugging::assert(func_num_args() === 1);
+        \BreakpointDebugging::assert(is_string($string));
 
         $charSet = mb_detect_encoding($string);
         if ($charSet === 'UTF-8' //
@@ -331,14 +331,14 @@ abstract class BreakpointDebugging_ErrorInAllCase
     protected function addFunctionValuesToLog(&$pTmpLog2, &$pTmpLog, &$onceFlag2, $func, $class, $line, $tabs = '')
     {
         $paramNumber = func_num_args();
-        B::assert($paramNumber <= 7);
-        B::assert(is_array($pTmpLog2) || is_resource($pTmpLog2) || $pTmpLog2 === null);
-        B::assert(is_array($pTmpLog) || is_resource($pTmpLog) || $pTmpLog === null);
-        B::assert(is_bool($onceFlag2));
-        B::assert(is_string($func));
-        B::assert(is_string($class) || is_array($class));
-        B::assert(is_string($line) || is_int($line));
-        B::assert(is_string($tabs));
+        \BreakpointDebugging::assert($paramNumber <= 7);
+        \BreakpointDebugging::assert(is_array($pTmpLog2) || is_resource($pTmpLog2) || $pTmpLog2 === null);
+        \BreakpointDebugging::assert(is_array($pTmpLog) || is_resource($pTmpLog) || $pTmpLog === null);
+        \BreakpointDebugging::assert(is_bool($onceFlag2));
+        \BreakpointDebugging::assert(is_string($func));
+        \BreakpointDebugging::assert(is_string($class) || is_array($class));
+        \BreakpointDebugging::assert(is_string($line) || is_int($line));
+        \BreakpointDebugging::assert(is_string($tabs));
 
         if (is_array($class)) {
             $class = '';
@@ -391,7 +391,7 @@ abstract class BreakpointDebugging_ErrorInAllCase
      */
     private function _lowerHypertextReferenceAnchor($referenceName)
     {
-        if (B::isDebug()) {
+        if (\BreakpointDebugging::isDebug()) {
             return '<a href="#' . $referenceName . '">same ' . $referenceName . '</a>';
         } else {
             return 'same ' . $referenceName;
@@ -407,7 +407,7 @@ abstract class BreakpointDebugging_ErrorInAllCase
      */
     private function _setHypertextReference($referenceName)
     {
-        if (B::isDebug()) {
+        if (\BreakpointDebugging::isDebug()) {
             return '<a name="' . $referenceName . '">' . $referenceName . '</a>';
         } else {
             return $referenceName;
@@ -603,11 +603,11 @@ abstract class BreakpointDebugging_ErrorInAllCase
      */
     function handleError2($errorNumber, $errorMessage, $prependLog, $callStack)
     {
-        B::assert(func_num_args() === 4);
-        B::assert(is_int($errorNumber));
-        B::assert(is_string($errorMessage));
-        B::assert(is_string($prependLog));
-        B::assert(is_array($callStack));
+        \BreakpointDebugging::assert(func_num_args() === 4);
+        \BreakpointDebugging::assert(is_int($errorNumber));
+        \BreakpointDebugging::assert(is_string($errorMessage));
+        \BreakpointDebugging::assert(is_string($prependLog));
+        \BreakpointDebugging::assert(is_array($callStack));
 
         // This creates error log.
         switch ($errorNumber) {
@@ -714,7 +714,7 @@ abstract class BreakpointDebugging_ErrorInAllCase
             }
             $log = B::convertMbString($log);
 
-            if (B::isDebug()) { // If this displays.
+            if (\BreakpointDebugging::isDebug()) { // If this displays.
                 BW::htmlAddition(B::ERROR_WINDOW_NAME, 'pre', 0, $log);
             } else { // If this does a log.
                 $errorLogDirectory = B::getStatic('$_workDir') . self::ERROR_LOG_DIR;
@@ -818,12 +818,12 @@ abstract class BreakpointDebugging_ErrorInAllCase
      */
     protected function addParameterHeaderToLog(&$pTmpLog, $file, $line, $func, $class)
     {
-        B::assert(func_num_args() === 5);
-        B::assert(is_array($pTmpLog) || is_resource($pTmpLog) || $pTmpLog === null);
-        B::assert(is_string($file));
-        B::assert(is_string($line) || is_int($line));
-        B::assert(is_string($func));
-        B::assert(is_string($class));
+        \BreakpointDebugging::assert(func_num_args() === 5);
+        \BreakpointDebugging::assert(is_array($pTmpLog) || is_resource($pTmpLog) || $pTmpLog === null);
+        \BreakpointDebugging::assert(is_string($file));
+        \BreakpointDebugging::assert(is_string($line) || is_int($line));
+        \BreakpointDebugging::assert(is_string($func));
+        \BreakpointDebugging::assert(is_string($class));
 
         $className = B::fullFilePathToClassName($file);
         if ($className //
@@ -869,15 +869,15 @@ abstract class BreakpointDebugging_ErrorInAllCase
      */
     protected function outputFixedFunctionToLogging($callStack, &$pTmpLog, &$onceFlag2, &$func, &$class, $file, $line, $tabs = '')
     {
-        B::assert(func_num_args() <= 8);
-        B::assert(is_array($callStack) || is_string($callStack));
-        B::assert(is_array($pTmpLog) || is_resource($pTmpLog) || $pTmpLog === null);
-        B::assert(is_bool($onceFlag2));
-        B::assert(is_null($func) || is_string($func));
-        B::assert(is_null($class) || is_string($class));
-        B::assert(is_string($file));
-        B::assert(is_string($line) || is_int($line));
-        B::assert(is_string($tabs));
+        \BreakpointDebugging::assert(func_num_args() <= 8);
+        \BreakpointDebugging::assert(is_array($callStack) || is_string($callStack));
+        \BreakpointDebugging::assert(is_array($pTmpLog) || is_resource($pTmpLog) || $pTmpLog === null);
+        \BreakpointDebugging::assert(is_bool($onceFlag2));
+        \BreakpointDebugging::assert(is_null($func) || is_string($func));
+        \BreakpointDebugging::assert(is_null($class) || is_string($class));
+        \BreakpointDebugging::assert(is_string($file));
+        \BreakpointDebugging::assert(is_string($line) || is_int($line));
+        \BreakpointDebugging::assert(is_string($tabs));
 
         array_key_exists('function', $callStack) ? $func = $callStack['function'] : $func = '';
         array_key_exists('class', $callStack) ? $class = $callStack['class'] : $class = '';
@@ -1132,10 +1132,10 @@ EOD;
      */
     protected function outputErrorCallStackLog2($errorKind, $errorMessage, $prependLog = '')
     {
-        B::assert(func_num_args() <= 3);
-        B::assert(is_string($errorKind));
-        B::assert(is_string($errorMessage));
-        B::assert(is_string($prependLog));
+        \BreakpointDebugging::assert(func_num_args() <= 3);
+        \BreakpointDebugging::assert(is_string($errorKind));
+        \BreakpointDebugging::assert(is_string($errorMessage));
+        \BreakpointDebugging::assert(is_string($prependLog));
 
         if (!$this->isLogging) {
             // @codeCoverageIgnoreStart
@@ -1157,7 +1157,7 @@ EOD;
         try {
             try {
                 // If this does a log.
-                if (!B::isDebug()) {
+                if (!\BreakpointDebugging::isDebug()) {
                     $loggingWritingFlag = false;
                     // Writes log writing flag.
                     $writeLogWritingFlag = function ($pVarConfFile, &$loggingWritingFlag) {
@@ -1326,7 +1326,7 @@ EOD;
                         $this->logWriting($pTmpLog2);
                         continue;
                     }
-                    B::assert(is_array($call), 102);
+                    \BreakpointDebugging::assert(is_array($call), 102);
                     foreach ($this->_loggedCallStacks as $loggedCallNumber => $loggedCall) {
                         if ($loggedCall === $call) {
                             // Skips same call stack.
@@ -1368,7 +1368,7 @@ EOD;
             }
 
             // If this does a log.
-            if (!B::isDebug()) {
+            if (!\BreakpointDebugging::isDebug()) {
                 // Gets current error log file name.
                 $this->_errorLogFilePath = $this->_errorLogDirectory . $this->_currentErrorLogFileName;
                 // When current error log file does not exist.
@@ -1442,9 +1442,9 @@ EOD;
      */
     protected function getParamInfo($tags, $type, $paramValue)
     {
-        B::assert(func_num_args() === 3);
-        B::assert(is_array($tags));
-        B::assert(is_string($type));
+        \BreakpointDebugging::assert(func_num_args() === 3);
+        \BreakpointDebugging::assert(is_array($tags));
+        \BreakpointDebugging::assert(is_string($type));
 
         return $tags['small'] . $type . $tags['/small'] . ' ' . $tags['font'][$type] . $paramValue . $tags['/font'];
     }
@@ -1461,10 +1461,10 @@ EOD;
      */
     protected function getTypeAndValue(&$pTmpLog, $paramName, $paramValue, $tabNumber)
     {
-        B::assert(func_num_args() === 4);
-        B::assert(is_array($pTmpLog) || is_resource($pTmpLog) || $pTmpLog === null);
-        B::assert(is_string($paramName) || is_int($paramName));
-        B::assert(is_int($tabNumber));
+        \BreakpointDebugging::assert(func_num_args() === 4);
+        \BreakpointDebugging::assert(is_array($pTmpLog) || is_resource($pTmpLog) || $pTmpLog === null);
+        \BreakpointDebugging::assert(is_string($paramName) || is_int($paramName));
+        \BreakpointDebugging::assert(is_int($tabNumber));
 
         if (is_array($paramValue)) {
             // Clears recursive array element.
@@ -1535,10 +1535,10 @@ EOD;
      */
     protected function searchDebugBacktraceArgsToString(&$pTmpLog, $backtraceParams, $tabNumber = 1)
     {
-        B::assert(func_num_args() <= 3);
-        B::assert(is_array($pTmpLog) || is_resource($pTmpLog) || $pTmpLog === null);
-        B::assert(is_array($backtraceParams));
-        B::assert(is_int($tabNumber));
+        \BreakpointDebugging::assert(func_num_args() <= 3);
+        \BreakpointDebugging::assert(is_array($pTmpLog) || is_resource($pTmpLog) || $pTmpLog === null);
+        \BreakpointDebugging::assert(is_array($backtraceParams));
+        \BreakpointDebugging::assert(is_int($tabNumber));
 
         $isFirst = true;
         $paramCount = 0;
