@@ -39,9 +39,9 @@ use BreakpointDebugging_Window as BW;
  */
 class BreakpointDebugging_ProductionSwitcher
 {
-    private static $_commentOutAssertionRegEx = '`^ ( [[:blank:]]* ) ( \\\\ [[:blank:]]* BreakpointDebugging [[:blank:]]* :: [[:blank:]]* assert [[:blank:]]* \( .* \) [[:blank:]]* ; [[:blank:]]* (// .*)? [\r\n]* ) $`xX';
+    private static $_commentOutAssertionRegEx = '`^ ( [[:blank:]]* ) ( \\\\ [[:blank:]]* BreakpointDebugging [[:blank:]]* :: [[:blank:]]* assert [[:blank:]]* \( .* \) [[:blank:]]* ; [[:blank:]]* (// .*)? [\r\n]* ) $`xXU';
     private static $_changeModeConstToLiteralRegEx1 = '`^ ( [[:blank:]]* ) (( if [[:blank:]]* \( [[:blank:]]* !? [[:blank:]]* ) ';
-    private static $_changeModeConstToLiteralRegEx2 = '((?![_[:alnum:]]) .* \) [[:blank:]]* { [[:blank:]]* (// .*)? ) [\r\n]* ) $`xX';
+    private static $_changeModeConstToLiteralRegEx2 = '((?![_[:alnum:]]) .* \) [[:blank:]]* { [[:blank:]]* (// .*)? ) [\r\n]* ) $`xXU';
     private static $_isDebugRegEx = '\\\\ [[:blank:]]* BreakpointDebugging [[:blank:]]* :: [[:blank:]]* isDebug [[:blank:]]* \( [[:blank:]]* \) ';
     private static $_breakpointdebuggingIsProductionRegEx = 'BREAKPOINTDEBUGGING_IS_PRODUCTION ';
 
@@ -337,16 +337,17 @@ EOD;
         $pLock->lock();
 
         try {
+            BW::virtualOpen(__CLASS__, $getHtmlFileContent('ProductionSwitcher'));
             if (isset($_GET['production']) // 'Switch to production' button was pushed.
                 || isset($_GET['development']) // Or, 'Switch to development' button was pushed.
             ) {
-                BW::virtualOpen(__CLASS__, $getHtmlFileContent('ProductionSwitcher'));
+                //BW::virtualOpen(__CLASS__, $getHtmlFileContent('ProductionSwitcher'));
                 // Opens my setting file.
                 $mySettingFilePath = BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php';
                 $fullMySettingFilePath = str_replace('\\', '/', stream_resolve_include_path($mySettingFilePath));
                 $phpFilePaths = self::_searchPHPFiles();
             } else { // In case of first time when this page was called.
-                BW::virtualOpen(__CLASS__, $getHtmlFileContent('ProductionSwitcher'));
+                //BW::virtualOpen(__CLASS__, $getHtmlFileContent('ProductionSwitcher'));
                 $html = '<h1>ProductionSwitcher</h1>';
                 $whiteListPaths = self::_getWhiteListPaths();
                 $html .= '<h3>NOTICE: Inside of the following directory is processed about "*.php" files recursively.</h3>';
@@ -579,6 +580,16 @@ EOD;
                 $writeAndClose($pFile, $lines, $phpFilePath, __CLASS__, $isChanged);
             }
             // In case of success.
+            if (isset($_GET['production'])) { // 'Switch to production' button was pushed.
+                $html = <<<EOD
+<p style="color: yellow">
+    Please, follow out procedure as below.<br />
+    Procedure1: Copy project files from local server to remote server.<br />
+    Procedure2: Execute "https://&lt;server name&gt;/&lt;project name&gt;/BreakpointDebugging_IniSetOptimizer.php" page in remote.<br />
+</p>
+EOD;
+                BW::htmlAddition(__CLASS__, 'body', 0, $html);
+            }
             BW::htmlAddition(__CLASS__, 'body', 0, '<p style="color: aqua">Switch has been done.</p>');
             BW::scrollBy(__CLASS__, PHP_INT_MAX, PHP_INT_MAX);
         } catch (\Exception $e) {

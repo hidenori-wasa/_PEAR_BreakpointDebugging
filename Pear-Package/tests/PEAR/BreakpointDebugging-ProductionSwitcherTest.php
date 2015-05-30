@@ -76,6 +76,7 @@ class BreakpointDebugging_ProductionSwitcherTest extends \BreakpointDebugging_PH
     function test_changeModeConstToLiteralA()
     {
         $linesForTest = array (
+            "            if (\BreakpointDebugging::isDebug()) { // If debug.\r\n",
             'if(\BreakpointDebugging::isDebug()){',
             "\tif(\\BreakpointDebugging::isDebug()){\n",
             "\x20if(\\BreakpointDebugging::isDebug()){\r\n",
@@ -91,6 +92,7 @@ class BreakpointDebugging_ProductionSwitcherTest extends \BreakpointDebugging_PH
             'if(\BreakpointDebugging::isDebug()){ /* Something comment.',
         );
         $expectedLines = array (
+            "            /* <BREAKPOINTDEBUGGING_COMMENT> */ if ( false ) { // If debug. // <BREAKPOINTDEBUGGING_COMMENT> if (\BreakpointDebugging::isDebug()) { // If debug.\r\n",
             '/* <BREAKPOINTDEBUGGING_COMMENT> */ if( false ){ // <BREAKPOINTDEBUGGING_COMMENT> if(\BreakpointDebugging::isDebug()){',
             "\t/* <BREAKPOINTDEBUGGING_COMMENT> */ if( false ){ // <BREAKPOINTDEBUGGING_COMMENT> if(\\BreakpointDebugging::isDebug()){\n",
             "\x20/* <BREAKPOINTDEBUGGING_COMMENT> */ if( false ){ // <BREAKPOINTDEBUGGING_COMMENT> if(\\BreakpointDebugging::isDebug()){\r\n",
