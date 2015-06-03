@@ -17,6 +17,7 @@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
 require_once './BreakpointDebugging_Inclusion.php';
+require_once './BreakpointDebugging_Optimizer.php';
 
 use \BreakpointDebugging as B;
 use BreakpointDebugging_Window as BW;
@@ -37,7 +38,7 @@ use BreakpointDebugging_Window as BW;
  * @version  Release: @package_version@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-class BreakpointDebugging_ProductionSwitcher
+class BreakpointDebugging_ProductionSwitcher extends \BreakpointDebugging_Optimizer
 {
     private static $_commentOutAssertionRegEx = '`^ ( [[:blank:]]* ) ( \\\\ [[:blank:]]* BreakpointDebugging [[:blank:]]* :: [[:blank:]]* assert [[:blank:]]* \( .* \) [[:blank:]]* ; [[:blank:]]* (// .*)? [\r\n]* ) $`xXU';
     private static $_changeModeConstToLiteralRegEx1 = '`^ ( [[:blank:]]* ) (( if [[:blank:]]* \( [[:blank:]]* !? [[:blank:]]* ) ';
@@ -56,8 +57,9 @@ class BreakpointDebugging_ProductionSwitcher
         'BreakpointDebugging_DisplayToOtherProcess.php',
         'BreakpointDebugging_ErrorLogFilesManager.php',
         'BreakpointDebugging_InDebug.php',
-        //'BreakpointDebugging_MySetting_InDebug.php',
+        'BreakpointDebugging_IniSetOptimizer.php',
         'BreakpointDebugging_NativeFunctions_InDebug.php',
+        'BreakpointDebugging_Optimizer.php',
         'BreakpointDebugging_PHPUnit.php',
         'BreakpointDebugging_PHPUnit_DisplayCodeCoverageReport.php',
         'BreakpointDebugging_ProductionSwitcher.php',
@@ -217,23 +219,6 @@ class BreakpointDebugging_ProductionSwitcher
     }
 
     /**
-     * Comments out assertion to not execute comparative syntax in production server.
-     *
-     * @param string $line Character string line of file.
-     *
-     * @return string Replaced character string line.
-     */
-    private static function _commentOutAssertion($line)
-    {
-        return preg_replace(
-            self::$_commentOutAssertionRegEx, //
-            '$1// <BREAKPOINTDEBUGGING_COMMENT> $2', //
-            $line, //
-            1 //
-        );
-    }
-
-    /**
      * Changes mode constant to literal for optimization of parsed code cache in production server.
      *
      * @param string $line         Character string line of file.
@@ -297,7 +282,7 @@ class BreakpointDebugging_ProductionSwitcher
     {
         // Exits this process if remote server because this process makes overload.
         if (!B::checkDevelopmentSecurity('LOCAL')) {
-            exit;
+            return false;
         }
 
         $getHtmlFileContent = function ($title) {
@@ -315,17 +300,7 @@ EOD;
             return $htmlFileContent;
         };
 
-        // If "CakePHP".
-        if (BREAKPOINTDEBUGGING_IS_CAKE) {
-            $expectedFilePath = 'app/webroot/' . basename($_SERVER['PHP_SELF']);
-            if (count(debug_backtrace()) === 2 // Checks in case of unit-test.
-                && preg_match('`/' . $expectedFilePath . '$`xX', $_SERVER['PHP_SELF']) !== 1 // Checks this file path.
-            ) {
-                BW::virtualOpen(__CLASS__, $getHtmlFileContent('ProductionSwitcherError'));
-                BW::htmlAddition(__CLASS__, 'body', 0, '"This file must be executed in "' . $expectedFilePath . '".');
-                exit;
-            }
-        }
+        parent::checkExecutionDir($getHtmlFileContent('ProductionSwitcherError'));
 
         // Cancels the script running time limitation.
         set_time_limit(0);
@@ -338,16 +313,14 @@ EOD;
 
         try {
             BW::virtualOpen(__CLASS__, $getHtmlFileContent('ProductionSwitcher'));
-            if (isset($_GET['production']) // 'Switch to production' button was pushed.
-                || isset($_GET['development']) // Or, 'Switch to development' button was pushed.
+            if (isset($_GET['Switch_to_production']) // 'Switch to production' button was pushed.
+                || isset($_GET['Switch_to_development']) // Or, 'Switch to development' button was pushed.
             ) {
-                //BW::virtualOpen(__CLASS__, $getHtmlFileContent('ProductionSwitcher'));
                 // Opens my setting file.
                 $mySettingFilePath = BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php';
                 $fullMySettingFilePath = str_replace('\\', '/', stream_resolve_include_path($mySettingFilePath));
                 $phpFilePaths = self::_searchPHPFiles();
             } else { // In case of first time when this page was called.
-                //BW::virtualOpen(__CLASS__, $getHtmlFileContent('ProductionSwitcher'));
                 $html = '<h1>ProductionSwitcher</h1>';
                 $whiteListPaths = self::_getWhiteListPaths();
                 $html .= '<h3>NOTICE: Inside of the following directory is processed about "*.php" files recursively.</h3>';
@@ -357,21 +330,10 @@ EOD;
                 }
                 $html .= '</span></ul><hr />';
                 BW::htmlAddition(__CLASS__, 'body', 0, $html);
-                $makeButton = function ($modeKey, $getHtmlFileContent) {
-                    $thisFileName = basename(__FILE__);
-                    $fontStyle = 'style="font-size: 25px; font-weight: bold;"';
-                    $queryString = B::httpBuildQuery(array ($modeKey => true));
-                    $html = <<<EOD
-<form method="post" action="$thisFileName?$queryString">
-    <input type="submit" value="Switch to $modeKey" $fontStyle/>
-</form>
-EOD;
-                    BW::htmlAddition(__CLASS__, 'body', 0, $html);
-                };
                 $settingDirName = BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME;
                 // Makes buttons.
                 if (BREAKPOINTDEBUGGING_IS_PRODUCTION) {
-                    $makeButton('development', $getHtmlFileContent);
+                    parent::makeButton('Switch to development');
                     $html = <<<EOD
 <ol>
     <li>
@@ -392,7 +354,7 @@ EOD;
 <hr />
 EOD;
                 } else {
-                    $makeButton('production', $getHtmlFileContent);
+                    parent::makeButton('Switch to production');
                     $commentOutAssertionRegEx = self::$_commentOutAssertionRegEx;
                     $isDebugRegEx1 = self::$_changeModeConstToLiteralRegEx1 . self::$_isDebugRegEx . self::$_changeModeConstToLiteralRegEx2;
                     $breakpointdebuggingIsProductionRegEx = self::$_changeModeConstToLiteralRegEx1 . self::$_breakpointdebuggingIsProductionRegEx . self::$_changeModeConstToLiteralRegEx2;
@@ -444,49 +406,11 @@ EOD;
 
             // 'Switch to production' button was pushed.
             // Or, 'Switch to development' button was pushed.
-            $getFileToArray = function ($phpFilePath, $getHtmlFileContent) {
-                $pFile = B::fopen(array ($phpFilePath, 'r+b'), 0644);
-                if ($pFile === false) {
-                    BW::virtualOpen(__CLASS__, $getHtmlFileContent('ProductionSwitcherError'));
-                    BW::htmlAddition(__CLASS__, 'body', 0, '"' . $phpFilePath . '" file cannot open.');
-                    throw new \BreakpointDebugging_ErrorException('');
-                }
-                $lines = array ();
-                while (($result = fgets($pFile)) !== false) {
-                    $lines[] = $result;
-                }
-                return array ($pFile, $lines);
-            };
-
-            $writeAndClose = function ($pFile, $lines, $fullFilePath, $thisClassName, $isChanged) {
-                // Closes the "*.php" file stream.
-                $result = fclose($pFile);
-                B::assert($result === true);
-                if ($isChanged) {
-                    // Displays the progress.
-                    $newFullFilePath = B::getStatic('$_workDir') . '/' . basename($fullFilePath) . '.copy';
-                    BW::htmlAddition($thisClassName, 'body', 0, 'Renaming "' . $fullFilePath . '" to "' . $newFullFilePath . '".<br />');
-                    // Renames the "*.php" file to "*.php.copy".
-                    rename($fullFilePath, $newFullFilePath);
-                    // Displays the progress.
-                    BW::htmlAddition($thisClassName, 'body', 0, '<span style="color: red">Writing "' . $fullFilePath . '".</span><br />');
-                    // Writes the array to "*.php" file.
-                    B::filePutContents($fullFilePath, $lines, 0644);
-                    // Displays the progress.
-                    BW::htmlAddition($thisClassName, 'body', 0, 'Deleting "' . $newFullFilePath . '".<br />');
-                    // Deletes the "*.php.copy" file.
-                    B::unlink(array ($newFullFilePath));
-                } else {
-                    // Displays the progress.
-                    BW::htmlAddition($thisClassName, 'body', 0, '<span style="color: gray">Skips "' . $fullFilePath . '".</span><br />');
-                }
-            };
-
             while (true) {
                 // Copies the "*.php" file lines to an array.
-                list($pFile, $lines) = $getFileToArray($fullMySettingFilePath, $getHtmlFileContent);
+                $lines = parent::getArrayFromFile($fullMySettingFilePath, $getHtmlFileContent('ProductionSwitcherError'));
 
-                if (isset($_GET['production'])) { // 'Switch to production' button was pushed.
+                if (isset($_GET['Switch_to_production'])) { // 'Switch to production' button was pushed.
                     foreach ($lines as &$line) {
                         // Sets "const BREAKPOINTDEBUGGING_IS_PRODUCTION = true;" to "BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php'" file.
                         $result = preg_replace(
@@ -498,7 +422,7 @@ EOD;
                         B::assert($result !== null);
                         if ($result !== $line) {
                             $line = $result;
-                            $writeAndClose($pFile, $lines, $fullMySettingFilePath, __CLASS__, true);
+                            parent::writeOrSkip($lines, $fullMySettingFilePath, __CLASS__, true);
                             break 2;
                         }
                     }
@@ -517,7 +441,7 @@ EOD;
                         B::assert($result !== null);
                         if ($result !== $line) {
                             $line = $result;
-                            $writeAndClose($pFile, $lines, $fullMySettingFilePath, __CLASS__, true);
+                            parent::writeOrSkip($lines, $fullMySettingFilePath, __CLASS__, true);
                             break 2;
                         }
                     }
@@ -530,14 +454,13 @@ EOD;
             foreach ($phpFilePaths as $phpFilePath => $value) {
                 B::assert($value === true);
                 // Copies the "*.php" file lines to an array.
-                list($pFile, $lines) = $getFileToArray($phpFilePath, $getHtmlFileContent);
+                $lines = parent::getArrayFromFile($phpFilePath, $getHtmlFileContent('ProductionSwitcherError'));
 
                 $isChanged = false;
-                if (isset($_GET['production'])) { // 'Switch to production' button was pushed.
+                if (isset($_GET['Switch_to_production'])) { // 'Switch to production' button was pushed.
                     foreach ($lines as &$line) {
                         // Inserts "// <BREAKPOINTDEBUGGING_COMMENT> " into "\BreakpointDebugging::assert()" line.
-                        $result = self::_commentOutAssertion($line);
-                        B::assert($result !== null);
+                        $result = parent::commentOut($line, self::$_commentOutAssertionRegEx);
                         if ($result !== $line) {
                             $line = $result;
                             $isChanged = true;
@@ -577,10 +500,10 @@ EOD;
 
                 // 'Switch to production' button was pushed.
                 // Or, 'Switch to development' button was pushed.
-                $writeAndClose($pFile, $lines, $phpFilePath, __CLASS__, $isChanged);
+                parent::writeOrSkip($lines, $phpFilePath, __CLASS__, $isChanged);
             }
             // In case of success.
-            if (isset($_GET['production'])) { // 'Switch to production' button was pushed.
+            if (isset($_GET['Switch_to_production'])) { // 'Switch to production' button was pushed.
                 $html = <<<EOD
 <p style="color: yellow">
     Please, follow out procedure as below.<br />

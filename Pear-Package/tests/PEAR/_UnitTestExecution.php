@@ -3,6 +3,8 @@
 // Changes current directory to web root.
 chdir('../../');
 require_once './BreakpointDebugging_Inclusion.php';
+require_once './BreakpointDebugging_ProductionSwitcher.php';
+require_once './BreakpointDebugging_IniSetOptimizer.php';
 
 use \BreakpointDebugging as B;
 
@@ -13,19 +15,19 @@ $breakpointDebugging_PHPUnit = new \BreakpointDebugging_PHPUnit();
 $breakpointDebugging_UnitTestFiles = array (
     'BreakpointDebugging-ProductionSwitcherTest.php',
     /*
-    'ExampleTest.php',
-    'PHPUnit1Test.php',
-    'PHPUnit2Test.php',
-    'BreakpointDebugging-ExceptionTest.php',
-    'BreakpointDebugging-InAllCaseTest.php',
-    'BreakpointDebuggingTest.php',
-    'BreakpointDebugging/ErrorInAllCaseTest.php',
-    'BreakpointDebugging/ErrorTest.php',
-    'BreakpointDebugging/LockByFileExistingTest.php',
-    'BreakpointDebugging/LockByFlockTest.php',
-    'BreakpointDebugging/LockByShmopRequestTest.php',
-    'BreakpointDebugging/OverrideClassTest.php',
-    */
+      'ExampleTest.php',
+      'PHPUnit1Test.php',
+      'PHPUnit2Test.php',
+      'BreakpointDebugging-ExceptionTest.php',
+      'BreakpointDebugging-InAllCaseTest.php',
+      'BreakpointDebuggingTest.php',
+      'BreakpointDebugging/ErrorInAllCaseTest.php',
+      'BreakpointDebugging/ErrorTest.php',
+      'BreakpointDebugging/LockByFileExistingTest.php',
+      'BreakpointDebugging/LockByFlockTest.php',
+      'BreakpointDebugging/LockByShmopRequestTest.php',
+      'BreakpointDebugging/OverrideClassTest.php',
+     */
 );
 
 // Executes unit tests.

@@ -363,6 +363,39 @@ abstract class BreakpointDebugging_InAllCase
     }
 
     /**
+     * "ini_set()" with validation. And, registers the location to comment out or replace.
+     *
+     * "BreakpointDebugging_IniSetOptimizer.php" page replaces to "ini_set()" this class method or comments out this class method.
+     * Sets with "ini_set()" because "php.ini" file and ".htaccess" file isn't sometimes possible to be set on sharing server.
+     *
+     * @param string $phpIniVariable "php.ini" variable.
+     * @param string $setValue       Value of variable.
+     *
+     * @return void
+     */
+    static function iniSet($phpIniVariable, $setValue)
+    {
+        \BreakpointDebugging::assert(func_num_args() === 2);
+        \BreakpointDebugging::assert($phpIniVariable !== 'error_log');
+        \BreakpointDebugging::assert(is_string($phpIniVariable));
+        \BreakpointDebugging::assert(is_string($setValue));
+
+        if (BREAKPOINTDEBUGGING_IS_PRODUCTION) { // In case of production server.
+            $getValue = ini_get($phpIniVariable);
+            // Registers the location to comment out or replace.
+            if ($setValue === $getValue) {
+                self::ini('COMMENT_OUT');
+                return;
+            } else {
+                self::ini('REPLACE_TO_NATIVE');
+            }
+        }
+        if (ini_set($phpIniVariable, $setValue) === false) {
+            throw new \BreakpointDebugging_ErrorException('"ini_set()" failed.', 101);
+        }
+    }
+
+    /**
      * Is this the debug execution mode? This class method is needed for code coverage report.
      *
      * @return bool Is this the debug execution mode?
@@ -448,7 +481,6 @@ abstract class BreakpointDebugging_InAllCase
     {
         \BreakpointDebugging::assert(func_num_args() <= 1);
         \BreakpointDebugging::assert($necessaryExeMode === null || is_string($necessaryExeMode));
-
         // Checks the execution mode.
         if ($necessaryExeMode !== null) {
             while (true) {
@@ -462,10 +494,16 @@ abstract class BreakpointDebugging_InAllCase
                             . 'into "BreakpointDebugging_MySetting.php".</b>';
                         break;
                     case 'LOCAL':
-                        if (!isset($_SERVER['SERVER_ADDR']) || $_SERVER['SERVER_ADDR'] === '127.0.0.1') { // In case of local.
+                        if (!(self::$exeMode & self::REMOTE)) { // If local.
                             break 2;
                         }
                         $message = '<b>You must execute in local.</b>';
+                        break;
+                    case 'REMOTE':
+                        if (self::$exeMode & self::REMOTE) { // If remote.
+                            break 2;
+                        }
+                        $message = '<b>You must execute in remote.</b>';
                         break;
                     default :
                         throw new \BreakpointDebugging_ErrorException('"' . __METHOD__ . '" parameter1 is mistake.', 101);
@@ -475,7 +513,7 @@ abstract class BreakpointDebugging_InAllCase
                 return false;
             }
         }
-        if (!isset($_SERVER['SERVER_ADDR']) || $_SERVER['SERVER_ADDR'] === '127.0.0.1') { // In case of local.
+        if (!(self::$exeMode & self::REMOTE)) { // If local.
             return true;
         }
         // Checks client IP address.
@@ -608,6 +646,8 @@ EOD;
     /**
      * Checks "php.ini" file-setting.
      *
+     * "BreakpointDebugging_IniSetOptimizer.php" page comments out this class method.
+     *
      * @param string $phpIniVariable "php.ini" file-setting variable.
      * @param mixed  $cmpValue       Value which should set in case of string.
      *                               Value which should avoid in case of array.
@@ -618,6 +658,7 @@ EOD;
     static function iniCheck($phpIniVariable, $cmpValue, $errorMessage)
     {
         if (BREAKPOINTDEBUGGING_IS_PRODUCTION) { // In case of production server.
+            self::ini('COMMENT_OUT');
             return;
         }
 
@@ -652,10 +693,6 @@ EOD;
             var_dump($value);
 
             BW::htmlAddition(self::ERROR_WINDOW_NAME, 'pre', 0, ob_get_clean());
-        } else {
-            if (self::$exeMode & self::RELEASE) { // In case of release mode.
-                self::ini('_MySetting.php', self::$onceFlagPerPackage, self::$iniDisplayString);
-            }
         }
     }
 
@@ -671,7 +708,6 @@ EOD;
     final static function registerNotFixedLocation(&$isRegister)
     {
         \BreakpointDebugging::assert(func_num_args() === 1);
-
         // When it has been registered.
         if (!empty($isRegister)) {
             return;
@@ -1205,47 +1241,26 @@ EOD;
     /**
      * For "self::iniSet()" and "self::iniCheck()".
      *
-     * @param string $cmpNameSuffix      Comparison file name suffix.
-     * @param array  $onceFlagPerPackage Once flag per package.
-     * @param string $displayString      A display string.
+     * @param string $changeKind The change kind. 'COMMENT_OUT' or 'REPLACE_TO_LITERAL'.
      *
      * @return void
      */
-    protected static function ini($cmpNameSuffix, &$onceFlagPerPackage, $displayString)
+    protected static function ini($changeKind)
     {
         if ((BA::$exeMode & B::REMOTE) // In case of remote server.
             && isset($_SERVER['SERVER_ADDR']) // In case of common gateway.
         ) {
             $backTrace = debug_backtrace();
-            $baseName = basename($backTrace[1]['file']);
+            $fileInfoToOptimize = $backTrace[1];
+            $baseName = basename($fileInfoToOptimize['file']);
+            $cmpNameSuffix = '_MySetting.php';
             $cmpNameLength = strlen($cmpNameSuffix);
+            // Checks that a file name suffix is "_MySetting.php".
             if (!substr_compare($baseName, $cmpNameSuffix, 0 - $cmpNameLength, $cmpNameLength, true)) {
                 // @codeCoverageIgnoreStart
-                echo '<body style="background-color:black;color:white">';
-                $notExistFlag = true;
-                foreach ($onceFlagPerPackage as $cmpNameSuffix) {
-                    if (!strcmp($baseName, $cmpNameSuffix)) {
-                        $notExistFlag = false;
-                        break;
-                    }
-                }
-                if ($notExistFlag) {
-                    $onceFlagPerPackage[] = $baseName;
-                    $packageName = substr($baseName, 0, 0 - $cmpNameLength);
-                    echo <<<EOD
-<pre>
-[package name] = $packageName
-$displayString
-</pre>
-EOD;
-                }
-                echo <<<EOD
-<pre>
-	file: {$backTrace[1]['file']}
-	line: {$backTrace[1]['line']}
-</pre>
-EOD;
-                echo '</body>';
+                include_once './BreakpointDebugging_Optimizer.php';
+                // Registers the location to comment out or replace.
+                \BreakpointDebugging_Optimizer::setInfoToOptimize($fileInfoToOptimize['file'], $fileInfoToOptimize['line'], $changeKind);
             }
             // @codeCoverageIgnoreEnd
         }
@@ -1412,13 +1427,6 @@ EOD;
      */
     static function handleException($pException)
     {
-        B::limitAccess(
-            array (
-                'BreakpointDebugging.php',
-                'BreakpointDebugging_InDebug.php',
-            )
-        );
-
         // Sets global internal error handler.( -1 sets all bits on 1. Therefore, this specifies error, warning and note of all kinds.)
         set_error_handler('\BreakpointDebugging_Error::handleInternalError', -1);
 
@@ -1596,32 +1604,6 @@ if ($_BreakpointDebugging_EXE_MODE & BA::RELEASE) { // In case of release.
         static function assert($assertion)
         {
 
-        }
-
-        /**
-         * "ini_set()" with validation except for production mode.
-         * Sets with "ini_set()" because "php.ini" file and ".htaccess" file isn't sometimes possible to be set on sharing server.
-         *
-         * @param string $phpIniVariable "php.ini" variable.
-         * @param string $setValue       Value of variable.
-         *
-         * @return void
-         */
-        static function iniSet($phpIniVariable, $setValue)
-        {
-            if (BREAKPOINTDEBUGGING_IS_PRODUCTION) { // In case of production server.
-                ini_set($phpIniVariable, $setValue);
-            } else {
-                $getValue = ini_get($phpIniVariable);
-                // This displays to comment out it if "ini_set()" value is same "php.ini" value in case of remote release mode for production server performance.
-                if ($setValue === $getValue) {
-                    parent::ini('_MySetting.php', parent::$onceFlagPerPackage, parent::$iniDisplayString);
-                } else {
-                    if (ini_set($phpIniVariable, $setValue) === false) {
-                        throw new \BreakpointDebugging_ErrorException('"ini_set()" failed.', 101);
-                    }
-                }
-            }
         }
 
     }

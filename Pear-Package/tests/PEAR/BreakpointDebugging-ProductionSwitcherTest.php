@@ -22,9 +22,17 @@ class BreakpointDebugging_ProductionSwitcherTest extends \BreakpointDebugging_PH
     /**
      * @covers \BreakpointDebugging_ProductionSwitcher<extended>
      */
+    function test_setInfoToOptimize()
+    {
+        \BreakpointDebugging_Optimizer::setInfoToOptimize('C:\xampp\htdocs\CakePHPSamples\app\webroot\BreakpointDebugging_PEAR_Setting\BreakpointDebugging_MySetting.php', 309, 'REPLACE_TO_NATIVE');
+    }
+
+    /**
+     * @covers \BreakpointDebugging_ProductionSwitcher<extended>
+     */
     function test_commentOutAssertion()
     {
-        include 'BreakpointDebugging_ProductionSwitcher.php';
+        //include './BreakpointDebugging_ProductionSwitcher.php';
 
         $linesForTest = array (
             '\BreakpointDebugging::assert(true);',
@@ -58,10 +66,15 @@ class BreakpointDebugging_ProductionSwitcherTest extends \BreakpointDebugging_PH
         );
 
         foreach ($linesForTest as $lineForTest) {
+            //$results[] = BU::callForTest(array (
+            //        'objectOrClassName' => 'BreakpointDebugging_ProductionSwitcher',
+            //        'methodName' => '_commentOutAssertion',
+            //        'params' => array ($lineForTest)
+            //));
             $results[] = BU::callForTest(array (
-                    'objectOrClassName' => 'BreakpointDebugging_ProductionSwitcher',
-                    'methodName' => '_commentOutAssertion',
-                    'params' => array ($lineForTest)
+                    'objectOrClassName' => 'BreakpointDebugging_Optimizer',
+                    'methodName' => 'commentOut',
+                    'params' => array ($lineForTest, BU::getPropertyForTest('BreakpointDebugging_ProductionSwitcher', '$_commentOutAssertionRegEx'))
             ));
         }
 

@@ -37,26 +37,11 @@ $xdebugVarDisplayMaxData = '3000';
 $xdebugVarDisplayMaxDepth = '6';
 // B::setBrowserPass('C:\Program Files\Internet Explorer\iexplore.exe');
 // ### <=== Item-setting for debugging.
-//
-//// PHP It limits directory which opens a file.
-//B::iniSet('open_basedir', $openBasedir);
-//// Caution: "if" statement is needed to copy in case of remote release if copies a code inside "if".
-//if (B::getStatic('$exeMode') & B::REMOTE) { // In case of remote.
-//    // Windows e-mail sending server setting.
-//    B::iniSet('SMTP', $SMTP); // 'smtp.???.com'
-//    // Windows mail address setting.
-//    B::iniSet('sendmail_from', $sendmailFrom); // '???@???.com'
-//} else { // In case of local.
-//    // "mbstring.func_overload" do coding with 0 for plainness, but release environment is any possibly.
-//    B::iniCheck('mbstring.func_overload', '0', 'To make coding plain must be set "mbstring.func_overload = 0" of "php.ini" file.');
-//    B::iniSet('SMTP', $SMTP);
-//    B::iniSet('sendmail_from', $sendmailFrom);
-//}
 
 if (B::getXebugExists()) {
     // xdebug.dump.*    * = COOKIE, FILES, GET, POST, REQUEST, SERVER, SESSION.
     //      Shows the specified superglobal value. Example is shown below.
-    //      B::iniSet('xdebug.dump.SERVER', 'REMOTE_ADDR,REQUEST_METHOD', false);
+    //      B::iniSet('xdebug.dump.SERVER', 'REMOTE_ADDR,REQUEST_METHOD');
     if (B::getStatic('$exeMode') & B::REMOTE) { // In case of remote.
         // ### [XDebug] setting in "php.ini" file or ".htaccess" file. ###
         // Comment out following line if you want to emulate remote by local host.
@@ -70,136 +55,60 @@ if (B::getXebugExists()) {
     // $_get = B::getStatic('$_get');
     // $xdebugSessionName = $_get['XDEBUG_SESSION_START'];
     // B::iniCheck('xdebug.idekey', $xdebugSessionName, 'Set \'xdebug.idekey = "$xdebugSessionName"\' of "php.ini" file because this value must be the debug session name.');
-    // // Manual base url for links from function traces or error messages.
-    // B::iniSet('xdebug.manual_url', $xdebugManualUrl, false);
+    // Manual base url for links from function traces or error messages.
+    // B::iniSet('xdebug.manual_url', $xdebugManualUrl);
     // Limits the number of object properties or array elements for display of var_dump(), local variables or Function Traces.
-    B::iniSet('xdebug.var_display_max_children', $xdebugVarDisplayMaxChildren, false);
+    B::iniSet('xdebug.var_display_max_children', $xdebugVarDisplayMaxChildren);
     // Limits character string type byte-count for display of var_dump(), local variables or Function Traces.
-    B::iniSet('xdebug.var_display_max_data', $xdebugVarDisplayMaxData, false);
+    B::iniSet('xdebug.var_display_max_data', $xdebugVarDisplayMaxData);
     // Controls how many nested levels of array elements and object properties.
     // Display by var_dump(), local variables or Function Traces.
-    B::iniSet('xdebug.var_display_max_depth', $xdebugVarDisplayMaxDepth, false);
+    B::iniSet('xdebug.var_display_max_depth', $xdebugVarDisplayMaxDepth);
     // Shows function call parameters name and value.
-    B::iniSet('xdebug.collect_params', '4', false);
-    // B::iniSet('xdebug.collect_params', '2', false);
+    B::iniSet('xdebug.collect_params', '4');
+    // B::iniSet('xdebug.collect_params', '2');
     // Does not gather local variables information for "xdebug_get_declared_vars()".
-    B::iniSet('xdebug.collect_vars', '0', false);
+    B::iniSet('xdebug.collect_vars', '0');
     // Shows stack-traces.
-    B::iniSet('xdebug.default_enable', '1', false);
+    B::iniSet('xdebug.default_enable', '1');
     // Shows values of superglobals defined by "xdebug.dump.*".
-    B::iniSet('xdebug.dump_globals', '1', false);
+    B::iniSet('xdebug.dump_globals', '1');
     // Dumps superglobals on first error situation.
-    B::iniSet('xdebug.dump_once', '1', false);
+    B::iniSet('xdebug.dump_once', '1');
     // Does not dump undefined values from superglobals.
-    B::iniSet('xdebug.dump_undefined', '0', false);
-    // Necessary for remote breakpoint debugging execution.
-    B::iniSet('xdebug.extended_info', '1', false);
+    B::iniSet('xdebug.dump_undefined', '0');
+    B::iniCheck('xdebug.extended_info', '1', 'Necessary for remote breakpoint-debugging execution.');
     // Max nesting level of function call.
-    B::iniSet('xdebug.max_nesting_level', '100', false);
-    // Overloads var_dump() with its own improved version for displaying variables.
-    B::iniSet('xdebug.overload_var_dump', '1', false);
+    B::iniSet('xdebug.max_nesting_level', '100');
+    B::iniCheck('xdebug.overload_var_dump', '1', 'Overloads var_dump() with its own improved version for displaying variables.');
     // Connects automatically. Therefore, does not use because other human can debug.
-    B::iniSet('xdebug.remote_autostart', '0', false);
+    B::iniSet('xdebug.remote_autostart', '0');
     B::iniCheck('xdebug.remote_connect_back', '0', 'Ignores "xdebug.remote_host", then connects by sending client IP. Therefore, does not use because anybody can debug.');
     // Deadline of remote debug by session cookie.
-    B::iniSet('xdebug.remote_cookie_expire_time', '3600', false);
+    B::iniSet('xdebug.remote_cookie_expire_time', '3600');
     B::iniCheck('xdebug.remote_enable', '1', 'Set "xdebug.remote_enable = 1" of "php.ini" file because this is needed to do breakpoint debugging if server permits.');
     B::iniCheck('xdebug.remote_handler', 'dbgp', 'Set \'xdebug.remote_handler = "dbgp"\' of "php.ini" file because this is needed to do remote debugging.');
     // Connects when remote debug begins.
-    B::iniSet('xdebug.remote_mode', 'req', false);
+    B::iniSet('xdebug.remote_mode', 'req');
     B::iniCheck('xdebug.remote_port', '9000', 'Set "xdebug.remote_port = 9000" of "php.ini" file. This is "NetBeans IDE" port number of own terminal. Also, we use default value because it is the default of "NetBeans IDE".');
     // Enables '@' operator.
-    B::iniSet('xdebug.scream', '0', false);
+    B::iniSet('xdebug.scream', '0');
     // Shows local variables.
-    B::iniSet('xdebug.show_local_vars', '1', false);
+    B::iniSet('xdebug.show_local_vars', '1');
 }
-//////////////////////////////////////////////////////////////////////////////////
-//// ### [mbstring] setting in "php.ini" file. ###
-//// The default character sets of PHP.
-//B::iniSet('default_charset', 'utf8');
-//// The default value of language setting (NLS).
-//B::iniSet('mbstring.language', $language);
-//// Set "mbstring.internal_encoding = utf8" of "php.ini" file because this is purpose to define default value of inner character encoding.
-//B::iniSet('mbstring.internal_encoding', 'utf8');
-//// Set "mbstring.http_input = auto" of "php.ini" file because this is purpose to define default value of HTTP entry character encoding.
-//B::iniSet('mbstring.http_input', 'auto');
-//// Set "mbstring.http_output = utf8" of "php.ini" file because this is purpose to define default value of HTTP output character encoding.
-//B::iniSet('mbstring.http_output', 'utf8');
-//B::iniCheck('mbstring.encoding_translation', array ('1'), 'Set "mbstring.encoding_translation = Off" of "php.ini" file because this is purpose not to change a input HTTP query into inner character encoding automatically.');
-//// Set "mbstring.substitute_character = none" of "php.ini" file because this is purpose to define character ( it does not display ) which substitutes an invalid character.
-//B::iniSet('mbstring.substitute_character', '');
-//// Set "mbstring.strict_detection = Off" of "php.ini" file because this is purpose to not do strict encoding detection.
-//B::iniSet('mbstring.strict_detection', '');
-//// This is possible for any value because "mbstring.script_encoding" is unrelated.
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//// ### The "Fopen wrappers" setting of "php.ini" file ###
-//B::iniCheck('allow_url_fopen', '1', 'Set "allow_url_fopen = On" of "php.ini" file because this is purpose that a file path is made to be able to specify URL by "fopen()" type function.');
-//// This is possible for any value because we doesn't use "allow_url_include".
-//// This sets "user_agent" to "PHP".
-//B::iniSet('user_agent', 'PHP');
-//// Set for the debugging because "from" can be set only in "php.ini".
-//// This judges an end of a sentence character by the data which was read in "fgets()" and "file()", and we can use "PHP_EOL" constant.
-//B::iniSet('auto_detect_line_endings', '1');
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//// ### "php.ini" the file setting ( This sets a security mainly ). ###
-//// Timezone setting.
-//B::iniSet('date.timezone', $timezone);
-//// This changes "php.ini" file setting into "report_memleaks = On" because this setting detects a memory leak.
-//B::iniSet('report_memleaks', '1');
-//// Change "php.ini" file setting into "track_errors = Off" because this is not make to insert an error message in direct near "$php_errormsg" variable for security.
-//B::iniSet('track_errors', '');
-//if (version_compare(PHP_VERSION, '5.4', '<')) {
-//    // This limits a user input that it receive by the super global variable for security.
-//    B::iniCheck('register_globals', '', 'Set "register_globals = Off" of "php.ini" file for security.');
-//    // This doesn't escape user input for execution speed. This escapes with "addslashes()" and "mysqli_real_escape_string()".
-//    B::iniCheck('magic_quotes_gpc', '', 'Set "magic_quotes_gpc = Off" of "php.ini" file for execution speed.');
-//    // This makes not escape for execution speed at time of resource reading. Therefore, this changes "php.ini" file setting into "magic_quotes_runtime = Off".
-//    B::iniSet('magic_quotes_runtime', '');
-//    // This sets safe mode invalidly.
-//    B::iniCheck('safe_mode', '', 'This feature has been deprecated in PHP5.3.0. Not to use this feature is strongly recommended generally. Therefore, set "safe_mode = Off" of "php.ini" file.');
-//}
-//// This doesn't expose to be using php by server.
-//// B::iniCheck('expose_php', '', 'This should change "php.ini" file setting into "expose_php = Off" for security.');
-//// This changes "php.ini" file setting into "arg_separator.output = "&amp;" to be based on XHTML fully.
-//B::iniSet('arg_separator.output', '&amp;');
-//B::iniCheck('short_open_tag', '', 'You must change "php.ini" file setting into "short_open_tag = Off" because "BreakpointDebugging_ProductionSwitcher" does not detect "&lt;?" opening tag.');
-//B::iniCheck('asp_tags', '', 'This should change "php.ini" file setting into "asp_tags = Off" because it can distinguish between other languages by using "&lt;php?" opening tag.');
-//// This changes "php.ini" file setting into "ignore_user_abort = Off" because it is purpose to end execution of script when client is disconnected.
-//B::iniSet('ignore_user_abort', '');
-//// This changes "php.ini" file setting into "memory_limit = 128M" because it works stably by memory limit setting which can be used with script.
-//B::iniSet('memory_limit', '128M');
-//// This changes "php.ini" file setting into "implicit_flush = Off" because it is purpose to prevent a remarkable degradation.
-//B::iniSet('implicit_flush', '');
-//B::iniCheck('scream.enabled', '', 'This should change "php.ini" file setting into "scream.enabled = false" because it does not make "@" error display control operator invalid.');
-//if (BREAKPOINTDEBUGGING_IS_WINDOWS) { // In case of Windows.
-//    if (version_compare(PHP_VERSION, '5.4', '>=')) {
-//        // Shows crt warnings in case of Windows debug mode.
-//        ini_set('windows_show_crt_warning', '1');
-//    }
-//}
-//// The SMTP port setting of Windows.
-//B::iniSet('smtp_port', '25');
-//// B::iniCheck('mail.add_x_header', '', 'We recommend to set "mail.add_x_header = Off" of "php.ini" file because does not write that header continue "UID" behind the file name.');
-//B::iniCheck('output_buffering', '', 'Sets \'output_buffering = Off\' of "php.ini" file for output window.');
 ////////////////////////////////////////////////////////////////////////////////
 // ### This uses "false" because this setting doesn't have relation with release. ###
 // This makes all errors, warnings and note a stop at breakpoint or a display.
-B::iniSet('error_reporting', (string) PHP_INT_MAX, false);
+B::iniSet('error_reporting', (string) PHP_INT_MAX);
 // This changes "php.ini" file setting into "display_errors = On" to display error, warning and note which isn't done handling by error handler.
-B::iniSet('display_errors', '1', false);
+B::iniSet('display_errors', '1');
 // This changes "php.ini" file setting into "display_startup_errors = On" to display error in case of start-up.
-B::iniSet('display_startup_errors', '1', false);
+B::iniSet('display_startup_errors', '1');
 // In case of debugging, this changes "php.ini" file setting into "log_errors = Off" because this doesn't record log.
-B::iniSet('log_errors', '', false);
+B::iniSet('log_errors', '');
 // This outputs the message which it is possible to click to lead to the page which explains the function which generated a HTML error.
-B::iniSet('html_errors', '1', false);
-// // This doesn't make usual error report invalid.
-// B::iniCheck( 'xmlrpc_errors', '', 'Set "xmlrpc_errors = Off" in "php.ini" file because this does not change usual error report invalidly.');
+B::iniSet('html_errors', '1');
 B::assert(B::getStatic('$_maxLogFileByteSize') % 4096 === 0);
 B::assert(1 <= B::getStatic('$_maxLogParamNestingLevel') && B::getStatic('$_maxLogParamNestingLevel') <= 100);
 B::assert(1 <= B::getStatic('$_maxLogElementNumber') && B::getStatic('$_maxLogElementNumber') <= 100);
 B::assert(1 <= B::getStatic('$_maxLogStringSize'));
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//// ### Super global variable filter setting. ###
-//B::iniCheck('filter.default', 'unsafe_raw', 'Set \'filter.default = unsafe_raw\' of "php.ini" or ".htaccess" file because of unit test\'s static backup.');
-//B::iniCheck('filter.default_flags', '', 'Set \'filter.default_flags = ""\' of "php.ini" or ".htaccess" file because of unit test\'s static backup.');

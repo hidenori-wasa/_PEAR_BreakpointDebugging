@@ -1094,40 +1094,6 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
     }
 
     /**
-     * "ini_set()" with validation except for release mode.
-     * Sets with "ini_set()" because "php.ini" file and ".htaccess" file isn't sometimes possible to be set on sharing server.
-     *
-     * @param string $phpIniVariable "php.ini" variable.
-     * @param string $setValue       Value of variable.
-     * @param bool   $doCheck        Does this class method check to copy to the release file?
-     *
-     * @return void
-     */
-    static function iniSet($phpIniVariable, $setValue, $doCheck = true)
-    {
-        self::assert(func_num_args() <= 3);
-        self::assert($phpIniVariable !== 'error_log');
-        self::assert(is_string($phpIniVariable));
-        self::assert(is_string($setValue));
-        self::assert(is_bool($doCheck));
-
-        $getValue = ini_get($phpIniVariable);
-        if ($setValue !== $getValue) {
-            // In case of remote debug.
-            if ($doCheck === true) {
-                $dirName = BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME;
-                $displayString = <<<EOD
-### "\BreakpointDebugging::iniSet()": You must copy from "{$dirName}[package name]_MySetting_InDebug.php" to user place folder of "{$dirName}[package name]_MySetting.php" for release because set value and value of php.ini differ.
-EOD;
-                parent::ini('_MySetting_InDebug.php', self::$_onceFlagPerPackageInDebug, $displayString);
-            }
-            if (ini_set($phpIniVariable, $setValue) === false) {
-                throw new \BreakpointDebugging_ErrorException('"ini_set()" failed.', 101);
-            }
-        }
-    }
-
-    /**
      * Executes function by parameter array, then displays executed function line, file, parameters and results.
      * Does not exist in case of release because this method uses for a function verification display.
      *
