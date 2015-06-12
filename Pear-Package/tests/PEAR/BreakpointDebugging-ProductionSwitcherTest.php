@@ -8,32 +8,29 @@ class BreakpointDebugging_ProductionSwitcherTest extends \BreakpointDebugging_PH
 
     private function _stripCommentForRestoration($results, $linesForTest)
     {
-        foreach ($results as $result) {
-            $resultsB[] = BU::callForTest(array (
-                    'objectOrClassName' => 'BreakpointDebugging_ProductionSwitcher',
-                    'methodName' => '_stripCommentForRestoration',
-                    'params' => array ($result)
-            ));
-        }
+        $isChanged = false;
+        BU::callForTest(array (
+            'objectOrClassName' => 'BreakpointDebugging_Optimizer',
+            'methodName' => 'stripCommentForRestoration',
+            'params' => array ('Dummy file path.', &$results, &$isChanged, '', '')
+        ));
 
-        parent::assertTrue($linesForTest === $resultsB);
+        parent::assertTrue($linesForTest === $results);
     }
 
     /**
      * @covers \BreakpointDebugging_ProductionSwitcher<extended>
      */
-    function test_setInfoToOptimize()
+    function testSetInfoToOptimize()
     {
-        \BreakpointDebugging_Optimizer::setInfoToOptimize('C:\xampp\htdocs\CakePHPSamples\app\webroot\BreakpointDebugging_PEAR_Setting\BreakpointDebugging_MySetting.php', 309, 'REPLACE_TO_NATIVE');
+        \BreakpointDebugging_Optimizer::setInfoToOptimize(__FILE__, 309, 'REPLACE_TO_NATIVE');
     }
 
     /**
      * @covers \BreakpointDebugging_ProductionSwitcher<extended>
      */
-    function test_commentOutAssertion()
+    function testCommentOut()
     {
-        //include './BreakpointDebugging_ProductionSwitcher.php';
-
         $linesForTest = array (
             '\BreakpointDebugging::assert(true);',
             "\t\\BreakpointDebugging::assert(true);\n",
@@ -66,11 +63,6 @@ class BreakpointDebugging_ProductionSwitcherTest extends \BreakpointDebugging_PH
         );
 
         foreach ($linesForTest as $lineForTest) {
-            //$results[] = BU::callForTest(array (
-            //        'objectOrClassName' => 'BreakpointDebugging_ProductionSwitcher',
-            //        'methodName' => '_commentOutAssertion',
-            //        'params' => array ($lineForTest)
-            //));
             $results[] = BU::callForTest(array (
                     'objectOrClassName' => 'BreakpointDebugging_Optimizer',
                     'methodName' => 'commentOut',
@@ -86,7 +78,7 @@ class BreakpointDebugging_ProductionSwitcherTest extends \BreakpointDebugging_PH
     /**
      * @covers \BreakpointDebugging_ProductionSwitcher<extended>
      */
-    function test_changeModeConstToLiteralA()
+    function test_changeModeConstToLiteral_A()
     {
         $linesForTest = array (
             "            if (\BreakpointDebugging::isDebug()) { // If debug.\r\n",
@@ -139,7 +131,7 @@ class BreakpointDebugging_ProductionSwitcherTest extends \BreakpointDebugging_PH
     /**
      * @covers \BreakpointDebugging_ProductionSwitcher<extended>
      */
-    function test_changeModeConstToLiteralB()
+    function test_changeModeConstToLiteral_B()
     {
         $linesForTest = array (
             'if(BREAKPOINTDEBUGGING_IS_PRODUCTION){',
@@ -187,33 +179,30 @@ class BreakpointDebugging_ProductionSwitcherTest extends \BreakpointDebugging_PH
         $this->_stripCommentForRestoration($results, $linesForTest);
     }
 
+    public function stripCommentForRestoration_provider()
+    {
+        return array (
+            array ('/* <BREAKPOINTDEBUGGING_COMMENT> */ if( false ){'),
+            array ("\t/* <BREAKPOINTDEBUGGING_COMMENT> */ if( false ){\n"),
+            array ("\x20/* <BREAKPOINTDEBUGGING_COMMENT> */ if( false ){\r\n"),
+            array ("\x20\t/* <BREAKPOINTDEBUGGING_COMMENT> */ if( false ){"),
+            array ("\t\x20/* <BREAKPOINTDEBUGGING_COMMENT> */ if( false ){"),
+            array ("\t\x20/* <BREAKPOINTDEBUGGING_COMMENT> */ if\t\x20(\t\x20!\t\x20 false \t\x20)\t\x20{\t\x20"),
+            array ('/* <BREAKPOINTDEBUGGING_COMMENT> */ if( false ){ //'),
+            array ('/* <BREAKPOINTDEBUGGING_COMMENT> */ if( false ){ // Something comment.'),
+        );
+    }
+
     /**
      * @covers \BreakpointDebugging_ProductionSwitcher<extended>
+     *
+     * @dataProvider             stripCommentForRestoration_provider
+     * @expectedException        \BreakpointDebugging_ErrorException
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_Window FUNCTION=throwErrorException.
      */
-    function test_changeModeConstToLiteralC()
+    function testStripCommentForRestoration($lineForTest)
     {
-        $linesForTest = array (
-            '/* <BREAKPOINTDEBUGGING_COMMENT> */ if( false ){',
-            "\t/* <BREAKPOINTDEBUGGING_COMMENT> */ if( false ){\n",
-            "\x20/* <BREAKPOINTDEBUGGING_COMMENT> */ if( false ){\r\n",
-            "\x20\t/* <BREAKPOINTDEBUGGING_COMMENT> */ if( false ){",
-            "\t\x20/* <BREAKPOINTDEBUGGING_COMMENT> */ if( false ){",
-            "\t\x20/* <BREAKPOINTDEBUGGING_COMMENT> */ if\t\x20(\t\x20!\t\x20 false \t\x20)\t\x20{\t\x20",
-            '/* <BREAKPOINTDEBUGGING_COMMENT> */ if( false ){ //',
-            '/* <BREAKPOINTDEBUGGING_COMMENT> */ if( false ){ // Something comment.',
-        );
-        $results = array (
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-        );
-
-        $this->_stripCommentForRestoration($linesForTest, $results);
+        $this->_stripCommentForRestoration(array ($lineForTest), 'DUMMY');
     }
 
 }

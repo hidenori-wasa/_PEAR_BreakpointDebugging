@@ -71,13 +71,16 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_ErrorInAllCas
             $this->tags['/i'] = '</span>';
             $this->tags['b'] = '<span style="font-weight:bold;">';
             $this->tags['/b'] = '</span>';
-            if (B::getStatic('$exeMode') & B::UNIT_TEST) {
-                $this->tags['uint test anchor href'] = $this->uintTestAnchorHref;
-                $this->tags['uint test anchor name'] = $this->uintTestAnchorName;
-            } else {
-                $this->tags['uint test anchor href'] = '';
-                $this->tags['uint test anchor name'] = '';
-            }
+//            if (B::getStatic('$exeMode') & B::UNIT_TEST) {
+//                //$this->tags['uint test anchor href'] = $this->uintTestAnchorHref;
+//                $this->tags['uint test anchor href'] = '<a href="#UnitTestAnchor' . parent::$errorAnchorNumber . '">To unit test error information.</a>';
+//                //$this->tags['uint test anchor name'] = $this->uintTestAnchorName;
+//                $this->tags['uint test anchor name'] = '<a name="UnitTestAnchor' . parent::$errorAnchorNumber . '"></a>';
+//                //parent::$errorAnchorNumber++;
+//            } else {
+//                $this->tags['uint test anchor href'] = '';
+//                $this->tags['uint test anchor name'] = '';
+//            }
         } else { // In case of release mode.
             parent::__construct();
         }

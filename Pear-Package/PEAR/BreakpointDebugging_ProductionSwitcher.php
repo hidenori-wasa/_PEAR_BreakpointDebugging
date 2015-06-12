@@ -88,8 +88,7 @@ class BreakpointDebugging_ProductionSwitcher extends \BreakpointDebugging_Optimi
             ) {
                 continue;
             }
-            foreach (self::$_blackListPaths as $fullBlackListPath => $value) {
-                B::assert($value === true);
+            foreach (self::$_blackListPaths as $fullBlackListPath => $dummy) {
                 // If black list.
                 if ($fullDirElement === $fullBlackListPath) {
                     // Skips black list.
@@ -237,41 +236,42 @@ class BreakpointDebugging_ProductionSwitcher extends \BreakpointDebugging_Optimi
         );
     }
 
-    /**
-     * Strips a comment for restoration.
-     *
-     * @param string $line Character string line of file.
-     *
-     * @return string Replaced character string line.
-     */
-    private static function _stripCommentForRestoration($line)
-    {
-        // Strips "/* <BREAKPOINTDEBUGGING_COMMENT> */ - // <BREAKPOINTDEBUGGING_COMMENT> " for restoration.
-        if (preg_match('`^ [[:blank:]]* /\*\x20<BREAKPOINTDEBUGGING_COMMENT>\x20\*/ .* [\r\n]* $`xX', $line) === 1) {
-            $result = preg_replace(
-                '`^ ( [[:blank:]]* ) /\*\x20<BREAKPOINTDEBUGGING_COMMENT>\x20\*/ .* //\x20<BREAKPOINTDEBUGGING_COMMENT>\x20 ( .* [\r\n]* ) $`xX', //
-                '$1$2', //
-                $line, //
-                1 //
-            );
-            B::assert($result !== null);
-            if ($result !== $line) {
-                return $result;
-            } else {
-                // Displays the progress.
-                BW::htmlAddition(__CLASS__, 'body', 0, '<span style="color: yellow">"/* &lt;BREAKPOINTDEBUGGING_COMMENT&gt; */" line of production code must have "// &lt;BREAKPOINTDEBUGGING_COMMENT&gt;" in same line.</span><br />');
-                return false;
-            }
-        }
-
-        // Strips "// <BREAKPOINTDEBUGGING_COMMENT> " for restoration.
-        return preg_replace(
-            '`^ ( [[:blank:]]* ) //\x20<BREAKPOINTDEBUGGING_COMMENT>\x20 ( .* [\r\n]* ) $`xX', //
-            '$1$2', //
-            $line, //
-            1 //
-        );
-    }
+//    /**
+//     * Strips a comment for restoration.
+//     *
+//     * @param string $line Character string line of file.
+//     *
+//     * @return string Replaced character string line.
+//     */
+//    private static function _stripCommentForRestoration($line)
+//    {
+//        // Strips "/* <BREAKPOINTDEBUGGING_COMMENT> */ - // <BREAKPOINTDEBUGGING_COMMENT> " for restoration.
+//        //if (preg_match('`^ [[:blank:]]* /\*\x20<BREAKPOINTDEBUGGING_COMMENT>\x20\*/ .* $`xX', $line) === 1) {
+//        if (preg_match('`^ [[:blank:]]* /\*\x20<BREAKPOINTDEBUGGING_COMMENT>\x20\*/`xX', $line) === 1) {
+//            $result = preg_replace(
+//                '`^ ( [[:blank:]]* ) /\*\x20<BREAKPOINTDEBUGGING_COMMENT>\x20\*/ .* //\x20<BREAKPOINTDEBUGGING_COMMENT>\x20 ( .* ) $`xX', //
+//                '$1$2', //
+//                $line, //
+//                1 //
+//            );
+//            B::assert($result !== null);
+//            if ($result !== $line) {
+//                return $result;
+//            } else {
+//                // Displays the progress.
+//                BW::htmlAddition(__CLASS__, 'body', 0, '<span style="color: yellow">"/* &lt;BREAKPOINTDEBUGGING_COMMENT&gt; */" line of production code must have "// &lt;BREAKPOINTDEBUGGING_COMMENT&gt;" in same line.</span><br />');
+//                return false;
+//            }
+//        }
+//
+//        // Strips "// <BREAKPOINTDEBUGGING_COMMENT> " for restoration.
+//        return preg_replace(
+//            '`^ ( [[:blank:]]* ) //\x20<BREAKPOINTDEBUGGING_COMMENT>\x20 ( .* ) $`xX', //
+//            '$1$2', //
+//            $line, //
+//            1 //
+//        );
+//    }
 
     /**
      * Switches mode.
@@ -320,6 +320,10 @@ EOD;
                 $mySettingFilePath = BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php';
                 $fullMySettingFilePath = str_replace('\\', '/', stream_resolve_include_path($mySettingFilePath));
                 $phpFilePaths = self::_searchPHPFiles();
+                $phpFilePaths = array (
+                    'C:/xampp/htdocs/CakePHPSamples/app/webroot/BreakpointDebugging_PEAR_Setting/BreakpointDebugging_MySetting.php' => true,
+                    'C:/xampp/htdocs/CakePHPSamples/app/webroot/_ProvingGround.php' => true,
+                ); // For debug.
             } else { // In case of first time when this page was called.
                 $html = '<h1>ProductionSwitcher</h1>';
                 $whiteListPaths = self::_getWhiteListPaths();
@@ -382,7 +386,10 @@ EOD;
 <h3><span style="color:orange">Caution: Syntaxes like following have bug in production mode.</span></h3>
 <dl>
     <dt>Multiple syntax line is a bug line in case of "\\BreakpointDebugging::assert()".<span style="color:orange">This is not detected as a bug line by IDE.</span></dt>
-    <dd><span style="color:fuchsia">\\BreakpointDebugging::assert(\$a); echo('abc');</span></dd>
+    <dd>
+        <span style="color:fuchsia">\\BreakpointDebugging::assert(\$a); echo('abc');</span><br />
+        <span style="color:aqua">Searching by "^[\\t\\x20]*\\\\[\\t\\x20]*BreakpointDebugging[\\t\\x20]*::[\\t\\x20]*assert[\\t\\x20]*\\(" is valid means to this bug.</span>
+    </dd>
     <dt>Multiple comment line start is a bug line in case of "\\BreakpointDebugging::assert()". <span style="color:aqua">This is detected by IDE.</span></dt>
     <dd>\\BreakpointDebugging::assert(\$a); /* );</dd>
     <dt><span style="color:orange">"Heredoc" and "Nowdoc" is not detected as a bug line by IDE.</span></dt>
@@ -395,6 +402,8 @@ EOD;
             if(!BREAKPOINTDEBUGGING_IS_PRODUCTION This is a bug line. ){<br />
         </span>
         LABEL;<br />
+        <span style="color:aqua">Searching by "^[\\t\\x20]*\\\\[\\t\\x20]*BreakpointDebugging[\\t\\x20]*::[\\t\\x20]*assert[\\t\\x20]*\\(" is valid means to this bug.</span><br />
+        <span style="color:aqua">Searching by "^[\\t\\x20]*if[\\t\\x20]*\\([\\t\\x20]*!?(\\\\[\\t\\x20]*BreakpointDebugging[\\t\\x20]*::[\\t\\x20]*isDebug[\\t\\x20]*\\(|BREAKPOINTDEBUGGING_IS_PRODUCTION)" is valid means to this bug.</span>
     </dd>
 </dl>
 <hr />
@@ -451,8 +460,7 @@ EOD;
                 }
                 throw new \BreakpointDebugging_ErrorException('');
             }
-            foreach ($phpFilePaths as $phpFilePath => $value) {
-                B::assert($value === true);
+            foreach ($phpFilePaths as $phpFilePath => $dummy) {
                 // Copies the "*.php" file lines to an array.
                 $lines = parent::getArrayFromFile($phpFilePath, $getHtmlFileContent('ProductionSwitcherError'));
 
@@ -484,18 +492,20 @@ EOD;
                         }
                     }
                 } else { // 'Switch to development' button was pushed.
-                    foreach ($lines as &$line) {
-                        // Strips a comment for restoration.
-                        $result = self::_stripCommentForRestoration($line);
-                        B::assert($result !== null);
-                        if ($result === false) {
-                            $isChanged = false;
-                            break;
-                        } else if ($result !== $line) {
-                            $line = $result;
-                            $isChanged = true;
-                        }
-                    }
+//                    foreach ($lines as &$line) {
+//                        // Strips a comment for restoration.
+//                        $result = self::_stripCommentForRestoration($line);
+//                        B::assert($result !== null);
+//                        if ($result === false) {
+//                            $isChanged = false;
+//                            break;
+//                        } else if ($result !== $line) {
+//                            $line = $result;
+//                            $isChanged = true;
+//                        }
+//                    }
+                    //parent::stripCommentForRestoration($phpFilePath, $lines, $isChanged, '', '', __CLASS__);
+                    parent::stripCommentForRestoration($phpFilePath, $lines, $isChanged, '', '');
                 }
 
                 // 'Switch to production' button was pushed.
@@ -508,7 +518,7 @@ EOD;
 <p style="color: yellow">
     Please, follow out procedure as below.<br />
     Procedure1: Copy project files from local server to remote server.<br />
-    Procedure2: Execute "https://&lt;server name&gt;/&lt;project name&gt;/BreakpointDebugging_IniSetOptimizer.php" page in remote.<br />
+    Procedure2: Execute "https://&lt;server name&gt;/&lt;project name&gt;/BreakpointDebugging_IniSetOptimizer.php" page in remote server.<br />
 </p>
 EOD;
                 BW::htmlAddition(__CLASS__, 'body', 0, $html);

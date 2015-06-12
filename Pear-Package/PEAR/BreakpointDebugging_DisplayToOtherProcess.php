@@ -80,38 +80,40 @@ final class BreakpointDebugging_DisplayToOtherProcess
      */
     private static function _assert($assertion)
     {
-        $callStackInfo = debug_backtrace();
-        reset($callStackInfo);
-        if (!empty($callStackInfo)) {
-            $call = each($callStackInfo);
-            $call = $call['value'];
-            if (array_key_exists('file', $call)) {
-                $errorFile = $call['file'];
-            }
-            if (array_key_exists('line', $call)) {
-                $errorLine = $call['line'];
-            }
-        }
+//        $callStackInfo = debug_backtrace();
+//        reset($callStackInfo);
+//        if (!empty($callStackInfo)) {
+//            $call = each($callStackInfo);
+//            $call = $call['value'];
+//            if (array_key_exists('file', $call)) {
+//                $errorFile = $call['file'];
+//            }
+//            if (array_key_exists('line', $call)) {
+//                $errorLine = $call['line'];
+//            }
+//        }
         if (!is_bool($assertion)) {
-            $errorInfo = <<<EOD
-<pre>
-<strong>Assertion must be bool.</strong>
-FILE: $errorFile
-LINE: $errorLine
-</pre>
-EOD;
-            exit($errorInfo);
+//            $errorInfo = <<<EOD
+//<pre>
+//<strong>Assertion must be bool.</strong>
+//FILE: $errorFile
+//LINE: $errorLine
+//</pre>
+//EOD;
+//            exit($errorInfo);
+            exit(B::getErrorHTML('Assertion must be bool.'));
         }
-
+//
         if ($assertion === false) {
-            $errorInfo = <<<EOD
-<pre>
-<strong>Assertion failed.</strong>
-FILE: $errorFile
-LINE: $errorLine
-</pre>
-EOD;
-            exit($errorInfo);
+//            $errorInfo = <<<EOD
+//<pre>
+//<strong>Assertion failed.</strong>
+//FILE: $errorFile
+//LINE: $errorLine
+//</pre>
+//EOD;
+//            exit($errorInfo);
+            exit(B::getErrorHTML('Assertion failed.'));
         }
     }
 
@@ -162,56 +164,61 @@ EOD;
                 }
                 while (true) {
                     // Locks the shared memory.
-                    if (BW::lockOn2Processes(1, 0, $shmopId) === false) {
-                        continue 2;
-                    }
-                    // Gets writing pointer of shared resource.
-                    $javaScriptWritingPtr = shmop_read($shmopId, 3, 10);
-                    if ($javaScriptWritingPtr === false) {
-                        continue 2;
-                    }
-                    $javaScript = '';
-                    // If area to write overrun shared memory area.
-                    if (self::$_javaScriptReadingPtr > $javaScriptWritingPtr) {
+                    $result = BW::lockOn2Processes(1, 0, $shmopId);
+                    self::_assert($result !== false);
+                    try {
+                        // Gets writing pointer of shared resource.
+                        $javaScriptWritingPtr = shmop_read($shmopId, 3, 10);
+                        if ($javaScriptWritingPtr === false) {
+                            continue 2;
+                        }
+                        $javaScript = '';
+                        // If area to write overrun shared memory area.
+                        if (self::$_javaScriptReadingPtr > $javaScriptWritingPtr) {
+                            // Calculates read-length.
+                            $readLen = BW::SHARED_MEMORY_SIZE - self::$_javaScriptReadingPtr;
+                            // Gets dispatched JavaScript character string from main process until end of shared memory area.
+                            $result = shmop_read($shmopId, self::$_javaScriptReadingPtr + 0, $readLen);
+                            if ($result === false) {
+                                continue 2;
+                            }
+                            $javaScript .= $result;
+                            // Initializes the shared memory reading pointer.
+                            self::$_javaScriptReadingPtr = 23;
+                        }
                         // Calculates read-length.
-                        $readLen = BW::SHARED_MEMORY_SIZE - self::$_javaScriptReadingPtr;
-                        // Gets dispatched JavaScript character string from main process until end of shared memory area.
-                        $result = shmop_read($shmopId, self::$_javaScriptReadingPtr + 0, $readLen);
-                        if ($result === false) {
-                            continue 2;
+                        $readLen = $javaScriptWritingPtr - self::$_javaScriptReadingPtr;
+                        self::_assert($readLen <= BW::SHARED_MEMORY_SIZE);
+                        // If this process received data from main process.
+                        if ($readLen > 0) {
+                            // Resets maximum execution time.
+                            set_time_limit(self::$_timeOutSeconds);
+                            // Gets dispatched JavaScript character string from main process.
+                            $result = shmop_read($shmopId, self::$_javaScriptReadingPtr + 0, $readLen);
+                            if ($result === false) {
+                                continue 2;
+                            }
+                            $javaScript .= $result;
+                            // Moves the shared memory reading pointer.
+                            self::$_javaScriptReadingPtr = $javaScriptWritingPtr;
+                            // Registers the shared memory reading pointer.
+                            $result = shmop_write($shmopId, self::$_javaScriptReadingPtr, 13);
+                            if ($result === false) {
+                                continue 2;
+                            }
+                            // Executes JavaScript.
+                            echo $javaScript;
+                            flush();
                         }
-                        $javaScript .= $result;
-                        // Initializes the shared memory reading pointer.
-                        self::$_javaScriptReadingPtr = 23;
-                    }
-                    // Calculates read-length.
-                    $readLen = $javaScriptWritingPtr - self::$_javaScriptReadingPtr;
-                    self::_assert($readLen <= BW::SHARED_MEMORY_SIZE);
-                    // If this process received data from main process.
-                    if ($readLen > 0) {
-                        // Resets maximum execution time.
-                        set_time_limit(self::$_timeOutSeconds);
-                        // Gets dispatched JavaScript character string from main process.
-                        $result = shmop_read($shmopId, self::$_javaScriptReadingPtr + 0, $readLen);
-                        if ($result === false) {
-                            continue 2;
-                        }
-                        $javaScript .= $result;
-                        // Moves the shared memory reading pointer.
-                        self::$_javaScriptReadingPtr = $javaScriptWritingPtr;
-                        // Registers the shared memory reading pointer.
-                        $result = shmop_write($shmopId, self::$_javaScriptReadingPtr, 13);
-                        if ($result === false) {
-                            continue 2;
-                        }
-                        // Executes JavaScript.
-                        echo $javaScript;
-                        flush();
+                    } catch (\Exception $e) {
+                        // Unlocks the shared file.
+                        $result = BW::unlockOn2Processes(1, $shmopId);
+                        self::_assert($result !== false);
+                        throw $e;
                     }
                     // Unlocks the shared memory.
-                    if (BW::unlockOn2Processes(1, $shmopId) === false) {
-                        continue 2;
-                    }
+                    $result = BW::unlockOn2Processes(1, $shmopId);
+                    self::_assert($result !== false);
                     // 1 second sleep.
                     usleep(1000000);
                 }
@@ -274,14 +281,20 @@ EOD;
     {
         // If "shmop" extention is valid.
         if (extension_loaded('shmop')) {
+            while (true) {
+                // If shared file exists.
+                if (is_file(self::$_sharedFilePath)) {
+                    // Unlinks shared file.
+                    if (unlink(self::$_sharedFilePath) === false) {
+                        sleep(1);
+                        continue;
+                    }
+                }
+                break;
+            }
             // Deletes shared memory.
             $result = shmop_delete(self::$_resourceID);
             self::_assert($result !== false);
-            // If shared file exists.
-            if (is_file(self::$_sharedFilePath)) {
-                // Unlinks shared file.
-                B::unlink(array (self::$_sharedFilePath));
-            }
         } else { // If "shmop" extention is invalid.
             // Truncates the shared file to size 1.
             $result = ftruncate(self::$_resourceID, 1);

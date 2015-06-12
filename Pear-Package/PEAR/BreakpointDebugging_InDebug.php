@@ -490,8 +490,10 @@ use \BreakpointDebugging_Window as BW;
  *          Procedure 3: Use "DEBUG" or "DEBUG_UNIT_TEST" mode at remote server. This mode can do production server display debugging.
  *          Procedure 4: Use "RELEASE" or "RELEASE_UNIT_TEST" mode at remote server. This mode can do production server logging debugging.
  *      If you changed remote "php.ini" file, you must redo from procedure 3 because to increase the production mode execution speed.
- * Procedure 8: Release the code to production server. And, change it to production mode.
- *      See the class level document of "BreakpointDebugging_ProductionSwitcher.php" file.
+ * Procedure 8: Change the code to production mode by "./BreakpointDebugging_ProductionSwitcher.php" to decrease the script running time.
+ *      See the class level document of "./BreakpointDebugging_ProductionSwitcher.php" file.
+ * Procedure 9: Optimize "*_MySetting.php" files by "./BreakpointDebugging_IniSetOptimizer.php" file after procedure 8 or "php.ini" setting change to decrease the script running time.
+ *      See the class level document of "./BreakpointDebugging_IniSetOptimizer.php" file.
  *
  * Caution: Do not execute "ini_set('error_log', ...)" because this package uses local log rotation instead of system log.
  *
@@ -680,24 +682,24 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
         parent::setXebugExists($value);
     }
 
-    /**
-     * For debug.
-     *
-     * @param string $phpIniVariable Same as parent.
-     * @param mixed  $cmpValue       Same as parent.
-     * @param string $errorMessage   Same as parent.
-     *
-     * @return Same as parent.
-     */
-    static function iniCheck($phpIniVariable, $cmpValue, $errorMessage)
-    {
-        self::assert(func_num_args() === 3);
-        self::assert(is_string($phpIniVariable));
-        self::assert(is_string($cmpValue) || is_array($cmpValue));
-        self::assert(is_string($errorMessage));
-
-        parent::iniCheck($phpIniVariable, $cmpValue, $errorMessage);
-    }
+//    /**
+//     * For debug.
+//     *
+//     * @param string $phpIniVariable Same as parent.
+//     * @param mixed  $cmpValue       Same as parent.
+//     * @param string $errorMessage   Same as parent.
+//     *
+//     * @return Same as parent.
+//     */
+//    static function iniCheck($phpIniVariable, $cmpValue, $errorMessage)
+//    {
+//        self::assert(func_num_args() === 3);
+//        self::assert(is_string($phpIniVariable));
+//        self::assert(is_string($cmpValue) || is_array($cmpValue));
+//        self::assert(is_string($errorMessage));
+//
+//        parent::iniCheck($phpIniVariable, $cmpValue, $errorMessage);
+//    }
 
     /**
      * For debug.

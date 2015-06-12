@@ -34,18 +34,20 @@ use \BreakpointDebugging_Window as BW;
 abstract class BreakpointDebugging_ErrorInAllCase
 {
     /**
-     * HTML of hypertext reference as uint test anchor.
+     * //HTML of hypertext reference as uint test anchor.
+     * Error anchor number of hypertext reference.
      *
      * @var string
      */
-    protected $uintTestAnchorHref = '<a href="#UnitTestAnchor">To unit test error information.</a>';
+    //protected $uintTestAnchorHref = '<a href="#UnitTestAnchor">To unit test error information.</a>';
+    static protected $errorAnchorNumber = 1;
 
-    /**
-     * HTML of name as uint test anchor.
-     *
-     * @var string
-     */
-    protected $uintTestAnchorName = '<a name="UnitTestAnchor"></a>';
+//    /**
+//     * HTML of name as uint test anchor.
+//     *
+//     * @var string
+//     */
+//    protected $uintTestAnchorName = '<a name="UnitTestAnchor"></a>';
 
     /**
      * Logged call-stacks.
@@ -259,6 +261,19 @@ abstract class BreakpointDebugging_ErrorInAllCase
         $tags['/small'] = '';
     }
 
+    private function _setAnchorTags()
+    {
+        if (B::getStatic('$exeMode') & B::UNIT_TEST) {
+            $this->tags['uint test anchor href'] = '<a href="#UnitTestAnchor' . self::$errorAnchorNumber . '">To unit test error information.</a>';
+            $this->tags['uint test anchor name'] = '<a name="UnitTestAnchor' . self::$errorAnchorNumber . '"></a>';
+            self::$errorAnchorNumber++;
+        } else {
+            $this->tags['uint test anchor href'] = '';
+            $this->tags['uint test anchor name'] = '';
+        }
+    }
+
+
     /**
      * Is called from child.
      */
@@ -274,13 +289,16 @@ abstract class BreakpointDebugging_ErrorInAllCase
         $this->tags['/i'] = '';
         $this->tags['b'] = '';
         $this->tags['/b'] = '';
-        if (B::getStatic('$exeMode') & B::UNIT_TEST) {
-            $this->tags['uint test anchor href'] = $this->uintTestAnchorHref;
-            $this->tags['uint test anchor name'] = $this->uintTestAnchorName;
-        } else {
-            $this->tags['uint test anchor href'] = '';
-            $this->tags['uint test anchor name'] = '';
-        }
+//        if (B::getStatic('$exeMode') & B::UNIT_TEST) {
+//            //$this->tags['uint test anchor href'] = $this->uintTestAnchorHref;
+//            $this->tags['uint test anchor href'] = '<a href="#UnitTestAnchor' . self::$errorAnchorNumber . '">To unit test error information.</a>';
+//            //$this->tags['uint test anchor name'] = $this->uintTestAnchorName;
+//            $this->tags['uint test anchor name'] = '<a name="UnitTestAnchor' . self::$errorAnchorNumber . '"></a>';
+//            //self::$errorAnchorNumber++;
+//        } else {
+//            $this->tags['uint test anchor href'] = '';
+//            $this->tags['uint test anchor name'] = '';
+//        }
     }
 
     /**
@@ -832,7 +850,8 @@ abstract class BreakpointDebugging_ErrorInAllCase
             $this->logBufferWriting($pTmpLog, $this->tags['uint test anchor name']);
             $this->tags['uint test anchor name'] = '';
             if ($file) {
-                $this->logBufferWriting($pTmpLog, PHP_EOL . $this->mark . 'Error file =======>' . $this->tags['font']['string'] . $this->tags['b'] . '\'' . $file . '\'' . $this->tags['/b'] . $this->tags['/font']);
+                //$this->logBufferWriting($pTmpLog, PHP_EOL . $this->mark . 'Error file =======>' . $this->tags['font']['string'] . $this->tags['b'] . '\'' . $file . '\'' . $this->tags['/b'] . $this->tags['/font']);
+                $this->logBufferWriting($pTmpLog, PHP_EOL . $this->mark . 'Error file =======>' . $this->tags['font']['caution'] . $this->tags['b'] . '\'' . $file . '\'' . $this->tags['/b'] . $this->tags['/font']);
             }
             if ($line) {
                 $this->logBufferWriting($pTmpLog, PHP_EOL . $this->mark . 'Error line =======>' . $this->tags['font']['int'] . $this->tags['b'] . $line . $this->tags['/b'] . $this->tags['/font']);
@@ -1307,6 +1326,7 @@ EOD;
                 $tmp = date('[Y-m-d H:i:s]') . PHP_EOL;
                 $dummy = null;
                 $this->logBufferWriting($dummy, $this->tags['pre'] . $prependLog);
+                $this->_setAnchorTags();
                 // Create error log from the argument.
                 $tmp .= '/////////////////////////////// CALL STACK BEGIN ///////////////////////////////' .
                     PHP_EOL . $this->mark . 'Error kind =======>' . $this->tags['font']['string'] . '\'' . $errorKind . '\'' . $this->tags['/font'] .

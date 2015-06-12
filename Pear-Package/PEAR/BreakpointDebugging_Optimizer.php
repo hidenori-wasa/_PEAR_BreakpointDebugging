@@ -43,6 +43,76 @@ class BreakpointDebugging_Optimizer
     protected static $infoToOptimize;
 
     /**
+     * Strips a comment for restoration.
+     *
+     * @param string $phpFilePath       The file path of "PHP".
+     * @param array  $lines             Character string lines of file.
+     * @param bool   $isChanged         Is changed?
+     * @param string $regExToReplace    Regular expression to replace.
+     * @param string $regExToCommentOut Regular expression to comment out.
+     * @//param string $className         __CLASS__
+     *
+     * @return void
+     */
+    //protected static function stripCommentForRestoration($phpFilePath, &$lines, &$isChanged, $regExToReplace, $regExToCommentOut, $className)
+    protected static function stripCommentForRestoration($phpFilePath, &$lines, &$isChanged, $regExToReplace, $regExToCommentOut)
+    {
+        $lineNumber = 0;
+        foreach ($lines as &$line) {
+            $lineNumber++;
+            if (preg_match('`^ [[:blank:]]* /\*\x20<BREAKPOINTDEBUGGING_COMMENT>\x20\*/`xX', $line) === 1) {
+                // Checks a line tag.
+                if (preg_match('`^ [[:blank:]]* /\*\x20<BREAKPOINTDEBUGGING_COMMENT>\x20\*/ .* //\x20<BREAKPOINTDEBUGGING_COMMENT>\x20 .* $`xX', $line) !== 1) {
+                    //// Displays the progress.
+                    //BW::htmlAddition($className, 'body', 0, '<span style="color: yellow">"/* &lt;BREAKPOINTDEBUGGING_COMMENT&gt; */" line of production code must have "// &lt;BREAKPOINTDEBUGGING_COMMENT&gt; " in same line.<br />' . "ERROR LINE: " . $lineNumber . '<br /></span>');
+                    //$isChanged = null;
+                    //break;
+                    $errorMessage = <<<EOD
+<span style="color: yellow">
+    ERROR MESSAGE: "/* &lt;BREAKPOINTDEBUGGING_COMMENT&gt; */" line of production code must have "// &lt;BREAKPOINTDEBUGGING_COMMENT&gt; " in same line.
+    FILE: $phpFilePath
+    LINE: $lineNumber
+</span>
+EOD;
+                    // Displays error excetion. Next, throw error exception.
+                    BW::throwErrorException($errorMessage);
+                }
+                // Sets "$result" always.
+                $result = $line;
+                // Strips a comment for restoration.
+                // Strips "/* <BREAKPOINTDEBUGGING_COMMENT> */ - // <BREAKPOINTDEBUGGING_COMMENT> " for restoration.
+                if (preg_match('`^ [[:blank:]]* /\*\x20<BREAKPOINTDEBUGGING_COMMENT>\x20\*/' . $regExToReplace . '`xX', $line) === 1) {
+                    $result = preg_replace(
+                        '`^ ( [[:blank:]]* ) /\*\x20<BREAKPOINTDEBUGGING_COMMENT>\x20\*/ .* //\x20<BREAKPOINTDEBUGGING_COMMENT>\x20 ( .* ) $`xX', //
+                        '$1$2', //
+                        $line, //
+                        1 //
+                    );
+                    //if ($result === $line) {
+                    //    // Displays the progress.
+                    //    BW::htmlAddition($className, 'body', 0, '<span style="color: yellow">"/* &lt;BREAKPOINTDEBUGGING_COMMENT&gt; */" line of production code must have "// &lt;BREAKPOINTDEBUGGING_COMMENT&gt;" in same line.</span><br />');
+                    //    $isChanged = false;
+                    //    break;
+                    //}
+                }
+            } else {
+                // Strips "// <BREAKPOINTDEBUGGING_COMMENT> " for restoration.
+                $result = preg_replace(
+                    '`^ ( [[:blank:]]* ) //\x20<BREAKPOINTDEBUGGING_COMMENT>\x20 (' . $regExToCommentOut . '.* ) $`xX', //
+                    '$1$2', //
+                    $line, //
+                    1 //
+                );
+            }
+            B::assert($result !== null);
+            if ($result !== $line) {
+                $line = $result;
+                $isChanged = true;
+            }
+        }
+    }
+
+    /**
      * Sets information to optimize.
      *
      * @param string $fullFilePath Filename to optimize.
@@ -162,21 +232,30 @@ EOD;
     /**
      * Writes or skips a file.
      *
-     * @param array $lines       The lines to write.
-     * @param string $fullFilePath Full file path to process.
+     * @param array  $lines         The lines to write.
+     * @param string $fullFilePath  Full file path to process.
      * @param string $thisClassName This class name.
-     * @param bool $isChanged Is changed?
+     * @param bool   $isChanged     Is changed?
      *
      * @return void
      */
     protected static function writeOrSkip($lines, $fullFilePath, $thisClassName, $isChanged)
     {
+        //if ($isChanged === null) { // If error.
         if ($isChanged) {
             // Displays the progress.
             $newFullFilePath = B::getStatic('$_workDir') . '/' . basename($fullFilePath) . '.copy';
             BW::htmlAddition($thisClassName, 'body', 0, 'Renaming "' . $fullFilePath . '" to "' . $newFullFilePath . '".<br />');
-            // Renames the "*.php" file to "*.php.copy".
-            rename($fullFilePath, $newFullFilePath);
+            while (true) {
+                // Renames the "*.php" file to "*.php.copy".
+                if (rename($fullFilePath, $newFullFilePath) === false) {
+                    // Displays the progress.
+                    BW::htmlAddition($thisClassName, 'body', 0, '<span style="color: orange">ERROR: Do not share "' . $fullFilePath . '" file.</span><br />');
+                    sleep(5);
+                    continue;
+                }
+                break;
+            }
             // Displays the progress.
             BW::htmlAddition($thisClassName, 'body', 0, '<span style="color: red">Writing "' . $fullFilePath . '".</span><br />');
             // Writes the array to "*.php" file.

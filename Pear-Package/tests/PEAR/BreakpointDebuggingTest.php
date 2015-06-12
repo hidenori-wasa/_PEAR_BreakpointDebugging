@@ -38,14 +38,6 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_PHPUnit_FrameworkTest
     /**
      * @covers \BreakpointDebugging<extended>
      */
-    public function testIniSet()
-    {
-        B::iniSet('default_charset', 'utf8');
-    }
-
-    /**
-     * @covers \BreakpointDebugging<extended>
-     */
     function testInitialize()
     {
         \BreakpointDebugging::initialize();
@@ -307,43 +299,43 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_PHPUnit_FrameworkTest
         B::convertMbStringForDebug('SJIS', 1, $testArray, "\xE6\x96\x87\xE5\xAD\x97 ");
     }
 
-    /**
-     * @covers \BreakpointDebugging<extended>
-     */
-    public function testIniSet_A()
-    {
-        B::iniSet('default_charset', 'sjis');
-        B::iniSet('default_charset', 'sjis');
-
-        BU::$exeMode = B::REMOTE | B::UNIT_TEST;
-        B::iniSet('default_charset', 'utf8');
-    }
-
-    /**
-     * @covers \BreakpointDebugging<extended>
-     *
-     * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=iniSet ID=101.
-     */
-    public function testIniSet_H()
-    {
-        BU::markTestSkippedInRelease(); // Because this unit test class method does not exist.
-
-        B::iniSet('doc_root', 'dummy'); // Cannot set 'doc_root'.
-    }
-
-    /**
-     * @covers \BreakpointDebugging<extended>
-     *
-     * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=iniSet ID=101.
-     */
-    public function testIniSet_I()
-    {
-        BU::markTestSkippedInRelease(); // Because this unit test class method does not exist.
-
-        B::iniSet('not_exist', 'true'); // 'not_exist' does not exist.
-    }
+//    /**
+//     * @covers \BreakpointDebugging<extended>
+//     */
+//    public function testIniSet()
+//    {
+//        B::iniSet('default_charset', 'sjis');
+//        B::iniSet('default_charset', 'sjis');
+//
+//        BU::$exeMode = B::REMOTE | B::UNIT_TEST;
+//        B::iniSet('default_charset', 'utf8');
+//    }
+//
+//    /**
+//     * @covers \BreakpointDebugging<extended>
+//     *
+//     * @expectedException        \BreakpointDebugging_ErrorException
+//     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=iniSet ID=101.
+//     */
+//    public function testIniSet_H()
+//    {
+//        BU::markTestSkippedInRelease(); // Because this unit test class method does not exist.
+//
+//        B::iniSet('doc_root', 'dummy'); // Cannot set 'doc_root'.
+//    }
+//
+//    /**
+//     * @covers \BreakpointDebugging<extended>
+//     *
+//     * @expectedException        \BreakpointDebugging_ErrorException
+//     * @expectedExceptionMessage CLASS=BreakpointDebugging FUNCTION=iniSet ID=101.
+//     */
+//    public function testIniSet_I()
+//    {
+//        BU::markTestSkippedInRelease(); // Because this unit test class method does not exist.
+//
+//        B::iniSet('not_exist', 'true'); // 'not_exist' does not exist.
+//    }
 
     /**
      * @covers \BreakpointDebugging<extended>

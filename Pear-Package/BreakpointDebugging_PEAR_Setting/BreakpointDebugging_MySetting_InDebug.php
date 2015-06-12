@@ -108,6 +108,8 @@ B::iniSet('display_startup_errors', '1');
 B::iniSet('log_errors', '');
 // This outputs the message which it is possible to click to lead to the page which explains the function which generated a HTML error.
 B::iniSet('html_errors', '1');
+// // This doesn't make usual error report invalid.
+// B::iniCheck( 'xmlrpc_errors', '', 'Set "xmlrpc_errors = Off" in "php.ini" file because this does not change usual error report invalidly.');
 B::assert(B::getStatic('$_maxLogFileByteSize') % 4096 === 0);
 B::assert(1 <= B::getStatic('$_maxLogParamNestingLevel') && B::getStatic('$_maxLogParamNestingLevel') <= 100);
 B::assert(1 <= B::getStatic('$_maxLogElementNumber') && B::getStatic('$_maxLogElementNumber') <= 100);
