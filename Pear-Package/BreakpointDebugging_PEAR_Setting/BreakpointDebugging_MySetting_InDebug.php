@@ -3,7 +3,7 @@
 /**
  * This is file for various setting except for release.
  *
- * As for procedure, please, refer to the file level document block of BreakpointDebugging_InDebug.php.
+ * As for procedure, please, refer to "PEAR/BreakpointDebugging/BREAKPOINTDEBUGGING_MANUAL.html".
  * "*_InDebug.php" file does not use on release. Therefore, response time is zero on release.
  * These file names put "_" to become error when we do autoload.
  *

@@ -80,39 +80,10 @@ final class BreakpointDebugging_DisplayToOtherProcess
      */
     private static function _assert($assertion)
     {
-//        $callStackInfo = debug_backtrace();
-//        reset($callStackInfo);
-//        if (!empty($callStackInfo)) {
-//            $call = each($callStackInfo);
-//            $call = $call['value'];
-//            if (array_key_exists('file', $call)) {
-//                $errorFile = $call['file'];
-//            }
-//            if (array_key_exists('line', $call)) {
-//                $errorLine = $call['line'];
-//            }
-//        }
         if (!is_bool($assertion)) {
-//            $errorInfo = <<<EOD
-//<pre>
-//<strong>Assertion must be bool.</strong>
-//FILE: $errorFile
-//LINE: $errorLine
-//</pre>
-//EOD;
-//            exit($errorInfo);
             exit(B::getErrorHTML('Assertion must be bool.'));
         }
-//
         if ($assertion === false) {
-//            $errorInfo = <<<EOD
-//<pre>
-//<strong>Assertion failed.</strong>
-//FILE: $errorFile
-//LINE: $errorLine
-//</pre>
-//EOD;
-//            exit($errorInfo);
             exit(B::getErrorHTML('Assertion failed.'));
         }
     }

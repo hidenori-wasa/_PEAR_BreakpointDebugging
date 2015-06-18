@@ -375,27 +375,19 @@ abstract class BreakpointDebugging_InAllCase
      */
     static function iniSet($phpIniVariable, $setValue)
     {
-        //\BreakpointDebugging::assert(func_num_args() === 2);
         if (func_num_args() !== 2) {
-            //exit(self::getErrorHTML('Parameter number must be 2.'));
             self::displayErrorAtInitialization('Parameter number must be 2.', 'Assertion failed.');
             return false;
         }
-        //\BreakpointDebugging::assert($phpIniVariable !== 'error_log');
         if ($phpIniVariable === 'error_log') {
-            //exit(self::getErrorHTML('Parameter 1 must not be "error_log".'));
             self::displayErrorAtInitialization('Parameter 1 must not be "error_log".', 'Assertion failed.');
             return false;
         }
-        //\BreakpointDebugging::assert(is_string($phpIniVariable));
         if (!is_string($phpIniVariable)) {
-            //exit(self::getErrorHTML('Parameter 1 must be character string.'));
             self::displayErrorAtInitialization('Parameter 1 must be character string.', 'Assertion failed.');
             return false;
         }
-        //\BreakpointDebugging::assert(is_string($setValue));
         if (!is_string($setValue)) {
-            //exit(self::getErrorHTML('Parameter 2 must be character string.'));
             self::displayErrorAtInitialization('Parameter 2 must be character string.', 'Assertion failed.');
             return false;
         }
@@ -411,10 +403,6 @@ abstract class BreakpointDebugging_InAllCase
             }
         }
         if (ini_set($phpIniVariable, $setValue) === false) {
-            //////throw new \BreakpointDebugging_ErrorException('"ini_set()" failed.', 101);
-            ////$errorMessage = '"ini_set()" failed.';
-            ////$displayErrorMessage($errorMessage, $filename, $lineNumber);
-            //exit(self::getErrorHTML('"ini_set()" failed.'));
             self::displayErrorAtInitialization('"ini_set()" failed.', 'Assertion failed.');
             return false;
         }
@@ -526,7 +514,6 @@ into "BreakpointDebugging_MySetting.php".
 EOD;
                         break;
                     case 'LOCAL':
-                        //if (!(self::$exeMode & self::REMOTE)) { // If local.
                         if (!isset($_SERVER['SERVER_ADDR']) || $_SERVER['SERVER_ADDR'] === '127.0.0.1') { // If local.
                             break 2;
                         }
@@ -554,10 +541,6 @@ EOD;
                 return false;
             }
         }
-        //if (!(self::$exeMode & self::REMOTE)) { // If local.
-        //if (!isset($_SERVER['SERVER_ADDR']) || $_SERVER['SERVER_ADDR'] === '127.0.0.1') { // If local.
-        //    return true;
-        //}
         // Checks client IP address.
         if ($_SERVER['REMOTE_ADDR'] !== self::$_developerIP) {
             BW::virtualOpen(self::ERROR_WINDOW_NAME, self::getErrorHtmlFileTemplate());
@@ -730,10 +713,8 @@ EOD;
     static function displayErrorAtInitialization($errorMessage, $okButtionMessage)
     {
         echo self::getErrorHTML($errorMessage, 2);
-        //if (!(self::$exeMode & self::UNIT_TEST)) {
         echo '<script>alert(\'' . $okButtionMessage . '\')</script>';
         flush();
-        //}
     }
 
     /**
@@ -793,7 +774,6 @@ EOD;
                 }
             }
         } else {
-            //if ($value !== $cmpValue) {
             if (in_array($cmpValue, array ('', '0'), true)) {
                 if (!in_array($value, array ('', '0'), true)) {
                     $cmpResult = true;
@@ -1425,7 +1405,6 @@ EOD;
             'LockByFileExistingOfInternal.txt',
             'LockByFileExisting.txt',
         );
-        //$workDir = B::getStatic('$_workDir');
         \BreakpointDebugging::assert(is_string(self::$_workDir));
         $workDir = self::$_workDir;
         foreach ($lockFilePaths as $lockFilePath) {
@@ -1448,13 +1427,6 @@ EOD;
 
         B::limitAccess(array ('BreakpointDebugging_InDebug.php'));
 
-//        //if (!BREAKPOINTDEBUGGING_IS_PRODUCTION // If development mode.
-//        if ((!BREAKPOINTDEBUGGING_IS_PRODUCTION || $_SERVER['SERVER_ADDR'] === '127.0.0.1') // If development or local mode.
-//            && isset($_SERVER['SERVER_ADDR']) // If common gateway.
-//        ) {
-//            // Initializes sync files.
-//            B::initializeSync();
-//        }
         self::$pwd = getcwd();
         self::$_get = $_BreakpointDebugging_get;
         unset($_BreakpointDebugging_get);

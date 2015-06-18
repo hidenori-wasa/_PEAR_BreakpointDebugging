@@ -236,43 +236,6 @@ class BreakpointDebugging_ProductionSwitcher extends \BreakpointDebugging_Optimi
         );
     }
 
-//    /**
-//     * Strips a comment for restoration.
-//     *
-//     * @param string $line Character string line of file.
-//     *
-//     * @return string Replaced character string line.
-//     */
-//    private static function _stripCommentForRestoration($line)
-//    {
-//        // Strips "/* <BREAKPOINTDEBUGGING_COMMENT> */ - // <BREAKPOINTDEBUGGING_COMMENT> " for restoration.
-//        //if (preg_match('`^ [[:blank:]]* /\*\x20<BREAKPOINTDEBUGGING_COMMENT>\x20\*/ .* $`xX', $line) === 1) {
-//        if (preg_match('`^ [[:blank:]]* /\*\x20<BREAKPOINTDEBUGGING_COMMENT>\x20\*/`xX', $line) === 1) {
-//            $result = preg_replace(
-//                '`^ ( [[:blank:]]* ) /\*\x20<BREAKPOINTDEBUGGING_COMMENT>\x20\*/ .* //\x20<BREAKPOINTDEBUGGING_COMMENT>\x20 ( .* ) $`xX', //
-//                '$1$2', //
-//                $line, //
-//                1 //
-//            );
-//            B::assert($result !== null);
-//            if ($result !== $line) {
-//                return $result;
-//            } else {
-//                // Displays the progress.
-//                BW::htmlAddition(__CLASS__, 'body', 0, '<span style="color: yellow">"/* &lt;BREAKPOINTDEBUGGING_COMMENT&gt; */" line of production code must have "// &lt;BREAKPOINTDEBUGGING_COMMENT&gt;" in same line.</span><br />');
-//                return false;
-//            }
-//        }
-//
-//        // Strips "// <BREAKPOINTDEBUGGING_COMMENT> " for restoration.
-//        return preg_replace(
-//            '`^ ( [[:blank:]]* ) //\x20<BREAKPOINTDEBUGGING_COMMENT>\x20 ( .* ) $`xX', //
-//            '$1$2', //
-//            $line, //
-//            1 //
-//        );
-//    }
-
     /**
      * Switches mode.
      *
@@ -492,19 +455,6 @@ EOD;
                         }
                     }
                 } else { // 'Switch to development' button was pushed.
-//                    foreach ($lines as &$line) {
-//                        // Strips a comment for restoration.
-//                        $result = self::_stripCommentForRestoration($line);
-//                        B::assert($result !== null);
-//                        if ($result === false) {
-//                            $isChanged = false;
-//                            break;
-//                        } else if ($result !== $line) {
-//                            $line = $result;
-//                            $isChanged = true;
-//                        }
-//                    }
-                    //parent::stripCommentForRestoration($phpFilePath, $lines, $isChanged, '', '', __CLASS__);
                     parent::stripCommentForRestoration($phpFilePath, $lines, $isChanged, '', '');
                 }
 

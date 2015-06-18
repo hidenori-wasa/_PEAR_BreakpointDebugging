@@ -3,7 +3,7 @@
 /**
  * This is file for various setting.
  *
- * As for procedure, please, refer to the file level document block of BreakpointDebugging_InDebug.php.
+ * As for procedure, please, refer to "PEAR/BreakpointDebugging/BREAKPOINTDEBUGGING_MANUAL.html".
  *
  * PHP version 5.3.2-5.4.x
  *
@@ -75,16 +75,6 @@ function BreakpointDebugging_setExecutionMode()
     }
 
     if (BREAKPOINTDEBUGGING_IS_PRODUCTION === true) { // In case of production server release.
-        //// Makes the release mode.
-        //$_BreakpointDebugging_EXE_MODE = BreakpointDebugging_getExecutionModeFlags(); // For HTTP request query string attack counter-plan.
-        //if (!($_BreakpointDebugging_EXE_MODE & 3)) { // If this is not remote release mode.
-        //    if (!($_BreakpointDebugging_EXE_MODE & 2)) { // If debug mode.
-        //        echo 'You must set "define(\'BREAKPOINTDEBUGGING_MODE\', \'RELEASE\');" into "BreakpointDebugging_MySetting.php" file if production server use.<br />';
-        //    }
-        //    if (!($_BreakpointDebugging_EXE_MODE & 1)) { // If local mode.
-        //        echo 'You must execute in remote server if production server use.<br />';
-        //    }
-        //}
         $_BreakpointDebugging_EXE_MODE = 3; // For HTTP request query string attack counter-plan.
         if (isset($_BreakpointDebugging_production_unit_test)) {
             echo '<p style="color:red">You must comment out "$_BreakpointDebugging_production_unit_test = true;" if you release on production server.</p>';
@@ -114,7 +104,6 @@ function BreakpointDebugging_setExecutionMode()
             unset($_BreakpointDebugging_emulate_remote);
         }
     }
-    //unset($_BreakpointDebugging_emulate_remote);
     // Reference path setting.
     $includePaths = explode(PATH_SEPARATOR, ini_get('include_path'));
     array_unshift($includePaths, $includePaths[0]);
@@ -269,7 +258,6 @@ function BreakpointDebugging_mySetting()
         }
     } else { // In case of local.
         // "mbstring.func_overload" do coding with 0 for plainness, but release environment is any possibly.
-        //\BreakpointDebugging::iniCheck('mbstring.func_overload', '0', 'To make coding plain must be set "mbstring.func_overload = 0" of "php.ini" file.');
         \BreakpointDebugging::iniCheck('mbstring.func_overload', '', 'To make coding plain must be set "mbstring.func_overload = 0" of "php.ini" file.');
         \BreakpointDebugging::iniSet('SMTP', $SMTP);
         \BreakpointDebugging::iniSet('sendmail_from', $sendmailFrom);
@@ -349,18 +337,13 @@ function BreakpointDebugging_mySetting()
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // When "Zend OPcache" exists.
     if (extension_loaded('Zend OPcache')) {
-        //\BreakpointDebugging::iniCheck('opcache.enable_cli', '0', 'Set "opcache.enable_cli = 0" of "php.ini" file because we cannot call CLI from CGI with "popen()".');
         \BreakpointDebugging::iniCheck('opcache.enable_cli', '', 'Set "opcache.enable_cli = 0" of "php.ini" file because we cannot call CLI from CGI with "popen()".');
         \BreakpointDebugging::iniCheck('opcache.validate_timestamps', '1', 'Set "opcache.validate_timestamps = 1" of "php.ini" file because we must cache modified "*.php" files.');
         if (!\BreakpointDebugging::isDebug() && ($exeMode & B::REMOTE)) { // In case of release remote mode.
-            //\BreakpointDebugging::iniCheck('opcache.file_update_protection', array ('0'), 'Do not set "opcache.file_update_protection = 0" of "php.ini" file because production server want to modify a file during execution.' . PHP_EOL . "\t" . 'Recommendation is "opcache.file_update_protection = 2".');
             \BreakpointDebugging::iniCheck('opcache.file_update_protection', array ('', '0'), 'Do not set "opcache.file_update_protection = 0" of "php.ini" file because production server want to modify a file during execution.' . PHP_EOL . "\t" . 'Recommendation is "opcache.file_update_protection = 2".');
-            //\BreakpointDebugging::iniCheck('opcache.revalidate_freq', array ('0'), 'Do not set "opcache.revalidate_freq = 0" of "php.ini" file because production server does not want to access a file as much as possible.' . PHP_EOL . "\t" . 'Recommendation is "opcache.revalidate_freq = 60".');
             \BreakpointDebugging::iniCheck('opcache.revalidate_freq', array ('', '0'), 'Do not set "opcache.revalidate_freq = 0" of "php.ini" file because production server does not want to access a file as much as possible.' . PHP_EOL . "\t" . 'Recommendation is "opcache.revalidate_freq = 60".');
         } else { // Except release remote mode.
-            //\BreakpointDebugging::iniCheck('opcache.file_update_protection', '0', 'Set "opcache.file_update_protection = 0" of "php.ini" file because we must cache modified "*.php" files.');
             \BreakpointDebugging::iniCheck('opcache.file_update_protection', '', 'Set "opcache.file_update_protection = 0" of "php.ini" file because we must cache modified "*.php" files.');
-            //\BreakpointDebugging::iniCheck('opcache.revalidate_freq', '0', 'Set "opcache.revalidate_freq = 0" of "php.ini" file because we must cache modified "*.php" files.');
             \BreakpointDebugging::iniCheck('opcache.revalidate_freq', '', 'Set "opcache.revalidate_freq = 0" of "php.ini" file because we must cache modified "*.php" files.');
         }
     }
@@ -371,8 +354,6 @@ function BreakpointDebugging_mySetting()
         ////////////////////////////////////////////////////////////////////////////////
         // ### This setting has been Fixed. ###
         if (!($exeMode & B::UNIT_TEST)) {
-            //// Output it at log to except notice and deprecated.
-            //\BreakpointDebugging::iniSet('error_reporting', (string) (PHP_INT_MAX & ~(E_NOTICE | E_DEPRECATED | E_STRICT)));
             // Outputs a log except "DEPRECATED".
             \BreakpointDebugging::iniSet('error_reporting', (string) (E_ALL & ~E_DEPRECATED));
             // This changes "php.ini" file setting into "log_errors = On" to record log for security.
@@ -382,7 +363,6 @@ function BreakpointDebugging_mySetting()
             }
             // When "Xdebug" exists.
             if (extension_loaded('xdebug')) {
-                //\BreakpointDebugging::iniCheck('xdebug.remote_enable', '0', 'Set "xdebug.remote_enable = 0" of "php.ini" file because security is kept by invalid "Xdebug".');
                 \BreakpointDebugging::iniCheck('xdebug.remote_enable', '', 'Set "xdebug.remote_enable = 0" of "php.ini" file because security is kept by invalid "Xdebug".');
                 // Does not display XDebug information.
                 \BreakpointDebugging::iniSet('xdebug.default_enable', 'Off');

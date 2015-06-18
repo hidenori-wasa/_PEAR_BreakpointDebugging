@@ -27,8 +27,6 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_PHPUnit_Fra
         BU::$exeMode |= B::IGNORING_BREAK_POINT;
         ob_start();
         BA::handleException($pException);
-        //BW::scriptClearance();
-        //BW::close(BA::ERROR_WINDOW_NAME);
     }
 
     /**
@@ -144,7 +142,6 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_PHPUnit_Fra
         BU::$exeMode = B::REMOTE | B::RELEASE; // Change to remote release mode.
         parent::assertTrue(BA::checkDevelopmentSecurity());
         parent::assertTrue(BA::checkDevelopmentSecurity('REMOTE'));
-        //BA::checkDevelopmentSecurity('RELEASE');
         parent::assertTrue(BA::checkDevelopmentSecurity('RELEASE'));
 
         BU::$exeMode = B::UNIT_TEST; // Change to local debug unit test mode.
@@ -165,26 +162,8 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_PHPUnit_Fra
         BU::$exeMode = B::REMOTE | B::RELEASE | B::UNIT_TEST; // Change to remote release unit test mode.
         parent::assertTrue(BA::checkDevelopmentSecurity());
         parent::assertTrue(BA::checkDevelopmentSecurity('REMOTE'));
-        //BA::checkDevelopmentSecurity('RELEASE');
         parent::assertTrue(BA::checkDevelopmentSecurity('RELEASE'));
-        //BW::scriptClearance();
-        //BW::close(BA::ERROR_WINDOW_NAME);
     }
-
-//    /**
-//     * @covers \BreakpointDebugging_InAllCase<extended>
-//     *
-//     * @expectedException        \BreakpointDebugging_ErrorException
-//     * @expectedExceptionMessage CLASS=BreakpointDebugging_InAllCase FUNCTION=checkDevelopmentSecurity ID=101.
-//     */
-//    function testCheckDevelopmentSecurity_B()
-//    {
-//        ob_start();
-//
-//        BU::$exeMode = B::UNIT_TEST; // Change to local debug unit test mode.
-//        $_SERVER['REMOTE_ADDR'] = 'DUMMY';
-//        BA::checkDevelopmentSecurity('REMOTE');
-//    }
 
     /**
      * @covers \BreakpointDebugging_InAllCase<extended>
@@ -263,23 +242,8 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_PHPUnit_Fra
         B::iniSet('default_charset', 'sjis');
         parent::assertTrue(ini_get('default_charset') === 'sjis');
 
-        //BU::$exeMode = B::REMOTE | B::UNIT_TEST;
         B::iniSet('default_charset', 'utf8');
     }
-
-//    /**
-//     * @covers \BreakpointDebugging_InAllCase<extended>
-//     *
-//     * @expectedException        \BreakpointDebugging_ErrorException
-//     * @expectedExceptionMessage CLASS=BreakpointDebugging_InAllCase FUNCTION=iniCheck ID=101.
-//     */
-//    public function testIniCheck_B()
-//    {
-//        if (version_compare(PHP_VERSION, '5.4', '>=')) {
-//            parent::markTestSkipped();
-//        }
-//        BA::iniCheck('safe_mode', array (123), 'Test message.');
-//    }
 
     /**
      * @covers \BreakpointDebugging_InAllCase<extended>

@@ -45,7 +45,8 @@ if (B::isDebug()) { // In case of debug.
     // $breakpointDebugging_PHPUnit->displayCodeCoverageReport('BreakpointDebugging/ErrorInAllCaseTest.php', 'PEAR/BreakpointDebugging/ErrorInAllCaseTest.php'); exit;
 }
 // In case of debug or release.
-$breakpointDebugging_PHPUnit->displayCodeCoverageReport('BreakpointDebugging-IniSetOptimizerTest.php', 'BreakpointDebugging_IniSetOptimizer.php'); exit;
+//$breakpointDebugging_PHPUnit->displayCodeCoverageReport('BreakpointDebugging-IniSetOptimizerTest.php', array('BreakpointDebugging_Optimizer.php','BreakpointDebugging_IniSetOptimizer.php')); exit;
+$breakpointDebugging_PHPUnit->displayCodeCoverageReport('BreakpointDebugging-ProductionSwitcherTest.php', array('BreakpointDebugging_Optimizer.php','BreakpointDebugging_ProductionSwitcher.php')); exit;
 // $breakpointDebugging_PHPUnit->displayCodeCoverageReport('BreakpointDebugging-ExceptionTest.php', 'PEAROtherPackage/BreakpointDebugging_PHPUnit.php'); exit;
 // $breakpointDebugging_PHPUnit->displayCodeCoverageReport('BreakpointDebugging-InAllCaseTest.php', 'PEAR/BreakpointDebugging.php'); exit;
 // $breakpointDebugging_PHPUnit->displayCodeCoverageReport('BreakpointDebugging/LockByFileExistingTest.php', array ('PEAR/BreakpointDebugging/Lock.php', 'PEAR/BreakpointDebugging/LockByFileExisting.php')); exit; // OK.

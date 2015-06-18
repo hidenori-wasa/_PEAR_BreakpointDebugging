@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>BreakpointDebugging-manual</title>
+        <style type="text/css">
+            <!--
+            a:link, a:visited, a:active
+            {
+                color: aqua;
+                text-decoration: underline;
+            }
+
+            .title
+            {
+                color: lime;
+                font-size: 150%;
+                font-weight: bold;
+            }
+
+            .subtitle
+            {
+                color: olivedrab;
+                font-weight: bold;
+            }
+
+            code
+            {
+                display: block;
+                background-color: dimgray;
+            }
+
+            .command
+            {
+                background-color: navy;
+            }
+
+            .attention
+            {
+                color: gold;
+            }
+            -->
+        </style>
+    </head>
+    <body style="background-color: black; color: white; font-size: 25px">
+        <span style="font-size: 200%; font-style: italic">BREAKPOINTDEBUGGING MANUAL</span>
+        <hr />
+        My English has been checked all by translation software.<br />
+        Therefore, your translation software may be able to translate my English.<br />
+        <br />
+        The contents links.<br />
+        <a href="#1">The basic concept.</a><br />
+        <a href="#2">How to construct environment which can do step execution.</a><br />
+        <a href="#3">Recommendation file cache extention of production server.</a><br />
+        <a href="#4">How to do breakpoint debugging.</a><br />
+        <a href="#5">How to code breakpoint debugging.</a><br />
+        <a href="#6">Running procedure.</a><br />
+        <a href="#7">Exception hierarchical structure.</a><br />
+        <a href="#8">Useful class index.</a><br />
+        <a href="#9">My viewpoint about PHP-types for reading my PHP code.</a><br />
+        <a href="#10">LICENSE:</a><br />
+        <hr />
+        <pre>
+<span class="title"><a name="1">The basic concept.</a></span>
+
+First, I thank it that I could learn concept of debugging with "WRITING SOLID CODE" (Author: Steve Maguire : Microsoft Press (ASCII), 1995).
+
+This is package for breakpoint debugging.
+Also, you can use as basics of other PHP program or PEAR package if you want
+because this package has necessary minimum features.
+    It is "php.ini" file setting fixation feature, PHP code synchronization feature,
+    error log feature by global handler,
+    the override class feature and execution mode.
+
+<span class="title"><a name="2">How to construct environment which can do step execution.</a></span>
+
+<a href="#2-1">Recommendation IDE.</a>
+
+<a href="#2-2">Recommendation environment for "PHP5.3" Windows.</a>
+<a href="#2-3">Recommendation environment for "PHP5.4" Windows.</a>
+<a href="#2-4">Recommendation environment for "PHP5.5" Windows.</a>
+<a href="#2-5">Recommendation setting procedure for development of "XAMPP 1.7.4".</a>
+
+<a href="#2-6">Recommendation environment for "PHP5.3" Linux.</a>
+<a href="#2-7">Recommendation environment for "PHP5.4" Linux.</a>
+<a href="#2-8">Recommendation environment for "PHP5.5" Linux.</a>
+<a href="#2-9">Recommendation setting procedure for development of "Ubuntu12.04LTS desktop".</a>
+
+<span class="subtitle"><a name="2-1">Recommendation IDE.</a></span>
+    "NetBeans IDE 8.0".
+    Because HTML3, CSS3, JavaScript(JQuery) and PHP is useful for input helper and step execution.
+    NOTICE: We must code "if" statement of plural line as below because its line feed cannot delete by format.
+
+<code>        if ($a              // Description 1.
+            || $b           // Description 2.
+            || ($c || $d)   // Description 3.
+            || ($e && $f)   // Description 4.
+            && $g           // Description 5.
+            && ($h || $i)   // Description 6.
+            && ($j && $k)   // Description 7.
+        ) {
+</code>
+<span class="subtitle"><a name="2-2">Recommendation environment for "PHP5.3" Windows.</a></span>
+    "WindowsXP Professional (VC6)" + "XAMPP 1.7.4 (Last of 'VC6'.)" + "php_xdebug-2.1.2-5.3-vc6.dll (Last of 'VC6'.)".
+    However, other OS is possible by using "XAMPP" and "XDebug" of "VC9" or "VC11".
+<span class="subtitle"><a name="2-3">Recommendation environment for "PHP5.4" Windows.</a></span>
+    I am unknown about this.
+    However, "WindowsXP Professional (VC6)" is impossible for step execution.
+<span class="subtitle"><a name="2-4">Recommendation environment for "PHP5.5" Windows.</a></span>
+    I am unknown about this.
+    However, "WindowsXP Professional (VC6)" is impossible for step execution.
+
+<span class="subtitle"><a name="2-5">Recommendation setting procedure for development of "XAMPP 1.7.4".</a></span>
+    ### "XAMPP" setting procedure. ###
+    // We must disconnect inbound connection except "BOOTPC" and "DOMAIN" of "C:\WINDOWS\system32\svchost.exe" by firewall of a software.
+    // Disable "IIS" server because port 80 conflicts with "Apache".
+    // Create "lang.tmp" file. ( In case of Japan )
+    C:\xampp\htdocs\xampp\lang.tmp
+
+<code>        ja
+</code>
+    // Disconnect outbound HTTP connection of Apache.
+    C:\xampp\apache\conf\httpd.conf
+
+<code>        before:
+        Listen 80
+        after:
+        Listen 127.0.0.1:80
+</code>
+    // Disconnect outbound SSL connection of Apache.
+    C:\xampp\apache\conf\extra\httpd-ssl.conf
+
+<code>        before:
+        Listen 443
+        after:
+        Listen 127.0.0.1:443
+</code>
+    // Change the configuration file of "MySQLi".
+    C:\xampp\mysql\bin\my.ini
+
+<code>            .
+            .
+            .
+        [mysqld]
+        default-storage-engine=innodb
+        character-set-server=utf8
+        collation-server=utf8_general_ci
+        # Ignores character sets information which was sent from client, so it uses character sets of default of server.
+        skip-character-set-client-handshake
+        # Database compression for performance. CAUTION: We must not use plural compression format in database.
+        #innodb_file_format=Barracuda
+        # Makes a file per table for performance. CAUTION: We must not use plural table format in database.
+        #innodb_file_per_table=1
+            .
+            .
+            .
+        [mysqldump]
+        default-character-set=utf8
+            .
+            .
+            .
+        [mysql]
+        default-character-set=utf8
+            .
+            .
+            .
+</code>
+    // Change setting of "phpMyAdmin".
+        // Execute "C:\xampp\phpMyAdmin\scripts\create_tables.sql" import by "phpMyAdmin".
+        // Then, change "C:\xampp\phpMyAdmin\config.inc.php" file.
+            before:
+
+<code>            $cfg['Servers'][$i]['auth_type']     = 'http';      // Authentication method (config, http or cookie based)
+            $cfg['Servers'][$i]['password'] = '';
+            $cfg['Servers'][$i]['AllowNoPassword'] = true;
+</code>
+            after:
+
+<code>            $cfg['Servers'][$i]['auth_type']     = 'config';      // Authentication method (config, http or cookie based)
+            $cfg['Servers'][$i]['password'] = '&lt;your password&gt;';
+            // $cfg['Servers'][$i]['AllowNoPassword'] = true;
+            $cfg['Servers'][$i]['tracking'] = 'pma_tracking';
+            $cfg['Servers'][$i]['userconfig'] = 'pma_userconfig';
+</code>
+    // Extensions which "phpMyAdmin" needs. ( Confirms by "phpinfo()" )
+        "zlib" or "bz2"
+        "mbstring"
+        "ctype"
+        "GD2"
+        "mcrypt"
+
+    ### "XDebug" setting procedure. ###
+    // Place "php_xdebug-2.1.2-5.3-vc6.dll" file ( last versions for this OS ) to "C:\xampp\php\ext\".
+    // Set "C:\xampp\php\php.ini" file as follows.
+
+<code>    zend_extension = "C:\xampp\php\ext\php_xdebug-2.1.2-5.3-vc6.dll"
+</code>
+    // Then, use this package.
+
+<span class="subtitle"><a name="2-6">Recommendation environment for "PHP5.3" Linux.</a></span>
+    "Ubuntu12.04LTS desktop" + "This Ubuntu's LAMP" + "This Ubuntu's XDebug".
+    Because "apt-get" command controls version of "LAMP", "phpMyAdmin" and "XDebug" for OS.
+    Therefore, we can do step execution.
+<span class="subtitle"><a name="2-7">Recommendation environment for "PHP5.4" Linux.</a></span>
+    "Ubuntu13.10 desktop" + "This Ubuntu's LAMP" + "This Ubuntu's XDebug".
+<span class="subtitle"><a name="2-8">Recommendation environment for "PHP5.5" Linux.</a></span>
+    "Ubuntu14.04LTS desktop" + "This Ubuntu's LAMP" + "This Ubuntu's XDebug".
+
+<span class="subtitle"><a name="2-9">Recommendation setting procedure for development of "Ubuntu12.04LTS desktop".</a></span>
+    ### Uninstalling procedure. ###
+    // Uninstalls "PEAR".
+    <span class="command">sudo apt-get purge php-pear</span>
+    // Uninstalls "phpMyAdmin".
+    <span class="command">sudo apt-get purge phpmyadmin</span>
+    // Uninstalls "LAMP".
+    <span class="command">sudo tasksel remove lamp-server</span>
+
+    ### installing procedure. ###
+    // Installs "LAMP".
+    <span class="command">sudo apt-get update</span>
+    <span class="command">sudo apt-get install tasksel</span>
+    <span class="command">sudo tasksel install lamp-server</span>
+    // Installs "phpMyAdmin".
+    <span class="command">sudo apt-get install phpmyadmin</span>
+    <span class="command">sudo firefox "/usr/share/doc/phpmyadmin/Documentation.html"</span>
+    // Installs "PEAR".
+    <span class="command">sudo apt-get install php-pear</span>
+    // Deletes unnecessary package.
+    <span class="command">sudo apt-get autoremove</span>
+
+    ### "LAMPP" setting procedure. ###
+    // Disconnect inbound connection by using "ufw".
+        // Enables firewall.
+        <span class="command">sudo ufw enable</span>
+        // Disconnects inbound connection.
+        <span class="command">sudo ufw default DENY</span>
+        // Disables logging.
+        <span class="command">sudo ufw logging off</span>
+        // Confirms status of firewall.
+        <span class="command">sudo ufw status verbose</span>
+    // Disconnects outbound connection of Apache and enables SSL of Apache.
+    <span class="command">gksudo gedit /etc/apache2/ports.conf</span>
+
+<code>        // before:
+        Listen 80
+        // after:
+        Listen 127.0.0.1:80
+        // before:
+        Listen 443
+        // after:
+        NameVirtualHost *:443
+        Listen 127.0.0.1:443
+</code>
+    // Sets user and group of Apache, and sets symbolic link to "phpMyAdmin".
+    <span class="command">gksudo gedit /etc/apache2/httpd.conf</span>
+
+<code>        User &lt;your user name&gt;
+        Group &lt;your group name&gt;
+
+        Alias /phpmyadmin "/usr/share/phpmyadmin"
+        &lt;Directory "/usr/share/phpmyadmin/"&gt;
+            Options MultiViews FollowSymLinks
+            AllowOverride None
+            Order deny,allow
+            Deny from all
+            Allow from 127.0.0.1
+        &lt;/Directory&gt;
+</code>
+    // Set "MySQLi".
+    <span class="command">gksudo gedit /etc/mysql/my.cnf</span>
+
+<code>            .
+            .
+            .
+        [mysqld]
+        default-storage-engine=innodb
+        character-set-server=utf8
+        collation-server=utf8_general_ci
+        # Ignores character sets information which was sent from client, so it uses character sets of default of server.
+        skip-character-set-client-handshake
+        # Database compression for performance. CAUTION: We must not use plural compression format in database.
+        #innodb_file_format=Barracuda
+        # Makes a file per table for performance. CAUTION: We must not use plural table format in database.
+        #innodb_file_per_table=1
+            .
+            .
+            .
+        [mysqldump]
+        default-character-set=utf8
+            .
+            .
+            .
+        [mysql]
+        default-character-set=utf8
+            .
+            .
+            .
+</code>
+    // Change setting of "phpMyAdmin".
+        // Executes "/usr/share/doc/phpmyadmin/examples/create_tables_sql.gz" import by "phpMyAdmin".
+        // Copies the sample configuration file to configuration file.
+        <span class="command">sudo cp /usr/share/phpmyadmin/config.sample.inc.php /etc/phpmyadmin/config.inc.php</span>
+        // Edits the configuration file.
+        <span class="command">sudo gedit /etc/phpmyadmin/config.inc.php</span>
+            before:
+
+<code>            $cfg['Servers'][$i]['auth_type'] = 'cookie';
+</code>
+            after:
+
+<code>            $cfg['Servers'][$i]['auth_type']     = 'config';
+            $cfg['Servers'][$i]['user']          = 'root';
+            $cfg['Servers'][$i]['password']      = 'wasapass'; // use here your password
+</code>
+            before:
+
+<code>            // $cfg['Servers'][$i]['pmadb'] = 'phpmyadmin';
+            // $cfg['Servers'][$i]['bookmarktable'] = 'pma_bookmark';
+            // $cfg['Servers'][$i]['relation'] = 'pma_relation';
+            // $cfg['Servers'][$i]['table_info'] = 'pma_table_info';
+            // $cfg['Servers'][$i]['table_coords'] = 'pma_table_coords';
+            // $cfg['Servers'][$i]['pdf_pages'] = 'pma_pdf_pages';
+            // $cfg['Servers'][$i]['column_info'] = 'pma_column_info';
+            // $cfg['Servers'][$i]['history'] = 'pma_history';
+            // $cfg['Servers'][$i]['tracking'] = 'pma_tracking';
+            // $cfg['Servers'][$i]['designer_coords'] = 'pma_designer_coords';
+            // $cfg['Servers'][$i]['userconfig'] = 'pma_userconfig';
+</code>
+            after:
+
+<code>            $cfg['Servers'][$i]['pmadb'] = 'phpmyadmin';
+            $cfg['Servers'][$i]['bookmarktable'] = 'pma_bookmark';
+            $cfg['Servers'][$i]['relation'] = 'pma_relation';
+            $cfg['Servers'][$i]['table_info'] = 'pma_table_info';
+            $cfg['Servers'][$i]['table_coords'] = 'pma_table_coords';
+            $cfg['Servers'][$i]['pdf_pages'] = 'pma_pdf_pages';
+            $cfg['Servers'][$i]['column_info'] = 'pma_column_info';
+            $cfg['Servers'][$i]['history'] = 'pma_history';
+            $cfg['Servers'][$i]['tracking'] = 'pma_tracking';
+            $cfg['Servers'][$i]['designer_coords'] = 'pma_designer_coords';
+            $cfg['Servers'][$i]['userconfig'] = 'pma_userconfig';
+</code>
+    // Extensions which "phpMyAdmin" needs. ( Confirms by "phpinfo()" )
+        "zlib" or "bz2"
+        "mbstring"
+        "ctype"
+        "GD2"
+        "mcrypt"
+    // Creates a document root.
+    <span class="command">mkdir ~/private-www</span>
+    // Copies the default virtual host setting file to new file "mysite".
+    <span class="command">sudo cp /etc/apache2/sites-available/default /etc/apache2/sites-available/mysite</span>
+    // Copies the default SSL virtual host setting file to new file "mysite-ssl".
+    <span class="command">sudo cp /etc/apache2/sites-available/default-ssl /etc/apache2/sites-available/mysite-ssl</span>
+    // Edits the "mysite" file.
+    <span class="command">gksudo gedit /etc/apache2/sites-available/mysite</span>
+        // before:
+
+<code>        DocumentRoot /var/www
+</code>
+        // after:
+
+<code>        DocumentRoot /home/&lt;your user name&gt;/private-www
+</code>
+        // before:
+
+<code>        &lt;Directory /var/www/&gt;
+</code>
+        // after:
+
+<code>        &lt;Directory /home/&lt;your user name&gt;/private-www/&gt;
+</code>
+    // Edits the "mysite-ssl" file.
+    <span class="command">gksudo gedit /etc/apache2/sites-available/mysite-ssl</span>
+        // before:
+
+<code>        &lt;VirtualHost _default_:443&gt;
+</code>
+        // after:
+
+<code>        &lt;VirtualHost *:443&gt;
+</code>
+        // before:
+
+<code>        DocumentRoot /var/www
+</code>
+        // after:
+
+<code>        DocumentRoot /home/&lt;your user name&gt;/private-www
+</code>
+        // before:
+
+<code>        &lt;Directory /var/www/&gt;
+</code>
+        // after:
+
+<code>        &lt;Directory /home/&lt;your user name&gt;/private-www/&gt;
+</code>
+    // Disables default virtual host and enables new virtual host.
+    <span class="command">sudo a2dissite default && sudo a2ensite mysite</span>
+    // Disables default SSL virtual host and enables new SSL virtual host.
+    <span class="command">sudo a2dissite default-ssl && sudo a2ensite mysite-ssl</span>
+    // // Readjusts the root user password of "MySQLi". ( If necessary )
+    // <span class="command">mysql -u root -p</span>
+    // <span class="command">mysql&gt;SET PASSWORD FOR 'root'@'localhost' = PASSWORD('&lt;your password&gt;');</span>
+
+    ### "XDebug" setting procedure. ###
+    // Installs "XDebug" package.
+    <span class="command">sudo apt-get install php5-xdebug</span>
+    // Displays the file path of "xdebug.so".
+    <span class="command">sudo find "/usr/lib/php5" -name "xdebug.so"</span>
+    // Adds setting of "XDebug" package to "php.ini" file.
+    <span class="command">gksudo gedit /etc/php5/apache2/php.ini</span>
+
+<code>        [xdebug]
+        zend_extension = "/usr/lib/php5/&lt;DATE+lfs&gt;/xdebug.so"
+        xdebug.remote_enable = 1
+        xdebug.remote_handler = dbgp
+        xdebug.remote_mode = req
+        xdebug.remote_host = 127.0.0.1
+        xdebug.remote_port = 9000
+</code>
+    // Confirms by CLI.
+    <span class="command">php -v</span>
+    // Confirms by CGI.
+    <span class="command">gedit ~/private-www/index.php</span>
+
+<code>        &lt;?php phpinfo(); ?&gt;
+</code>
+    <span class="command">firefox "localhost"</span>
+    // Then, use this package.
+
+    ### Execution file creation. ###
+    // Creates Apache execution file.
+    <span class="command">gedit ~/&lt;desktop&gt;/Apache.sh</span>
+
+<code>        #!/bin/bash
+        # Restarts Apache.
+        sudo service apache2 restart
+        # Stands by at this line until input.
+        read Wait
+        # Stops Apache.
+        sudo service apache2 stop
+</code>
+    // Creates "MySQLi" execution file.
+    <span class="command">gedit ~/&lt;desktop&gt;/MySQLi.sh</span>
+
+<code>        #!/bin/bash
+        # Restarts Apache.
+        sudo service apache2 restart
+        # Restarts "MySQLi".
+        sudo service mysql restart
+        # Stands by at this line until input.
+        read Wait
+        # Stops "MySQLi".
+        sudo service mysql stop
+        # Stops Apache.
+        sudo service apache2 stop
+</code>
+    // Creates "phpMyAdmin" execution file.
+    <span class="command">gedit ~/&lt;desktop&gt;/phpMyAdmin.sh</span>
+
+<code>        #!/bin/bash
+        # Restarts Apache.
+        sudo service apache2 restart
+        # Restarts "MySQLi".
+        sudo service mysql restart
+        # Starts "phpMyAdmin".
+        sudo firefox "localhost/phpmyadmin/"
+        # Stands by at this line until input.
+        read Wait
+        # Stops "MySQLi".
+        sudo service mysql stop
+        # Stops Apache.
+        sudo service apache2 stop
+</code>
+    // Makes created shell files executable.
+    <span class="command">find ~/&lt;desktop&gt;/ -type f -regex ".+\.sh" -exec sudo chmod 0700 {} \;</span>
+
+<span class="title"><a name="3">Recommendation file cache extention of production server.</a></span>
+
+I recommend "Zend OPcache" extention.
+Because this extension is stable.
+    1. My unit tests succeeded with it. Such as calling CLI from CGI with "popen()" function.
+    2. It is core extension of "PHP5.5".
+    3. Its development team have several "PHP" coder.
+Also, this extension is fast.
+    1. The speed decelerates hardly even if the number of users increases.
+    2. This extention caches op code after optimization.
+            As the example, we can code to except debugging code from cache at release.
+            Example:
+
+<code>                if (false) { // Excepts from this line.
+                    // Debug codes.
+                        .
+                        .
+                        .
+                } // Excepts until this line.
+</code>
+How to make this Zend extention is same as pecl extention in case of Windows "VC9".
+Usage of "php_opcache.dll" file:
+    1. Move to "C:\xampp\php\ext\php_opcache.dll".
+    2. Add following lines into "php.ini" file, then save the file.
+
+<code>        zend_extension = "C:\xampp\php\ext\php_opcache.dll" ; This line must be before next line.
+        zend_extension = "...\php_xdebug-....dll"
+</code>
+<code>        [Zend OPcache]
+        opcache.memory_consumption = 128
+        opcache.interned_strings_buffer = 8
+        opcache.max_accelerated_files = 4000
+        opcache.fast_shutdown = 1
+        ; Constant Value: 0         We cannot call command to get result from CGI because a deprecated prefix is added in case of first time.
+        opcache.enable_cli = 0
+        ; Constant Value: 1         Because we must cache modified "*.php" files.
+        opcache.validate_timestamps = 1
+        ; Development Value: 0      Because we must cache modified "*.php" files.
+        ; Production Value: 2       Because production server want to modify a file during execution.
+        opcache.file_update_protection = 0
+        ; Development Value: 0      Because we must cache modified "*.php" files.
+        ; Production Value: 60      Because production server does not want to access a file as much as possible.
+        opcache.revalidate_freq = 0
+</code>
+    3. Restart apache.
+
+<span class="title"><a name="4">How to do breakpoint debugging.</a></span>
+
+Stops at breakpoint if error.
+Next, displays the bug position by browser.
+Next, we can see its result with variables window.
+
+Please, follow procedure if you use "NetBeans IDE".
+<span class="subtitle">Preparing procedure:</span>
+    <span class="attention">Check "the watch and the balloon evaluation" of "[tool] - [option] - [PHP] - [debug]".</span>
+<span class="subtitle">Procedure 1:</span>
+    <span class="attention">Execute project.
+    Then, stops at breakpoint if error.
+    Next, see browser's error display.</span>
+<span class="subtitle">Procedure 2:</span>
+    <span class="attention">Double click call stack window line which has error line.
+    Then, jumps to its error code.
+    Next, see variables window.
+    Or, add variable which is not displayed to variables window.</span>
+<span class="subtitle">Or, Procedure 2:</span>
+    <span class="attention">Do the step execution until error line.
+    Or, set breakpoint to error line by IDE, then restart.
+    Next, select a code of variable, function or conditional expression with mouse.
+    Or, change a code, then select it.
+    Next, point it with mouse.
+    Then, we can see its result.
+    CAUTION 1: Do not select a class alias of "use as" statement.
+    CAUTION 2: Do not have a watching variable before execution start.</span>
+
+<span class="title"><a name="5">How to code breakpoint debugging.</a></span>
+
+We must code as follows to process in "BreakpointDebugging" class.
+We should verify an impossible "parameters and return value" of "function and method" with "\BreakpointDebugging::assert()".
+Also, we should verify other impossible values of those.
+We do not need error and exception handler coding because an error and an exception
+which wasn't caught are processed by global handler in "BreakpointDebugging" class.
+
+Example:
+<code>    &lt;?php
+
+    require_once './BreakpointDebugging_Inclusion.php';
+
+    use \BreakpointDebugging as B;
+
+    B::checkExeMode(); // Checks the execution mode.
+
+    $logData = 'Data character string.';
+    // If debug execution mode.
+    // We should use "\BreakpointDebugging" in "isDebug()" class method because this is replaced to literal on production mode.
+    if (\BreakpointDebugging::isDebug()) {
+        // We should use "\BreakpointDebugging" in "assert()" class method because this is commented out in production mode.
+        \BreakpointDebugging::assert(is_string($logData));
+        echo $logData;
+    } else { // If release execution mode.
+        $lockByFlock = &\BreakpointDebugging_LockByFlock::singleton(); // Creates a lock instance.
+        $lockByFlock-&gt;lock(); // Locks php-code.
+        B::filePutContents('Somethig.log', $logData);
+        $lockByFlock-&gt;unlock(); // Unlocks php-code.
+    }
+
+    ?&gt;
+</code>
+<span class="title"><a name="6">Running procedure.</a></span>
+
+Please, run the following procedure.
+<span class="subtitle">Procedure 1:</span> Install "XDebug" by seeing "http://xdebug.org/docs/install"
+    in case of your local host.
+    "Xdebug" extension is required because "uses breakpoint,
+    displays for fatal error and detects infinity recursive function call".
+<span class="subtitle">Procedure 2:</span> If you want remote debug, set 'xdebug.remote_host =
+    "&lt;name or ip of your host which debugger exists&gt;"' into "php.ini" file, if remote server supports.
+<span class="subtitle">Procedure 3:</span> Set editor's *.php file format to utf8, but we should create backup of php files because multibyte strings may be destroyed.
+<span class="subtitle">Procedure 4:</span> Copy "BreakpointDebugging_Inclusion.php" into your project work directory.
+    And, copy "*_MySetting*.php" to "const BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME" directory of your project directory.
+<span class="subtitle">Procedure 5:</span> Edit "BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME + '*_MySetting*.php'" for "php.ini" file setting customization.
+<span class="subtitle">Procedure 6:</span> Implement a code like "Example" of "<a href="#5">How to code breakpoint debugging</a>" section.
+<span class="subtitle">Procedure 7:</span> Choose the following execution mode into "BreakpointDebugging_MySetting.php".
+
+<code>        define('BREAKPOINTDEBUGGING_MODE', 'DEBUG_UNIT_TEST');          // (Development mode. Requires "BreakpointDebugging_PHPUnit" package.)
+        // define('BREAKPOINTDEBUGGING_MODE', 'RELEASE_UNIT_TEST');     // (Development mode. Requires "BreakpointDebugging_PHPUnit" package.)
+        // define('BREAKPOINTDEBUGGING_MODE', 'DEBUG');                 // (Development mode.)
+        // define('BREAKPOINTDEBUGGING_MODE', 'RELEASE');               // (Development mode.)
+</code>
+    Then, we can use "B::getStatic('$exeMode')" to get execution mode.
+    Also, see the file level document of "BreakpointDebugging_PHPUnit.php" file about unit test.
+
+    Please, follow execution mode procedure.
+        Procedure 1: Use "DEBUG" or "DEBUG_UNIT_TEST" mode at local server. This mode exists for debug step execution.
+        Procedure 2: Use "RELEASE" or "RELEASE_UNIT_TEST" mode at local server. This mode exists for release step execution.
+        Procedure 3: Use "DEBUG" or "DEBUG_UNIT_TEST" mode at remote server. This mode exists for production server display debugging.
+        Procedure 4: Use "RELEASE" or "RELEASE_UNIT_TEST" mode at remote server. This mode exists to do debugging with production server log.
+<span class="subtitle">Procedure 8:</span> Change the code to production mode by "./BreakpointDebugging_ProductionSwitcher.php" to decrease the script running time.
+    See the class level document of "./BreakpointDebugging_ProductionSwitcher.php" file.
+<span class="subtitle">Procedure 9:</span> Optimize "*_MySetting.php" files by "./BreakpointDebugging_IniSetOptimizer.php" file
+    after procedure 8 or "php.ini" setting change to decrease the script running time.
+    See the class level document of "./BreakpointDebugging_IniSetOptimizer.php" file.
+
+Caution: Do not execute "ini_set('error_log', ...)" because this package uses local log rotation instead of system log.
+
+<span class="subtitle">Option procedure:</span> Add the following code in "app/Controller/AppController.php" if "CakePHP" is used.
+    before:
+
+<code>        class AppController extends Controller
+        {
+</code>
+    after:
+
+<code>        class AppController extends Controller
+        {
+            /**
+             * Avoids "app/webroot/BreakpointDebugging_*.php" tools's button request.
+             *
+             * @return void
+             */
+            function webroot()
+            {
+                exit;
+            }
+</code>
+<span class="subtitle">Option procedure:</span> Register at top of the function or method or file which has been not fixed. Copy following.
+
+<code>    "\BreakpointDebugging::registerNotFixedLocation(self::$_isRegister[__METHOD__]);"
+</code>
+    Then, we can discern function or method or file which has been not fixed with browser screen or log.
+<span class="subtitle">Option procedure:</span> Register local variable or global variable which you want to see with "\BreakpointDebugging::addValuesToTrace()".
+
+<span class="title"><a name="7">Exception hierarchical structure.</a></span>
+
+PEAR_Exception
+    BreakpointDebugging_Exception_InAllCase
+        BreakpointDebugging_Exception
+            BreakpointDebugging_ErrorException
+            BreakpointDebugging_OutOfLogRangeException
+
+<span class="title"><a name="8">Useful class index.</a></span>
+
+This class override a class without inheritance, but only public member can be inherited.
+    class BreakpointDebugging_OverrideClass
+Class which locks php-code by file existing.
+    class BreakpointDebugging_LockByFileExisting
+Class which locks php-code by shared memory operation.
+    class BreakpointDebugging_LockByShmopRequest
+Class which locks php-code by "flock()".
+    class BreakpointDebugging_LockByFlock
+
+<span class="title"><a name="9">My viewpoint about PHP-types for reading my PHP code.</a></span>
+
+<span class="subtitle">About PHP-types structure.</span>
+    Any type of PHP has ID which has pointer which specifies movable memory of "type and value".
+    Its movable memory has "reference count" and "flag which means a reference".
+
+<span class="subtitle">About variable copy.</span>
+    Variable copy is ID copy, and it increments reference count of movable memory.
+    And, object type copy is ID copy too. However, object type is not scalar type.
+    Therefore, we must use "$cloneObject = clone $object;" if we want object internal copy.
+    And, array type copy is its elements ID copy. However, element of reference specifies same ID area.
+    Therefore, copied element value may be changed if original copy element is changed even though we copied array type.
+
+<span class="subtitle">About variable reference copy.</span>
+    Variable reference copy specifies same ID area, and it increments reference count of movable memory,
+    and checks "flag which means a reference".
+
+<span class="subtitle">About "unset()" function.</span>
+    "unset()" function decrements reference count.
+    Then, memory area which is pointed is deleted if reference count became 0.
+
+<span class="subtitle">About "__destruct()" class method call.</span>
+    "__destruct()" class method is called if we overwrite null value to variable because value of all reference is disabled.
+    However, memory area and reference count is kept.
+
+<span class="title"><a name="10">LICENSE:</a></span>
+
+Copyright (c) 2015-, Hidenori Wasa
+All rights reserved.
+
+License content is written in "<a href="./BREAKPOINTDEBUGGING_LICENSE.txt">PEAR/BreakpointDebugging/BREAKPOINTDEBUGGING_LICENSE.txt</a>".
+
+@category PHP
+@package  BreakpointDebugging
+@author   Hidenori Wasa &lt;public@hidenori-wasa.com&gt;
+@license  http://opensource.org/licenses/mit-license.php  MIT License
+@link     <a href="https://github.com/hidenori-wasa/">https://github.com/hidenori-wasa/</a>
+        </pre>
+    </body>
+</html>

@@ -1,6 +1,5 @@
 <?php
 
-use \BreakpointDebugging as B;
 use \BreakpointDebugging_PHPUnit as BU;
 
 class BreakpointDebugging_IniSetOptimizerTest extends \BreakpointDebugging_PHPUnit_FrameworkTestCase
@@ -16,6 +15,7 @@ class BreakpointDebugging_IniSetOptimizerTest extends \BreakpointDebugging_PHPUn
         ));
 
         parent::assertTrue($linesForTest === $results);
+        parent::assertTrue($isChanged === true);
     }
 
     /**

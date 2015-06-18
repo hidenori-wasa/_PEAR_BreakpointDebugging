@@ -2,7 +2,6 @@
 
 use \BreakpointDebugging as B;
 use \BreakpointDebugging_PHPUnit as BU;
-use BreakpointDebugging_Window as BW;
 
 /**
  * Test class for BreakpointDebugging_Error.
@@ -22,8 +21,6 @@ class BreakpointDebugging_ErrorTest extends \BreakpointDebugging_PHPUnit_Framewo
     function tearDown()
     {
         $this->_error = null;
-        //BW::scriptClearance();
-        //BW::close(B::ERROR_WINDOW_NAME);
 
         parent::tearDown();
     }
@@ -122,8 +119,6 @@ class BreakpointDebugging_ErrorTest extends \BreakpointDebugging_PHPUnit_Framewo
             // Skips the global variable array.
             $this->_error->handleException2($e, '');
         }
-        //BW::scriptClearance();
-        //BW::close(B::ERROR_WINDOW_NAME);
     }
 
     /**
@@ -134,8 +129,6 @@ class BreakpointDebugging_ErrorTest extends \BreakpointDebugging_PHPUnit_Framewo
         ob_start();
         BU::$exeMode |= B::IGNORING_BREAK_POINT;
         B::handleError(E_USER_WARNING, '');
-        //BW::scriptClearance();
-        //BW::close(B::ERROR_WINDOW_NAME);
     }
 
     /**

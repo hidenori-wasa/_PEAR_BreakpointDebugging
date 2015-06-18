@@ -137,16 +137,11 @@ EOD;
                     $lines = parent::getArrayFromFile($relativeFilePath, $getHtmlFileContent('IniSetOptimizerError'));
                     $isChanged = false;
                     // Strips a comment for restoration about "\BreakpointDebugging::iniSet()" and "\BreakpointDebugging::iniCheck()".
-                    //parent::stripCommentForRestoration($relativeFilePath, $lines, $isChanged, '[[:blank:]]* ini_set [[:blank:]]* \(', '\\\\ [[:blank:]]* BreakpointDebugging [[:blank:]]* :: [[:blank:]]* ( iniSet | iniCheck ) [[:blank:]]* \(', __CLASS__);
                     parent::stripCommentForRestoration($relativeFilePath, $lines, $isChanged, '[[:blank:]]* ini_set [[:blank:]]* \(', '\\\\ [[:blank:]]* BreakpointDebugging [[:blank:]]* :: [[:blank:]]* ( iniSet | iniCheck ) [[:blank:]]* \(');
                     // Writes result.
                     parent::writeOrSkip($lines, $relativeFilePath, __CLASS__, $isChanged);
                 }
-                //if ($isChanged === null) { // If error.
-                //    exit;
-                //}
                 // In case of success.
-                //// 'Optimize on production' button was pushed.
                 BW::htmlAddition(__CLASS__, 'body', 0, '<p style="color: aqua">"&lt;BREAKPOINTDEBUGGING_COMMENT&gt;" of "*_MySetting.php" files was stripped about "\BreakpointDebugging::iniSet()" and "\BreakpointDebugging::iniCheck()".</p><hr />');
 
                 $html = '<h1>IniSetOptimizer</h1>';
@@ -189,14 +184,6 @@ EOD;
                 // Copies the "*.php" file lines to an array.
                 $lines = self::getArrayFromFile($fullFilePath, $getHtmlFileContent('IniSetOptimizerError'));
                 $isChanged = false;
-//                // If this file is not error.
-//                if ($isChanged !== null) {
-//                    // Resets information.
-//                    parent::$infoToOptimize[$fullFilePath] = array ();
-//                    // Registers the location to comment out or replace.
-//                    BreakpointDebugging_mySetting();
-//                    // Resets variable.
-//                    $lineInfos = parent::$infoToOptimize[$fullFilePath];
                 // Processes the registered information.
                 foreach ($lineInfos as $lineInfo) {
                     $lineNumber = $lineInfo['LINE_NUMBER'];
@@ -222,7 +209,6 @@ EOD;
                             throw new \BreakpointDebugging_ErrorException('Unknown change kind.', 103);
                     }
                 }
-                //}
                 // 'Optimize on production' button was pushed.
                 parent::writeOrSkip($lines, $fullFilePath, __CLASS__, $isChanged);
             }

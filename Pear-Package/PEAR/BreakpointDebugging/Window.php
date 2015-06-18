@@ -256,12 +256,8 @@ class BreakpointDebugging_Window
      */
     private static function _initializeSharedResource()
     {
-        //$openFirefoxWindow = function ($uri, $sharedFilePath) {
         $openFirefoxWindow = function ($uri) {
             $command = BW::generateMozillaFirefoxStartCommand($uri);
-            //if (!is_file($sharedFilePath) // If the shared file does not exist.
-            //    && BREAKPOINTDEBUGGING_IS_WINDOWS // If Windows.
-            //) {
             if (BREAKPOINTDEBUGGING_IS_WINDOWS) { // If Windows.
                 // Opens "BreakpointDebugging_DisplayToOtherProcess.php" page for display in other process.
                 `$command`;
@@ -290,7 +286,6 @@ EOD;
         $uri = 'https:' . B::copyResourceToCWD('BreakpointDebugging_DisplayToOtherProcess.php', '');
         // Creates this class instance for shared memory close or shared file deletion.
         self::$_self = new BW();
-        //$isLocal = !isset($_SERVER['SERVER_ADDR']) || $_SERVER['SERVER_ADDR'] === '127.0.0.1';
         // If "shmop" extention is valid.
         if (self::$_isShmopValid) {
             while (true) {
@@ -338,12 +333,8 @@ EOD;
             }
             // Opens "Mozilla Firefox" window.
             $openFirefoxWindow($uri);
-            //$openFirefoxWindow($uri, $sharedFilePath);
         } else { // If "shmop" extension is invalid.
-            //// If local server.
-            //if (!(B::getStatic('$exeMode') & B::REMOTE)) {
             if ($_SERVER['SERVER_ADDR'] === '127.0.0.1') { // If local server.
-                //self::exitForError('You must enable "shmop" extention inside "php.ini" file.');
                 exit(B::getErrorHTML('You must enable "shmop" extention inside "php.ini" file.'));
             } else { // If remote server.
                 while (true) {
@@ -375,18 +366,13 @@ EOD;
                                 return;
                             }
                         }
-                        //echo '<strong>Server\'s down which was caused during lock, or debugger stopped this process during lock.</strong>';
                         echo '<strong style="color:red">Server was down.</strong>';
                         // Does not unlink the shared file because possibility that remote server is UNIX is high.
                     }
                     break;
                 }
-                //// Creates shared file, and checks for other process start.
-                //$result = B::filePutContents($sharedFilePath, '');
-                //B::assert($result !== false);
                 // Opens "Mozilla Firefox" window.
                 $openFirefoxWindow($uri);
-                //$openFirefoxWindow($uri, $sharedFilePath);
                 // Creates shared file, and checks for other process start.
                 $result = B::filePutContents($sharedFilePath, '');
                 B::assert($result !== false);
@@ -570,10 +556,6 @@ EOD;
             return;
         }
 
-        //if (!isset(self::$_resourceID)) {
-        //    exit($message);
-        //}
-
         self::virtualOpen(B::ERROR_WINDOW_NAME, B::getErrorHtmlFileTemplate());
         self::htmlAddition(B::ERROR_WINDOW_NAME, 'pre', 0, $message);
         self::front(B::ERROR_WINDOW_NAME);
@@ -598,16 +580,10 @@ EOD;
             return;
         }
 
-        //if (!isset(self::$_resourceID)) {
-        //    exit($message);
-        //}
-
         self::virtualOpen(B::ERROR_WINDOW_NAME, B::getErrorHtmlFileTemplate());
         self::htmlAddition(B::ERROR_WINDOW_NAME, 'pre', 0, $message);
         self::front(B::ERROR_WINDOW_NAME);
-        //if (function_exists('xdebug_break')) {
-        //    xdebug_break();
-        //}
+
         throw new \BreakpointDebugging_ErrorException('');
     }
 

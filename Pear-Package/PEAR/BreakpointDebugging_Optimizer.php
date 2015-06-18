@@ -50,11 +50,9 @@ class BreakpointDebugging_Optimizer
      * @param bool   $isChanged         Is changed?
      * @param string $regExToReplace    Regular expression to replace.
      * @param string $regExToCommentOut Regular expression to comment out.
-     * @//param string $className         __CLASS__
      *
      * @return void
      */
-    //protected static function stripCommentForRestoration($phpFilePath, &$lines, &$isChanged, $regExToReplace, $regExToCommentOut, $className)
     protected static function stripCommentForRestoration($phpFilePath, &$lines, &$isChanged, $regExToReplace, $regExToCommentOut)
     {
         $lineNumber = 0;
@@ -63,10 +61,6 @@ class BreakpointDebugging_Optimizer
             if (preg_match('`^ [[:blank:]]* /\*\x20<BREAKPOINTDEBUGGING_COMMENT>\x20\*/`xX', $line) === 1) {
                 // Checks a line tag.
                 if (preg_match('`^ [[:blank:]]* /\*\x20<BREAKPOINTDEBUGGING_COMMENT>\x20\*/ .* //\x20<BREAKPOINTDEBUGGING_COMMENT>\x20 .* $`xX', $line) !== 1) {
-                    //// Displays the progress.
-                    //BW::htmlAddition($className, 'body', 0, '<span style="color: yellow">"/* &lt;BREAKPOINTDEBUGGING_COMMENT&gt; */" line of production code must have "// &lt;BREAKPOINTDEBUGGING_COMMENT&gt; " in same line.<br />' . "ERROR LINE: " . $lineNumber . '<br /></span>');
-                    //$isChanged = null;
-                    //break;
                     $errorMessage = <<<EOD
 <span style="color: yellow">
     ERROR MESSAGE: "/* &lt;BREAKPOINTDEBUGGING_COMMENT&gt; */" line of production code must have "// &lt;BREAKPOINTDEBUGGING_COMMENT&gt; " in same line.
@@ -88,12 +82,6 @@ EOD;
                         $line, //
                         1 //
                     );
-                    //if ($result === $line) {
-                    //    // Displays the progress.
-                    //    BW::htmlAddition($className, 'body', 0, '<span style="color: yellow">"/* &lt;BREAKPOINTDEBUGGING_COMMENT&gt; */" line of production code must have "// &lt;BREAKPOINTDEBUGGING_COMMENT&gt;" in same line.</span><br />');
-                    //    $isChanged = false;
-                    //    break;
-                    //}
                 }
             } else {
                 // Strips "// <BREAKPOINTDEBUGGING_COMMENT> " for restoration.
@@ -241,7 +229,6 @@ EOD;
      */
     protected static function writeOrSkip($lines, $fullFilePath, $thisClassName, $isChanged)
     {
-        //if ($isChanged === null) { // If error.
         if ($isChanged) {
             // Displays the progress.
             $newFullFilePath = B::getStatic('$_workDir') . '/' . basename($fullFilePath) . '.copy';
