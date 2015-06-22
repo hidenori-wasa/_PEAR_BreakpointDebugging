@@ -160,6 +160,8 @@ class BreakpointDebugging_ProductionSwitcher extends \BreakpointDebugging_Optimi
      *
      * @return array "*.php" paths for switching.
      * @throws \BreakpointDebugging_ErrorException
+     *
+     * @codeCoverageIgnore
      */
     private static function _searchPHPFiles()
     {

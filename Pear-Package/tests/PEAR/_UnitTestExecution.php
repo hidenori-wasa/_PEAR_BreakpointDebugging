@@ -35,7 +35,6 @@ $breakpointDebugging_UnitTestFiles = array (
 
 // Executes unit tests.
 // $breakpointDebugging_PHPUnit->executeUnitTest($breakpointDebugging_UnitTestFiles); exit;
-
 // Makes up code coverage report, then displays in browser.
 if (B::isDebug()) { // In case of debug.
     // $breakpointDebugging_PHPUnit->displayCodeCoverageReport('BreakpointDebuggingTest.php', 'PEAR/BreakpointDebugging_InDebug.php'); exit;
@@ -45,13 +44,14 @@ if (B::isDebug()) { // In case of debug.
     // $breakpointDebugging_PHPUnit->displayCodeCoverageReport('BreakpointDebugging/ErrorInAllCaseTest.php', 'PEAR/BreakpointDebugging/ErrorInAllCaseTest.php'); exit;
 }
 // In case of debug or release.
-//$breakpointDebugging_PHPUnit->displayCodeCoverageReport('BreakpointDebugging-IniSetOptimizerTest.php', array('BreakpointDebugging_Optimizer.php','BreakpointDebugging_IniSetOptimizer.php')); exit;
-$breakpointDebugging_PHPUnit->displayCodeCoverageReport('BreakpointDebugging-ProductionSwitcherTest.php', array('BreakpointDebugging_Optimizer.php','BreakpointDebugging_ProductionSwitcher.php')); exit;
+$breakpointDebugging_PHPUnit->displayCodeCoverageReportSimple('BreakpointDebugging-IniSetOptimizerTest.php', array ('BreakpointDebugging_Optimizer.php', 'BreakpointDebugging_IniSetOptimizer.php'), 'PHPUNIT'); exit;
+$breakpointDebugging_PHPUnit->displayCodeCoverageReportSimple('BreakpointDebugging-ProductionSwitcherTest.php', array ('BreakpointDebugging_Optimizer.php', 'BreakpointDebugging_ProductionSwitcher.php'), 'PHPUNIT'); exit;
+$breakpointDebugging_PHPUnit->displayCodeCoverageReportSimple(array ('BreakpointDebugging-IniSetOptimizerTest.php', 'BreakpointDebugging-ProductionSwitcherTest.php'), array ('BreakpointDebugging_Optimizer.php', 'BreakpointDebugging_IniSetOptimizer.php', 'BreakpointDebugging_ProductionSwitcher.php'), 'PHPUNIT'); exit;
 // $breakpointDebugging_PHPUnit->displayCodeCoverageReport('BreakpointDebugging-ExceptionTest.php', 'PEAROtherPackage/BreakpointDebugging_PHPUnit.php'); exit;
-// $breakpointDebugging_PHPUnit->displayCodeCoverageReport('BreakpointDebugging-InAllCaseTest.php', 'PEAR/BreakpointDebugging.php'); exit;
+// $breakpointDebugging_PHPUnit->displayCodeCoverageReportSimple('BreakpointDebugging-InAllCaseTest.php', 'PEAR/BreakpointDebugging.php', 'PHPUNIT'); exit;
 // $breakpointDebugging_PHPUnit->displayCodeCoverageReport('BreakpointDebugging/LockByFileExistingTest.php', array ('PEAR/BreakpointDebugging/Lock.php', 'PEAR/BreakpointDebugging/LockByFileExisting.php')); exit; // OK.
 // $breakpointDebugging_PHPUnit->displayCodeCoverageReport('BreakpointDebugging/LockByFlockTest.php', array ('PEAR/BreakpointDebugging/Lock.php', 'PEAR/BreakpointDebugging/LockByFlock.php')); exit; // OK.
-$breakpointDebugging_PHPUnit->displayCodeCoverageReport('BreakpointDebugging/LockByShmopRequestTest.php', array ('PEAR/BreakpointDebugging/Lock.php', 'PEAR/BreakpointDebugging/LockByShmopRequest.php')); exit;
+// $breakpointDebugging_PHPUnit->displayCodeCoverageReport('BreakpointDebugging/LockByShmopRequestTest.php', array ('PEAR/BreakpointDebugging/Lock.php', 'PEAR/BreakpointDebugging/LockByShmopRequest.php')); exit;
 // $breakpointDebugging_PHPUnit->displayCodeCoverageReport('BreakpointDebugging/OverrideClassTest.php', 'PEAR/BreakpointDebugging/OverrideClass.php'); exit;
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Please, choose unit tests files by customizing.
@@ -60,9 +60,9 @@ $breakpointDebugging_UnitTestFiles = array (
 );
 
 // Executes unit tests of unit test code.
-$breakpointDebugging_PHPUnit->executeUnitTestSimple($breakpointDebugging_UnitTestFiles); exit;
+// $breakpointDebugging_PHPUnit->executeUnitTestSimple($breakpointDebugging_UnitTestFiles); exit;
 //
-$breakpointDebugging_PHPUnit->displayCodeCoverageReportSimple($breakpointDebugging_UnitTestFiles, 'BreakpointDebugging/LockByFlock.php'); exit;
+// $breakpointDebugging_PHPUnit->displayCodeCoverageReportSimple($breakpointDebugging_UnitTestFiles, 'BreakpointDebugging/LockByFlock.php'); exit;
 // $breakpointDebugging_PHPUnit->displayCodeCoverageReportSimple($breakpointDebugging_UnitTestFiles, 'BreakpointDebugging/PHPUnit/FrameworkTestCaseSimple.php'); exit;
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Please, choose unit tests files by customizing.
