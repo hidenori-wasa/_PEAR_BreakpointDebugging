@@ -34,7 +34,7 @@ $breakpointDebugging_UnitTestFiles = array (
 );
 
 // Executes unit tests.
-// $breakpointDebugging_PHPUnit->executeUnitTest($breakpointDebugging_UnitTestFiles); exit;
+$breakpointDebugging_PHPUnit->executeUnitTest($breakpointDebugging_UnitTestFiles); exit;
 // Makes up code coverage report, then displays in browser.
 if (B::isDebug()) { // In case of debug.
     // $breakpointDebugging_PHPUnit->displayCodeCoverageReport('BreakpointDebuggingTest.php', 'PEAR/BreakpointDebugging_InDebug.php'); exit;

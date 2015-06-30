@@ -24,9 +24,7 @@ use \BreakpointDebugging as B;
  * PHP version 5.3.2-5.4.x
  *
  * This class is required for environment where "flock()" doesn't exist.
- * We can synchronize applications by setting the same directory
- * to "$workDir = &B::refStatic('$_workDir'); $workDir = <work directory>;"
- * of "BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php'".
+ * We can synchronize applications by setting the same directory to "define('BREAKPOINTDEBUGGING_WORK_DIR_NAME', './<work directory>/');" of "./BreakpointDebugging_Inclusion.php".
  *
  * <pre>
  * Example of usage.
@@ -70,7 +68,7 @@ final class BreakpointDebugging_LockByFileExisting extends \BreakpointDebugging_
      */
     static function &singleton($timeout = 60, $expire = 300, $sleepMicroSeconds = 1000000)
     {
-        return parent::singletonBase('\\' . __CLASS__, B::getStatic('$_workDir') . '/LockByFileExisting.txt', $timeout, $expire, $sleepMicroSeconds);
+        return parent::singletonBase('\\' . __CLASS__, BREAKPOINTDEBUGGING_WORK_DIR_NAME . 'LockByFileExisting.txt', $timeout, $expire, $sleepMicroSeconds);
     }
 
     /**
@@ -80,7 +78,7 @@ final class BreakpointDebugging_LockByFileExisting extends \BreakpointDebugging_
      */
     static function &internalSingleton()
     {
-        return parent::singletonBase('\\' . __CLASS__, B::getStatic('$_workDir') . '/LockByFileExistingOfInternal.txt', 60, 300, 1000000, true);
+        return parent::singletonBase('\\' . __CLASS__, BREAKPOINTDEBUGGING_WORK_DIR_NAME . 'LockByFileExistingOfInternal.txt', 60, 300, 1000000, true);
     }
 
     /**

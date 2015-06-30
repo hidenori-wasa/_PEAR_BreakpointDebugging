@@ -171,6 +171,10 @@ EOD;
      */
     protected static function commentOut($line, $regExToCommentOut)
     {
+        // If multiple syntax line.
+        if (preg_match('`^ .* \( .* \) [[:blank:]]* ; .* \( .* \) [[:blank:]]* ;`xXU', $line)) {
+            return $line;
+        }
         $result = preg_replace(
             $regExToCommentOut, //
             '$1// <BREAKPOINTDEBUGGING_COMMENT> $2', //
@@ -231,11 +235,11 @@ EOD;
     {
         if ($isChanged) {
             // Displays the progress.
-            $newFullFilePath = B::getStatic('$_workDir') . '/' . basename($fullFilePath) . '.copy';
-            BW::htmlAddition($thisClassName, 'body', 0, 'Renaming "' . $fullFilePath . '" to "' . $newFullFilePath . '".<br />');
+            $newFilePath = BREAKPOINTDEBUGGING_WORK_DIR_NAME . basename($fullFilePath) . '.copy';
+            BW::htmlAddition($thisClassName, 'body', 0, 'Renaming "' . $fullFilePath . '" to "' . $newFilePath . '".<br />');
             while (true) {
                 // Renames the "*.php" file to "*.php.copy".
-                if (rename($fullFilePath, $newFullFilePath) === false) {
+                if (rename($fullFilePath, $newFilePath) === false) {
                     // Displays the progress.
                     BW::htmlAddition($thisClassName, 'body', 0, '<span style="color: orange">ERROR: Do not share "' . $fullFilePath . '" file.</span><br />');
                     sleep(5);
@@ -248,9 +252,9 @@ EOD;
             // Writes the array to "*.php" file.
             B::filePutContents($fullFilePath, $lines, 0644);
             // Displays the progress.
-            BW::htmlAddition($thisClassName, 'body', 0, 'Deleting "' . $newFullFilePath . '".<br />');
+            BW::htmlAddition($thisClassName, 'body', 0, 'Deleting "' . $newFilePath . '".<br />');
             // Deletes the "*.php.copy" file.
-            B::unlink(array ($newFullFilePath));
+            B::unlink(array ($newFilePath));
         } else {
             // Displays the progress.
             BW::htmlAddition($thisClassName, 'body', 0, '<span style="color: gray">Skips "' . $fullFilePath . '".</span><br />');

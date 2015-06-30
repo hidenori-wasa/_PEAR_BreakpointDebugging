@@ -18,6 +18,9 @@
  * @version  Release: @package_version@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-define('BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME', './BreakpointDebugging_PEAR_Setting/'); // We can change "PEAR" setting dir name.
+define('BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME', './BreakpointDebugging_PEAR_Setting/'); // We can change "PEAR" setting directory name.
+define('BREAKPOINTDEBUGGING_WORK_DIR_NAME', './BreakpointDebugging_Work/'); // We can change "BreakpointDebugging" package work directory name.
 
 require_once BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php';
+
+\BreakpointDebugging::assert(preg_match('`^ \./ .+ / $`xX', BREAKPOINTDEBUGGING_WORK_DIR_NAME) === 1);

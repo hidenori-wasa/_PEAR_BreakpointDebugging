@@ -58,7 +58,7 @@ class BreakpointDebugging_LockByShmopRequestTest extends \BreakpointDebugging_PH
         // Initializes the shared memory ID.
         $sharedMemoryID = null;
         // Writes wrong shared memory key.
-        $pFile = B::fopen(array (B::getStatic('$_workDir') . '/LockByShmopRequest.txt', 'wb'));
+        $pFile = B::fopen(array (BREAKPOINTDEBUGGING_WORK_DIR_NAME . 'LockByShmopRequest.txt', 'wb'));
         fwrite($pFile, 'dummydummy');
         fclose($pFile);
         \BreakpointDebugging_LockByShmopRequest::singleton(5, 10);

@@ -82,7 +82,6 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
         parent::$staticPropertyLimitings['$_maxLogParamNestingLevel'] = $tmp;
         parent::$staticPropertyLimitings['$_maxLogElementNumber'] = $tmp;
         parent::$staticPropertyLimitings['$_maxLogStringSize'] = $tmp;
-        parent::$staticPropertyLimitings['$_workDir'] = $tmp;
         parent::$staticPropertyLimitings['$_developerIP'] = $tmp;
         parent::$staticPropertyLimitings['$_onceErrorDispFlag'] = 'BreakpointDebugging/PHPUnit/FrameworkTestCase.php';
         parent::$staticPropertyLimitings['$_callingExceptionHandlerDirectly'] = array ('BreakpointDebugging/ErrorInAllCase.php',);

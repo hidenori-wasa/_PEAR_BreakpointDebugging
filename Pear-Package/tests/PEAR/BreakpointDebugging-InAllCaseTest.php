@@ -311,7 +311,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_PHPUnit_Fra
      */
     public function testMkdir_A()
     {
-        $testDirName = BA::getStatic('$_workDir') . '/TestMkDir';
+        $testDirName = BREAKPOINTDEBUGGING_WORK_DIR_NAME . 'TestMkDir';
         if (is_dir($testDirName)) {
             B::rmdir(array ($testDirName));
         }
@@ -329,7 +329,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_PHPUnit_Fra
      */
     public function testMkdir_B()
     {
-        $testDirName = BA::getStatic('$_workDir') . '/TestMkDir';
+        $testDirName = BREAKPOINTDEBUGGING_WORK_DIR_NAME . 'TestMkDir';
         if (is_dir($testDirName)) {
             B::rmdir(array ($testDirName));
         }
@@ -351,7 +351,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_PHPUnit_Fra
      */
     public function testMkdir_C()
     {
-        $testDirName = BA::getStatic('$_workDir') . '/TestMkDir';
+        $testDirName = BREAKPOINTDEBUGGING_WORK_DIR_NAME . 'TestMkDir';
         BA::mkdir(array ($testDirName), 2);
     }
 
@@ -360,7 +360,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_PHPUnit_Fra
      */
     public function testFopen_A()
     {
-        $testFileName = BA::getStatic('$_workDir') . '/TestFopen.txt';
+        $testFileName = BREAKPOINTDEBUGGING_WORK_DIR_NAME . 'TestFopen.txt';
         if (is_file($testFileName)) {
             BA::unlink(array ($testFileName));
         }
@@ -388,7 +388,7 @@ class BreakpointDebugging_InAllCaseTest extends \BreakpointDebugging_PHPUnit_Fra
         for ($count = 0; $count <= 400; $count++) {
             $intArray[] = $count;
         }
-        $pFile = B::fopen(array (BA::getStatic('$_workDir') . '/test.bin', 'w+b'));
+        $pFile = B::fopen(array (BREAKPOINTDEBUGGING_WORK_DIR_NAME . 'test.bin', 'w+b'));
         fwrite($pFile, BA::compressIntArray($intArray));
         fwrite($pFile, BA::compressIntArray($intArray));
         fflush($pFile);

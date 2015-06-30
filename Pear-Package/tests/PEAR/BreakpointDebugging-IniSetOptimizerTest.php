@@ -53,7 +53,7 @@ class BreakpointDebugging_IniSetOptimizerTest extends \BreakpointDebugging_PHPUn
             "\x20\t// <BREAKPOINTDEBUGGING_COMMENT> \\BreakpointDebugging::iniCheck(true);",
             "\t\x20// <BREAKPOINTDEBUGGING_COMMENT> \\BreakpointDebugging::iniCheck(true);",
             "\t\x20// <BREAKPOINTDEBUGGING_COMMENT> \\\t\x20BreakpointDebugging\t\x20::\t\x20iniCheck\t\x20(\t\x20true\t\x20)\t\x20;\t\x20",
-            '// <BREAKPOINTDEBUGGING_COMMENT> \BreakpointDebugging::iniCheck(true); echo("abc");',
+            '\BreakpointDebugging::iniCheck(true); echo("abc");',
             '// <BREAKPOINTDEBUGGING_COMMENT> \BreakpointDebugging::iniCheck(true); //',
             '// <BREAKPOINTDEBUGGING_COMMENT> \BreakpointDebugging::iniCheck(true); // Something comment.',
             '\BreakpointDebugging::iniCheck(true); /',
@@ -70,7 +70,9 @@ class BreakpointDebugging_IniSetOptimizerTest extends \BreakpointDebugging_PHPUn
             ));
         }
 
-        parent::assertTrue($expectedLines === $results);
+        foreach ($expectedLines as $key => $expectedLine) {
+            parent::assertTrue($expectedLine === $results[$key]);
+        }
 
         $this->_stripCommentForRestoration($results, $linesForTest);
     }
@@ -102,7 +104,7 @@ class BreakpointDebugging_IniSetOptimizerTest extends \BreakpointDebugging_PHPUn
             "\x20\t// <BREAKPOINTDEBUGGING_COMMENT> \\BreakpointDebugging::iniSet(true);",
             "\t\x20// <BREAKPOINTDEBUGGING_COMMENT> \\BreakpointDebugging::iniSet(true);",
             "\t\x20// <BREAKPOINTDEBUGGING_COMMENT> \\\t\x20BreakpointDebugging\t\x20::\t\x20iniSet\t\x20(\t\x20true\t\x20)\t\x20;\t\x20",
-            '// <BREAKPOINTDEBUGGING_COMMENT> \BreakpointDebugging::iniSet(true); echo("abc");',
+            '\BreakpointDebugging::iniSet(true); echo("abc");',
             '// <BREAKPOINTDEBUGGING_COMMENT> \BreakpointDebugging::iniSet(true); //',
             '// <BREAKPOINTDEBUGGING_COMMENT> \BreakpointDebugging::iniSet(true); // Something comment.',
             '\BreakpointDebugging::iniSet(true); /',

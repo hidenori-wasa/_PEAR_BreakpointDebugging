@@ -96,7 +96,7 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_PHPUnit_FrameworkTest
      */
     function testMkdir_A()
     {
-        $testDir = B::getStatic('$_workDir') . '/TestMkDir';
+        $testDir = BREAKPOINTDEBUGGING_WORK_DIR_NAME . 'TestMkDir';
         if (is_dir($testDir)) {
             B::rmdir(array ($testDir));
         }
@@ -110,7 +110,7 @@ class BreakpointDebuggingTest extends \BreakpointDebugging_PHPUnit_FrameworkTest
      */
     function testFopen_A()
     {
-        $testFileName = B::getStatic('$_workDir') . '/TestFile.txt';
+        $testFileName = BREAKPOINTDEBUGGING_WORK_DIR_NAME . 'TestFile.txt';
         $pFile = B::fopen(array ($testFileName, 'wb'));
         fclose($pFile);
     }

@@ -207,7 +207,7 @@ abstract class BreakpointDebugging_ErrorInAllCase
      *
      * @const string
      */
-    const ERROR_LOG_DIR = '/ErrorLog/';
+    const ERROR_LOG_DIR = 'ErrorLog/';
 
     /**
      * Error log buffer.
@@ -715,7 +715,7 @@ abstract class BreakpointDebugging_ErrorInAllCase
             if (\BreakpointDebugging::isDebug()) { // If this displays.
                 BW::htmlAddition(B::ERROR_WINDOW_NAME, 'pre', 0, $log);
             } else { // If this does a log.
-                $errorLogDirectory = B::getStatic('$_workDir') . self::ERROR_LOG_DIR;
+                $errorLogDirectory = BREAKPOINTDEBUGGING_WORK_DIR_NAME . self::ERROR_LOG_DIR;
                 $logFileName = 'InternalError.log';
                 $errorLogFilePath = $errorLogDirectory . $logFileName;
                 // Locks internal error log file.
@@ -1171,7 +1171,7 @@ EOD;
                     };
 
                     // When "ErrorLog" directory does not exist.
-                    $this->_errorLogDirectory = B::getStatic('$_workDir') . self::ERROR_LOG_DIR;
+                    $this->_errorLogDirectory = BREAKPOINTDEBUGGING_WORK_DIR_NAME . self::ERROR_LOG_DIR;
                     if (!is_dir($this->_errorLogDirectory)) {
                         // Makes directory, sets permission and sets own user.
                         B::mkdir(array ($this->_errorLogDirectory));

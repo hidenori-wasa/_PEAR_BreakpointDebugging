@@ -22,18 +22,77 @@
  */
 use \BreakpointDebugging as B;
 
+///////////////////////////////////// Execution setting. ===> /////////////////////////////////////
 if (!defined('BREAKPOINTDEBUGGING_MODE')) {
     // ### Please, choose execution mode below. ###
-    define('BREAKPOINTDEBUGGING_MODE', 'DEBUG_UNIT_TEST');
-    // define('BREAKPOINTDEBUGGING_MODE', 'RELEASE_UNIT_TEST');
+    // define('BREAKPOINTDEBUGGING_MODE', 'DEBUG_UNIT_TEST');
+    define('BREAKPOINTDEBUGGING_MODE', 'RELEASE_UNIT_TEST');
     // define('BREAKPOINTDEBUGGING_MODE', 'DEBUG');
     // define('BREAKPOINTDEBUGGING_MODE', 'RELEASE');
 }
-//
+
 // ### Please, define variable if you emulate remote mode on local server. ###
 // $_BreakpointDebugging_emulate_remote = true;
+//
 // ### Please, define variable if you want unit test on production mode. ###
 // $_BreakpointDebugging_production_unit_test = true;
+//
+///////////////////////////////////// <=== Execution setting. /////////////////////////////////////
+
+/**
+ * Your information setting function.
+ *
+ * @param int    $exeMode      Execution mode.
+ * @param string $language     The use language.
+ * @param string $timezone     The use timezone.
+ * @param string $SMTP         The use "SMTP" server.
+ * @param string $sendmailFrom The use Windows mail address.
+ * @param string $openBasedir  Directory which "PHP" limits to open a file.
+ */
+function BreakpointDebugging_userSetting($exeMode, &$language, &$timezone, &$SMTP, &$sendmailFrom, &$openBasedir)
+{
+    $developerIP = &B::refStatic('$_developerIP');
+    // Enter developer IP address for security.
+    $developerIP = '127.0.0.1';
+    $language = 'Japanese';
+    $timezone = 'Asia/Tokyo';
+    $SMTP = '<Your SMTP server>';
+    $sendmailFrom = '<Your Windows mail address>';
+    if (BREAKPOINTDEBUGGING_IS_WINDOWS) { // In case of Windows.
+        $openBasedir = 'C:\xampp\;.\\;' . sys_get_temp_dir();
+    } else { // In case of Unix.
+        if ($exeMode & $REMOTE) { // In case of remote.
+            $openBasedir = '/usr/local/php5.3/php/:/home/users/2/lolipop.jp-92350a29e84a878a/web/:./:' . sys_get_temp_dir();
+            // $openBasedir = '/opt/lampp/:./:' . sys_get_temp_dir(); // Emulates remote by local host.
+        } else { // In case of local.
+            // $openBasedir = '/opt/lampp/:./:' . sys_get_temp_dir();
+            $openBasedir = '/usr/share/php/:./:' . sys_get_temp_dir();
+        }
+    }
+    // Set "mbstring.detect_order = UTF-8, UTF-7, ASCII, EUC-JP,SJIS, eucJP-win, SJIS-win, JIS, ISO-2022-JP" of "php.ini" file because this is purpose to define default value of character code detection.
+    $result = mb_detect_order('UTF-8, UTF-7, ASCII, EUC-JP,SJIS, eucJP-win, SJIS-win, JIS, ISO-2022-JP');
+    \BreakpointDebugging::assert($result === true);
+    // Maximum log file sum mega byte size. Recommendation size is 1 MB.
+    // Log file rotation is from "php_error_1.log" file to "php_error_8.log" file.
+    // $maxLogMBSize = 1;
+    // This code has been fixed.
+    // $maxLogFileByteSize = &B::refStatic('$_maxLogFileByteSize');
+    // $maxLogFileByteSize = $maxLogMBSize << 17;
+    // Maximum log parameter nesting level. Default is 20. (1-100)
+    // $maxLogParamNestingLevel = &B::refStatic('$_maxLogParamNestingLevel');
+    // $maxLogParamNestingLevel = 20;
+    // Maximum count of elements in log. (Maximum number of parameter, array elements and call-stack) Default is count($_SERVER). (1-100)
+    // $maxLogElementNumber = &B::refStatic('$_maxLogElementNumber');
+    // $maxLogElementNumber = count($_SERVER);
+    // Maximum string type byte-count of log. Default is 3000. (1-)
+    // $maxLogStringSize = &B::refStatic('$_maxLogStringSize');
+    // $maxLogStringSize = 3000;
+    // Inner form of the browser of the default: HTML text, character sets = UTF8.
+    // header('Content-type: text/html; charset=utf-8');
+}
+
+///////////////////////////////////// User setting is until here. /////////////////////////////////////
+//
 //
 // Is it production server mode?
     const BREAKPOINTDEBUGGING_IS_PRODUCTION = false; // Do not change this line because "\BreakpointDebugging_ProductionSwitcher" class changes this line automatically.
@@ -65,7 +124,7 @@ function BreakpointDebugging_setExecutionMode()
     } else { // In case of command line.
         $argc = $_SERVER['argc'];
         $_BreakpointDebugging_get = array ();
-        if ($argc > 0) {
+        if ($argc > 1) {
             $queryStrings = explode($_BreakpointDebugging_argSeparatorOutput, $_SERVER['argv'][$argc - 1]);
             foreach ($queryStrings as $queryString) {
                 list($queryKey, $queryValue) = explode('=', $queryString);
@@ -179,73 +238,9 @@ require_once 'BreakpointDebugging.php'; // 'BreakpointDebugging.php' must requir
 function BreakpointDebugging_mySetting()
 {
     $exeMode = B::getStatic('$exeMode');
-    $REMOTE = 1;
+    BreakpointDebugging_userSetting($exeMode, &$language, &$timezone, &$SMTP, &$sendmailFrom, &$openBasedir);
 
-    // ### Please, set item. ===>
-    $developerIP = &B::refStatic('$_developerIP');
-    // Enter developer IP address for security.
-    $developerIP = '127.0.0.1';
-    $language = 'Japanese';
-    $timezone = 'Asia/Tokyo';
-    $SMTP = '<Your SMTP server>';
-    $sendmailFrom = '<Your Windows mail address>';
-    // PHP It limits directory which opens a file.
-    if (BREAKPOINTDEBUGGING_IS_WINDOWS) { // In case of Windows.
-        $openBasedir = 'C:\xampp\;.\\;' . sys_get_temp_dir();
-    } else { // In case of Unix.
-        if ($exeMode & $REMOTE) { // In case of remote.
-            $openBasedir = '/usr/local/php5.3/php/:/home/users/2/lolipop.jp-92350a29e84a878a/web/:./:' . sys_get_temp_dir();
-            // $openBasedir = '/opt/lampp/:./:' . sys_get_temp_dir(); // Emulates remote by local host.
-        } else { // In case of local.
-            // $openBasedir = '/opt/lampp/:./:' . sys_get_temp_dir();
-            $openBasedir = '/usr/share/php/:./:' . sys_get_temp_dir();
-        }
-    }
-    // Maximum log file sum mega byte size. Recommendation size is 1 MB.
-    // Log file rotation is from "php_error_1.log" file to "php_error_8.log" file.
-    // $maxLogMBSize = 1;
-    // This code has been fixed.
-    // $maxLogFileByteSize = &B::refStatic('$_maxLogFileByteSize');
-    // $maxLogFileByteSize = $maxLogMBSize << 17;
-    // Maximum log parameter nesting level. Default is 20. (1-100)
-    // $maxLogParamNestingLevel = &B::refStatic('$_maxLogParamNestingLevel');
-    // $maxLogParamNestingLevel = 20;
-    // Maximum count of elements in log. (Maximum number of parameter, array elements and call-stack) Default is count($_SERVER). (1-100)
-    // $maxLogElementNumber = &B::refStatic('$_maxLogElementNumber');
-    // $maxLogElementNumber = count($_SERVER);
-    // Maximum string type byte-count of log. Default is 3000. (1-)
-    // $maxLogStringSize = &B::refStatic('$_maxLogStringSize');
-    // $maxLogStringSize = 3000;
-    // Inner form of the browser of the default: HTML text, character sets = UTF8.
-    // header('Content-type: text/html; charset=utf-8');
-    // Set "mbstring.detect_order = UTF-8, UTF-7, ASCII, EUC-JP,SJIS, eucJP-win, SJIS-win, JIS, ISO-2022-JP" of "php.ini" file because this is purpose to define default value of character code detection.
-    $result = mb_detect_order('UTF-8, UTF-7, ASCII, EUC-JP,SJIS, eucJP-win, SJIS-win, JIS, ISO-2022-JP');
-    // \BreakpointDebugging::assert($result, 101);
-    $workDir = &B::refStatic('$_workDir');
-    // We can change work directory name.
-    $workDir = './BreakpointDebugging_Work/';
-    if (!BREAKPOINTDEBUGGING_IS_PRODUCTION) { // In case of development.
-        if (is_dir($workDir)) {
-            B::chmod($workDir, 0700);
-        } else {
-            B::mkdir(array ($workDir));
-        }
-        // Copies the "BreakpointDebugging_*.php" file into current work directory.
-        B::copyResourceToCWD('BreakpointDebugging_ErrorLogFilesManager.php', '');
-        B::copyResourceToCWD('BreakpointDebugging_PHPUnit_DisplayCodeCoverageReport.php', '');
-        B::copyResourceToCWD('BreakpointDebugging_ProductionSwitcher.php', '');
-    }
-    $workDir = realpath($workDir);
-    \BreakpointDebugging::assert($workDir !== false);
-    // ### <=== Please, set item.
-    //
     ////////////////////////////////////////////////////////////////////////////////
-    if ((!BREAKPOINTDEBUGGING_IS_PRODUCTION || $_SERVER['SERVER_ADDR'] === '127.0.0.1') // If development or local mode.
-        && isset($_SERVER['SERVER_ADDR']) // If common gateway.
-    ) {
-        // Initializes sync files.
-        B::initializeSync();
-    }
     // PHP It limits directory which opens a file.
     \BreakpointDebugging::iniSet('open_basedir', $openBasedir);
     // Caution: "if" statement is needed to copy in case of remote release if copies a code inside "if".

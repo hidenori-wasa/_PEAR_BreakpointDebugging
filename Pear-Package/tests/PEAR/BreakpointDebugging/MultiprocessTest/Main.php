@@ -6,6 +6,7 @@ use \BreakpointDebugging_LockByShmopRequest as BLS;
 
 class tests_PEAR_BreakpointDebugging_MultiprocessTest_Main
 {
+
     private function _initializeCounter($shmopKey)
     {
         if (!extension_loaded('shmop')) {
@@ -29,7 +30,7 @@ class tests_PEAR_BreakpointDebugging_MultiprocessTest_Main
     {
         $this->_initializeCounter($shmopKey);
 
-        $fullFilePath = __DIR__ . '/Lock.php';
+        $fullFilePath = __DIR__ . DIRECTORY_SEPARATOR . 'Lock.php';
         $pPipes = array ();
         $queryString = '"' . B::httpBuildQuery(array ('SHMOP_KEY' => $shmopKey, 'CLASS_NAME' => $className)) . '"';
         for ($count = 0; $count < 2; $count++) {

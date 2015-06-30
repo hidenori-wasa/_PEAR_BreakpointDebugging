@@ -159,7 +159,7 @@ EOD;
         $lockingLocation = $writtenResponseLocation + 1;
         self::$_stopLocation = $lockingLocation + 1;
         // Gets shared file path.
-        self::$_shmopKeyFilePath = B::getStatic('$_workDir') . '/LockByShmopRequest.txt';
+        self::$_shmopKeyFilePath = BREAKPOINTDEBUGGING_WORK_DIR_NAME . 'LockByShmopRequest.txt';
         $shmopKeyFilePath = self::$_shmopKeyFilePath;
         while (true) {
             // Cleans up file status cache.

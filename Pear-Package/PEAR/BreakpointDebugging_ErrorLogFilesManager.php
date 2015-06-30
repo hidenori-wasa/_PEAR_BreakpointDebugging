@@ -121,7 +121,7 @@ EOD;
         self::$_lockByFileExisting->lock();
 
         try {
-            $errorLogDirectory = B::getStatic('$_workDir') . \BreakpointDebugging_Error::getErrorLogDir();
+            $errorLogDirectory = BREAKPOINTDEBUGGING_WORK_DIR_NAME . \BreakpointDebugging_Error::getErrorLogDir();
             if (!is_dir($errorLogDirectory)) {
                 BW::virtualOpen(__CLASS__, $errorHtmlFileContent);
                 BW::htmlAddition(__CLASS__, 'pre', 0, 'Error log directory does not exist.');

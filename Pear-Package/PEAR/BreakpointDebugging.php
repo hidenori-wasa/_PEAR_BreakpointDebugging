@@ -203,13 +203,6 @@ abstract class BreakpointDebugging_InAllCase
     private static $_maxLogStringSize = 3000;
 
     /**
-     * Work directory of this package.
-     *
-     * @var string
-     */
-    private static $_workDir;
-
-    /**
      * Locations to be not Fixed.
      *
      * @var array
@@ -1304,6 +1297,10 @@ EOD;
      */
     static function copyResourceToCWD($resourceFileName, $resourceDirectoryPath)
     {
+        if (!isset($_SERVER['SERVER_ADDR'])) { // In case of command line.
+            return;
+        }
+
         $relativeCWD = substr(self::$pwd, strlen($_SERVER['DOCUMENT_ROOT']) - strlen(self::$pwd) + 1);
         // If this mode is not production server release.
         if (!BREAKPOINTDEBUGGING_IS_PRODUCTION) {
@@ -1405,10 +1402,8 @@ EOD;
             'LockByFileExistingOfInternal.txt',
             'LockByFileExisting.txt',
         );
-        \BreakpointDebugging::assert(is_string(self::$_workDir));
-        $workDir = self::$_workDir;
         foreach ($lockFilePaths as $lockFilePath) {
-            $lockFilePath = realpath($workDir . '/' . $lockFilePath);
+            $lockFilePath = BREAKPOINTDEBUGGING_WORK_DIR_NAME . $lockFilePath;
             if (is_file($lockFilePath)) {
                 B::unlink(array ($lockFilePath));
             }
@@ -1440,7 +1435,6 @@ EOD;
         self::$_maxLogElementNumber = count($_SERVER); // Default value.
         self::$staticProperties['$_maxLogElementNumber'] = &self::$_maxLogElementNumber;
         self::$staticProperties['$_maxLogStringSize'] = &self::$_maxLogStringSize;
-        self::$staticProperties['$_workDir'] = &self::$_workDir;
         self::$staticProperties['$_onceErrorDispFlag'] = &self::$_onceErrorDispFlag;
         self::$staticProperties['$_callingExceptionHandlerDirectly'] = &self::$_callingExceptionHandlerDirectly;
         self::$staticProperties['$_valuesToTrace'] = &self::$_valuesToTrace;
@@ -1449,6 +1443,27 @@ EOD;
         self::$iniDisplayString = <<<EOD
 ### "\BreakpointDebugging::iniSet()" or "\BreakpointDebugging::iniCheck()": You must comment out following line of "{$dirName}[package name]_MySetting.php" because set value and value of php.ini is same.
 EOD;
+
+        if (!BREAKPOINTDEBUGGING_IS_PRODUCTION) { // In case of development.
+            if (is_dir(BREAKPOINTDEBUGGING_WORK_DIR_NAME)) {
+                self::chmod(BREAKPOINTDEBUGGING_WORK_DIR_NAME, 0700);
+            } else {
+                self::mkdir(array (BREAKPOINTDEBUGGING_WORK_DIR_NAME));
+            }
+            // Copies the "BreakpointDebugging_*.php" file into current work directory.
+            self::copyResourceToCWD('BreakpointDebugging_ErrorLogFilesManager.php', '');
+            self::copyResourceToCWD('BreakpointDebugging_PHPUnit_DisplayCodeCoverageReport.php', '');
+            self::copyResourceToCWD('BreakpointDebugging_ProductionSwitcher.php', '');
+        }
+
+        // If development or local mode.
+        if (!BREAKPOINTDEBUGGING_IS_PRODUCTION || $_SERVER['SERVER_ADDR'] === '127.0.0.1') {
+            // If common gateway.
+            if (isset($_SERVER['SERVER_ADDR'])) {
+                // Initializes sync files.
+                self::initializeSync();
+            }
+        }
     }
 
     /**

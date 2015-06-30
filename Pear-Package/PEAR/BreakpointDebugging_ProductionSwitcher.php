@@ -159,15 +159,14 @@ class BreakpointDebugging_ProductionSwitcher extends \BreakpointDebugging_Optimi
      * Searches "*.php" paths.
      *
      * @return array "*.php" paths for switching.
-     * @throws \BreakpointDebugging_ErrorException
      *
-     * @codeCoverageIgnore
+     * @throws \BreakpointDebugging_ErrorException
      */
     private static function _searchPHPFiles()
     {
         $whiteListPaths = self::_getWhiteListPaths();
         // Transforms black list to full path.
-        array_unshift(self::$_blackListPaths, rtrim(B::getStatic('$_workDir'), '\/') . '/');
+        array_unshift(self::$_blackListPaths, BREAKPOINTDEBUGGING_WORK_DIR_NAME);
         $blackListPaths = array ();
         foreach (self::$_blackListPaths as $key => $blackListPath) {
             // Translates to full path.
@@ -217,6 +216,76 @@ class BreakpointDebugging_ProductionSwitcher extends \BreakpointDebugging_Optimi
             }
         }
         return $phpFilePaths;
+    }
+
+    /**
+     * Check comment lines of plural line to skip.
+     *
+     * Plural line is "Heredoc", "Nowdoc", "/*" and "/**".
+     *
+     * @param string $phpFilePath   "*.php" file path to get.
+     * @param int    $maxLineNumber Maximum line number.
+     *
+     * @return mixed The array to skip a line. Or, "false" if failure.
+     */
+    private static function _checkCommentLinesOfPluralLineToSkip($phpFilePath, $maxLineNumber)
+    {
+        $checkLinesToSkip = function ($startLine, $endLine, &$linesToSkip, &$state) {
+            for ($count = $startLine; $count <= $endLine; $count++) {
+                B::assert(array_key_exists($count, $linesToSkip));
+                $linesToSkip[$count] = true;
+            }
+            $state = 'NONE';
+        };
+
+        $tokens = token_get_all(file_get_contents($phpFilePath));
+        $state = 'NONE';
+        $linesToSkip = array_fill(1, $maxLineNumber, false);
+        foreach ($tokens as $token) {
+            $tokenKind = $token[0];
+            switch ($state) {
+                case 'NONE':
+                    if (!is_array($token)) {
+                        break;
+                    } else if ($tokenKind === T_START_HEREDOC) { // If "Heredoc" or "Nowdoc".
+                        $startLine = $token[2];
+                        $state = 'DOC_END_SEARCH';
+                    } else if (($tokenKind === T_DOC_COMMENT || $tokenKind === T_COMMENT) // If "/**", "/*" or "//".
+                        && strpos($token[1], '/*') === 0 // If "/**" or "/*".
+                    ) {
+                        $startLine = $token[2];
+                        $state = 'COMMENT_END_SEARCH';
+                    }
+                    break;
+                case 'DOC_END_SEARCH':
+                    if (!is_array($token)) {
+                        break;
+                    } else if ($tokenKind === T_END_HEREDOC) { // If end of "Heredoc" or "Nowdoc".
+                        $checkLinesToSkip($startLine, $token[2], $linesToSkip, $state);
+                    }
+                    break;
+                case 'COMMENT_END_SEARCH':
+                    if (!is_array($token)) {
+                        break;
+                    }
+                    $checkLinesToSkip($startLine, $token[2], $linesToSkip, $state);
+                    break;
+                default:
+                    assert(false);
+            }
+        }
+        switch ($state) {
+            case 'DOC_END_SEARCH':
+                throw new \BreakpointDebugging_ErrorException('"Heredoc" or "Nowdoc" must be ended.');
+            case 'COMMENT_END_SEARCH':
+                $checkLinesToSkip($startLine, $maxLineNumber, $linesToSkip, $state);
+            case 'NONE':
+                break;
+            default:
+                assert(false);
+        }
+
+        return $linesToSkip;
     }
 
     /**
@@ -286,8 +355,8 @@ EOD;
                 $fullMySettingFilePath = str_replace('\\', '/', stream_resolve_include_path($mySettingFilePath));
                 $phpFilePaths = self::_searchPHPFiles();
                 $phpFilePaths = array (
-                    'C:/xampp/htdocs/CakePHPSamples/app/webroot/BreakpointDebugging_PEAR_Setting/BreakpointDebugging_MySetting.php' => true,
                     'C:/xampp/htdocs/CakePHPSamples/app/webroot/_ProvingGround.php' => true,
+                    'C:/xampp/htdocs/CakePHPSamples/app/webroot/BreakpointDebugging_PEAR_Setting/BreakpointDebugging_MySetting.php' => true,
                 ); // For debug.
             } else { // In case of first time when this page was called.
                 $html = '<h1>ProductionSwitcher</h1>';
@@ -341,6 +410,7 @@ EOD;
     <li>Inserts "/* &lt;BREAKPOINTDEBUGGING_COMMENT&gt; */ &lt;Insert code&gt; // &lt;BREAKPOINTDEBUGGING_COMMENT&gt; " into "\BreakpointDebugging::isDebug()" and "BREAKPOINTDEBUGGING_IS_PRODUCTION" line.</li>
 </ol>
 <h4><span style="color: yellow">CAUTION: "/* &lt;BREAKPOINTDEBUGGING_COMMENT&gt; */" line of production code must have "// &lt;BREAKPOINTDEBUGGING_COMMENT&gt;" in same line.</span></h4>
+<h4><span style="color: yellow">Therefore, production code must not be formatted.</span></h4>
 <hr />
 <h3><span style="color:aqua">You must write same pattern code like following if you want change to literal for optimization of parsed code cache.</span></h3>
 <ul>
@@ -348,29 +418,6 @@ EOD;
     <li>$isDebugRegEx1</li>
     <li>$breakpointdebuggingIsProductionRegEx</li>
 </ul>
-<h3><span style="color:orange">Caution: Syntaxes like following have bug in production mode.</span></h3>
-<dl>
-    <dt>Multiple syntax line is a bug line in case of "\\BreakpointDebugging::assert()".<span style="color:orange">This is not detected as a bug line by IDE.</span></dt>
-    <dd>
-        <span style="color:fuchsia">\\BreakpointDebugging::assert(\$a); echo('abc');</span><br />
-        <span style="color:aqua">Searching by "^[\\t\\x20]*\\\\[\\t\\x20]*BreakpointDebugging[\\t\\x20]*::[\\t\\x20]*assert[\\t\\x20]*\\(" is valid means to this bug.</span>
-    </dd>
-    <dt>Multiple comment line start is a bug line in case of "\\BreakpointDebugging::assert()". <span style="color:aqua">This is detected by IDE.</span></dt>
-    <dd>\\BreakpointDebugging::assert(\$a); /* );</dd>
-    <dt><span style="color:orange">"Heredoc" and "Nowdoc" is not detected as a bug line by IDE.</span></dt>
-    <dd>\$val = &lt;&lt;&lt;'LABEL'<br />
-        <span style="color:fuchsia">
-            \\BreakpointDebugging::assert( This is a bug line. );<br />
-            if(\\BreakpointDebugging::isDebug() This is a bug line. ){<br />
-            if(!\\BreakpointDebugging::isDebug() This is a bug line. ){<br />
-            if(BREAKPOINTDEBUGGING_IS_PRODUCTION This is a bug line. ){<br />
-            if(!BREAKPOINTDEBUGGING_IS_PRODUCTION This is a bug line. ){<br />
-        </span>
-        LABEL;<br />
-        <span style="color:aqua">Searching by "^[\\t\\x20]*\\\\[\\t\\x20]*BreakpointDebugging[\\t\\x20]*::[\\t\\x20]*assert[\\t\\x20]*\\(" is valid means to this bug.</span><br />
-        <span style="color:aqua">Searching by "^[\\t\\x20]*if[\\t\\x20]*\\([\\t\\x20]*!?(\\\\[\\t\\x20]*BreakpointDebugging[\\t\\x20]*::[\\t\\x20]*isDebug[\\t\\x20]*\\(|BREAKPOINTDEBUGGING_IS_PRODUCTION)" is valid means to this bug.</span>
-    </dd>
-</dl>
 <hr />
 EOD;
                 }
@@ -419,7 +466,7 @@ EOD;
                             break 2;
                         }
                     }
-                    // In case of error.
+                    // If error.
                     BW::virtualOpen(__CLASS__, $getHtmlFileContent('ProductionSwitcherError'));
                     BW::htmlAddition(__CLASS__, 'body', 0, 'You must define "const BREAKPOINTDEBUGGING_IS_PRODUCTION = true;" in "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php".');
                 }
@@ -431,7 +478,19 @@ EOD;
 
                 $isChanged = false;
                 if (isset($_GET['Switch_to_production'])) { // 'Switch to production' button was pushed.
+                    // Check comment lines of plural line to skip.
+                    $linesToSkip = self::_checkCommentLinesOfPluralLineToSkip($phpFilePath, count($lines));
+                    if ($linesToSkip === false) { // If error.
+                        $errorExists = true;
+                        BW::virtualOpen(__CLASS__, $getHtmlFileContent('ProductionSwitcherError'));
+                        BW::htmlAddition(__CLASS__, 'body', 0, '"Heredoc" or "Nowdoc" must be ended.');
+                    }
+                    $lineCount = 0;
                     foreach ($lines as &$line) {
+                        $lineCount++;
+                        if ($linesToSkip[$lineCount]) {
+                            continue;
+                        }
                         // Inserts "// <BREAKPOINTDEBUGGING_COMMENT> " into "\BreakpointDebugging::assert()" line.
                         $result = parent::commentOut($line, self::$_commentOutAssertionRegEx);
                         if ($result !== $line) {

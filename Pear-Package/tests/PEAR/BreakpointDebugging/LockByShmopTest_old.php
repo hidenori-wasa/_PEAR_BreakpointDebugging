@@ -58,7 +58,7 @@ class BreakpointDebugging_LockByShmopTest extends \BreakpointDebugging_PHPUnit_F
      */
     function testSingleton()
     {
-        $pFile = B::fopen(array (B::getStatic('$_workDir') . '/LockByShmop.txt', 'wb'));
+        $pFile = B::fopen(array (BREAKPOINTDEBUGGING_WORK_DIR_NAME . 'LockByShmop.txt', 'wb'));
         fwrite($pFile, 'dummydummy');
         fclose($pFile);
         BU::setPropertyForTest('\BreakpointDebugging_Lock', '$_instance', null);

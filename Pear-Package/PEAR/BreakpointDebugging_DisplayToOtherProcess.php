@@ -106,7 +106,7 @@ final class BreakpointDebugging_DisplayToOtherProcess
         . '<strong>Do not stop or delete this window</strong> because this window must exist except timeout\'s ' . self::$_timeOutSeconds . ' seconds from data receipt.<br />'
         . 'You must wait until timeout if you stopped or deleted.<br />';
         // Gets shared file path.
-        self::$_sharedFilePath = B::getStatic('$_workDir') . '/SharedFileForOtherProcessDisplay.txt';
+        self::$_sharedFilePath = BREAKPOINTDEBUGGING_WORK_DIR_NAME . 'SharedFileForOtherProcessDisplay.txt';
         $sharedFilePath = self::$_sharedFilePath;
         // Defines JavaScript functions of "DOM.js" file.
         BW::executeJavaScript(file_get_contents('BreakpointDebugging/js/DOM.js', true));

@@ -50,7 +50,7 @@ class BreakpointDebugging_ErrorInAllCaseTest extends \BreakpointDebugging_PHPUni
     {
         parent::setUp();
 
-        $errorLogDirectory = B::getStatic('$_workDir') . self::$_errorLogDir;
+        $errorLogDirectory = BREAKPOINTDEBUGGING_WORK_DIR_NAME . self::$_errorLogDir;
         if (is_dir($errorLogDirectory)) {
             $errorLogDirElements = scandir($errorLogDirectory);
             foreach ($errorLogDirElements as $errorLogDirElement) {
@@ -94,7 +94,7 @@ class BreakpointDebugging_ErrorInAllCaseTest extends \BreakpointDebugging_PHPUni
     private function _getFileNumber($fileName)
     {
         $fileName = str_replace('\\', '/', $fileName);
-        $pFile = B::fopen(array (B::getStatic('$_workDir') . self::$_errorLogDir . 'ErrorLog.var.conf', 'rb'));
+        $pFile = B::fopen(array (BREAKPOINTDEBUGGING_WORK_DIR_NAME . self::$_errorLogDir . 'ErrorLog.var.conf', 'rb'));
         fgets($pFile);
         while ($readFileLine = fgets($pFile)) {
             $readFileName = substr($readFileLine, 0, strrpos($readFileLine, '?'));
@@ -156,7 +156,7 @@ class BreakpointDebugging_ErrorInAllCaseTest extends \BreakpointDebugging_PHPUni
         test1_($error);
         $line3 = __LINE__ - 1;
 
-        $binData1 = file_get_contents(B::getStatic('$_workDir') . self::$_errorLogDir . $parentFileNumber . '.bin');
+        $binData1 = file_get_contents(BREAKPOINTDEBUGGING_WORK_DIR_NAME . self::$_errorLogDir . $parentFileNumber . '.bin');
 
         $cmpBinData1 = rtrim(B::compressIntArray(array ($parentFileNumber, $line__, $thisFileNumber, $lineParent)), PHP_EOL);
         parent::assertTrue(strpos($binData1, $cmpBinData1) !== false);
@@ -164,7 +164,7 @@ class BreakpointDebugging_ErrorInAllCaseTest extends \BreakpointDebugging_PHPUni
         $cmpBinData1 = rtrim(B::compressIntArray(array ($parentFileNumber, self::$lineA_, $parentFileNumber, self::$lineB_, $parentFileNumber, $lineC_, $thisFileNumber, $lineParent)), PHP_EOL);
         parent::assertTrue(strpos($binData1, $cmpBinData1) !== false);
 
-        $binData2 = file_get_contents(B::getStatic('$_workDir') . self::$_errorLogDir . $thisFileNumber . '.bin');
+        $binData2 = file_get_contents(BREAKPOINTDEBUGGING_WORK_DIR_NAME . self::$_errorLogDir . $thisFileNumber . '.bin');
 
         $cmpBinData2 = rtrim(B::compressIntArray(array ($thisFileNumber, $line)), PHP_EOL);
         parent::assertTrue(strpos($binData2, $cmpBinData2) !== false);
@@ -236,7 +236,6 @@ class BreakpointDebugging_ErrorInAllCaseTest extends \BreakpointDebugging_PHPUni
 
         $maxLogStringSize = &B::refStatic('$_maxLogStringSize');
         $maxLogStringSize = 140000;
-        $workDir = B::getStatic('$_workDir');
 
         $logfileMaximumCapacityException = function ($self) {
             try {
@@ -256,15 +255,15 @@ class BreakpointDebugging_ErrorInAllCaseTest extends \BreakpointDebugging_PHPUni
 
         // Makes "php_error_1.log".
         $logfileMaximumCapacityException($this);
-        $stat = stat($workDir . self::$_errorLogDir . 'php_error_1.log');
+        $stat = stat(BREAKPOINTDEBUGGING_WORK_DIR_NAME . self::$_errorLogDir . 'php_error_1.log');
         parent::assertTrue($stat['size'] === 1024 * 1024 / 8);
         // Makes "php_error_2.log".
         $logStartException();
-        $stat2 = stat($workDir . self::$_errorLogDir . 'php_error_2.log');
+        $stat2 = stat(BREAKPOINTDEBUGGING_WORK_DIR_NAME . self::$_errorLogDir . 'php_error_2.log');
         parent::assertTrue(0 < $stat2['size'] && $stat2['size'] < 1024 * 1024 / 8);
         // Makes "php_error_3.log".
         $logfileMaximumCapacityException($this);
-        $stat3 = stat($workDir . self::$_errorLogDir . 'php_error_3.log');
+        $stat3 = stat(BREAKPOINTDEBUGGING_WORK_DIR_NAME . self::$_errorLogDir . 'php_error_3.log');
         parent::assertTrue($stat3['size'] === 1024 * 1024 / 8);
         // Makes "php_error_4.log".
         $logStartException();
@@ -325,7 +324,7 @@ class BreakpointDebugging_ErrorInAllCaseTest extends \BreakpointDebugging_PHPUni
         test1($error);
         $line3 = __LINE__ - 1;
 
-        $binData1 = file_get_contents(B::getStatic('$_workDir') . self::$_errorLogDir . $parentFileNumber . '.bin');
+        $binData1 = file_get_contents(BREAKPOINTDEBUGGING_WORK_DIR_NAME . self::$_errorLogDir . $parentFileNumber . '.bin');
 
         $cmpBinData1 = rtrim(B::compressIntArray(array ($parentFileNumber, $line_, $thisFileNumber, $lineParent)), PHP_EOL);
         parent::assertTrue(strpos($binData1, $cmpBinData1) !== false);
@@ -333,7 +332,7 @@ class BreakpointDebugging_ErrorInAllCaseTest extends \BreakpointDebugging_PHPUni
         $cmpBinData1 = rtrim(B::compressIntArray(array ($parentFileNumber, self::$lineA, $parentFileNumber, self::$lineB, $parentFileNumber, $lineC, $thisFileNumber, $lineParent)), PHP_EOL);
         parent::assertTrue(strpos($binData1, $cmpBinData1) !== false);
 
-        $binData2 = file_get_contents(B::getStatic('$_workDir') . self::$_errorLogDir . $thisFileNumber . '.bin');
+        $binData2 = file_get_contents(BREAKPOINTDEBUGGING_WORK_DIR_NAME . self::$_errorLogDir . $thisFileNumber . '.bin');
 
         $cmpBinData2 = rtrim(B::compressIntArray(array ($thisFileNumber, $line)), PHP_EOL);
         parent::assertTrue(strpos($binData2, $cmpBinData2) !== false);

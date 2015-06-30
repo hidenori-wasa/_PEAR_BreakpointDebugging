@@ -280,7 +280,7 @@ EOD;
 
         self::$_isShmopValid = extension_loaded('shmop');
         // Gets full shared file path.
-        self::$_sharedFilePath = B::getStatic('$_workDir') . '/SharedFileForOtherProcessDisplay.txt';
+        self::$_sharedFilePath = BREAKPOINTDEBUGGING_WORK_DIR_NAME . 'SharedFileForOtherProcessDisplay.txt';
         $sharedFilePath = self::$_sharedFilePath;
         // Copies the "BreakpointDebugging_DisplayToOtherProcess.php" file into current work directory, and gets its URI.
         $uri = 'https:' . B::copyResourceToCWD('BreakpointDebugging_DisplayToOtherProcess.php', '');

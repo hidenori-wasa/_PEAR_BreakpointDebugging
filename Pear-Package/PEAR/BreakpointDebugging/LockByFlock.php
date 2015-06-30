@@ -24,9 +24,7 @@ use \BreakpointDebugging as B;
  * PHP version 5.3.2-5.4.x
  *
  * This class has to be environment which can use "flock()".
- * We can synchronize applications by setting the same directory
- * to "$workDir = &B::refStatic('$_workDir'); $workDir = <work directory>;"
- * of "BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php'".
+ * We can synchronize applications by setting the same directory to "define('BREAKPOINTDEBUGGING_WORK_DIR_NAME', './<work directory>/');" of "./BreakpointDebugging_Inclusion.php".
  *
  * <pre>
  * Example of usage.
@@ -75,7 +73,7 @@ final class BreakpointDebugging_LockByFlock extends \BreakpointDebugging_Lock
      */
     static function &singleton($timeout = 60, $sleepMicroSeconds = 100000)
     {
-        return parent::singletonBase('\\' . __CLASS__, B::getStatic('$_workDir') . '/LockByFlock.txt', $timeout, 0, $sleepMicroSeconds);
+        return parent::singletonBase('\\' . __CLASS__, BREAKPOINTDEBUGGING_WORK_DIR_NAME . 'LockByFlock.txt', $timeout, 0, $sleepMicroSeconds);
     }
 
     /**

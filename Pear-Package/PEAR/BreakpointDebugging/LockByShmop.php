@@ -25,9 +25,7 @@ use \BreakpointDebugging_Shmop as BS;
  * PHP version 5.3.2-5.4.x
  *
  * This class requires "shmop" extension.
- * We can synchronize applications by setting the same directory
- * to "$workDir = &B::refStatic('$_workDir'); $workDir = <work directory>;"
- * of "BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php'".
+ * We can synchronize applications by setting the same directory to "define('BREAKPOINTDEBUGGING_WORK_DIR_NAME', './<work directory>/');" of "./BreakpointDebugging_Inclusion.php".
  *
  * <pre>
  * Example of usage.
@@ -122,7 +120,7 @@ final class BreakpointDebugging_LockByShmop extends \BreakpointDebugging_Lock
     {
         \BreakpointDebugging::assert(extension_loaded('shmop'), 101);
 
-        return parent::singletonBase('\\' . __CLASS__, B::getStatic('$_workDir') . '/LockByShmop.txt', $timeout, $expire, $sleepMicroSeconds);
+        return parent::singletonBase('\\' . __CLASS__, BREAKPOINTDEBUGGING_WORK_DIR_NAME . 'LockByShmop.txt', $timeout, $expire, $sleepMicroSeconds);
     }
 
     /**
