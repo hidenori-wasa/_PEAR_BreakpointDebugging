@@ -25,7 +25,7 @@ use \BreakpointDebugging_InAllCase as BA;
 use \BreakpointDebugging_Window as BW;
 
 /**
- * This class executes error or exception handling, and it is excepted in release mode.
+ * The class of debug mode.
  *
  * PHP version 5.3.2-5.4.x
  *
@@ -41,26 +41,6 @@ use \BreakpointDebugging_Window as BW;
  */
 final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
 {
-    /**
-     * The class method call locations.
-     *
-     * @var array
-     */
-    private static $_callLocations = array ();
-
-    /**
-     * Setting option filenames.
-     *
-     * @var array
-     */
-    private static $_onceFlagPerPackageInDebug = array ();
-
-    /**
-     * Include-paths.
-     *
-     * @var string
-     */
-    private static $_includePaths;
 
     /**
      * Limits static properties accessing.
@@ -75,8 +55,6 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
 
         parent::initialize();
 
-        parent::$staticProperties['$_includePaths'] = &self::$_includePaths;
-        parent::$staticPropertyLimitings['$exeMode'] = 'BreakpointDebugging_PHPUnit.php';
         $tmp = BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php';
         parent::$staticPropertyLimitings['$_maxLogFileByteSize'] = $tmp;
         parent::$staticPropertyLimitings['$_maxLogParamNestingLevel'] = $tmp;
@@ -99,7 +77,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
         }
         $processUser = posix_getpwuid(posix_geteuid());
         // If this is remote debug, unix and root user.
-        if (BA::$exeMode === B::REMOTE //
+        if (parent::$exeMode === parent::REMOTE //
             && $processUser['name'] === 'root' //
         ) {
             BW::virtualOpen(parent::ERROR_WINDOW_NAME, parent::getErrorHtmlFileTemplate());
@@ -293,7 +271,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
         self::assert(func_num_args() === 1);
         self::assert($pException instanceof \Exception);
 
-        if (BA::$exeMode & B::UNIT_TEST) {
+        if (parent::$exeMode & parent::UNIT_TEST) {
             \BreakpointDebugging_PHPUnit::handleUnitTestException($pException);
         }
 
@@ -341,174 +319,6 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
 
     ///////////////////////////// For package user from here in case of debug mode. /////////////////////////////
     /**
-     * Checks a invoker file path.
-     *
-     * @param array  $includePaths    The including paths.
-     * @param string $invokerFilePath Invoker file path.
-     * @param string $fullFilePath    A full file path.
-     *
-     * @return boolean
-     */
-    private static function _checkInvokerFilePath($includePaths, $invokerFilePath, $fullFilePath)
-    {
-        B::assert(func_num_args() === 3);
-        B::assert(is_array($includePaths));
-        B::assert(is_string($invokerFilePath));
-        B::assert(is_string($fullFilePath));
-
-        foreach ($includePaths as $includePath) {
-            $invokerFullFilePath = realpath("$includePath/$invokerFilePath");
-            if ($invokerFullFilePath === false) {
-                continue;
-            }
-            if ($fullFilePath === $invokerFullFilePath) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Limits the invoker file paths.
-     *
-     * @param mixed $invokerFilePaths Invoker file paths.
-     * @param bool  $enableUnitTest   Is this enable in unit test?
-     *
-     * @return void
-     */
-    static function limitAccess($invokerFilePaths, $enableUnitTest = false)
-    {
-        $callStack = debug_backtrace();
-        // Makes invoking location information.
-        $count = count($callStack);
-        if ($count === 1) {
-            // @codeCoverageIgnoreStart
-            // Because unit test file is not top page.
-            // Skips top page.
-            return;
-            // @codeCoverageIgnoreEnd
-        }
-        do {
-            for ($key = 1; $key < $count; $key++) {
-                if (array_key_exists('file', $callStack[$key])) {
-                    break 2;
-                }
-                // @codeCoverageIgnoreStart
-                // Because unit test cannot run "call_user_func_array()" as global code.
-            }
-            // Skips when "file" key does not exist.
-            return;
-            // @codeCoverageIgnoreEnd
-        } while (false);
-        $fullFilePath = $callStack[$key]['file'];
-        $line = $callStack[$key]['line'];
-        if (array_key_exists($fullFilePath, self::$_callLocations) //
-            && array_key_exists($line, self::$_callLocations[$fullFilePath]) //
-        ) {
-            // Skips same.
-            return;
-        }
-        // Stores the invoking location information.
-        self::$_callLocations[$fullFilePath][$line] = true;
-
-        self::assert(func_num_args() <= 2);
-        self::assert(is_array($invokerFilePaths) || is_string($invokerFilePaths));
-        self::assert(is_bool($enableUnitTest));
-
-        if (!$enableUnitTest //
-            && (BA::$exeMode & B::UNIT_TEST) //
-            && (!isset(\BreakpointDebugging_PHPUnit::$unitTestDir) || strpos($fullFilePath, \BreakpointDebugging_PHPUnit::$unitTestDir) === 0) //
-        ) {
-            return;
-        }
-        // If project work directory does not exist.
-        if (!isset(parent::$pwd)) {
-            return;
-        } else {
-            // Keeps the project work directory at "__destruct" and shutdown.
-            chdir(parent::$pwd);
-        }
-        if (!isset(self::$_includePaths)) {
-            self::$_includePaths = ini_get('include_path');
-            self::$_includePaths = explode(PATH_SEPARATOR, self::$_includePaths);
-        }
-        if (is_array($invokerFilePaths)) {
-            foreach ($invokerFilePaths as $invokerFilePath) {
-                if (self::_checkInvokerFilePath(self::$_includePaths, $invokerFilePath, $fullFilePath)) {
-                    return;
-                }
-            }
-            // @codeCoverageIgnoreStart
-        } else {
-            // @codeCoverageIgnoreEnd
-            if (self::_checkInvokerFilePath(self::$_includePaths, $invokerFilePaths, $fullFilePath)) {
-                return;
-            }
-        }
-        $class = '';
-        $function = '';
-        if (array_key_exists('class', $callStack[$key])) {
-            $class = $callStack[$key]['class'] . '::';
-        }
-        if (array_key_exists('function', $callStack[$key])) {
-            $function = $callStack[$key]['function'];
-        }
-        parent::breakpoint("'$class$function()' must not invoke in '$fullFilePath' file.", debug_backtrace());
-        self::callExceptionHandlerDirectly("'$class$function()' must not invoke in '$fullFilePath' file.", 4);
-        // @codeCoverageIgnoreStart
-    }
-
-    // @codeCoverageIgnoreEnd
-    /**
-     * Throws exception if assertion is false. Also, has identification code for debug unit test.
-     *
-     * @param bool $assertion Assertion.
-     * @param int  $id        Exception identification number inside function.
-     *                        I recommend from 0 to 99 if you do not detect by unit test.
-     *                        I recommend from 100 if you detect by unit test.
-     *                        This number must not overlap with other assertion or exception identification number inside function.
-     *
-     * @return void
-     * @usage
-     *      \BreakpointDebugging::assert(<judgment expression>[, <identification number inside function>]);
-     *      It is possible to assert that <judgment expression> is "This must be". Especially, this uses to verify a function's argument.
-     *      Example: \BreakpointDebugging::assert(3 <= $value && $value <= 5); // $value should be 3-5.
-     *      Caution: Don't change the value of variable in "\BreakpointDebugging::assert()" function because there isn't executed in case of release.
-     */
-    static function assert($assertion, $id = null)
-    {
-        $paramNumber = func_num_args();
-        if ($paramNumber > 2) {
-            self::callExceptionHandlerDirectly('Parameter number mistake.', 1);
-            // @codeCoverageIgnoreStart
-        }
-        // @codeCoverageIgnoreEnd
-        if (!is_bool($assertion)) {
-            self::callExceptionHandlerDirectly('Assertion must be bool.', 2);
-            // @codeCoverageIgnoreStart
-        }
-        // @codeCoverageIgnoreEnd
-        if (!is_int($id) //
-            && !is_null($id) //
-        ) {
-            self::callExceptionHandlerDirectly('Exception identification number must be integer.', 3);
-            // @codeCoverageIgnoreStart
-        }
-        // @codeCoverageIgnoreEnd
-
-        if (!$assertion) {
-            if ($paramNumber === 1) {
-                // For breakpoint debugging.
-                parent::breakpoint('Assertion failed.', debug_backtrace());
-            }
-            // For "@expectedExceptionMessage" annotation of "DEBUG_UNIT_TEST" mode.
-            self::callExceptionHandlerDirectly('Assertion failed.', $id);
-            // @codeCoverageIgnoreStart
-        }
-        // @codeCoverageIgnoreEnd
-    }
-
-    /**
      * This changes a character sets to display a multibyte character string with local window of debugger, and this returns it.
      *
      * <pre>
@@ -525,7 +335,7 @@ final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
     static function convertMbStringForDebug()
     {
         // In case of local.
-        if (!(BA::$exeMode & B::REMOTE)) {
+        if (!(parent::$exeMode & parent::REMOTE)) {
             // Character set string to want to display, and some variables.
             $mbStringArray = func_get_args();
             $mbParamArray = array_slice($mbStringArray, 1);

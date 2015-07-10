@@ -23,19 +23,22 @@
 use \BreakpointDebugging as B;
 
 ///////////////////////////////////// Execution setting. ===> /////////////////////////////////////
+// Is it production server mode?
+    const BREAKPOINTDEBUGGING_IS_PRODUCTION = false; // Do not change this line because "\BreakpointDebugging_ProductionSwitcher" class changes this line automatically.
+
 if (!defined('BREAKPOINTDEBUGGING_MODE')) {
     // ### Please, choose execution mode below. ###
-    // define('BREAKPOINTDEBUGGING_MODE', 'DEBUG_UNIT_TEST');
-    define('BREAKPOINTDEBUGGING_MODE', 'RELEASE_UNIT_TEST');
-    // define('BREAKPOINTDEBUGGING_MODE', 'DEBUG');
-    // define('BREAKPOINTDEBUGGING_MODE', 'RELEASE');
+    define('BREAKPOINTDEBUGGING_MODE', 'DEBUG_UNIT_TEST'); // For user and this package's unit test.
+    // define('BREAKPOINTDEBUGGING_MODE', 'RELEASE_UNIT_TEST'); // For this package's unit test.
+    // define('BREAKPOINTDEBUGGING_MODE', 'DEBUG'); // Does not use too much.
+    // define('BREAKPOINTDEBUGGING_MODE', 'RELEASE'); // Does not use too much.
 }
 
 // ### Please, define variable if you emulate remote mode on local server. ###
-// $_BreakpointDebugging_emulate_remote = true;
+// $_BreakpointDebugging_emulate_remote = true; // For user and this package's unit test.
 //
 // ### Please, define variable if you want unit test on production mode. ###
-// $_BreakpointDebugging_production_unit_test = true;
+// $_BreakpointDebugging_production_unit_test = true; // For this package's unit test.
 //
 ///////////////////////////////////// <=== Execution setting. /////////////////////////////////////
 
@@ -92,10 +95,6 @@ function BreakpointDebugging_userSetting($exeMode, &$language, &$timezone, &$SMT
 }
 
 ///////////////////////////////////// User setting is until here. /////////////////////////////////////
-//
-//
-// Is it production server mode?
-    const BREAKPOINTDEBUGGING_IS_PRODUCTION = false; // Do not change this line because "\BreakpointDebugging_ProductionSwitcher" class changes this line automatically.
 
 if (preg_match('`^WIN`xXi', PHP_OS)) {
     define('BREAKPOINTDEBUGGING_IS_WINDOWS', true);
@@ -237,14 +236,14 @@ require_once 'BreakpointDebugging.php'; // 'BreakpointDebugging.php' must requir
  */
 function BreakpointDebugging_mySetting()
 {
-    $exeMode = B::getStatic('$exeMode');
-    BreakpointDebugging_userSetting($exeMode, &$language, &$timezone, &$SMTP, &$sendmailFrom, &$openBasedir);
+    $exeMode = B::getExeMode();
+    BreakpointDebugging_userSetting($exeMode, $language, $timezone, $SMTP, $sendmailFrom, $openBasedir);
 
     ////////////////////////////////////////////////////////////////////////////////
     // PHP It limits directory which opens a file.
     \BreakpointDebugging::iniSet('open_basedir', $openBasedir);
     // Caution: "if" statement is needed to copy in case of remote release if copies a code inside "if".
-    if (B::getStatic('$exeMode') & B::REMOTE) { // In case of remote.
+    if ($exeMode & B::REMOTE) { // In case of remote.
         if (BREAKPOINTDEBUGGING_IS_WINDOWS) {
             // Windows e-mail sending server setting.
             \BreakpointDebugging::iniSet('SMTP', $SMTP); // 'smtp.???.com'

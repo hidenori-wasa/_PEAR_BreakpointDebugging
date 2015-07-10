@@ -1,5 +1,6 @@
 <?php
 
+use \BreakpointDebugging as B;
 use \BreakpointDebugging_PHPUnit as BU;
 
 class BreakpointDebugging_ProductionSwitcherTest extends \BreakpointDebugging_PHPUnit_FrameworkTestCase
@@ -38,7 +39,6 @@ class BreakpointDebugging_ProductionSwitcherTest extends \BreakpointDebugging_PH
             "\x20\t\\BreakpointDebugging::assert(true);",
             "\t\x20\\BreakpointDebugging::assert(true);",
             "\t\x20\\\t\x20BreakpointDebugging\t\x20::\t\x20assert\t\x20(\t\x20true\t\x20)\t\x20;\t\x20",
-            '\BreakpointDebugging::assert(true); echo("abc");',
             '\BreakpointDebugging::assert(true); //',
             '\BreakpointDebugging::assert(true); // Something comment.',
             '\BreakpointDebugging::assert(true); /',
@@ -53,7 +53,6 @@ class BreakpointDebugging_ProductionSwitcherTest extends \BreakpointDebugging_PH
             "\x20\t// <BREAKPOINTDEBUGGING_COMMENT> \\BreakpointDebugging::assert(true);",
             "\t\x20// <BREAKPOINTDEBUGGING_COMMENT> \\BreakpointDebugging::assert(true);",
             "\t\x20// <BREAKPOINTDEBUGGING_COMMENT> \\\t\x20BreakpointDebugging\t\x20::\t\x20assert\t\x20(\t\x20true\t\x20)\t\x20;\t\x20",
-            '\BreakpointDebugging::assert(true); echo("abc");',
             '// <BREAKPOINTDEBUGGING_COMMENT> \BreakpointDebugging::assert(true); //',
             '// <BREAKPOINTDEBUGGING_COMMENT> \BreakpointDebugging::assert(true); // Something comment.',
             '\BreakpointDebugging::assert(true); /',
@@ -202,6 +201,7 @@ class BreakpointDebugging_ProductionSwitcherTest extends \BreakpointDebugging_PH
      */
     function testStripCommentForRestoration($lineForTest)
     {
+        BU::$exeMode |= B::IGNORING_BREAK_POINT;
         $this->_stripCommentForRestoration(array ($lineForTest), 'DUMMY');
     }
 

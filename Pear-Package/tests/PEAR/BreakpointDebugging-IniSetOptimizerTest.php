@@ -38,7 +38,6 @@ class BreakpointDebugging_IniSetOptimizerTest extends \BreakpointDebugging_PHPUn
             "\x20\t\\BreakpointDebugging::iniCheck(true);",
             "\t\x20\\BreakpointDebugging::iniCheck(true);",
             "\t\x20\\\t\x20BreakpointDebugging\t\x20::\t\x20iniCheck\t\x20(\t\x20true\t\x20)\t\x20;\t\x20",
-            '\BreakpointDebugging::iniCheck(true); echo("abc");',
             '\BreakpointDebugging::iniCheck(true); //',
             '\BreakpointDebugging::iniCheck(true); // Something comment.',
             '\BreakpointDebugging::iniCheck(true); /',
@@ -53,7 +52,6 @@ class BreakpointDebugging_IniSetOptimizerTest extends \BreakpointDebugging_PHPUn
             "\x20\t// <BREAKPOINTDEBUGGING_COMMENT> \\BreakpointDebugging::iniCheck(true);",
             "\t\x20// <BREAKPOINTDEBUGGING_COMMENT> \\BreakpointDebugging::iniCheck(true);",
             "\t\x20// <BREAKPOINTDEBUGGING_COMMENT> \\\t\x20BreakpointDebugging\t\x20::\t\x20iniCheck\t\x20(\t\x20true\t\x20)\t\x20;\t\x20",
-            '\BreakpointDebugging::iniCheck(true); echo("abc");',
             '// <BREAKPOINTDEBUGGING_COMMENT> \BreakpointDebugging::iniCheck(true); //',
             '// <BREAKPOINTDEBUGGING_COMMENT> \BreakpointDebugging::iniCheck(true); // Something comment.',
             '\BreakpointDebugging::iniCheck(true); /',
@@ -89,7 +87,6 @@ class BreakpointDebugging_IniSetOptimizerTest extends \BreakpointDebugging_PHPUn
             "\x20\t\\BreakpointDebugging::iniSet(true);",
             "\t\x20\\BreakpointDebugging::iniSet(true);",
             "\t\x20\\\t\x20BreakpointDebugging\t\x20::\t\x20iniSet\t\x20(\t\x20true\t\x20)\t\x20;\t\x20",
-            '\BreakpointDebugging::iniSet(true); echo("abc");',
             '\BreakpointDebugging::iniSet(true); //',
             '\BreakpointDebugging::iniSet(true); // Something comment.',
             '\BreakpointDebugging::iniSet(true); /',
@@ -104,7 +101,6 @@ class BreakpointDebugging_IniSetOptimizerTest extends \BreakpointDebugging_PHPUn
             "\x20\t// <BREAKPOINTDEBUGGING_COMMENT> \\BreakpointDebugging::iniSet(true);",
             "\t\x20// <BREAKPOINTDEBUGGING_COMMENT> \\BreakpointDebugging::iniSet(true);",
             "\t\x20// <BREAKPOINTDEBUGGING_COMMENT> \\\t\x20BreakpointDebugging\t\x20::\t\x20iniSet\t\x20(\t\x20true\t\x20)\t\x20;\t\x20",
-            '\BreakpointDebugging::iniSet(true); echo("abc");',
             '// <BREAKPOINTDEBUGGING_COMMENT> \BreakpointDebugging::iniSet(true); //',
             '// <BREAKPOINTDEBUGGING_COMMENT> \BreakpointDebugging::iniSet(true); // Something comment.',
             '\BreakpointDebugging::iniSet(true); /',
@@ -138,7 +134,6 @@ class BreakpointDebugging_IniSetOptimizerTest extends \BreakpointDebugging_PHPUn
             "\x20\t\\BreakpointDebugging::iniSet(true);",
             "\t\x20\\BreakpointDebugging::iniSet(true);",
             "\t\x20\\\t\x20BreakpointDebugging\t\x20::\t\x20iniSet\t\x20(\t\x20true\t\x20)\t\x20;\t\x20",
-            '\BreakpointDebugging::iniSet(true); echo("abc");',
             '\BreakpointDebugging::iniSet(true); //',
             '\BreakpointDebugging::iniSet(true); // Something comment.',
         );
@@ -149,7 +144,6 @@ class BreakpointDebugging_IniSetOptimizerTest extends \BreakpointDebugging_PHPUn
             "\x20\t/* <BREAKPOINTDEBUGGING_COMMENT> */ ini_set (true); // <BREAKPOINTDEBUGGING_COMMENT> \\BreakpointDebugging::iniSet(true);",
             "\t\x20/* <BREAKPOINTDEBUGGING_COMMENT> */ ini_set (true); // <BREAKPOINTDEBUGGING_COMMENT> \\BreakpointDebugging::iniSet(true);",
             "\t\x20/* <BREAKPOINTDEBUGGING_COMMENT> */ ini_set (\t\x20true\t\x20)\t\x20;\t\x20 // <BREAKPOINTDEBUGGING_COMMENT> \\\t\x20BreakpointDebugging\t\x20::\t\x20iniSet\t\x20(\t\x20true\t\x20)\t\x20;\t\x20",
-            '/* <BREAKPOINTDEBUGGING_COMMENT> */ ini_set (true); echo("abc"); // <BREAKPOINTDEBUGGING_COMMENT> \BreakpointDebugging::iniSet(true); echo("abc");',
             '/* <BREAKPOINTDEBUGGING_COMMENT> */ ini_set (true); // // <BREAKPOINTDEBUGGING_COMMENT> \BreakpointDebugging::iniSet(true); //',
             '/* <BREAKPOINTDEBUGGING_COMMENT> */ ini_set (true); // Something comment. // <BREAKPOINTDEBUGGING_COMMENT> \BreakpointDebugging::iniSet(true); // Something comment.',
         );
@@ -183,7 +177,7 @@ class BreakpointDebugging_IniSetOptimizerTest extends \BreakpointDebugging_PHPUn
      *
      * @dataProvider             _replaceIniSetToNative_B_provider
      * @expectedException        \BreakpointDebugging_ErrorException
-     * @expectedExceptionMessage CLASS=BreakpointDebugging_IniSetOptimizer FUNCTION=_replaceIniSetToNative.
+     * @expectedExceptionMessage CLASS=BreakpointDebugging_IniSetOptimizer FUNCTION=_replaceIniSetToNative ID=1.
      */
     function test_replaceIniSetToNative_B($lineForTest)
     {

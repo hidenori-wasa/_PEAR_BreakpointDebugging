@@ -19,7 +19,7 @@ $testNumber = 1;
 
 echo '<pre>Error output test.' . PHP_EOL;
 echo '    Displays error in case of "DEBUG".' . PHP_EOL;
-echo '    Logs error to "' . BREAKPOINTDEBUGGING_WORK_DIR_NAME . 'ErrorLog' . DIRECTORY_SEPARATOR . '" in case of "RELEASE".</pre>';
+echo '    Logs error to "' . BREAKPOINTDEBUGGING_WORK_DIR_NAME . 'ErrorLog/" in case of "RELEASE".</pre>';
 
 if ($testNumber === 1) {
     echo 'Tests plural character sets.';

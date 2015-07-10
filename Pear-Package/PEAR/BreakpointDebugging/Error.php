@@ -44,6 +44,7 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_ErrorInAllCas
         B::limitAccess('BreakpointDebugging.php');
         \BreakpointDebugging::assert(func_num_args() === 0);
 
+        $this->_exeMode = B::refExeMode();
         if (\BreakpointDebugging::isDebug()) { // In case of debug mode.
             $this->maxLogFileByteSize = B::getStatic('$_maxLogFileByteSize');
             $this->isLogging = false;
@@ -132,7 +133,7 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_ErrorInAllCas
         if (!isset($pTmpLog)) {
             return;
         }
-        $exemode = B::getStatic('$exeMode');
+        $exemode = parent::$exeMode;
         // In case of remote mode or release mode.
         if (($exemode & B::REMOTE) //
             || ($exemode & B::RELEASE) //
@@ -161,7 +162,7 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_ErrorInAllCas
     {
         \BreakpointDebugging::assert(func_num_args() === 0);
 
-        $exemode = B::getStatic('$exeMode');
+        $exemode = parent::$exeMode;
         // In case of remote mode or release mode.
         if (($exemode & B::REMOTE) //
             || ($exemode & B::RELEASE) //
@@ -184,7 +185,7 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_ErrorInAllCas
         \BreakpointDebugging::assert(func_num_args() === 1);
         \BreakpointDebugging::assert(is_array($pTmpLog) || is_resource($pTmpLog) || $pTmpLog === null);
 
-        $exemode = B::getStatic('$exeMode');
+        $exemode = parent::$exeMode;
         // In case of remote mode or release mode.
         if (($exemode & B::REMOTE) //
             || ($exemode & B::RELEASE) //
@@ -211,7 +212,7 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_ErrorInAllCas
 
         if (\BreakpointDebugging::isDebug()) { // In case of debug mode.
             $tmpLog = '';
-            if (B::getStatic('$exeMode') & B::REMOTE) { // In case of remote mode.
+            if (parent::$exeMode & B::REMOTE) { // In case of remote mode.
                 rewind($pTmpLog);
                 while (!feof($pTmpLog)) {
                     $tmpLog .= fread($pTmpLog, 4096);
@@ -252,7 +253,7 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_ErrorInAllCas
                 echo $log;
                 $this->logByteSize += strlen($log);
             } else {
-                if (B::getStatic('$exeMode') & B::REMOTE) { // In case of remote mode.
+                if (parent::$exeMode & B::REMOTE) { // In case of remote mode.
                     fwrite($pLogBuffer, $log);
                 } else { // In case of local.
                     $pLogBuffer[] = $log;
@@ -279,7 +280,7 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_ErrorInAllCas
         if (!isset($pTmpLog)) {
             return;
         }
-        $exemode = B::getStatic('$exeMode');
+        $exemode = parent::$exeMode;
         // In case of remote mode or release mode.
         if (($exemode & B::REMOTE) //
             || ($exemode & B::RELEASE) //

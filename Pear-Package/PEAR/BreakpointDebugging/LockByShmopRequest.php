@@ -314,7 +314,7 @@ final class BreakpointDebugging_LockByShmopRequest extends \BreakpointDebugging_
             throw $e;
         }
         // If this process is not unit test.
-        if (!(B::getStatic('$exeMode') & B::UNIT_TEST)) {
+        if (!(B::getExeMode() & B::UNIT_TEST)) {
             // Unlocks "php" code.
             self::$_lockingObject->unlock();
             echo '<strong>Sorry, please retry.</strong>';

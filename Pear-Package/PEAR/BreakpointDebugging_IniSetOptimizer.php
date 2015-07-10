@@ -20,7 +20,7 @@ require_once './BreakpointDebugging_Inclusion.php';
 require_once './BreakpointDebugging_Optimizer.php';
 
 use \BreakpointDebugging as B;
-use BreakpointDebugging_Window as BW;
+use \BreakpointDebugging_Window as BW;
 
 /**
  * "\BreakpointDebugging::iniSet()" or "\BreakpointDebugging::iniCheck()" optimizer on production server.
@@ -39,7 +39,7 @@ use BreakpointDebugging_Window as BW;
  * @version  Release: @package_version@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-class BreakpointDebugging_IniSetOptimizer extends BreakpointDebugging_Optimizer
+class BreakpointDebugging_IniSetOptimizer extends \BreakpointDebugging_Optimizer
 {
     /**
      * "\BreakpointDebugging::iniSet()" regular expression for replacement.
@@ -70,11 +70,7 @@ class BreakpointDebugging_IniSetOptimizer extends BreakpointDebugging_Optimizer
             $line, //
             1 //
         );
-        if ($result === null //
-            || $result === $line //
-        ) {
-            throw new \BreakpointDebugging_ErrorException('Does not match at registered line.');
-        }
+        B::assert($result !== null && $result !== $line, 1);
 
         return $result;
     }
@@ -88,7 +84,7 @@ class BreakpointDebugging_IniSetOptimizer extends BreakpointDebugging_Optimizer
     {
         // Checks security.
         if (!B::checkDevelopmentSecurity('REMOTE')) {
-            return false;
+            BW::throwErrorException('This page must be executed in remote.');
         }
 
         $getHtmlFileContent = function ($title) {
@@ -107,9 +103,7 @@ EOD;
         };
 
         if (!BREAKPOINTDEBUGGING_IS_PRODUCTION) {
-            BW::virtualOpen(__CLASS__, $getHtmlFileContent('IniSetOptimizerError'));
-            BW::htmlAddition(__CLASS__, 'body', 0, '<b>You must change the code to production mode by "./BreakpointDebugging_ProductionSwitcher.php".</b>');
-            return false;
+            BW::throwErrorException('<strong>You must change the code to production mode by "./BreakpointDebugging_ProductionSwitcher.php".</strong>');
         }
 
         parent::checkExecutionDir($getHtmlFileContent('IniSetOptimizerError'));
@@ -117,44 +111,39 @@ EOD;
         // Cancels the script running time limitation.
         set_time_limit(0);
 
-        // Locks "*.php" files.
-        $pLock = &\BreakpointDebugging_LockByFileExisting::internalSingleton();
-        $pLock->lock();
-
-        try {
-            BW::virtualOpen(__CLASS__, $getHtmlFileContent('IniSetOptimizer'));
-            if (!isset($_GET['Optimize_on_production'])) { // In case of first time when this page was called.
-                // Gets "*_MySetting.php" file paths.
-                $filesystemIterator = new FilesystemIterator(BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME, FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS | \FilesystemIterator::UNIX_PATHS);
-                foreach ($filesystemIterator as $fileinfo) {
-                    $relativeFilePath = $fileinfo->getPathname();
-                    if (preg_match('`.* _MySetting.php $`xX', $relativeFilePath) === 1) {
-                        $mySettingFilePaths[] = $relativeFilePath;
-                    }
+        BW::virtualOpen(__CLASS__, $getHtmlFileContent('IniSetOptimizer'));
+        if (!isset($_GET['Optimize_on_production'])) { // In case of first time when this page was called.
+            // Gets "*_MySetting.php" file paths.
+            $filesystemIterator = new FilesystemIterator(BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME, FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS | \FilesystemIterator::UNIX_PATHS);
+            foreach ($filesystemIterator as $fileinfo) {
+                $relativeFilePath = $fileinfo->getPathname();
+                if (preg_match('`.* _MySetting.php $`xX', $relativeFilePath) === 1) {
+                    $mySettingFilePaths[] = $relativeFilePath;
                 }
-                foreach ($mySettingFilePaths as $relativeFilePath) {
-                    // Copies the "*.php" file lines to an array.
-                    $lines = parent::getArrayFromFile($relativeFilePath, $getHtmlFileContent('IniSetOptimizerError'));
-                    $isChanged = false;
-                    // Strips a comment for restoration about "\BreakpointDebugging::iniSet()" and "\BreakpointDebugging::iniCheck()".
-                    parent::stripCommentForRestoration($relativeFilePath, $lines, $isChanged, '[[:blank:]]* ini_set [[:blank:]]* \(', '\\\\ [[:blank:]]* BreakpointDebugging [[:blank:]]* :: [[:blank:]]* ( iniSet | iniCheck ) [[:blank:]]* \(');
-                    // Writes result.
-                    parent::writeOrSkip($lines, $relativeFilePath, __CLASS__, $isChanged);
-                }
-                // In case of success.
-                BW::htmlAddition(__CLASS__, 'body', 0, '<p style="color: aqua">"&lt;BREAKPOINTDEBUGGING_COMMENT&gt;" of "*_MySetting.php" files was stripped about "\BreakpointDebugging::iniSet()" and "\BreakpointDebugging::iniCheck()".</p><hr />');
+            }
+            foreach ($mySettingFilePaths as $relativeFilePath) {
+                // Copies the "*.php" file lines to an array.
+                $lines = parent::getArrayFromFile($relativeFilePath, $getHtmlFileContent('IniSetOptimizerError'));
+                $isChanged = false;
+                // Strips a comment for restoration about "\BreakpointDebugging::iniSet()" and "\BreakpointDebugging::iniCheck()".
+                parent::stripCommentForRestoration($relativeFilePath, $lines, $isChanged, '[[:blank:]]* ini_set [[:blank:]]* \(', '\\\\ [[:blank:]]* BreakpointDebugging [[:blank:]]* :: [[:blank:]]* ( iniSet | iniCheck ) [[:blank:]]* \(');
+                // Writes result.
+                parent::writeOrSkip($lines, $relativeFilePath, __CLASS__, $isChanged);
+            }
+            // In case of success.
+            BW::htmlAddition(__CLASS__, 'body', 0, '<p style="color: aqua">"&lt;BREAKPOINTDEBUGGING_COMMENT&gt;" of "*_MySetting.php" files was stripped about "\BreakpointDebugging::iniSet()" and "\BreakpointDebugging::iniCheck()".</p><hr />');
 
-                $html = '<h1>IniSetOptimizer</h1>';
-                $html .= '<h3>NOTICE: Inside of the following directory is processed about "*_MySetting.php" files.</h3>';
-                $html .= '<ul><span style="color:yellow">';
-                $settingDirName = BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME;
-                $html .= "<li>$settingDirName</li>";
-                $html .= '</span></ul><hr />';
-                BW::htmlAddition(__CLASS__, 'body', 0, $html);
-                // Makes buttons.
-                parent::makeButton('Optimize on production');
-                $commentOutRegEx = self::$_commentOutRegEx;
-                $html = <<<EOD
+            $html = '<h1>IniSetOptimizer</h1>';
+            $html .= '<h3>NOTICE: Inside of the following directory is processed about "*_MySetting.php" files.</h3>';
+            $html .= '<ul><span style="color:yellow">';
+            $settingDirName = BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME;
+            $html .= "<li>$settingDirName</li>";
+            $html .= '</span></ul><hr />';
+            BW::htmlAddition(__CLASS__, 'body', 0, $html);
+            // Makes buttons.
+            parent::makeButton('Optimize on production');
+            $commentOutRegEx = self::$_commentOutRegEx;
+            $html = <<<EOD
 <ol>
     <li>
         "\BreakpointDebugging::iniSet()" or "\BreakpointDebugging::iniCheck()" optimizer on production server.<br />
@@ -171,60 +160,49 @@ EOD;
 </ul>
 <hr />
 EOD;
-                BW::htmlAddition(__CLASS__, 'body', 0, $html);
+            BW::htmlAddition(__CLASS__, 'body', 0, $html);
 
-                // Resets "php.ini" file setting by rerequest.
-                goto END_LABEL;
-            }
-
-            // 'Optimize on production' button was pushed.
-            BW::htmlAddition(__CLASS__, 'body', 0, '<p style="color: aqua">"*_MySetting.php" files was checked about "\BreakpointDebugging::iniSet()" and "\BreakpointDebugging::iniCheck()".</p><hr />');
-
-            foreach (parent::$infoToOptimize as $fullFilePath => $lineInfos) {
-                // Copies the "*.php" file lines to an array.
-                $lines = self::getArrayFromFile($fullFilePath, $getHtmlFileContent('IniSetOptimizerError'));
-                $isChanged = false;
-                // Processes the registered information.
-                foreach ($lineInfos as $lineInfo) {
-                    $lineNumber = $lineInfo['LINE_NUMBER'];
-                    $changeKind = $lineInfo['CHANGE_KIND'];
-                    $line = &$lines[$lineNumber - 1];
-                    switch ($changeKind) {
-                        case 'COMMENT_OUT':
-                            // Inserts "// <BREAKPOINTDEBUGGING_COMMENT> " into a line to comment out.
-                            $result = parent::commentOut($line, self::$_commentOutRegEx);
-                            if ($result === $line) {
-                                throw new \BreakpointDebugging_ErrorException('', 101);
-                            }
-                            $line = $result;
-                            $isChanged = true;
-                            break;
-                        case 'REPLACE_TO_NATIVE':
-                            // Replaces "\BreakpointDebugging::iniSet(..." line to "/* <BREAKPOINTDEBUGGING_COMMENT> */ ini_set(... // <BREAKPOINTDEBUGGING_COMMENT> <native code>".
-                            $result = self::_replaceIniSetToNative($line);
-                            $line = $result;
-                            $isChanged = true;
-                            break;
-                        default:
-                            throw new \BreakpointDebugging_ErrorException('Unknown change kind.', 103);
-                    }
-                }
-                // 'Optimize on production' button was pushed.
-                parent::writeOrSkip($lines, $fullFilePath, __CLASS__, $isChanged);
-            }
-            // In case of success.
-            // 'Optimize on production' button was pushed.
-            BW::htmlAddition(__CLASS__, 'body', 0, '<p style="color: aqua">Optimization was done.</p>');
-            BW::scrollBy(__CLASS__, PHP_INT_MAX, PHP_INT_MAX);
-        } catch (\Exception $e) {
-            // Unlocks error log files.
-            $pLock->unlock();
-            throw $e;
+            // Resets "php.ini" file setting by rerequest.
+            return;
         }
 
-        END_LABEL:
-        // Unlocks error log files.
-        $pLock->unlock();
+        // 'Optimize on production' button was pushed.
+        BW::htmlAddition(__CLASS__, 'body', 0, '<p style="color: aqua">"*_MySetting.php" files was checked about "\BreakpointDebugging::iniSet()" and "\BreakpointDebugging::iniCheck()".</p><hr />');
+
+        foreach (parent::$infoToOptimize as $fullFilePath => $lineInfos) {
+            // Copies the "*.php" file lines to an array.
+            $lines = self::getArrayFromFile($fullFilePath, $getHtmlFileContent('IniSetOptimizerError'));
+            $isChanged = false;
+            // Processes the registered information.
+            foreach ($lineInfos as $lineInfo) {
+                $lineNumber = $lineInfo['LINE_NUMBER'];
+                $changeKind = $lineInfo['CHANGE_KIND'];
+                $line = &$lines[$lineNumber - 1];
+                switch ($changeKind) {
+                    case 'COMMENT_OUT':
+                        // Inserts "// <BREAKPOINTDEBUGGING_COMMENT> " into a line to comment out.
+                        $result = parent::commentOut($line, self::$_commentOutRegEx);
+                        B::assert($result !== $line);
+                        $line = $result;
+                        $isChanged = true;
+                        break;
+                    case 'REPLACE_TO_NATIVE':
+                        // Replaces "\BreakpointDebugging::iniSet(..." line to "/* <BREAKPOINTDEBUGGING_COMMENT> */ ini_set(... // <BREAKPOINTDEBUGGING_COMMENT> <native code>".
+                        $result = self::_replaceIniSetToNative($line);
+                        $line = $result;
+                        $isChanged = true;
+                        break;
+                    default:
+                        B::assert(false);
+                }
+            }
+            // 'Optimize on production' button was pushed.
+            parent::writeOrSkip($lines, $fullFilePath, __CLASS__, $isChanged);
+        }
+        // In case of success.
+        // 'Optimize on production' button was pushed.
+        BW::htmlAddition(__CLASS__, 'body', 0, '<p style="color: aqua">Optimization was done.</p>');
+        BW::scrollBy(__CLASS__, PHP_INT_MAX, PHP_INT_MAX);
     }
 
 }

@@ -19,7 +19,7 @@
 require_once './BreakpointDebugging_Inclusion.php';
 
 use \BreakpointDebugging as B;
-use BreakpointDebugging_Window as BW;
+use \BreakpointDebugging_Window as BW;
 
 /**
  * The abstract class for optimization.
@@ -63,12 +63,10 @@ class BreakpointDebugging_Optimizer
                 if (preg_match('`^ [[:blank:]]* /\*\x20<BREAKPOINTDEBUGGING_COMMENT>\x20\*/ .* //\x20<BREAKPOINTDEBUGGING_COMMENT>\x20 .* $`xX', $line) !== 1) {
                     $errorMessage = <<<EOD
 <span style="color: yellow">
-    ERROR MESSAGE: "/* &lt;BREAKPOINTDEBUGGING_COMMENT&gt; */" line of production code must have "// &lt;BREAKPOINTDEBUGGING_COMMENT&gt; " in same line.
-    FILE: $phpFilePath
-    LINE: $lineNumber
-</span>
+"/* &lt;BREAKPOINTDEBUGGING_COMMENT&gt; */" line of production code must have "// &lt;BREAKPOINTDEBUGGING_COMMENT&gt; " in same line.
+FILE: $phpFilePath
+LINE: $lineNumber</span>
 EOD;
-                    // Displays error excetion. Next, throw error exception.
                     BW::throwErrorException($errorMessage);
                 }
                 // Sets "$result" always.
@@ -153,10 +151,7 @@ EOD;
                 && preg_match('`/' . $expectedFilePath . '$`xX', $_SERVER['PHP_SELF']) !== 1 // Checks this file path.
             ) {
                 $thisFileName = basename($backTrace[1]['file']);
-                $className = substr($thisFileName, 0, -4);
-                BW::virtualOpen($className, $html);
-                BW::htmlAddition($className, 'body', 0, '"This file must be executed in "' . $expectedFilePath . '".');
-                return false;
+                BW::throwErrorException('"' . $thisFileName . '" must be executed in "' . $expectedFilePath . '".');
             }
         }
     }
@@ -171,10 +166,6 @@ EOD;
      */
     protected static function commentOut($line, $regExToCommentOut)
     {
-        // If multiple syntax line.
-        if (preg_match('`^ .* \( .* \) [[:blank:]]* ; .* \( .* \) [[:blank:]]* ;`xXU', $line)) {
-            return $line;
-        }
         $result = preg_replace(
             $regExToCommentOut, //
             '$1// <BREAKPOINTDEBUGGING_COMMENT> $2', //
@@ -182,7 +173,7 @@ EOD;
             1 //
         );
         if ($result === null) { // If error.
-            throw new \BreakpointDebugging_ErrorException('', 101);
+            BW::throwErrorException('"preg_replace()" failed.');
         }
         return $result;
     }
@@ -199,14 +190,9 @@ EOD;
      */
     protected static function getArrayFromFile($phpFilePath, $errorHtml)
     {
-        $pFile = B::fopen(array ($phpFilePath, 'r+b'), 0644);
+        $pFile = B::fopen(array ($phpFilePath, 'rb'), 0644);
         if ($pFile === false) {
-            $backTrace = debug_backtrace();
-            $thisFileName = basename($backTrace[1]['file']);
-            $className = substr($thisFileName, 0, -4);
-            BW::virtualOpen($className, $errorHtml);
-            BW::htmlAddition($className, 'body', 0, '"' . $phpFilePath . '" file cannot open.');
-            throw new \BreakpointDebugging_ErrorException('', 101);
+            BW::throwErrorException('"' . $phpFilePath . '" file cannot open.');
         }
         $lines = array ();
         while (($result = fgets($pFile)) !== false) {
@@ -215,7 +201,7 @@ EOD;
         // Closes the "*.php" file stream.
         $result = fclose($pFile);
         if ($result !== true) {
-            throw new \BreakpointDebugging_ErrorException('', 102);
+            BW::throwErrorException('"' . $phpFilePath . '" file cannot close.');
         }
 
         return $lines;
@@ -250,7 +236,7 @@ EOD;
             // Displays the progress.
             BW::htmlAddition($thisClassName, 'body', 0, '<span style="color: red">Writing "' . $fullFilePath . '".</span><br />');
             // Writes the array to "*.php" file.
-            B::filePutContents($fullFilePath, $lines, 0644);
+            B::filePutContents($fullFilePath, $lines, 0644, LOCK_EX);
             // Displays the progress.
             BW::htmlAddition($thisClassName, 'body', 0, 'Deleting "' . $newFilePath . '".<br />');
             // Deletes the "*.php.copy" file.

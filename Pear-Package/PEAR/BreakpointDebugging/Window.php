@@ -546,6 +546,8 @@ EOD;
     /**
      * Displays an error into error window, and exits.
      *
+     * This is used inside unit test code.
+     *
      * @param string $message Error message by "PHP_EOL".
      *
      * @return void
@@ -568,6 +570,8 @@ EOD;
     /**
      *  Displays an error exception into error window. Next, throws exception.
      *
+     *  This class method is used for browser display in production mode tool.
+     *
      * @param string $message Error message by "PHP_EOL".
      *
      * @return void
@@ -580,9 +584,37 @@ EOD;
             return;
         }
 
-        self::virtualOpen(B::ERROR_WINDOW_NAME, B::getErrorHtmlFileTemplate());
-        self::htmlAddition(B::ERROR_WINDOW_NAME, 'pre', 0, $message);
-        self::front(B::ERROR_WINDOW_NAME);
+        $callStackInfo = debug_backtrace();
+        $callStackInfo = $callStackInfo[0];
+        if (array_key_exists('file', $callStackInfo)) {
+            $filename = $callStackInfo['file'];
+        } else {
+            $filename = '';
+        }
+        if (array_key_exists('line', $callStackInfo)) {
+            $lineNumber = $callStackInfo['line'];
+        } else {
+            $lineNumber = '';
+        }
+        $errorMessage = <<<EOD
+ERROR MESSAGE: $message
+    FILE: $filename
+    LINE: $lineNumber
+EOD;
+        $errorWindowName = B::ERROR_WINDOW_NAME . '_' . __FUNCTION__;
+        self::virtualOpen($errorWindowName, B::getErrorHtmlFileTemplate());
+        self::htmlAddition($errorWindowName, 'pre', 0, $errorMessage);
+        self::front($errorWindowName);
+
+        $exeMode = B::getExeMode();
+        if ((!BREAKPOINTDEBUGGING_IS_PRODUCTION || $exeMode !== (B::REMOTE | B::RELEASE)) // If this is not production mode.
+            && !($exeMode & B::IGNORING_BREAK_POINT) // If breakpoint has not been ignored during unit-test.
+        ) {
+            if (B::getXebugExists()) {
+                flush();
+                xdebug_break(); // Breakpoint. See error window.
+            }
+        }
 
         throw new \BreakpointDebugging_ErrorException('');
     }

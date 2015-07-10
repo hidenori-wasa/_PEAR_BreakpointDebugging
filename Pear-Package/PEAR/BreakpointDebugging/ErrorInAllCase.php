@@ -34,11 +34,18 @@ use \BreakpointDebugging_Window as BW;
 abstract class BreakpointDebugging_ErrorInAllCase
 {
     /**
+     * Execution mode.
+     *
+     * @var int
+     */
+    protected static $exeMode;
+
+    /**
      * Error anchor number of hypertext reference.
      *
      * @var string
      */
-    static protected $errorAnchorNumber = 1;
+    protected static $errorAnchorNumber = 1;
 
     /**
      * Logged call-stacks.
@@ -217,6 +224,14 @@ abstract class BreakpointDebugging_ErrorInAllCase
     private static $_errorBuffer = '';
 
     /**
+     * Initializes property.
+     */
+    static function initialize()
+    {
+        self::$exeMode = &B::refExeMode();
+    }
+
+    /**
      * Gets error log directory name.
      *
      * @return string Error log directory name.
@@ -254,7 +269,7 @@ abstract class BreakpointDebugging_ErrorInAllCase
 
     private function _setAnchorTags()
     {
-        if (B::getStatic('$exeMode') & B::UNIT_TEST) {
+        if (self::$exeMode & B::UNIT_TEST) {
             $this->tags['uint test anchor href'] = '<a href="#UnitTestAnchor' . self::$errorAnchorNumber . '">To unit test error information.</a>';
             $this->tags['uint test anchor name'] = '<a name="UnitTestAnchor' . self::$errorAnchorNumber . '"></a>';
             self::$errorAnchorNumber++;
@@ -672,7 +687,7 @@ abstract class BreakpointDebugging_ErrorInAllCase
         // Add scope of start page file.
         $this->_callStack[] = array ();
         $this->outputErrorCallStackLog2($errorKind, $errorMessage, $prependLog);
-        if (B::getStatic('$exeMode') === (B::REMOTE | B::RELEASE)) { // In case of remote release.
+        if (self::$exeMode === (B::REMOTE | B::RELEASE)) { // Remote release mode.
             // @codeCoverageIgnoreStart
             if (isset($endFlag)) {
                 // In case of release mode, we must exit this process when kind is error.
@@ -1603,3 +1618,5 @@ EOD;
     }
 
 }
+
+\BreakpointDebugging_ErrorInAllCase::initialize();

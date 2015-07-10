@@ -57,7 +57,7 @@ abstract class BreakpointDebugging_Exception_InAllCase extends \PEAR_Exception
 }
 
 /**
- * This class executes error or exception handling.
+ * The class of both development mode and production mode.
  *
  * @category PHP
  * @package  BreakpointDebugging
@@ -117,6 +117,20 @@ abstract class BreakpointDebugging_InAllCase
      * @const string
      */
     const ERROR_WINDOW_NAME = 'BreakpointDebugging_Error';
+
+    /**
+     * The class method call locations.
+     *
+     * @var array
+     */
+    private static $_callLocations = array ();
+
+    /**
+     * Include-paths.
+     *
+     * @var string
+     */
+    private static $_includePaths;
 
     /**
      * "\BreakpointDebugging_PHPUnit" instance.
@@ -299,6 +313,28 @@ abstract class BreakpointDebugging_InAllCase
 
     ///////////////////////////// For package user from here. /////////////////////////////
     /**
+     * Gets "$exeMode" property.
+     *
+     * @return int Execution mode.
+     */
+    static function getExeMode()
+    {
+        return self::$exeMode;
+    }
+
+    /**
+     * It references "$exeMode" property.
+     *
+     * @return int& Execution mode.
+     */
+    static function &refExeMode()
+    {
+        B::limitAccess(array ('BreakpointDebugging/Error.php', 'BreakpointDebugging/ErrorInAllCase.php', 'BreakpointDebugging.php', 'BreakpointDebugging_PHPUnit.php'));
+
+        return self::$exeMode;
+    }
+
+    /**
      * Debugs by using breakpoint.
      * We must define this class method outside namespace, and we must not change method name when we call this method.
      *
@@ -325,8 +361,8 @@ abstract class BreakpointDebugging_InAllCase
         \BreakpointDebugging::assert(is_string($message));
         \BreakpointDebugging::assert(is_array($callStackInfo));
 
-        if (self::$exeMode === (B::REMOTE | B::RELEASE) //
-            || (self::$exeMode & B::IGNORING_BREAK_POINT) //
+        if ((BREAKPOINTDEBUGGING_IS_PRODUCTION && self::$exeMode === (B::REMOTE | B::RELEASE)) // Execution mode as production mode.
+            || (self::$exeMode & B::IGNORING_BREAK_POINT) // Breakpoint has been ignored during unit-test.
         ) {
             return;
         }
@@ -354,6 +390,181 @@ abstract class BreakpointDebugging_InAllCase
             exit;
         }
     }
+
+    /**
+     * Throws exception if assertion is false. Also, has identification code for debug unit test.
+     *
+     * This is commented out by "ProductionSwitcher".
+     * Or, this does not exist in production mode.
+     *
+     * @param bool $assertion Assertion.
+     * @param int  $id        Exception identification number inside function.
+     *                        I recommend from 0 to 99 if you do not detect by unit test.
+     *                        I recommend from 100 if you detect by unit test.
+     *                        This number must not overlap with other assertion or exception identification number inside function.
+     *
+     * @return void
+     * @usage
+     *      \BreakpointDebugging::assert(<judgment expression>[, <identification number inside function>]);
+     *      It is possible to assert that <judgment expression> is "This must be". Especially, this uses to verify a function's argument.
+     *      Example: \BreakpointDebugging::assert(3 <= $value && $value <= 5); // $value should be 3-5.
+     *      Caution: Do not change variable's value in "$assertion" parameter because it is not executed in production mode.
+     */
+    static function assert($assertion, $id = null)
+    {
+        $paramNumber = func_num_args();
+        if ($paramNumber > 2) {
+            self::callExceptionHandlerDirectly('Parameter number mistake.', 1);
+            // @codeCoverageIgnoreStart
+        }
+        // @codeCoverageIgnoreEnd
+        if (!is_bool($assertion)) {
+            self::callExceptionHandlerDirectly('Assertion must be bool.', 2);
+            // @codeCoverageIgnoreStart
+        }
+        // @codeCoverageIgnoreEnd
+        if (!is_int($id) //
+            && !is_null($id) //
+        ) {
+            self::callExceptionHandlerDirectly('Exception identification number must be integer.', 3);
+            // @codeCoverageIgnoreStart
+        }
+        // @codeCoverageIgnoreEnd
+
+        if (!$assertion) {
+            if ($paramNumber === 1) {
+                // For breakpoint debugging.
+                self::breakpoint('Assertion failed.', debug_backtrace());
+            }
+            // For "@expectedExceptionMessage" annotation of "DEBUG_UNIT_TEST" mode.
+            self::callExceptionHandlerDirectly('Assertion failed.', $id);
+            // @codeCoverageIgnoreStart
+        }
+        // @codeCoverageIgnoreEnd
+    }
+
+    /**
+     * Checks a invoker file path.
+     *
+     * @param array  $includePaths    The including paths.
+     * @param string $invokerFilePath Invoker file path.
+     * @param string $fullFilePath    A full file path.
+     *
+     * @return boolean
+     */
+    private static function _checkInvokerFilePath($includePaths, $invokerFilePath, $fullFilePath)
+    {
+        self::assert(func_num_args() === 3);
+        self::assert(is_array($includePaths));
+        self::assert(is_string($invokerFilePath));
+        self::assert(is_string($fullFilePath));
+
+        foreach ($includePaths as $includePath) {
+            $invokerFullFilePath = realpath("$includePath/$invokerFilePath");
+            if ($invokerFullFilePath === false) {
+                continue;
+            }
+            if ($fullFilePath === $invokerFullFilePath) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Limits the invoker file paths.
+     *
+     * This is commented out by "ProductionSwitcher".
+     * Or, this does not exist in production mode.
+     *
+     * @param mixed $invokerFilePaths Invoker file paths.
+     * @param bool  $enableUnitTest   Is this enable in unit test?
+     *
+     * @return void
+     */
+    static function limitAccess($invokerFilePaths, $enableUnitTest = false)
+    {
+        $callStack = debug_backtrace();
+        // Makes invoking location information.
+        $count = count($callStack);
+        if ($count === 1) {
+            // @codeCoverageIgnoreStart
+            // Because unit test file is not top page.
+            // Skips top page.
+            return;
+            // @codeCoverageIgnoreEnd
+        }
+        do {
+            for ($key = 1; $key < $count; $key++) {
+                if (array_key_exists('file', $callStack[$key])) {
+                    break 2;
+                }
+                // @codeCoverageIgnoreStart
+                // Because unit test cannot run "call_user_func_array()" as global code.
+            }
+            // Skips when "file" key does not exist.
+            return;
+            // @codeCoverageIgnoreEnd
+        } while (false);
+        $fullFilePath = $callStack[$key]['file'];
+        $line = $callStack[$key]['line'];
+        if (array_key_exists($fullFilePath, self::$_callLocations) //
+            && array_key_exists($line, self::$_callLocations[$fullFilePath]) //
+        ) {
+            // Skips same.
+            return;
+        }
+        // Stores the invoking location information.
+        self::$_callLocations[$fullFilePath][$line] = true;
+
+        self::assert(func_num_args() <= 2);
+        self::assert(is_array($invokerFilePaths) || is_string($invokerFilePaths));
+        self::assert(is_bool($enableUnitTest));
+
+        if (!$enableUnitTest //
+            && (self::$exeMode & B::UNIT_TEST) //
+            && (!isset(\BreakpointDebugging_PHPUnit::$unitTestDir) || strpos($fullFilePath, \BreakpointDebugging_PHPUnit::$unitTestDir) === 0) //
+        ) {
+            return;
+        }
+        // If project work directory does not exist.
+        if (!isset(self::$pwd)) {
+            return;
+        } else {
+            // Keeps the project work directory at "__destruct" and shutdown.
+            chdir(self::$pwd);
+        }
+        if (!isset(self::$_includePaths)) {
+            self::$_includePaths = ini_get('include_path');
+            self::$_includePaths = explode(PATH_SEPARATOR, self::$_includePaths);
+        }
+        if (is_array($invokerFilePaths)) {
+            foreach ($invokerFilePaths as $invokerFilePath) {
+                if (self::_checkInvokerFilePath(self::$_includePaths, $invokerFilePath, $fullFilePath)) {
+                    return;
+                }
+            }
+            // @codeCoverageIgnoreStart
+        } else {
+            // @codeCoverageIgnoreEnd
+            if (self::_checkInvokerFilePath(self::$_includePaths, $invokerFilePaths, $fullFilePath)) {
+                return;
+            }
+        }
+        $class = '';
+        $function = '';
+        if (array_key_exists('class', $callStack[$key])) {
+            $class = $callStack[$key]['class'] . '::';
+        }
+        if (array_key_exists('function', $callStack[$key])) {
+            $function = $callStack[$key]['function'];
+        }
+        self::breakpoint("'$class$function()' must not invoke in '$fullFilePath' file.", debug_backtrace());
+        self::callExceptionHandlerDirectly("'$class$function()' must not invoke in '$fullFilePath' file.", 4);
+        // @codeCoverageIgnoreStart
+    }
+
+    // @codeCoverageIgnoreEnd
 
     /**
      * "ini_set()" with validation. And, registers the location to comment out or replace.
@@ -1428,7 +1639,6 @@ EOD;
         self::$staticProperties['$_get'] = &self::$_get;
         self::$_nativeExeMode = self::$exeMode = $_BreakpointDebugging_EXE_MODE;
         unset($GLOBALS['_BreakpointDebugging_EXE_MODE']);
-        self::$staticProperties['$exeMode'] = &self::$exeMode;
         self::$staticProperties['$_developerIP'] = &self::$_developerIP;
         self::$staticProperties['$_maxLogFileByteSize'] = &self::$_maxLogFileByteSize;
         self::$staticProperties['$_maxLogParamNestingLevel'] = &self::$_maxLogParamNestingLevel;
@@ -1439,6 +1649,7 @@ EOD;
         self::$staticProperties['$_callingExceptionHandlerDirectly'] = &self::$_callingExceptionHandlerDirectly;
         self::$staticProperties['$_valuesToTrace'] = &self::$_valuesToTrace;
         self::$staticProperties['$_notFixedLocations'] = &self::$_notFixedLocations;
+        self::$staticProperties['$_includePaths'] = &self::$_includePaths;
         $dirName = BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME;
         self::$iniDisplayString = <<<EOD
 ### "\BreakpointDebugging::iniSet()" or "\BreakpointDebugging::iniCheck()": You must comment out following line of "{$dirName}[package name]_MySetting.php" because set value and value of php.ini is same.
@@ -1676,9 +1887,11 @@ EOD;
 
 global $_BreakpointDebugging_EXE_MODE;
 
-if ($_BreakpointDebugging_EXE_MODE & BA::RELEASE) { // In case of release.
+if (BREAKPOINTDEBUGGING_IS_PRODUCTION // Production mode.
+    && $_BreakpointDebugging_EXE_MODE === (BA::REMOTE | BA::RELEASE) // Execution mode as production mode.
+) {
     /**
-     * The class for release.
+     * The class for production mode.
      *
      * @category PHP
      * @package  BreakpointDebugging
@@ -1687,12 +1900,11 @@ if ($_BreakpointDebugging_EXE_MODE & BA::RELEASE) { // In case of release.
      * @version  Release: @package_version@
      * @link     http://pear.php.net/package/BreakpointDebugging
      */
-
-    abstract class BreakpointDebugging_Middle extends \BreakpointDebugging_InAllCase
+    final class BreakpointDebugging extends \BreakpointDebugging_InAllCase
     {
 
         /**
-         * Empties in release.
+         * Empties in production mode.
          *
          * @return void
          */
@@ -1702,7 +1914,7 @@ if ($_BreakpointDebugging_EXE_MODE & BA::RELEASE) { // In case of release.
         }
 
         /**
-         * Empties in release.
+         * Empties in production mode.
          *
          * @param bool $assertion Dummy.
          *
@@ -1718,86 +1930,9 @@ if ($_BreakpointDebugging_EXE_MODE & BA::RELEASE) { // In case of release.
 
     }
 
-    if ($_BreakpointDebugging_EXE_MODE & BA::UNIT_TEST) { // In case of unit test.
-        /**
-         * The class for release unit test.
-         *
-         * @category PHP
-         * @package  BreakpointDebugging
-         * @author   Hidenori Wasa <public@hidenori-wasa.com>
-         * @license  http://opensource.org/licenses/mit-license.php  MIT License
-         * @version  Release: @package_version@
-         * @link     http://pear.php.net/package/BreakpointDebugging
-         */
-        final class BreakpointDebugging extends \BreakpointDebugging_Middle
-        {
-
-            /**
-             * Assertion error is stopped at break point in case of release unit test.
-             *
-             * @param bool $assertion Assertion.
-             *
-             * @return void
-             */
-            static function assert($assertion)
-            {
-                if (!$assertion //
-                    && !(BA::$exeMode & B::IGNORING_BREAK_POINT) //
-                ) {
-                    // @codeCoverageIgnoreStart
-                    if (function_exists('xdebug_break')) {
-                        xdebug_break(); // You must use "\BreakpointDebugging_PHPUnit::markTestSkippedInRelease(); // Because this unit test is assertion." at top of unit test class method.
-                    } else {
-                        // Because unit test is exited.
-                        ini_set('xdebug.var_display_max_depth', 5);
-
-                        BW::virtualOpen(parent::ERROR_WINDOW_NAME, parent::getErrorHtmlFileTemplate());
-                        ob_start();
-
-                        var_dump(debug_backtrace());
-
-                        BW::htmlAddition(parent::ERROR_WINDOW_NAME, 'pre', 0, ob_get_clean());
-
-                        // Ends the output buffering.
-                        while (ob_get_level() > 0) {
-                            ob_end_flush();
-                        }
-                        exit;
-                    }
-                }
-                // @codeCoverageIgnoreEnd
-            }
-
-        }
-
-    } else { // In case of not unit test.
-        /**
-         * The class for release.
-         *
-         * @category PHP
-         * @package  BreakpointDebugging
-         * @author   Hidenori Wasa <public@hidenori-wasa.com>
-         * @license  http://opensource.org/licenses/mit-license.php  MIT License
-         * @version  Release: @package_version@
-         * @link     http://pear.php.net/package/BreakpointDebugging
-         */
-        final class BreakpointDebugging extends \BreakpointDebugging_Middle
-        {
-
-        }
-
-        if (assert_options(ASSERT_ACTIVE, 0) === false) { // Ignore assert().
-            throw new \BreakpointDebugging_ErrorException('', 101);
-        }
-    }
-
-    if ($_BreakpointDebugging_EXE_MODE === (B::REMOTE | B::RELEASE)) { // In case of remote release.
-        // Ignores "Xdebug" in case of remote release because must not stop.
-        BA::setXebugExists(false);
-    } else {
-        BA::setXebugExists(extension_loaded('xdebug'));
-    }
-} else { // In case of debug.
+    // Ignores "Xdebug" if production mode because its mode must not stop or display.
+    BA::setXebugExists(false);
+} else { // If development mode.
     // This does not invoke extended class method exceptionally because its class is not defined.
     BA::setXebugExists(extension_loaded('xdebug'));
     include_once __DIR__ . '/BreakpointDebugging_InDebug.php';
@@ -1816,12 +1951,12 @@ register_shutdown_function('\BreakpointDebugging::shutdown');
 // Initializes static class.
 B::initialize();
 
-if (B::getStatic('$exeMode') & BA::UNIT_TEST) { // In case of unit test.
+if (B::getExeMode() & BA::UNIT_TEST) { // Unit test.
     include_once 'BreakpointDebugging_PHPUnit.php';
 } else {
 
     /**
-     * Dummy class for not unit test.
+     * Dummy class in case of not unit-test.
      *
      * @category PHP
      * @package  BreakpointDebugging
