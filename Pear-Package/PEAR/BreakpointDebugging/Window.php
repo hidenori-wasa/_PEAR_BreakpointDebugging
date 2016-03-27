@@ -7,7 +7,7 @@
  * Copyright (c) 2014-, Hidenori Wasa
  * All rights reserved.
  *
- * License content is written in "PEAR/BreakpointDebugging/BREAKPOINTDEBUGGING_LICENSE.txt".
+ * License content is written in "PEAR/BreakpointDebugging/docs/BREAKPOINTDEBUGGING_LICENSE.txt".
  *
  * @category PHP
  * @package  BreakpointDebugging
@@ -36,12 +36,13 @@ use \BreakpointDebugging_Window as BW;
  */
 class BreakpointDebugging_Window
 {
+
     /**
      * Shared memory byte size.
      *
      * @const int
      */
-    const SHARED_MEMORY_SIZE = 1048576;
+    const SHARED_MEMORY_SIZE = 10485760;
 
     /**
      * This instance.
@@ -198,6 +199,9 @@ class BreakpointDebugging_Window
                 B::assert($javaScriptWritingPtr !== false);
                 // If area to write overruns shared memory area.
                 if ($javaScriptWritingPtr + strlen($javaScriptDispatcher) >= self::SHARED_MEMORY_SIZE) {
+                    if (strlen($javaScriptDispatcher) > self::SHARED_MEMORY_SIZE) {
+                        xdebug_break();
+                    }
                     $lastStrLen = self::SHARED_MEMORY_SIZE - $javaScriptWritingPtr;
                     $javaScriptDispatcherBefore = substr($javaScriptDispatcher, 0, $lastStrLen);
                     $javaScriptDispatcher = substr($javaScriptDispatcher, $lastStrLen);
@@ -258,7 +262,8 @@ class BreakpointDebugging_Window
     {
         $openFirefoxWindow = function ($uri) {
             $command = BW::generateMozillaFirefoxStartCommand($uri);
-            if (BREAKPOINTDEBUGGING_IS_WINDOWS) { // If Windows.
+            if (BREAKPOINTDEBUGGING_IS_WINDOWS // If Windows.
+                && !(B::getExeMode() & B::REMOTE)) { // If local.
                 // Opens "BreakpointDebugging_DisplayToOtherProcess.php" page for display in other process.
                 `$command`;
                 return;
@@ -303,14 +308,21 @@ EOD;
                     restore_error_handler();
                     // If valid shared memory.
                     if (!empty(self::$_resourceID)) {
-                        return;
+                        // Sends health check request.
+                        $result = shmop_write(self::$_resourceID, '1', 2);
+                        B::assert($result !== false);
+                        for ($count = 0; $count < 5; $count++) {
+                            // 1 second sleep.
+                            usleep(1000000);
+                            // Health check.
+                            if (shmop_read(self::$_resourceID, 2, 1) === '0') {
+                                return;
+                            }
+                        }
                     }
                     echo '<strong style="color:red">Server was down.</strong>';
                     // Unlinks shared file.
-                    if (unlink($sharedFilePath) === false) {
-                        sleep(1);
-                        continue;
-                    }
+                    B::unlink(array ($sharedFilePath));
                 }
                 // Allocates shared memory area.
                 list($shmopKey, self::$_resourceID) = BS::buildSharedMemory(self::SHARED_MEMORY_SIZE);
@@ -326,16 +338,16 @@ EOD;
                 }
                 break;
             }
-            // If "CakePHP".
-            if (BREAKPOINTDEBUGGING_IS_CAKE) {
-                $uri = str_replace('\\', '/', $uri);
-                $uri = str_replace('/app/webroot/', '/', $uri);
-            }
+            //// If "CakePHP".
+            //if (BREAKPOINTDEBUGGING_IS_CAKE) {
+            //    $uri = str_replace('\\', '/', $uri);
+            //    $uri = str_replace('/app/webroot/', '/', $uri);
+            //}
             // Opens "Mozilla Firefox" window.
             $openFirefoxWindow($uri);
         } else { // If "shmop" extension is invalid.
             if ($_SERVER['SERVER_ADDR'] === '127.0.0.1') { // If local server.
-                exit(B::getErrorHTML('You must enable "shmop" extention inside "php.ini" file.'));
+                exit(B::getErrorHTML('"shmop" extention must be enabled inside "php.ini" file.'));
             } else { // If remote server.
                 while (true) {
                     // If shared file exists.
@@ -517,8 +529,6 @@ EOD;
      */
     static function scriptClearance($start = 0)
     {
-        // return; // For debug.
-
         if (!isset($_SERVER['SERVER_ADDR'])) { // In case of command line.
             return;
         }
@@ -544,15 +554,15 @@ EOD;
     }
 
     /**
-     * Displays an error into error window, and exits.
+     * Displays an error into error window, then stops as breakpoint.
      *
-     * This is used inside unit test code.
+     * This is used inside unit test package code.
      *
      * @param string $message Error message by "PHP_EOL".
      *
      * @return void
      */
-    static function exitForError($message)
+    static function stopForError($message)
     {
         if (!isset($_SERVER['SERVER_ADDR'])) { // In case of command line.
             return;
@@ -564,6 +574,20 @@ EOD;
         if (function_exists('xdebug_break')) {
             xdebug_break();
         }
+    }
+
+    /**
+     * Displays an error into error window, and exits.
+     *
+     * This is used inside unit test package code.
+     *
+     * @param string $message Error message by "PHP_EOL".
+     *
+     * @return void
+     */
+    static function exitForError($message)
+    {
+        self::stopForError($message);
         exit;
     }
 
@@ -607,7 +631,7 @@ EOD;
         self::front($errorWindowName);
 
         $exeMode = B::getExeMode();
-        if ((!BREAKPOINTDEBUGGING_IS_PRODUCTION || $exeMode !== (B::REMOTE | B::RELEASE)) // If this is not production mode.
+        if (!BREAKPOINTDEBUGGING_IS_PRODUCTION // If this is not production mode.
             && !($exeMode & B::IGNORING_BREAK_POINT) // If breakpoint has not been ignored during unit-test.
         ) {
             if (B::getXebugExists()) {

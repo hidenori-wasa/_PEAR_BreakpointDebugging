@@ -7,7 +7,7 @@
  * Copyright (c) 2014-, Hidenori Wasa
  * All rights reserved.
  *
- * License content is written in "PEAR/BreakpointDebugging/BREAKPOINTDEBUGGING_LICENSE.txt".
+ * License content is written in "PEAR/BreakpointDebugging/docs/BREAKPOINTDEBUGGING_LICENSE.txt".
  *
  * @category PHP
  * @package  BreakpointDebugging
@@ -16,7 +16,6 @@
  * @version  Release: @package_version@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-require_once './BreakpointDebugging_Inclusion.php';
 require_once './BreakpointDebugging_Optimizer.php';
 
 use \BreakpointDebugging as B;
@@ -40,9 +39,9 @@ use \BreakpointDebugging_Window as BW;
  */
 class BreakpointDebugging_ProductionSwitcher extends \BreakpointDebugging_Optimizer
 {
-    private static $_commentOutAssertionRegEx = '`^ ( [[:blank:]]* ) ( \\\\ [[:blank:]]* BreakpointDebugging [[:blank:]]* :: [[:blank:]]* assert [[:blank:]]* \( .* \) [[:blank:]]* ; [[:blank:]]* (// .*)? [\r\n]* ) $`xXU';
+    private static $_commentOutRegEx = '`^ ( [[:blank:]]* ) ( \\\\ [[:blank:]]* BreakpointDebugging [[:blank:]]* :: [[:blank:]]* (assert | limitAccess) [[:blank:]]* \( .* \) [[:blank:]]* ; [[:blank:]]* (// .*)? [\r\n]* ) $`xXU';
     private static $_changeModeConstToLiteralRegEx1 = '`^ ( [[:blank:]]* ) (( if [[:blank:]]* \( [[:blank:]]* !? [[:blank:]]* ) ';
-    private static $_changeModeConstToLiteralRegEx2 = '((?![_[:alnum:]]) .* \) [[:blank:]]* { [[:blank:]]* (// .*)? ) [\r\n]* ) $`xXU';
+    private static $_changeModeConstToLiteralRegEx2 = '([^_[:alnum:]] .*) [\r\n]* ) $`xXU';
     private static $_isDebugRegEx = '\\\\ [[:blank:]]* BreakpointDebugging [[:blank:]]* :: [[:blank:]]* isDebug [[:blank:]]* \( [[:blank:]]* \) ';
     private static $_breakpointdebuggingIsProductionRegEx = 'BREAKPOINTDEBUGGING_IS_PRODUCTION ';
 
@@ -64,7 +63,6 @@ class BreakpointDebugging_ProductionSwitcher extends \BreakpointDebugging_Optimi
         'BreakpointDebugging_NativeFunctions_InDebug.php',
         'BreakpointDebugging_Optimizer.php',
         'BreakpointDebugging_PHPUnit.php',
-        'BreakpointDebugging_PHPUnit_DisplayCodeCoverageReport.php',
         'BreakpointDebugging_ProductionSwitcher.php',
         'BreakpointDebugging/Window.php',
     );
@@ -214,13 +212,14 @@ class BreakpointDebugging_ProductionSwitcher extends \BreakpointDebugging_Optimi
      *
      * Plural line is "Heredoc", "Nowdoc", "/*" and "/**".
      *
-     * @param string $phpFilePath   "*.php" file path to get.
-     * @param int    $maxLineNumber Maximum line number.
+     * @param array $lines "*.php" file's array data.
      *
      * @return array The array to skip a line.
      */
-    private static function _checkCommentLinesOfPluralLineToSkip($phpFilePath, $maxLineNumber)
+    private static function _checkCommentLinesOfPluralLineToSkip($lines)
     {
+        $phpFileData = implode('', $lines);
+        $maxLineNumber = count($lines);
         $checkLinesToSkip = function ($startLine, $endLine, &$linesToSkip, &$state) {
             for ($count = $startLine; $count <= $endLine; $count++) {
                 B::assert(array_key_exists($count, $linesToSkip));
@@ -229,7 +228,7 @@ class BreakpointDebugging_ProductionSwitcher extends \BreakpointDebugging_Optimi
             $state = 'NONE';
         };
 
-        $tokens = token_get_all(file_get_contents($phpFilePath));
+        $tokens = token_get_all($phpFileData);
         $state = 'NONE';
         $linesToSkip = array_fill(1, $maxLineNumber, false);
         $lineCount = 1;
@@ -271,7 +270,7 @@ class BreakpointDebugging_ProductionSwitcher extends \BreakpointDebugging_Optimi
                     $checkLinesToSkip($startLine, $token[2], $linesToSkip, $state);
                     break;
                 default:
-                    assert(false);
+                    B::assert(false);
             }
         }
 
@@ -283,7 +282,7 @@ class BreakpointDebugging_ProductionSwitcher extends \BreakpointDebugging_Optimi
             case 'NONE':
                 break;
             default:
-                assert(false);
+                B::assert(false);
         }
 
         return $linesToSkip;
@@ -342,7 +341,7 @@ EOD;
         set_time_limit(0);
 
         // Adds path.
-        self::$_blackListPaths[] = BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting_InDebug.php';
+        self::$_blackListPaths[] = BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting_InDevelopment.php';
         BW::virtualOpen(__CLASS__, $getHtmlFileContent('ProductionSwitcher'));
         if (isset($_GET['Switch_to_production']) // 'Switch to production' button was pushed.
             || isset($_GET['Switch_to_development']) // Or, 'Switch to development' button was pushed.
@@ -350,10 +349,10 @@ EOD;
             // Opens my setting file.
             $mySettingFilePath = BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php';
             $phpFilePaths = self::_searchPHPFiles();
-            $phpFilePaths = array (
-                './_ProvingGround.php' => true,
-                './BreakpointDebugging_PEAR_Setting/BreakpointDebugging_MySetting.php' => true,
-            ); // For debug.
+            // $phpFilePaths = array ( // For debug.
+            //    './_ProvingGround.php' => true,
+            //    './BreakpointDebugging_PEAR_Setting/BreakpointDebugging_MySetting.php' => true,
+            // );
         } else { // In case of first time when this page was called.
             $html = '<h1>ProductionSwitcher</h1>';
             $whiteListPaths = self::_getWhiteListPaths();
@@ -388,8 +387,16 @@ EOD;
 <hr />
 EOD;
             } else {
+                global $_BreakpointDebugging_emulate_remote;
+
+                // Checks setting.
+                if ($_BreakpointDebugging_emulate_remote === true) {
+                    $settingDirName = BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME;
+                    BW::throwErrorException('<p style="color: orange">Comment out "$_BreakpointDebugging_emulate_remote = true;" inside "' . $settingDirName . 'BreakpointDebugging_MySetting.php" file.</p>');
+                }
+
                 parent::makeButton('Switch to production');
-                $commentOutAssertionRegEx = self::$_commentOutAssertionRegEx;
+                $commentOutRegEx = self::$_commentOutRegEx;
                 $isDebugRegEx1 = self::$_changeModeConstToLiteralRegEx1 . self::$_isDebugRegEx . self::$_changeModeConstToLiteralRegEx2;
                 $breakpointdebuggingIsProductionRegEx = self::$_changeModeConstToLiteralRegEx1 . self::$_breakpointdebuggingIsProductionRegEx . self::$_changeModeConstToLiteralRegEx2;
                 $html = <<<EOD
@@ -408,9 +415,12 @@ EOD;
 <h4><span style="color: yellow">CAUTION: "/* &lt;BREAKPOINTDEBUGGING_COMMENT&gt; */" line of production code must have "// &lt;BREAKPOINTDEBUGGING_COMMENT&gt;" in same line.</span></h4>
 <h4><span style="color: yellow">Therefore, production code must not be formatted.</span></h4>
 <hr />
-<h3><span style="color:aqua">You must write same pattern code like following if you want change to literal for optimization of parsed code cache.</span></h3>
+<span style="color:aqua">
+    <h3>Same pattern code like following must be written, then parsed code cache is optimized by changed literal.</h3>
+    <h3>Also, does not change the line which is "comment of plural line (/* - */,  /** - */)", "Heredoc", "Nowdoc" and "plural syntax (A; B;)".</h3>
+</span>
 <ul>
-    <li>$commentOutAssertionRegEx</li>
+    <li>$commentOutRegEx</li>
     <li>$isDebugRegEx1</li>
     <li>$breakpointdebuggingIsProductionRegEx</li>
 </ul>
@@ -430,7 +440,7 @@ EOD;
             $isChanged = false;
             if (isset($_GET['Switch_to_production'])) { // 'Switch to production' button was pushed.
                 // Check comment lines of plural line to skip.
-                $linesToSkip = self::_checkCommentLinesOfPluralLineToSkip($phpFilePath, count($lines));
+                $linesToSkip = self::_checkCommentLinesOfPluralLineToSkip($lines);
                 $lineCount = 0;
                 foreach ($lines as &$line) {
                     $lineCount++;
@@ -438,7 +448,7 @@ EOD;
                         continue;
                     }
                     // Inserts "// <BREAKPOINTDEBUGGING_COMMENT> " into "\BreakpointDebugging::assert()" line.
-                    $result = parent::commentOut($line, self::$_commentOutAssertionRegEx);
+                    $result = parent::commentOut($line, self::$_commentOutRegEx);
                     if ($result !== $line) {
                         $line = $result;
                         $isChanged = true;
@@ -491,7 +501,7 @@ EOD;
                     }
                 }
                 // Uses "\BreakpointDebugging_Window" class method for display on production mode if error.
-                BW::throwErrorException('You must define "const BREAKPOINTDEBUGGING_IS_PRODUCTION = false;" in "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php".');
+                BW::throwErrorException('"const BREAKPOINTDEBUGGING_IS_PRODUCTION = false;" must be defined into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php".');
             } else { // 'Switch to development' button was pushed.
                 foreach ($lines as &$line) {
                     // Sets "const BREAKPOINTDEBUGGING_IS_PRODUCTION = false;" to "BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php'" file.
@@ -509,7 +519,7 @@ EOD;
                     }
                 }
                 // Uses "\BreakpointDebugging_Window" class method for display on production mode if error.
-                BW::throwErrorException('You must define "const BREAKPOINTDEBUGGING_IS_PRODUCTION = true;" in "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php".');
+                BW::throwErrorException('"const BREAKPOINTDEBUGGING_IS_PRODUCTION = true;" must be defined into "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php".');
             }
         }
 
@@ -532,4 +542,6 @@ EOD;
 
 }
 
-\BreakpointDebugging_ProductionSwitcher::switchMode();
+if (B::isTopPage()) { // Skips the following if unit test execution.
+    \BreakpointDebugging_ProductionSwitcher::switchMode();
+}

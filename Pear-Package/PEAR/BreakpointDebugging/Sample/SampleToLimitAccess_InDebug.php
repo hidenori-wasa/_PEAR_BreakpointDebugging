@@ -24,53 +24,6 @@ use \TestClass as T;
  */
 class TestClass extends \TestClass_InAllCase
 {
-    /**
-     * Limits properties accessing.
-     *
-     * @return void
-     */
-    function __construct()
-    {
-        parent::__construct();
-
-        $tmp = array (
-            'BreakpointDebugging/Sample/SampleToLimitAccess.php',
-            'BreakpointDebugging/Sample/SampleToLimitAccess_InDebug.php'
-        );
-        self::$staticPropertyLimitings['$_staticA'] = $tmp;
-        self::$staticPropertyLimitings['$_staticB'] = $tmp;
-        $this->autoPropertyLimitings['_autoA'] = $tmp;
-        $this->autoPropertyLimitings['_autoB'] = $tmp;
-    }
-
-    /**
-     * Sets a auto property value.
-     *
-     * @param string $propertyName Auto property name.
-     * @param mixed  $value        Auto property value.
-     *
-     * @return void
-     */
-    function __set($propertyName, $value)
-    {
-        B::limitAccess($this->autoPropertyLimitings[$propertyName]);
-
-        parent::__set($propertyName, $value);
-    }
-
-    /**
-     * Gets a static property reference.
-     *
-     * @param string $propertyName Static property name.
-     *
-     * @return mixed& Static property.
-     */
-    static function &refStatic($propertyName)
-    {
-        B::limitAccess(self::$staticPropertyLimitings[$propertyName]);
-
-        return parent::refStatic($propertyName);
-    }
 
     /**
      * Something.
@@ -87,17 +40,14 @@ class TestClass extends \TestClass_InAllCase
         B::assert($this->_autoB === $testValue);
         // $this->_notExist = $testValue;
         // $this->_notExist;
-
-        $staticA = &T::refStatic('$_staticA');
+        $staticA = &T::refStaticA();
         $staticA = $testValue;
-        B::assert(T::getStatic('$_staticA') === $staticA);
-        $staticB = &T::refStatic('$_staticB');
+        B::assert(T::getStaticA() === $staticA);
+        $staticB = &T::refStaticB();
         $staticB = $testValue;
-        B::assert(T::getStatic('$_staticB') === $staticB);
-        // $notExist = &T::refStatic('$_notExist');
-        // T::getStatic('$_notExist');
+        B::assert(T::getStaticB() === $staticB);
+        // $notExist = &T::refNotExist();
+        // T::getNotExist();
     }
 
 }
-
-?>

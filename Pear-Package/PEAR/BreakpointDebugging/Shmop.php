@@ -7,7 +7,7 @@
  * Copyright (c) 2014-, Hidenori Wasa
  * All rights reserved.
  *
- * License content is written in "PEAR/BreakpointDebugging/BREAKPOINTDEBUGGING_LICENSE.txt".
+ * License content is written in "PEAR/BreakpointDebugging/docs/BREAKPOINTDEBUGGING_LICENSE.txt".
  *
  * @category PHP
  * @package  BreakpointDebugging
@@ -16,8 +16,6 @@
  * @version  Release: @package_version@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-use \BreakpointDebugging as B;
-
 /**
  * Class which locks php-code by shared memory operation.
  *
@@ -45,17 +43,11 @@ final class BreakpointDebugging_Shmop
      */
     static function buildSharedMemory($sharedMemoryBlockSize)
     {
-        B::limitAccess(
-            array ('BreakpointDebugging/LockByShmop.php',
-                'BreakpointDebugging_LockByShmopResponse.php',
-                'BreakpointDebugging/Window.php',
-                'index.php', // For debug.
-            )
-        );
+        \BreakpointDebugging::limitAccess(array ('BreakpointDebugging/LockByShmop.php', 'BreakpointDebugging_LockByShmopResponse.php', 'BreakpointDebugging/Window.php'));
 
         set_error_handler('\BreakpointDebugging::handleError', 0);
         for ($count = 0; $count < 1000; $count++) {
-            $sharedMemoryKey = (microtime(true) * 10000) & 0xFFFFFFFF;
+            $sharedMemoryKey = (microtime(true) * 10000) & 0x7FFFFFFF;
             if ($sharedMemoryKey === -1) {
                 // @codeCoverageIgnoreStart
                 // Because this is a few probability.
@@ -87,9 +79,9 @@ final class BreakpointDebugging_Shmop
     }
 
     /**
-     * Get shared memory ID.
+     * Gets shared memory ID.
      *
-     * @param resource $pFile Shared memory key file.
+     * @param resource $pFile Shared memory key file pointer.
      *
      * @return mixed Shared memory ID or false.
      */
@@ -100,7 +92,7 @@ final class BreakpointDebugging_Shmop
         if (strlen($sharedMemoryKey) !== 10) {
             return false;
         }
-        // Open shared memory to read and write.
+        // Opens shared memory to read and write.
         $sharedMemoryID = @shmop_open($sharedMemoryKey, 'w', 0, 0);
         restore_error_handler();
 

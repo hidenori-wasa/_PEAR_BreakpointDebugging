@@ -55,6 +55,7 @@
         <a href="#4">How to do breakpoint debugging.</a><br />
         <a href="#5">How to code breakpoint debugging.</a><br />
         <a href="#6">Running procedure.</a><br />
+        <a href="#11">How to use logger.</a><br />
         <a href="#7">Exception hierarchical structure.</a><br />
         <a href="#8">Useful class index.</a><br />
         <a href="#9">My viewpoint about PHP-types for reading my PHP code.</a><br />
@@ -79,17 +80,22 @@ because this package has necessary minimum features.
 <a href="#2-2">Recommendation environment for "PHP5.3" Windows.</a>
 <a href="#2-3">Recommendation environment for "PHP5.4" Windows.</a>
 <a href="#2-4">Recommendation environment for "PHP5.5" Windows.</a>
-<a href="#2-5">Recommendation setting procedure for development of "XAMPP 1.7.4".</a>
+<a href="#2-A">Recommendation environment for "PHP5.6" Windows.</a>
+
+<a href="#2-5">Recommendation setting procedure for development of "XAMPP 1.8.2".</a>
 
 <a href="#2-6">Recommendation environment for "PHP5.3" Linux.</a>
 <a href="#2-7">Recommendation environment for "PHP5.4" Linux.</a>
 <a href="#2-8">Recommendation environment for "PHP5.5" Linux.</a>
-<a href="#2-9">Recommendation setting procedure for development of "Ubuntu12.04LTS desktop".</a>
+<a href="#2-B">Recommendation environment for "PHP5.6" Linux.</a>
+<a href="#2-C">Recommendation environment for "PHP7.0" Linux.</a>
+
+<a href="#2-9">Recommendation setting procedure for development of "Ubuntu *.* LTS desktop".</a>
 
 <span class="subtitle"><a name="2-1">Recommendation IDE.</a></span>
-    "NetBeans IDE 8.0".
-    Because HTML3, CSS3, JavaScript(JQuery) and PHP is useful for input helper and step execution.
-    NOTICE: We must code "if" statement of plural line as below because its line feed cannot delete by format.
+    "NetBeans IDE 8.1".
+    Because "java" development team is making this IDE.
+    NOTICE: "if" statement should be coded by plural line as below because line feed of "//" line is not deleted by format.
 
 <code>        if ($a              // Description 1.
             || $b           // Description 2.
@@ -101,23 +107,27 @@ because this package has necessary minimum features.
         ) {
 </code>
 <span class="subtitle"><a name="2-2">Recommendation environment for "PHP5.3" Windows.</a></span>
-    "WindowsXP Professional (VC6)" + "XAMPP 1.7.4 (Last of 'VC6'.)" + "php_xdebug-2.1.2-5.3-vc6.dll (Last of 'VC6'.)".
-    However, other OS is possible by using "XAMPP" and "XDebug" of "VC9" or "VC11".
+    "WindowsXP Professional (VC6)" + "XAMPP 1.7.4 (VC6)" + "php_xdebug-2.1.2-5.3-vc6.dll (VC6)".
+    Or, "Windows7 (VC9)" + "XAMPP 1.7.7 (VC9)" + "php_xdebug-2.2.7-5.3-vc9.dll (VC9)".
 <span class="subtitle"><a name="2-3">Recommendation environment for "PHP5.4" Windows.</a></span>
-    I am unknown about this.
-    However, "WindowsXP Professional (VC6)" is impossible for step execution.
+    "Windows7 (VC9)" + "XAMPP 1.8.2 (VC9)" + "php_xdebug-?.?.?-5.4-vc9.dll (VC9)".
 <span class="subtitle"><a name="2-4">Recommendation environment for "PHP5.5" Windows.</a></span>
-    I am unknown about this.
-    However, "WindowsXP Professional (VC6)" is impossible for step execution.
+    "Windows8 (VC11 perhaps)" + "XAMPP 5.5.? (VC11 perhaps)" + "php_xdebug-?.?.?-5.5-vc11.dll (VC11 perhaps)".
+<span class="subtitle"><a name="2-A">Recommendation environment for "PHP5.6" Windows.</a></span>
+    "Windows8 (VC11 perhaps)" + "XAMPP 5.6.? (VC11 perhaps)" + "php_xdebug-?.?.?-5.6-vc11.dll (VC11 perhaps)".
 
-<span class="subtitle"><a name="2-5">Recommendation setting procedure for development of "XAMPP 1.7.4".</a></span>
+    Also, "Windows10" is "VC14".
+
+<span class="subtitle"><a name="2-5">Recommendation setting procedure for development of "XAMPP 1.8.2".</a></span>
     ### "XAMPP" setting procedure. ###
-    // We must disconnect inbound connection except "BOOTPC" and "DOMAIN" of "C:\WINDOWS\system32\svchost.exe" by firewall of a software.
-    // Disable "IIS" server because port 80 conflicts with "Apache".
-    // Create "lang.tmp" file. ( In case of Japan )
-    C:\xampp\htdocs\xampp\lang.tmp
+    // Inbound connection must be disconnected except "BOOTPC" and "DOMAIN" of "C:\WINDOWS\system32\svchost.exe" by firewall of a software.
 
-<code>        ja
+    // Disable "IIS" server because port 80 conflicts with "Apache".
+
+    // Add the following to environment path.
+    // [control panel] - [system] - [detail] - [environment variables] - "Path" - [edit...]
+
+<code>        ;C:\xampp\php;C:\xampp\mysql\bin
 </code>
     // Disconnect outbound HTTP connection of Apache.
     C:\xampp\apache\conf\httpd.conf
@@ -147,10 +157,6 @@ because this package has necessary minimum features.
         collation-server=utf8_general_ci
         # Ignores character sets information which was sent from client, so it uses character sets of default of server.
         skip-character-set-client-handshake
-        # Database compression for performance. CAUTION: We must not use plural compression format in database.
-        #innodb_file_format=Barracuda
-        # Makes a file per table for performance. CAUTION: We must not use plural table format in database.
-        #innodb_file_per_table=1
             .
             .
             .
@@ -166,7 +172,7 @@ because this package has necessary minimum features.
             .
 </code>
     // Change setting of "phpMyAdmin".
-        // Execute "C:\xampp\phpMyAdmin\scripts\create_tables.sql" import by "phpMyAdmin".
+        // Execute "C:\xampp\phpMyAdmin\examples\create_tables.sql" import by "phpMyAdmin".
         // Then, change "C:\xampp\phpMyAdmin\config.inc.php" file.
             before:
 
@@ -190,54 +196,137 @@ because this package has necessary minimum features.
         "mcrypt"
 
     ### "XDebug" setting procedure. ###
-    // Place "php_xdebug-2.1.2-5.3-vc6.dll" file ( last versions for this OS ) to "C:\xampp\php\ext\".
+    // Place "php_xdebug-2.3.3-5.4-vc9.dll" file ( last versions for Windows7 ) to "C:\xampp\php\ext\".
     // Set "C:\xampp\php\php.ini" file as follows.
 
-<code>    zend_extension = "C:\xampp\php\ext\php_xdebug-2.1.2-5.3-vc6.dll"
+<code>    zend_extension = "C:\xampp\php\ext\php_xdebug-2.3.3-5.4-vc9.dll"
+    xdebug.remote_enable = 1
+    xdebug.remote_handler = dbgp
+    xdebug.remote_mode = req
+    xdebug.remote_host = 127.0.0.1
+    xdebug.remote_port = 9000
 </code>
     // Then, use this package.
 
 <span class="subtitle"><a name="2-6">Recommendation environment for "PHP5.3" Linux.</a></span>
-    "Ubuntu12.04LTS desktop" + "This Ubuntu's LAMP" + "This Ubuntu's XDebug".
-    Because "apt-get" command controls version of "LAMP", "phpMyAdmin" and "XDebug" for OS.
-    Therefore, we can do step execution.
+    "Ubuntu 14.04 LTS desktop (Linux kernel v3.13-)" + "xampp-linux-1.7.7" + "xdebug.so" which made by command.
 <span class="subtitle"><a name="2-7">Recommendation environment for "PHP5.4" Linux.</a></span>
-    "Ubuntu13.10 desktop" + "This Ubuntu's LAMP" + "This Ubuntu's XDebug".
+    "Ubuntu 12.04 LTS desktop" + "LAMPP of Ubuntu" + "xdebug.so of Ubuntu".
+    Or, "Ubuntu 14.04 LTS desktop (Linux kernel v3.13-)" + "xampp-linux-1.8.2" + "xdebug.so" which made by command.
 <span class="subtitle"><a name="2-8">Recommendation environment for "PHP5.5" Linux.</a></span>
-    "Ubuntu14.04LTS desktop" + "This Ubuntu's LAMP" + "This Ubuntu's XDebug".
+    "Ubuntu 14.04 LTS desktop" + "LAMPP of Ubuntu" + "xdebug.so of Ubuntu".
+    Or, "Ubuntu 14.04 LTS desktop (Linux kernel v3.13-)" + "xampp-linux-5.5.?" + "xdebug.so" which made by command.
+<span class="subtitle"><a name="2-B">Recommendation environment for "PHP5.6" Linux.</a></span>
+    "Ubuntu 14.04 LTS - Ubuntu 16.04 LTS desktop" + "LAMPP of Ubuntu" + "xdebug.so of Ubuntu".
+    Or, "Ubuntu 14.04 LTS desktop (Linux kernel v3.13-)" + "xampp-linux-5.6.?" + "xdebug.so" which made by command.
+<span class="subtitle"><a name="2-C">Recommendation environment for "PHP7.0" Linux.</a></span>
+    "Ubuntu 14.04 LTS - Ubuntu 16.04 LTS desktop" + "LAMPP of Ubuntu" + "xdebug.so of Ubuntu".
 
-<span class="subtitle"><a name="2-9">Recommendation setting procedure for development of "Ubuntu12.04LTS desktop".</a></span>
+<span class="subtitle"><a name="2-9">Recommendation setting procedure for development of "Ubuntu *.* LTS desktop".</a></span>
+    ### Disconnect inbound connection by using "ufw". ###
+    // Enables firewall.
+    <span class="command">sudo ufw enable</span>
+    // Disconnects inbound connection.
+    <span class="command">sudo ufw default DENY</span>
+    // Disables logging.
+    <span class="command">sudo ufw logging off</span>
+    // Confirms status of firewall.
+    <span class="command">sudo ufw status verbose</span>
+
     ### Uninstalling procedure. ###
     // Uninstalls "PEAR".
     <span class="command">sudo apt-get purge php-pear</span>
     // Uninstalls "phpMyAdmin".
     <span class="command">sudo apt-get purge phpmyadmin</span>
-    // Uninstalls "LAMP".
+    // Uninstalls "LAMP" of "tasksel".
     <span class="command">sudo tasksel remove lamp-server</span>
-
-    ### installing procedure. ###
-    // Installs "LAMP".
-    <span class="command">sudo apt-get update</span>
-    <span class="command">sudo apt-get install tasksel</span>
-    <span class="command">sudo tasksel install lamp-server</span>
-    // Installs "phpMyAdmin".
-    <span class="command">sudo apt-get install phpmyadmin</span>
-    <span class="command">sudo firefox "/usr/share/doc/phpmyadmin/Documentation.html"</span>
-    // Installs "PEAR".
-    <span class="command">sudo apt-get install php-pear</span>
+    // Uninstalls "PHP5" packages.
+    <span class="command">sudo apt-get purge php5 php5-cli php5-common php5-curl php5-fpm php5-gd php5-intl php5-json php5-mcrypt php5-mysql php5-xdebug</span>
+    // Confirms that "PHP5" package listing does not exist.
+    <span class="command">dpkg -l | grep php5</span>
     // Deletes unnecessary package.
     <span class="command">sudo apt-get autoremove</span>
 
+    ### "LAMPP" installation procedure. ###
+    // Updates the packages index.
+    <span class="command">sudo apt-get update</span>
+    // The command which will be able to use "add-apt-repository".
+    <span class="command">sudo apt-get install software-properties-common</span>
+    // Displays "PHP" repositories.
+    <span class="command">cd /etc/apt/sources.list.d/</span>
+    <span class="command">gedit ondrej-php*</span>
+    // Deletes "PHP" repositories.
+    <span class="command">sudo add-apt-repository --remove ppa:ondrej/php5-oldstable</span>
+    <span class="command">sudo add-apt-repository --remove ppa:ondrej/php5</span>
+    <span class="command">sudo add-apt-repository --remove ppa:ondrej/php5-5.6</span>
+    <span class="command">sudo add-apt-repository --remove ppa:ondrej/php-7.0</span>
+    <span class="command">sudo add-apt-repository --remove ppa:ondrej/php</span>
+    // Confirms that "PHP" repository does not exist.
+    <span class="command">cd /etc/apt/sources.list.d/</span>
+    <span class="command">ls -la ondrej-php*</span>
+        // Adds "PHP5.4" repository (Ubuntu 12.04 LTS).
+        <span class="command">sudo add-apt-repository ppa:ondrej/php5-oldstable</span>
+        // Or, adds "PHP5.5" repository (Ubuntu 14.04 LTS).
+        <span class="command">sudo add-apt-repository ppa:ondrej/php5</span>
+        // Or, adds "PHP5.6" repository (Ubuntu 14.04 LTS - Ubuntu 16.04 LTS).
+        <span class="command">sudo add-apt-repository ppa:ondrej/php5-5.6</span>
+        // Or, adds "PHP7.0" repository (Ubuntu 14.04 LTS - Ubuntu 16.04 LTS).
+        <span class="command">sudo add-apt-repository ppa:ondrej/php-7.0</span>
+    // Updates the packages index.
+    <span class="command">sudo apt-get update</span>
+        // Installs "PHP5.4-5.6". And, installs "Apache" for current "PHP" version.
+        <span class="command">sudo apt-get install php5</span>
+        // Or, installs "PHP7.0". And, installs "Apache" for current "PHP" version.
+        <span class="command">sudo apt-get install php</span>
+
+    // Installs "MySQLi" for current "Apache" version.
+    <span class="command">sudo apt-get install mysql-server</span>
+    // // Readjusts the root user password of "MySQLi". ( If necessary )
+    // <span class="command">mysql -u root -p</span>
+    // <span class="command">mysql&gt;SET PASSWORD FOR 'root'@'localhost' = PASSWORD('&lt;your password&gt;');</span>
+
+    // Installs "phpMyAdmin" for current "PHP" and "MySQLi" version.
+    <span class="command">sudo apt-get install phpmyadmin</span>
+    // Displays the document of "phpMyAdmin".
+    <span class="command">firefox "/usr/share/doc/phpmyadmin/Documentation.html"</span>
+
+    ### "PEAR" installation procedure. ###
+    // Updates the packages index.
+    <span class="command">sudo apt-get update</span>
+    // Installs "PEAR".
+    <span class="command">sudo apt-get install php-pear</span>
+
+    ### "NetBeans IDE" installation procedure. ###
+    // Updates the packages index.
+    <span class="command">sudo apt-get update</span>
+        // Please, download the file to install "NetBeans IDE". (Ubuntu 12.04 LTS - Ubuntu 14.04 LTS)
+        <span class="command">firefox "https://netbeans.org/downloads/8.0.2/"</span>
+        // Please, download the file to install "NetBeans IDE". (Ubuntu 16.04 LTS)
+        <span class="command">firefox "https://netbeans.org/downloads/8.1/"</span>
+    // Moves to the download directory.
+    <span class="command">cd ~/&lt;download></span>
+    // Displays the "NetBeans IDE" installation filename.
+    <span class="command">ls -la netbeans*</span>
+        // Makes the "NetBeans IDE" installation file executable.(Ubuntu 12.04 LTS - Ubuntu 14.04 LTS)
+        <span class="command">chmod u+x netbeans-8.0.2-php-linux.sh</span>
+        // Makes the "NetBeans IDE" installation file executable.(Ubuntu 16.04 LTS)
+        <span class="command">chmod u+x netbeans-8.1-php-linux.sh</span>
+    // Uninstalls "Java".
+    <span class="command">sudo apt-get purge openjdk*</span>
+        // Installs "Java7".(Ubuntu 12.04 LTS - Ubuntu 14.04 LTS)
+        <span class="command">sudo apt-get install openjdk-7-jre</span>
+        // Installs "Java8".(Ubuntu 16.04 LTS)
+        <span class="command">sudo apt-get install openjdk-8-jre</span>
+    // Displays the version of "Java".
+    <span class="command">java -version</span>
+    // Displays the path of "Java".
+    <span class="command">sudo update-alternatives --config java</span>
+        // Installs "NetBeans IDE".(Ubuntu 12.04 LTS - Ubuntu 14.04 LTS)
+        <span class="command">./netbeans-8.0.2-php-linux.sh</span>
+        // Installs "NetBeans IDE".(Ubuntu 16.04 LTS)
+        <span class="command">./netbeans-8.1-php-linux.sh</span>
+
     ### "LAMPP" setting procedure. ###
-    // Disconnect inbound connection by using "ufw".
-        // Enables firewall.
-        <span class="command">sudo ufw enable</span>
-        // Disconnects inbound connection.
-        <span class="command">sudo ufw default DENY</span>
-        // Disables logging.
-        <span class="command">sudo ufw logging off</span>
-        // Confirms status of firewall.
-        <span class="command">sudo ufw status verbose</span>
     // Disconnects outbound connection of Apache and enables SSL of Apache.
     <span class="command">gksudo gedit /etc/apache2/ports.conf</span>
 
@@ -249,6 +338,10 @@ because this package has necessary minimum features.
         Listen 443
         // after:
         NameVirtualHost *:443
+        Listen 127.0.0.1:443
+        // before:
+        Listen 443
+        // after:
         Listen 127.0.0.1:443
 </code>
     // Sets user and group of Apache, and sets symbolic link to "phpMyAdmin".
@@ -278,9 +371,9 @@ because this package has necessary minimum features.
         collation-server=utf8_general_ci
         # Ignores character sets information which was sent from client, so it uses character sets of default of server.
         skip-character-set-client-handshake
-        # Database compression for performance. CAUTION: We must not use plural compression format in database.
+        # Database compression for performance. CAUTION: Database must not be used by plural compression format.
         #innodb_file_format=Barracuda
-        # Makes a file per table for performance. CAUTION: We must not use plural table format in database.
+        # Makes a file per table for performance. CAUTION: Database must not be used by plural table format.
         #innodb_file_per_table=1
             .
             .
@@ -400,9 +493,6 @@ because this package has necessary minimum features.
     <span class="command">sudo a2dissite default && sudo a2ensite mysite</span>
     // Disables default SSL virtual host and enables new SSL virtual host.
     <span class="command">sudo a2dissite default-ssl && sudo a2ensite mysite-ssl</span>
-    // // Readjusts the root user password of "MySQLi". ( If necessary )
-    // <span class="command">mysql -u root -p</span>
-    // <span class="command">mysql&gt;SET PASSWORD FOR 'root'@'localhost' = PASSWORD('&lt;your password&gt;');</span>
 
     ### "XDebug" setting procedure. ###
     // Installs "XDebug" package.
@@ -466,7 +556,7 @@ because this package has necessary minimum features.
         # Restarts "MySQLi".
         sudo service mysql restart
         # Starts "phpMyAdmin".
-        sudo firefox "localhost/phpmyadmin/"
+        firefox "localhost/phpmyadmin/"
         # Stands by at this line until input.
         read Wait
         # Stops "MySQLi".
@@ -487,7 +577,7 @@ Because this extension is stable.
 Also, this extension is fast.
     1. The speed decelerates hardly even if the number of users increases.
     2. This extention caches op code after optimization.
-            As the example, we can code to except debugging code from cache at release.
+            As the example, the following code excepts debugging code from cache at release.
             Example:
 
 <code>                if (false) { // Excepts from this line.
@@ -512,12 +602,12 @@ Usage of "php_opcache.dll" file:
         opcache.fast_shutdown = 1
         ; Constant Value: 0         We cannot call command to get result from CGI because a deprecated prefix is added in case of first time.
         opcache.enable_cli = 0
-        ; Constant Value: 1         Because we must cache modified "*.php" files.
+        ; Constant Value: 1         Because modified "*.php" files must be cached.
         opcache.validate_timestamps = 1
-        ; Development Value: 0      Because we must cache modified "*.php" files.
+        ; Development Value: 0      Because modified "*.php" files must be cached.
         ; Production Value: 2       Because production server want to modify a file during execution.
         opcache.file_update_protection = 0
-        ; Development Value: 0      Because we must cache modified "*.php" files.
+        ; Development Value: 0      Because modified "*.php" files must be cached.
         ; Production Value: 60      Because production server does not want to access a file as much as possible.
         opcache.revalidate_freq = 0
 </code>
@@ -570,9 +660,9 @@ Example:
 
     $logData = 'Data character string.';
     // If debug execution mode.
-    // We should use "\BreakpointDebugging" in "isDebug()" class method because this is replaced to literal on production mode.
+    // "\BreakpointDebugging" character string should be used for "isDebug()" class method because this is replaced to literal on production mode.
     if (\BreakpointDebugging::isDebug()) {
-        // We should use "\BreakpointDebugging" in "assert()" class method because this is commented out in production mode.
+        // "\BreakpointDebugging" character string should be used for "assert()" class method because this is commented out in production mode.
         \BreakpointDebugging::assert(is_string($logData));
         echo $logData;
     } else { // If release execution mode.
@@ -587,6 +677,11 @@ Example:
 <span class="title"><a name="6">Running procedure.</a></span>
 
 Please, run the following procedure.
+<span class="subtitle">Maintenance procedure 1:</span> Download project files from production server to your local server.
+<span class="subtitle">Maintenance procedure 2:</span> Restore the comment outed "PHP" code to development mode by "./BreakpointDebugging_ProductionSwitcher.php".
+    See the class level document of "./BreakpointDebugging_ProductionSwitcher.php" file about procedure.
+    Next, follow to "Procedure 6:".
+
 <span class="subtitle">Procedure 1:</span> Install "XDebug" by seeing "http://xdebug.org/docs/install"
     in case of your local host.
     "Xdebug" extension is required because "uses breakpoint,
@@ -601,23 +696,23 @@ Please, run the following procedure.
 <span class="subtitle">Procedure 7:</span> Choose the following execution mode into "BreakpointDebugging_MySetting.php".
 
 <code>        define('BREAKPOINTDEBUGGING_MODE', 'DEBUG_UNIT_TEST');          // (Development mode. Requires "BreakpointDebugging_PHPUnit" package.)
-        // define('BREAKPOINTDEBUGGING_MODE', 'RELEASE_UNIT_TEST');     // (Development mode. Requires "BreakpointDebugging_PHPUnit" package.)
-        // define('BREAKPOINTDEBUGGING_MODE', 'DEBUG');                 // (Development mode.)
-        // define('BREAKPOINTDEBUGGING_MODE', 'RELEASE');               // (Development mode.)
+        // define('BREAKPOINTDEBUGGING_MODE', 'RELEASE_UNIT_TEST');     // (User does not use.)
+        // define('BREAKPOINTDEBUGGING_MODE', 'DEBUG');                 // (Does not use too much.)
+        // define('BREAKPOINTDEBUGGING_MODE', 'RELEASE');               // (Does not use too much.)
 </code>
-    Then, we can use "B::getStatic('$exeMode')" to get execution mode.
+    Then, "B::getExeMode()" class method can be used to get execution mode.
     Also, see the file level document of "BreakpointDebugging_PHPUnit.php" file about unit test.
 
     Please, follow execution mode procedure.
-        Procedure 1: Use "DEBUG" or "DEBUG_UNIT_TEST" mode at local server. This mode exists for debug step execution.
-        Procedure 2: Use "RELEASE" or "RELEASE_UNIT_TEST" mode at local server. This mode exists for release step execution.
-        Procedure 3: Use "DEBUG" or "DEBUG_UNIT_TEST" mode at remote server. This mode exists for production server display debugging.
-        Procedure 4: Use "RELEASE" or "RELEASE_UNIT_TEST" mode at remote server. This mode exists to do debugging with production server log.
-<span class="subtitle">Procedure 8:</span> Change the code to production mode by "./BreakpointDebugging_ProductionSwitcher.php" to decrease the script running time.
-    See the class level document of "./BreakpointDebugging_ProductionSwitcher.php" file.
+        Procedure 1: Use "DEBUG_UNIT_TEST" mode at local server.
+                     Then, "unit test or code coverage report" of "debug mode and release mode" is executed on local server.
+        Procedure 2: Use "DEBUG_UNIT_TEST" mode at remote server.
+                     Then, "unit test or code coverage report" of "debug mode and release mode" is executed on remote server.
+<span class="subtitle">Procedure 8:</span> Change "PHP" code to production mode by "./BreakpointDebugging_ProductionSwitcher.php" to decrease the script running time.
+    See the class level document of "./BreakpointDebugging_ProductionSwitcher.php" file about procedure.
 <span class="subtitle">Procedure 9:</span> Optimize "*_MySetting.php" files by "./BreakpointDebugging_IniSetOptimizer.php" file
     after procedure 8 or "php.ini" setting change to decrease the script running time.
-    See the class level document of "./BreakpointDebugging_IniSetOptimizer.php" file.
+    See the class level document of "./BreakpointDebugging_IniSetOptimizer.php" file about procedure.
 
 Caution: Do not execute "ini_set('error_log', ...)" because this package uses local log rotation instead of system log.
 
@@ -648,6 +743,13 @@ Caution: Do not execute "ini_set('error_log', ...)" because this package uses lo
     Then, we can discern function or method or file which has been not fixed with browser screen or log.
 <span class="subtitle">Option procedure:</span> Register local variable or global variable which you want to see with "\BreakpointDebugging::addValuesToTrace()".
 
+<span class="title"><a name="11">How to use logger.</a></span>
+
+Please, download logging files with "./BreakpointDebugging_ErrorLogFilesManager.php" page.
+See its page's class level document block for detail.
+
+CAUTION: These logging files must not exist finally not to slow execution speed.
+
 <span class="title"><a name="7">Exception hierarchical structure.</a></span>
 
 PEAR_Exception
@@ -662,8 +764,6 @@ This class override a class without inheritance, but only public member can be i
     class BreakpointDebugging_OverrideClass
 Class which locks php-code by file existing.
     class BreakpointDebugging_LockByFileExisting
-Class which locks php-code by shared memory operation.
-    class BreakpointDebugging_LockByShmopRequest
 Class which locks php-code by "flock()".
     class BreakpointDebugging_LockByFlock
 
@@ -676,9 +776,10 @@ Class which locks php-code by "flock()".
 <span class="subtitle">About variable copy.</span>
     Variable copy is ID copy, and it increments reference count of movable memory.
     And, object type copy is ID copy too. However, object type is not scalar type.
-    Therefore, we must use "$cloneObject = clone $object;" if we want object internal copy.
+    Therefore, "$cloneObject = clone $object;" must be used if we want object copy.
     And, array type copy is its elements ID copy. However, element of reference specifies same ID area.
-    Therefore, copied element value may be changed if original copy element is changed even though we copied array type.
+    Therefore, copied element value may be changed if original copy element is changed even though array type was copied.
+    Also, reference copy of array element must be array which is passed by reference because reference of array element is copied in case of copy.
 
 <span class="subtitle">About variable reference copy.</span>
     Variable reference copy specifies same ID area, and it increments reference count of movable memory,
@@ -689,7 +790,7 @@ Class which locks php-code by "flock()".
     Then, memory area which is pointed is deleted if reference count became 0.
 
 <span class="subtitle">About "__destruct()" class method call.</span>
-    "__destruct()" class method is called if we overwrite null value to variable because value of all reference is disabled.
+    "__destruct()" class method is called if variable is overwritten by null value because value of all reference is disabled.
     However, memory area and reference count is kept.
 
 <span class="title"><a name="10">LICENSE:</a></span>
@@ -697,7 +798,7 @@ Class which locks php-code by "flock()".
 Copyright (c) 2015-, Hidenori Wasa
 All rights reserved.
 
-License content is written in "<a href="./BREAKPOINTDEBUGGING_LICENSE.txt">PEAR/BreakpointDebugging/BREAKPOINTDEBUGGING_LICENSE.txt</a>".
+License content is written in "<a href="./BREAKPOINTDEBUGGING_LICENSE.txt">PEAR/BreakpointDebugging/docs/BREAKPOINTDEBUGGING_LICENSE.txt</a>".
 
 @category PHP
 @package  BreakpointDebugging

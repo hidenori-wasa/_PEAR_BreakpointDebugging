@@ -7,7 +7,7 @@
  * Copyright (c) 2015-, Hidenori Wasa
  * All rights reserved.
  *
- * License content is written in "PEAR/BreakpointDebugging/BREAKPOINTDEBUGGING_LICENSE.txt".
+ * License content is written in "PEAR/BreakpointDebugging/docs/BREAKPOINTDEBUGGING_LICENSE.txt".
  *
  * @category PHP
  * @package  BreakpointDebugging
@@ -16,7 +16,6 @@
  * @version  Release: @package_version@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-require_once './BreakpointDebugging_Inclusion.php';
 require_once './BreakpointDebugging_Optimizer.php';
 
 use \BreakpointDebugging as B;
@@ -103,7 +102,7 @@ EOD;
         };
 
         if (!BREAKPOINTDEBUGGING_IS_PRODUCTION) {
-            BW::throwErrorException('<strong>You must change the code to production mode by "./BreakpointDebugging_ProductionSwitcher.php".</strong>');
+            BW::throwErrorException('<strong>The code must be changed to production mode by "./BreakpointDebugging_ProductionSwitcher.php".</strong>');
         }
 
         parent::checkExecutionDir($getHtmlFileContent('IniSetOptimizerError'));
@@ -154,7 +153,7 @@ EOD;
 </ol>
 <h4><span style="color: yellow">CAUTION: "/* &lt;BREAKPOINTDEBUGGING_COMMENT&gt; */" line of production code must have "// &lt;BREAKPOINTDEBUGGING_COMMENT&gt;" in same line.</span></h4>
 <hr />
-<h3><span style="color:aqua">You must write same pattern code like following if you want optimization of parsed code cache.</span></h3>
+<h3><span style="color:aqua">Same pattern code like following must be written, then parsed code cache is optimized.</span></h3>
 <ul>
     <li>$commentOutRegEx</li>
 </ul>
@@ -207,4 +206,6 @@ EOD;
 
 }
 
-\BreakpointDebugging_IniSetOptimizer::optimize();
+if (B::isTopPage()) { // Skips the following if unit test execution.
+    \BreakpointDebugging_IniSetOptimizer::optimize();
+}

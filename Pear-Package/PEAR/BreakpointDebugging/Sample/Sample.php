@@ -51,7 +51,7 @@ if ($testNumber === 1) {
         // Registers the function being not fixed.
         static $isRegister = false;
         B::registerNotFixedLocation($isRegister);
-        global $object, $array, $varietyObject;
+        global $_BreakpointDebugging_testObject, $array, $varietyObject;
         define('TEST_CONST', '<TEST CONST>');
 
         $testString = '<TEST STRING>';
@@ -62,7 +62,7 @@ if ($testNumber === 1) {
         }
 
         try {
-            fnTestC(true, false, 1, 1.1, "\x95\xB6\x8E\x9A ", $object, $array, tmpfile(), null, $varietyObject);
+            fnTestC(true, false, 1, 1.1, "\x95\xB6\x8E\x9A ", $_BreakpointDebugging_testObject, $array, tmpfile(), null, $varietyObject);
         } catch (\Exception $prevException) {
             // Something error repair.
             //      .

@@ -17,7 +17,7 @@ The features list
 * The override class feature.
 * Execution mode.
 
-As for procedure, please, refer to `PEAR/BreakpointDebugging/BREAKPOINTDEBUGGING_MANUAL.html`.
+As for procedure, please, refer to `PEAR/BreakpointDebugging/docs/BREAKPOINTDEBUGGING_MANUAL.html`.
 
 The dependences
 ---------------
@@ -25,27 +25,13 @@ The dependences
 * OS requires "Linux" or "Windows".
 * PHP version = 5.3.2-5.4.x
 * Requires "Mozilla Firefox" web browser, and "Windows" must be in "C:/Program Files/Mozilla Firefox/firefox.exe".
+* Requires "shmop extension" if you use on local server.
 * Requires "Xdebug extension" in case of local host. "Xdebug" extension is required because (uses breakpoint, displays for fatal error and detects infinity recursive function call).
-* Requires "Xdebug extension" if you want features of above in case of `$_BreakpointDebugging_EXE_MODE = B::REMOTE` mode. (optional).
-* Requires "shmop extension" if you use `\BreakpointDebugging_LockByShmopRequest` class. (optional).
+* Requires "Xdebug extension" if you want features of above on remote server. (optional).
 * Requires environment which `flock()` enables if you use `\BreakpointDebugging_LockByFlock` class. (optional).
 
 How to sniff my code.
 ---------------------
-
-I customized code sniff because "which" statement indent is "PEAR" special.
-Therefore, default doesn't fit "IDE".
-Please, change following file.
-
-`C:\xampp\php\PEAR\PHP\CodeSniffer\Standards\PEAR\Sniffs\WhiteSpace\ScopeIndentSniff.php`
-
-before:
-
-    protected $nonIndentingScopes = array(T_SWITCH);
-
-after:
-
-    protected $nonIndentingScopes = array();
 
 Please, execute command like following.
 
@@ -58,5 +44,4 @@ Or, execute command like following with short cut file.
 Notice
 ------
 
-* I have been developing yet.
-* Also, I have been testing with "BreakpointDebugging_PHPUnit".
+* Same as prev upload part of "CakePHPSamples".

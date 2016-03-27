@@ -7,7 +7,7 @@
  * Copyright (c) 2014-, Hidenori Wasa
  * All rights reserved.
  *
- * License content is written in "PEAR/BreakpointDebugging/BREAKPOINTDEBUGGING_LICENSE.txt".
+ * License content is written in "PEAR/BreakpointDebugging/docs/BREAKPOINTDEBUGGING_LICENSE.txt".
  *
  * @category PHP
  * @package  BreakpointDebugging
@@ -134,6 +134,9 @@ final class BreakpointDebugging_DisplayToOtherProcess
                     continue;
                 }
                 while (true) {
+                    // Sends health check response.
+                    $result = shmop_write($shmopId, '0', 2);
+                    self::_assert($result !== false);
                     // Locks the shared memory.
                     $result = BW::lockOn2Processes(1, 0, $shmopId);
                     self::_assert($result !== false);

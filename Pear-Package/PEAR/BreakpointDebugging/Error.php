@@ -7,7 +7,7 @@
  * Copyright (c) 2013-, Hidenori Wasa
  * All rights reserved.
  *
- * License content is written in "PEAR/BreakpointDebugging/BREAKPOINTDEBUGGING_LICENSE.txt".
+ * License content is written in "PEAR/BreakpointDebugging/docs/BREAKPOINTDEBUGGING_LICENSE.txt".
  *
  * @category PHP
  * @package  BreakpointDebugging
@@ -41,12 +41,11 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_ErrorInAllCas
      */
     function __construct()
     {
-        B::limitAccess('BreakpointDebugging.php');
+        \BreakpointDebugging::limitAccess('BreakpointDebugging.php');
         \BreakpointDebugging::assert(func_num_args() === 0);
 
-        $this->_exeMode = B::refExeMode();
         if (\BreakpointDebugging::isDebug()) { // In case of debug mode.
-            $this->maxLogFileByteSize = B::getStatic('$_maxLogFileByteSize');
+            $this->maxLogFileByteSize = B::getMaxLogFileByteSize();
             $this->isLogging = false;
             $this->mark = '&diams;';
             // When "Xdebug" exists.
@@ -92,6 +91,7 @@ final class BreakpointDebugging_Error extends \BreakpointDebugging_ErrorInAllCas
         \BreakpointDebugging::assert(is_string($prependLog));
 
         if (\BreakpointDebugging::isDebug()) { // In case of debug mode.
+            include_once 'BreakpointDebugging/Lock.php'; // Avoids "\BreakpointDebugging_PHPUnit_StaticVariableStorage::displayAutoloadError()".
             // Forces unlocking to avoid lock-count assertion error if forces a exit.
             \BreakpointDebugging_Lock::forceUnlocking();
         }

@@ -7,7 +7,7 @@
  * Copyright (c) 2015-, Hidenori Wasa
  * All rights reserved.
  *
- * License content is written in "PEAR/BreakpointDebugging/BREAKPOINTDEBUGGING_LICENSE.txt".
+ * License content is written in "PEAR/BreakpointDebugging/docs/BREAKPOINTDEBUGGING_LICENSE.txt".
  *
  * @category PHP
  * @package  BreakpointDebugging
@@ -60,7 +60,7 @@ class BreakpointDebugging_Optimizer
             $lineNumber++;
             if (preg_match('`^ [[:blank:]]* /\*\x20<BREAKPOINTDEBUGGING_COMMENT>\x20\*/`xX', $line) === 1) {
                 // Checks a line tag.
-                if (preg_match('`^ [[:blank:]]* /\*\x20<BREAKPOINTDEBUGGING_COMMENT>\x20\*/ .* //\x20<BREAKPOINTDEBUGGING_COMMENT>\x20 .* $`xX', $line) !== 1) {
+                if (preg_match('`^ [[:blank:]]* /\*\x20<BREAKPOINTDEBUGGING_COMMENT>\x20\*/ .* //\x20<BREAKPOINTDEBUGGING_COMMENT>\x20 .* $`xXs', $line) !== 1) {
                     $errorMessage = <<<EOD
 <span style="color: yellow">
 "/* &lt;BREAKPOINTDEBUGGING_COMMENT&gt; */" line of production code must have "// &lt;BREAKPOINTDEBUGGING_COMMENT&gt; " in same line.
@@ -172,9 +172,8 @@ EOD;
             $line, //
             1 //
         );
-        if ($result === null) { // If error.
-            BW::throwErrorException('"preg_replace()" failed.');
-        }
+        B::assert($result !== null);
+
         return $result;
     }
 

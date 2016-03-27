@@ -18,9 +18,9 @@ class BaseNativeClass
 
     function __construct($param1 = null, $param2 = null)
     {
-        global $object, $array;
+        global $_BreakpointDebugging_testObject, $array;
 
-        self::$object = $object;
+        self::$object = $_BreakpointDebugging_testObject;
         self::$array = $array;
         self::$resource = tmpfile();
     }
@@ -59,6 +59,7 @@ class BaseNativeClass
 
 class NativeClass extends \BaseNativeClass
 {
+
     private function privateFunction()
     {
         var_dump('Called privateFunction.');
@@ -108,11 +109,11 @@ class OtherClass
 global $baseArray;
 $baseArray = array (' baseArrayElement1', 'baseArrayElement2 ');
 
-global $object;
-$object = new \OtherClass();
+global $_BreakpointDebugging_testObject;
+$_BreakpointDebugging_testObject = new \OtherClass();
 
 global $array;
-$array = array (true, 'bool' => false, 222 => 2, 2.2, 'DEF', $object, $baseArray, tmpfile(), null);
+$array = array (true, 'bool' => false, 222 => 2, 2.2, 'DEF', $_BreakpointDebugging_testObject, $baseArray, tmpfile(), null);
 
 global $varietyObject;
 $varietyObject = new \NativeClass();

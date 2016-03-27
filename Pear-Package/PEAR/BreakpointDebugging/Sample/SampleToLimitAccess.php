@@ -30,36 +30,14 @@ B::checkExeMode(); // Checks the execution mode.
 abstract class TestClass_InAllCase
 {
     /**
-     * @var array Static properties reference.
+     * @var mixed Dummy.
      */
-    protected static $staticProperties;
-
-    /**
-     * @var array Static property limitings reference.
-     */
-    protected static $staticPropertyLimitings;
-
-    /**
-     * @var array Auto properties reference.
-     */
-    protected $autoProperties;
-
-    /**
-     * @var array Auto properties limitings reference.
-     */
-    protected $autoPropertyLimitings;
+    private static $_staticA = 'staticA';
 
     /**
      * @var mixed Dummy.
      */
-    static $_staticA = 'staticA';
-    // private static $_staticA = 'staticA'; // Actual "php" code.
-
-    /**
-     * @var mixed Dummy.
-     */
-    static $_staticB = 'staticB';
-    // private static $_staticB = 'staticB'; // Actual "php" code.
+    private static $_staticB = 'staticB';
 
     /**
      * @var mixed Dummy.
@@ -70,24 +48,6 @@ abstract class TestClass_InAllCase
      * @var mixed Dummy.
      */
     private $_autoB = 'autoB';
-
-    /**
-     * Dummy.
-     *
-     * @return void
-     */
-    function __construct()
-    {
-        B::limitAccess(
-            array (
-                'BreakpointDebugging/Sample/SampleToLimitAccess.php',
-                'BreakpointDebugging/Sample/SampleToLimitAccess_InDebug.php'
-            )
-        );
-
-        self::$staticProperties['$_staticA'] = &self::$_staticA;
-        self::$staticProperties['$_staticB'] = &self::$_staticB;
-    }
 
     /**
      * Gets a auto property value.
@@ -122,25 +82,21 @@ abstract class TestClass_InAllCase
     }
 
     /**
-     * Gets a static property value.
+     * Gets this class's property.
      *
-     * @param string $propertyName Static property name.
-     *
-     * @return mixed Static property value.
+     * @return mixed This class's property.
      */
-    static function getStatic($propertyName)
+    static function getStaticA()
     {
-        return self::$staticProperties[$propertyName];
+        return self::$_staticA;
     }
 
     /**
-     * Gets a static property reference.
+     * Refers to this class's property.
      *
-     * @param string $propertyName Static property name.
-     *
-     * @return mixed& Static property.
+     * @return mixed This class's property.
      */
-    static function &refStatic($propertyName)
+    static function &refStaticA()
     {
         B::limitAccess(
             array (
@@ -149,7 +105,34 @@ abstract class TestClass_InAllCase
             )
         );
 
-        return self::$staticProperties[$propertyName];
+        return self::$_staticA;
+    }
+
+    /**
+     * Gets this class's property.
+     *
+     * @return mixed This class's property.
+     */
+    static function getStaticB()
+    {
+        return self::$_staticB;
+    }
+
+    /**
+     * Refers to this class's property.
+     *
+     * @return mixed This class's property.
+     */
+    static function &refStaticB()
+    {
+        B::limitAccess(
+            array (
+                'BreakpointDebugging/Sample/SampleToLimitAccess.php',
+                'BreakpointDebugging/Sample/SampleToLimitAccess_InDebug.php'
+            )
+        );
+
+        return self::$_staticB;
     }
 
     /**
@@ -221,17 +204,14 @@ foreach ($testValues as $testValue) {
     B::assert($pTestClass->_autoB === $testValue);
     // $pTestClass->_notExist = $testValue;
     // $pTestClass->_notExist;
-
-    $staticA = &T::refStatic('$_staticA');
+    $staticA = &T::refStaticA();
     $staticA = $testValue;
-    B::assert(T::getStatic('$_staticA') === $testValue);
-    B::assert(T::$_staticA === $staticA);
-    $staticB = &T::refStatic('$_staticB');
+    B::assert(T::getStaticA() === $testValue);
+    $staticB = &T::refStaticB();
     $staticB = $testValue;
-    B::assert(T::getStatic('$_staticB') === $testValue);
-    B::assert(T::$_staticB === $staticB);
-    // $notExist = &T::refStatic('$_notExist');
-    // T::getStatic('$_notExist');
+    B::assert(T::getStaticB() === $testValue);
+    // $notExist = &T::refNotExist();
+    // T::getNotExist();
 
     $pTestClass->somthingInAllCase($testValue);
     $pTestClass->somthing($testValue);
@@ -251,5 +231,3 @@ $htmlFileContent = <<<EOD
 EOD;
 BW::virtualOpen('BreakpointDebugging_limitAccess', $htmlFileContent);
 BW::htmlAddition('BreakpointDebugging_limitAccess', 'pre', 0, 'END.');
-
-?>

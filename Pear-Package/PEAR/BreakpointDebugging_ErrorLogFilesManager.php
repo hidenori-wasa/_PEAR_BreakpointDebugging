@@ -7,7 +7,7 @@
  * Copyright (c) 2012-, Hidenori Wasa
  * All rights reserved.
  *
- * License content is written in "PEAR/BreakpointDebugging/BREAKPOINTDEBUGGING_LICENSE.txt".
+ * License content is written in "PEAR/BreakpointDebugging/docs/BREAKPOINTDEBUGGING_LICENSE.txt".
  *
  * @category PHP
  * @package  BreakpointDebugging
@@ -128,7 +128,7 @@ EOD;
                 goto END_LABEL;
             }
             $errorLogDirElements = scandir($errorLogDirectory);
-            // When you pushed "Download error log files" button.
+            // When "Download error log files" button was pushed.
             if (isset($_GET['download'])) {
                 // Searches the error log file which should download.
                 foreach ($errorLogDirElements as $errorLogDirElement) {
@@ -142,7 +142,7 @@ EOD;
                     // Downloads the error log file.
                     self::_download($errorLogDirElementPath);
                 }
-            } else if (isset($_GET['deleteErrorLogs'])) { // When you pushed "Delete all error log files" button.
+            } else if (isset($_GET['deleteErrorLogs'])) { // When "Delete all error log files" button was pushed.
                 // Searches the files which should delete.
                 foreach ($errorLogDirElements as $errorLogDirElement) {
                     if (!preg_match('`\.log$`xX', $errorLogDirElement)) {
@@ -156,8 +156,8 @@ EOD;
                     B::unlink(array ($errorLogDirElementPath));
                 }
                 BW::virtualOpen(__CLASS__, $errorHtmlFileContent);
-                BW::htmlAddition(__CLASS__, 'pre', 0, 'You must comment out "$developerIP = \'' . $_SERVER['REMOTE_ADDR'] . '\';" inside "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file before your IP is changed.');
-            } else if (isset($_GET['reset'])) { // When you pushed "Reset error log files" button.
+                BW::htmlAddition(__CLASS__, 'pre', 0, '"$developerIP = \'' . $_SERVER['REMOTE_ADDR'] . '\';" must be commented out inside "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file before your IP is changed.');
+            } else if (isset($_GET['reset'])) { // When "Reset error log files" button was pushed.
                 // Searches the files which should delete.
                 foreach ($errorLogDirElements as $errorLogDirElement) {
                     $errorLogDirElementPath = $errorLogDirectory . $errorLogDirElement;
@@ -168,7 +168,7 @@ EOD;
                     B::unlink(array ($errorLogDirElementPath));
                 }
                 BW::virtualOpen(__CLASS__, $errorHtmlFileContent);
-                BW::htmlAddition(__CLASS__, 'pre', 0, 'You must comment out "$developerIP = \'' . $_SERVER['REMOTE_ADDR'] . '\';" inside "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file before your IP is changed.');
+                BW::htmlAddition(__CLASS__, 'pre', 0, '"$developerIP = \'' . $_SERVER['REMOTE_ADDR'] . '\';" must be commented out inside "' . BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php" file before your IP is changed.');
             } else { // In case of first time when this page was called.
                 echo '<body style="background-color: black; color: white">';
                 $thisFileName = basename(__FILE__);
@@ -192,7 +192,7 @@ EOD;
                 echo <<<EOD
 <br/><br/>
 <form method="post" action="$thisFileName?$queryString">
-    <input type="submit" value="Delete all error log files (You must download all error log files before you push this button.)" $fontStyle/>
+    <input type="submit" value="Delete all error log files (All error log files must be downloaded before this button is pushed.)" $fontStyle/>
 </form>
 EOD;
 
@@ -200,7 +200,7 @@ EOD;
                 echo <<<EOD
 <br/><br/>
 <form method="post" action="$thisFileName?$queryString">
-    <input type="submit" value="Reset error log files (You must debug and upload all error code before you push this button.)" $fontStyle/>
+    <input type="submit" value="Reset error log files (All error code must be debugged and uploaded before this button is pushed.)" $fontStyle/>
 </form>
 EOD;
                 echo '</body>';

@@ -5,7 +5,7 @@
  *
  * As for procedure, please, refer to "PEAR/BreakpointDebugging/BREAKPOINTDEBUGGING_MANUAL.html".
  * "*_InDebug.php" file does not use on release. Therefore, response time is zero on release.
- * These file names put "_" to become error when we do autoload.
+ * These file names put "_" to become error when autoload is done.
  *
  * PHP version 5.3.2-5.4.x
  *
@@ -13,7 +13,7 @@
  * Copyright (c) 2012-, Hidenori Wasa
  * All rights reserved.
  *
- * License content is written in "PEAR/BreakpointDebugging/BREAKPOINTDEBUGGING_LICENSE.txt".
+ * License content is written in "PEAR/BreakpointDebugging/docs/BREAKPOINTDEBUGGING_LICENSE.txt".
  *
  * @category PHP
  * @package  BreakpointDebugging
@@ -22,17 +22,13 @@
  * @version  Release: @package_version@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-// File to have "use" keyword does not inherit scope into a file including itself,
-// also it does not inherit scope into a file including,
-// and moreover "use" keyword alias has priority over class definition,
-// therefore "use" keyword alias does not be affected by other files.
 use \BreakpointDebugging as B;
 
 B::limitAccess(BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php');
 
-// ### Item-setting for debugging. ===>
+// ### Item-setting for "\BreakpointDebugging_InAllCase::checkRecursiveDataError()". ===>
 // $xdebugManualUrl = 'http://www.php.net/manual/ja/';
-$xdebugVarDisplayMaxChildren = '100';
+$xdebugVarDisplayMaxChildren = '128';
 $xdebugVarDisplayMaxData = '3000';
 $xdebugVarDisplayMaxDepth = '6';
 // B::setBrowserPass('C:\Program Files\Internet Explorer\iexplore.exe');
@@ -52,7 +48,7 @@ if (B::getXebugExists()) {
     }
     //
     // ### [XDebug] setting in "php.ini" file. ###
-    // $_get = B::getStatic('$_get');
+    // $_get = B::getGet();
     // $xdebugSessionName = $_get['XDEBUG_SESSION_START'];
     // B::iniCheck('xdebug.idekey', $xdebugSessionName, 'Set \'xdebug.idekey = "$xdebugSessionName"\' of "php.ini" file because this value must be the debug session name.');
     // Manual base url for links from function traces or error messages.
@@ -90,7 +86,7 @@ if (B::getXebugExists()) {
     B::iniCheck('xdebug.remote_handler', 'dbgp', 'Set \'xdebug.remote_handler = "dbgp"\' of "php.ini" file because this is needed to do remote debugging.');
     // Connects when remote debug begins.
     B::iniSet('xdebug.remote_mode', 'req');
-    B::iniCheck('xdebug.remote_port', '9000', 'Set "xdebug.remote_port = 9000" of "php.ini" file. This is "NetBeans IDE" port number of own terminal. Also, we use default value because it is the default of "NetBeans IDE".');
+    B::iniCheck('xdebug.remote_port', '9000', 'Set "xdebug.remote_port = 9000" of "php.ini" file. This is "NetBeans IDE" port number of own terminal. Also, default value should be used because it is the default of "NetBeans IDE".');
     // Enables '@' operator.
     B::iniSet('xdebug.scream', '0');
     // Shows local variables.
@@ -110,7 +106,7 @@ B::iniSet('log_errors', '');
 B::iniSet('html_errors', '1');
 // // This doesn't make usual error report invalid.
 // B::iniCheck( 'xmlrpc_errors', '', 'Set "xmlrpc_errors = Off" in "php.ini" file because this does not change usual error report invalidly.');
-B::assert(B::getStatic('$_maxLogFileByteSize') % 4096 === 0);
-B::assert(1 <= B::getStatic('$_maxLogParamNestingLevel') && B::getStatic('$_maxLogParamNestingLevel') <= 100);
-B::assert(1 <= B::getStatic('$_maxLogElementNumber') && B::getStatic('$_maxLogElementNumber') <= 100);
-B::assert(1 <= B::getStatic('$_maxLogStringSize'));
+B::assert(B::getMaxLogFileByteSize() % 4096 === 0);
+B::assert(1 <= B::getMaxLogParamNestingLevel() && B::getMaxLogParamNestingLevel() <= 100);
+B::assert(1 <= B::getMaxLogElementNumber() && B::getMaxLogElementNumber() <= 100);
+B::assert(1 <= B::getMaxLogStringSize());

@@ -7,7 +7,7 @@
  * Copyright (c) 2012-, Hidenori Wasa
  * All rights reserved.
  *
- * License content is written in "PEAR/BreakpointDebugging/BREAKPOINTDEBUGGING_LICENSE.txt".
+ * License content is written in "PEAR/BreakpointDebugging/docs/BREAKPOINTDEBUGGING_LICENSE.txt".
  *
  * @category PHP
  * @package  BreakpointDebugging
@@ -16,8 +16,6 @@
  * @version  Release: @package_version@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-use \BreakpointDebugging as B;
-
 /**
  * The abstract base class which lock php-code.
  *
@@ -176,7 +174,7 @@ abstract class BreakpointDebugging_Lock
     function __destruct()
     {
         $lockCount = $this->lockCount;
-        // Unlocks all. We must unlock before "\BreakpointDebugging::assert" because if we execute unit test, it throws exception.
+        // Unlocks all. Unit test must be unlocked before "\BreakpointDebugging::assert" to throw exception.
         while ($this->lockCount > 0) {
             // This code is executed in case of debug unit test because assertion test is executed in case of debug mode.
             $this->unlock();
@@ -253,12 +251,7 @@ abstract class BreakpointDebugging_Lock
     static function forceUnlocking()
     {
         \BreakpointDebugging::assert(func_num_args() === 0);
-
-        B::limitAccess(
-            array ('BreakpointDebugging.php',
-                'BreakpointDebugging/Error.php'
-            )
-        );
+        \BreakpointDebugging::limitAccess(array ('BreakpointDebugging.php', 'BreakpointDebugging/Error.php'));
 
         if (is_object(self::$_internalInstance)) {
             // This code is executed in case of "\BreakpointDebugging_LockByFileExisting" unit test.

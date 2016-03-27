@@ -9,7 +9,7 @@
  * Copyright (c) 2012-, Hidenori Wasa
  * All rights reserved.
  *
- * License content is written in "PEAR/BreakpointDebugging/BREAKPOINTDEBUGGING_LICENSE.txt".
+ * License content is written in "PEAR/BreakpointDebugging/docs/BREAKPOINTDEBUGGING_LICENSE.txt".
  *
  * @category PHP
  * @package  BreakpointDebugging
@@ -18,8 +18,8 @@
  * @version  Release: @package_version@
  * @link     http://pear.php.net/package/BreakpointDebugging
  */
-define('BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME', './BreakpointDebugging_PEAR_Setting/'); // We can change "PEAR" setting directory name.
-define('BREAKPOINTDEBUGGING_WORK_DIR_NAME', './BreakpointDebugging_Work/'); // We can change "BreakpointDebugging" package work directory name.
+define('BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME', './BreakpointDebugging_PEAR_Setting/'); // "PEAR" setting directory name can be changed.
+define('BREAKPOINTDEBUGGING_WORK_DIR_NAME', './BreakpointDebugging_Work/'); // "BreakpointDebugging" package work directory name can be changed.
 
 require_once BREAKPOINTDEBUGGING_PEAR_SETTING_DIR_NAME . 'BreakpointDebugging_MySetting.php';
 

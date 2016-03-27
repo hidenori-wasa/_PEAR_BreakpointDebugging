@@ -7,7 +7,7 @@
  * Copyright (c) 2014-, Hidenori Wasa
  * All rights reserved.
  *
- * License content is written in "PEAR/BreakpointDebugging/BREAKPOINTDEBUGGING_LICENSE.txt".
+ * License content is written in "PEAR/BreakpointDebugging/docs/BREAKPOINTDEBUGGING_LICENSE.txt".
  *
  * @category PHP
  * @package  BreakpointDebugging
@@ -19,10 +19,6 @@
 
 namespace BreakpointDebugging;
 
-// File to have "use" keyword does not inherit scope into a file including itself,
-// also it does not inherit scope into a file including,
-// and moreover "use" keyword alias has priority over class definition,
-// therefore "use" keyword alias does not be affected by other files.
 use \BreakpointDebugging as B;
 use \BreakpointDebugging_Window as BW;
 
@@ -30,7 +26,7 @@ use \BreakpointDebugging_Window as BW;
  * Class for native-functions debugging in case of debug mode.
  *
  * "*_InDebug.php" file does not use on release. Therefore, response time is zero in release.
- * These file names put "_" to cause error when we do autoload.
+ * These file names put "_" to cause error when autoload is done.
  *
  * PHP version 5.3.2-5.4.x
  *
