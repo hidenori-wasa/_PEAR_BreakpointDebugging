@@ -1,6 +1,8 @@
 BreakpointDebugging
 ===================
 
+As for procedure, please, refer to `PEAR/BreakpointDebugging/docs/BREAKPOINTDEBUGGING_MANUAL.html`.
+
 The basic concept
 -----------------
 
@@ -16,8 +18,6 @@ The features list
 * Error log feature by global handler.
 * The override class feature.
 * Execution mode.
-
-As for procedure, please, refer to `PEAR/BreakpointDebugging/docs/BREAKPOINTDEBUGGING_MANUAL.html`.
 
 The dependences
 ---------------
